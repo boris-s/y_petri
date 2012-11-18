@@ -313,5 +313,605 @@ module YPetri
     end
     alias :clamped_ppß_ :clamped_pp_sym_
 
+    # Exposing @initial_marking (hash with place instances as keys)
+    attr_accessor :initial_marking
+
+    # Initial marking hash with place name symbols as keys
+    def im
+      initial_marking.with_keys { |k| k.name.nil? ? k : k.name.to_sym }
+    end
+
+    # Initial marking as array corresponding to free places
+    def initial_marking_array; free_places.map { |p| initial_marking[p] } end
+
+    # Initial marking as a column vector corresponding to free places
+    def initial_marking_vector; Matrix.column_vector initial_marking_array end
+    alias :i𝖒 :initial_marking_vector
+
+    # Marking of free places as an array
+    def marking_array; marking_vector.column( 0 ).to_a end
+    alias :marking_array_of_free_places :marking_array
+
+    # Marking of free places as a hash with place instances as keys
+    def marking; Hash[ free_places.zip( marking_array ) ] end
+
+    # Marking of free places as a hash with place names as keys
+    def m
+      Hash[ free_pp.map{|e| e.to_sym rescue nil }.zip( marking_array ) ]
+    end
+    alias :m_free :m
+
+    # Marking of free places as a column vector
+    def marking_vector
+      free_places_to_all_places_matrix.t * @marking_vector
+    end
+    alias :𝖒 :marking_vector
+    alias :marking_vector_of_free_places :marking_vector
+    alias :𝖒_free :marking_vector
+
+    # Marking of clamped places as an array
+    def marking_array_of_clamped_places
+      marking_vector_of_clamped_places.column( 0 ).to_a
+    end
+
+    # Marking of clamped places as a hash with place instances as keys
+    def marking_of_clamped_places
+      Hash[ clamped_places.zip( marking_array_of_clamped_places ) ]
+    end
+
+    # Marking of clamped places as a hash with place names as keys
+    def m_clamped
+      Hash[ clamped_pp.map{|e| e.to_sym rescue nil }
+              .zip( marking_array_of_clamped_places ) ]
+    end
+
+    # Marking of clamped places as a column vector
+    def marking_vector_of_clamped_places
+      clamped_places_to_all_places_matrix.t * @marking_vector
+    end
+    alias :𝖒_clamped :marking_vector_of_clamped_places
+
+    # Marking array for all places
+    def marking_array_of_all_places; marking_vector!.column( 0 ).to_a end
+    alias :marking_array! :marking_array_of_all_places
+
+    # Marking of all places as a hash with place instances as keys
+    def marking_of_all_places; Hash[ places.zip( marking_array! ) ] end
+    alias :marking! :marking_of_all_places
+
+    # Marking of all places as a hash with place names as keys
+    def m_all; Hash[ pp.map{|e| e.to_sym rescue nil }
+                       .zip( marking_array! ) ]
+    end
+    alias :m! :m_all
+
+    # Marking of all places as a column vector
+    def marking_vector_of_all_places; @marking_vector end
+    alias :marking_vector! :marking_vector_of_all_places
+    alias :𝖒_all :marking_vector_of_all_places
+    alias :𝖒! :marking_vector_of_all_places
+
+    # Creation of stoichiometry matrix for an arbitrary array of stoichio.
+    # transitions, that maps (has the number of rows equal to) the free places.
+    def create_stoichiometry_matrix_for( array_of_S_transitions )
+      array_of_S_transitions.map { |t| sparse_stoichiometry_vector( t ) }
+        .reduce( Matrix.empty( free_places.size, 0 ), :join_right )
+    end
+    alias :create_𝕾_for :create_stoichiometry_matrix_for
+    alias :stoichiometry_matrix_for :create_stoichiometry_matrix_for
+    alias :𝕾_for :create_stoichiometry_matrix_for
+
+    # Creation of stoichiometry matrix for an arbitrary array of stoichio.
+    # transitions, that maps (has the number of rows equal to) all the places.
+    def create_stoichiometry_matrix_for! array_of_S_transitions
+      array_of_S_transitions.map { |t| sparse_stoichiometry_vector! t }
+        .reduce( Matrix.empty( places.size, 0 ), :join_right )
+    end
+    alias :create_𝕾_for! :create_stoichiometry_matrix_for!
+    alias :stoichiometry_matrix_for! :create_stoichiometry_matrix_for!
+    alias :𝕾_for! :create_stoichiometry_matrix_for!
+
+    # 3. Stoichiometry matrix for timeless stoichiometric transitions
+    attr_reader :stoichiometry_matrix_for_timeless_stoichiometric_transitions
+    alias :stoichiometry_matrix_for_tS_transitions \
+          :stoichiometry_matrix_for_timeless_stoichiometric_transitions
+    alias :𝕾_for_tS_transitions \
+          :stoichiometry_matrix_for_timeless_stoichiometric_transitions
+
+    # 4. Stoichiometry matrix for timed rateless stoichiometric transitions
+    attr_reader :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
+    alias :stoichiometry_matrix_for_TSr_transitions \
+          :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
+    alias :𝕾_for_TSr_transitions \
+          :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
+
+    # 6. Stoichiometry matrix for stoichiometric transitions with rate
+    attr_reader :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
+    alias :stoichiometry_matrix_for_SR_transitions \
+          :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
+    alias :𝕾_for_SR_transitions \
+          :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
+
+    # Stoichiometry matrix for stoichiometric transitions with rate.
+    # By calling this method, the caller asserts that there are only
+    # stoichiometric transitions with rate in the simulation (or error).
+    def stoichiometry_matrix!
+      txt = "The simulation contains also non-stoichiometric transitions. " +
+            "Use method #stoichiometry_matrix_for_stoichiometric_transitions."
+      raise txt unless s_transitions.empty? && r_transitions.empty?
+      return stoichiometry_matrix_for_stoichiometric_transitions_with_rate
+    end
+    alias :𝕾! :stoichiometry_matrix!
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of 1. ts transitions
+
+    # Array of ts transitions
+    def timeless_nonstoichiometric_transitions
+      from_net = net.timeless_nonstoichiometric_transitions
+      @transitions.select{ |t| from_net.include? t }
+    end
+    alias :ts_transitions :timeless_nonstoichiometric_transitions
+
+    # Hash mapper for #ts_transitions (see #transitions_ method description)
+    def timeless_nonstoichiometric_transitions_ *aa, &b
+      if aa.empty? && b.nil? then ts_transitions else
+        Hash[ ts_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :ts_transitions_ :timeless_nonstoichiometric_transitions_
+
+    # Array of ts transition names
+    def timeless_nonstoichiometric_tt
+      timeless_nonstoichiometric_transitions.map &:name
+    end
+    alias :ts_tt :timeless_nonstoichiometric_tt
+
+    # Hash mapper for #ts_tt (see #tt_ method description)
+    def timeless_nonstoichiometric_tt_ *aa, &b
+      if aa.empty? && b.nil? then ts_tt else
+        Hash[ ts_transitions
+                .map { |t| t.name.nil? ? t : t.name }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :ts_tt_ :timeless_nonstoichiometric_tt_
+
+    # Array of ts transition names as symbols
+    def timeless_nonstoichiometric_tt_sym
+      timeless_nonstoichiometric_tt.map { |t| t.to_sym rescue nil }
+    end
+    alias :timeless_nonstoichiometric_ttß :timeless_nonstoichiometric_tt_sym
+    alias :ts_tt_sym :timeless_nonstoichiometric_tt
+    alias :ts_ttß :ts_tt_sym
+
+    # Hash mapper for #ts_tt_sym (see #tt_sym_ method description)
+    def timeless_nonstoichiometric_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then ts_tt_sym else
+        Hash[ ts_transitions
+              .map { |t| t.name.to_sym rescue t }
+              .zip( send *aa, &b ) ]
+      end
+    end
+    alias :timeless_nonstoichiometric_ttß_ :timeless_nonstoichiometric_tt_sym_
+    alias :ts_tt_sym_ :timeless_nonstoichiometric_tt_sym_
+    alias :ts_ttß_ :ts_tt_sym_
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of 2. tS transitions
+
+    # Array of tS transitions
+    def timeless_stoichiometric_transitions
+      from_net = net.timeless_stoichiometric_transitions
+      @transitions.select{ |t| from_net.include? t }
+    end
+    alias :tS_transitions :timeless_stoichiometric_transitions
+
+    # Hash mapper for #tS_transitions (see #transitions_ method description)
+    def timeless_stoichiometric_transitions_ *aa, &b
+      if aa.empty? && b.nil? then tS_transitions else
+        Hash[ tS_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :tS_transitions_ :timeless_nonstoichiometric_transitions_
+
+    # Array of tS transition names
+    def timeless_stoichiometric_tt
+      timeless_stoichiometric_transitions.map &:name
+    end
+    alias :tS_tt :timeless_stoichiometric_tt
+
+    # Hash mapper for #tS_tt (see #tt_ method description)
+    def timeless_stoichiometric_tt_ *aa, &b
+      aa.empty? && b.nil? ? tS_tt : Hash[ tS_tt.zip( send *aa, &b ) ]
+    end
+    alias :tS_tt_ :timeless_stoichiometric_tt_
+
+    # Array of tS transition name symbols
+    def timeless_stoichiometric_tt_sym
+      timeless_stoichiometric_tt.map { |n| n.to_sym rescue nil }
+    end
+    alias :timeless_stoichiometric_ttß :timeless_stoichiometric_tt_sym
+    alias :tS_tt_sym :timeless_stoichiometric_tt_sym
+    alias :tS_ttß :timeless_stoichiometric_ttß
+
+    # Hash mapper for #tS_tt_sym (see #tt_sym_ method description)
+    def timeless_stoichiometric_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then tS_tt_sym else
+        Hash[ tS_transitions
+                .map { |t| t.name.to_sym rescue t }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :timeless_stoichiometric_ttß_ :timeless_stoichiometric_tt_sym_
+    alias :tS_tt_sym_ :timeless_stoichiometric_tt_sym_
+    alias :tS_ttß :timeless_stoichiometric_tt_sym_
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of 3. Tsr transitions
+
+    # Array of Tsr transitions
+    def timed_nonstoichiometric_transitions_without_rate
+      from_net = net.timed_rateless_nonstoichiometric_transitions
+      @transitions.select{ |t| from_net.include? t }
+    end
+    alias :timed_rateless_nonstoichiometric_transitions \
+          :timed_nonstoichiometric_transitions_without_rate
+    alias :Tsr_transitions :timed_nonstoichiometric_transitions_without_rate
+
+    # Hash mapper for #Tsr_transitions (see #transitions_ method description)
+    def timed_nonstoichiometric_transitions_without_rate_ *aa, &b
+      if aa.empty? && b.nil? then self.Tsr_transitions else
+        Hash[ self.Tsr_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :timed_rateless_nonstoichiometric_transitions_ \
+          :timed_nonstoichiometric_transitions_without_rate_
+    alias :Tsr_transitions_ \
+          :timed_nonstoichiometric_transitions_without_rate_
+
+    # Array of Tsr transition names
+    def timed_nonstoichiometric_tt_without_rate
+      timed_nonstoichiometric_transitions_without_rate.map &:name
+    end
+    alias :timed_rateless_nonstoichiometric_tt \
+          :timed_nonstoichiometric_tt_without_rate
+    alias :Tsr_tt :timed_nonstoichiometric_tt_without_rate
+
+    # Hash mapper for #Tsr_tt (see #tt_ method description)
+    def timed_nonstoichiometric_tt_without_rate_ *aa, &b
+      aa.empty? && b.nil? ? self.Tsr_transitions :
+        Hash[ self.Tsr_transitions.zip( send *aa, &b ) ]
+    end
+    alias :timed_rateless_nonstoichiometric_tt_ \
+          :timed_nonstoichiometric_transitions_without_rate_
+    alias :Tsr_tt_ :timed_nonstoichiometric_tt_without_rate_
+
+    # Array of Tsr transition names as symbols
+    def timed_rateless_nonstoichiometric_tt_sym
+      timed_rateless_nonstoichiometric_tt.map { |n| n.to_sym rescue n }
+    end
+    alias :timed_rateless_nonstoichiometric_ttß \
+          :timed_rateless_nonstoichiometric_tt_sym
+    alias :Tsr_tt_sym :timed_rateless_nonstoichiometric_tt_sym
+    alias :Tsr_ttß :timed_rateless_nonstoichiometric_tt_sym
+
+    # Hash mapper for #Tsr_tt_sym (see #tt_sym_ method description)
+    def timed_rateless_nonstoichiometric_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then self.Tsr_tt_sym else
+        Hash[ self.Tsr_transitions
+                .map { |t| t.name.to_sym rescue t }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :timed_rateless_nonstoichiometric_ttß_ \
+          :timed_rateless_nonstoichiometric_tt_sym_
+    alias :Tsr_tt_sym_ :timed_rateless_nonstoichiometric_tt_sym_
+    alias :Tsr_ttß_ :timed_rateless_nonstoichiometric_tt_sym_
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of 4. TSr transitions
+
+    # Array of TSr transitions
+    def timed_stoichiometric_transitions_without_rate
+      from_net = net.timed_rateless_stoichiometric_transitions
+      @transitions.select{ |t| from_net.include? t }
+    end
+    alias :timed_rateless_stoichiometric_transitions \
+          :timed_stoichiometric_transitions_without_rate
+    alias :TSr_transitions :timed_stoichiometric_transitions_without_rate
+
+    # Hash mapper for #TSr_transitions (see #transitions_ method description)
+    def timed_stoichiometric_transitions_without_rate_ *aa, &b
+      if aa.empty? && b.nil? then self.TSr_transitions else
+        Hash[ self.TSr_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :timed_rateless_stoichiometric_transitions_ \
+          :timed_stoichiometric_transitions_without_rate_
+    alias :TSr_transitions_ \
+          :timed_stoichiometric_transitions_without_rate_
+
+    # Array of TSr transition names
+    def timed_stoichiometric_tt_without_rate
+      timed_stoichiometric_transitions_without_rate.map &:name
+    end
+    alias :timed_rateless_stoichiometric_tt \
+          :timed_stoichiometric_tt_without_rate
+    alias :TSr_tt :timed_stoichiometric_tt_without_rate
+
+    # Hash mapper for #TSr_tt (see #tt_ method description)
+    def timed_stoichiometric_tt_without_rate_ *aa, &b
+      aa.empty? && b.nil? ? self.TSr_tt :
+        Hash[ self.TSr_tt.zip( send *aa, &b ) ]
+    end
+    alias :timed_rateless_stoichiometric_tt_ \
+          :timed_stoichiometric_transitions_without_rate_
+    alias :TSr_tt_ :timed_stoichiometric_tt_without_rate_
+
+    # Array of TSr transition names as symbols
+    def timed_rateless_stoichiometric_tt_sym
+      timed_rateless_stoichiometric_tt.map { |n| n.to_sym rescue n }
+    end
+    alias :timed_rateless_stoichiometric_ttß \
+          :timed_rateless_stoichiometric_tt_sym
+    alias :TSr_tt_sym :timed_rateless_stoichiometric_tt_sym
+    alias :TSr_ttß :timed_rateless_stoichiometric_tt_sym
+
+    # Hash mapper for #Tsr_tt_sym (see #tt_sym_ method description)
+    def timed_rateless_stoichiometric_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then self.TSr_tt_sym else
+        Hash[ self.TSr_transitions
+                .map { |t| t.name.to_sym rescue t }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :timed_rateless_stoichiometric_ttß_ \
+          :timed_rateless_stoichiometric_tt_sym_
+    alias :TSr_tt_sym_ :timed_rateless_stoichiometric_tt_sym_
+    alias :TSr_ttß_ :timed_rateless_stoichiometric_tt_sym_
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of 5. sR transitions
+
+    # Array of sR transitions
+    def nonstoichiometric_transitions_with_rate
+      from_net = net.nonstoichiometric_transitions_with_rate
+      @transitions.select { |t| from_net.include? t }
+    end
+    alias :sR_transitions :nonstoichiometric_transitions_with_rate
+
+    # Hash mapper for #sR_transitions (see #transitions_ method description)
+    def nonstoichiometric_transitions_with_rate_ *aa, &b
+      if aa.empty? && b.nil? then sR_transitions else
+        Hash[ sR_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :sR_transitions_ :nonstoichiometric_transitions_with_rate_
+
+    # Array of sR transition names
+    def nonstoichiometric_tt_with_rate
+      nonstoichiometric_transitions_with_rate.map &:name
+    end
+    alias :sR_tt :nonstoichiometric_tt_with_rate
+
+    # Hash mapper for #sR_tt (see #tt_ method description)
+    def nonstoichiometric_tt_with_rate_ *aa, &b
+      aa.empty? && b.nil? ? sR_tt : Hash[ sR_tt.zip( send *aa, &b ) ]
+    end
+    alias :sR_tt_ :nonstoichiometric_tt_with_rate_
+
+    # Array of sR transition names as symbols
+    def sR_tt_sym
+      nonstoichiometric_tt_with_rate.map { |n| n.to_sym rescue n }
+    end
+    alias :sR_ttß :sR_tt_sym
+
+    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description)
+    def sR_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then sR_tt_sym else
+        Hash[ sR_transitions.map { |t| t.name.to_sym rescue t }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :sR_ttß_ :sR_tt_sym_
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of 6. SR transitions
+
+    # Array of SR transitions
+    def stoichiometric_transitions_with_rate
+      from_net = net.stoichiometric_transitions_with_rate
+      @transitions.select { |t| from_net.include? t }
+    end
+    alias :SR_transitions :stoichiometric_transitions_with_rate
+
+    # Hash mapper for #SR_transitions (see #transitions_ method description)
+    def stoichiometric_transitions_with_rate_ *aa, &b
+      if aa.empty? && b.nil? then self.SR_transitions else
+        Hash[ self.SR_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :SR_transitions_ :stoichiometric_transitions_with_rate_
+
+    # Array of SR transition names
+    def stoichiometric_tt_with_rate
+      stoichiometric_transitions_with_rate.map &:name
+    end
+    alias :SR_tt :stoichiometric_tt_with_rate
+
+    # Hash mapper for #sR_tt (see #tt_ method description)
+    def stoichiometric_tt_with_rate_ *aa, &b
+      aa.empty? && b.nil? ? self.SR_tt :
+        Hash[ self.SR_tt.zip( send *aa, &b ) ]
+    end
+    alias :SR_tt_ :stoichiometric_tt_with_rate_
+
+    # Array of sR transition names as symbols
+    def SR_tt_sym
+      stoichiometric_tt_with_rate.map { |n| n.to_sym rescue n }
+    end
+    alias :SR_ttß :SR_tt_sym
+
+    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description)
+    def SR_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then self.SR_tt_sym else
+        Hash[ self.SR_transitions.map { |t| t.name.to_sym rescue t }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :SR_ttß_ :SR_tt_sym_
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of transitions with explicit assignment action
+    # (A transitions)
+
+    # Array of transitions with explicit assignment action
+    def transitions_with_explicit_assignment_action
+      from_net = net.transitions_with_explicit_assignment_action
+      @transitions.select { |t| from_net.include? t }
+    end
+    alias :assignment_transitions :transitions_with_explicit_assignment_action
+    alias :A_transitions :transitions_with_explicit_assignment_action
+
+    # Hash mapper for #A_transitions (see #transitions_ method description)
+    def transitions_with_explicit_assignment_action_ *aa, &b
+      if aa.empty? && b.nil? then self.A_transitions else
+        Hash[ self.A_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :A_transitions_ :transitions_with_explicit_assignment_action_
+    alias :assignment_transitions_ :A_transitions_
+
+    # Array of names of transitions with explicit assignment action
+    def tt_with_explicit_assignment_action
+      transitions_with_explicit_assignment_action.map &:name
+    end
+    alias :assignment_tt :tt_with_explicit_assignment_action
+    alias :A_tt :tt_with_explicit_assignment_action
+
+    # Hash mapper for #A_tt (see #tt_ method description)
+    def tt_with_explicit_assignment_action_ *aa, &b
+      aa.empty? && b.nil? ? self.A_tt :
+        Hash[ self.A_tt.zip( send *aa, &b ) ]
+    end
+    alias :assignment_tt_ :tt_with_explicit_assignment_action_
+    alias :A_tt_ :tt_with_explicit_assignment_action_
+
+    # Array of A transition names as symbols
+    def assignment_tt_sym
+      assignment_tt.map { |n| n.to_sym rescue n }
+    end
+    alias :assignment_ttß :assignment_tt_sym
+    alias :A_tt_sym :assignment_tt_sym
+    alias :A_ttß :assignment_tt_sym
+
+    # Hash mapper for #A_tt (see #tt_sym_ method description)
+    def assignment_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then self.A_tt_sym else
+        Hash[ self.A_transitions.map { |t| t.name.to_sym rescue t }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :assignment_ttß_ :assignment_tt_sym_
+    alias :A_tt_sym_ :assignment_tt_sym_
+    alias :A_ttß_ :assignment_tt_sym_
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of stoichiometric transitions of any kind
+    # (S transitions)
+
+    # Array of stoichiometric transitions (of any kind)
+    def stoichiometric_transitions
+      stoichio_from_net = net.stoichiometric_transitions
+      @transitions.select{ |t| stoichio_from_net.include?( t ) }
+    end
+    alias :S_transitions :stoichiometric_transitions
+
+    # Hash mapper for #S_transitions (see #transitions_ method description)
+    def stoichiometric_transitions_ *aa, &b
+      if aa.empty? && b.nil? then self.S_transitions else
+        Hash[ self.S_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :S_transitions_ :stoichiometric_transitions_
+
+    # Array of names of stoichiometric transitions (of any kind)
+    def stoichiometric_tt; stoichiometric_transitions.map &:name end
+    alias :S_tt :stoichiometric_tt
+
+    # Hash mapper for #A_tt (see #tt_ method description)
+    def stoichiometric_tt_ *aa, &b
+      aa.empty? && b.nil? ? self.S_tt : Hash[ self.S_tt.zip( send *aa, &b ) ]
+    end
+    alias :S_tt_ :stoichiometric_tt_
+
+    # Array of S transition names as symbols
+    def stoichiometric_tt_sym
+      stoichiometric_tt_with_rate.map { |n| n.to_sym rescue n }
+    end
+    alias :stoichiometric_ttß :stoichiometric_tt_sym
+    alias :S_tt_sym :stoichiometric_tt_sym
+    alias :S_ttß :stoichiometric_tt_sym
+
+    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description)
+    def stoichiometric_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then self.S_tt_sym else
+        Hash[ self.S_transitions.map { |t| t.name.to_sym rescue t }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :stoichiometric_ttß_ :stoichiometric_tt_sym_
+    alias :S_tt_sym_ :stoichiometric_tt_sym_
+    alias :S_ttß_ :stoichiometric_tt_sym_
+
+    # ----------------------------------------------------------------------
+    # Exposing the collection of nonstoichiometric transitions of any kind
+    # (s transitions)
+
+    # Array of nonstoichiometric transitions (of any kind)
+    def nonstoichiometric_transitions
+      non_stoichio_from_net = net.nonstoichiometric_transitions
+      @transitions.select{ |t| non_stoichio_from_net.include?( t ) }
+    end
+    alias :s_transitions :nonstoichiometric_transitions
+
+    # Hash mapper for #s_transitions (see #transitions_ method description)
+    def nonstoichiometric_transitions_ *aa, &b
+      if aa.empty? && b.nil? then s_transitions else
+        Hash[ s_transitions.zip( send *aa, &b ) ]
+      end
+    end
+    alias :s_transitions_ :nonstoichiometric_transitions_
+
+    # Array of names of nonstoichiometric transitions (of any kind)
+    def nonstoichiometric_tt; nonstoichiometric_transitions.map &:name end
+    alias :s_tt :nonstoichiometric_tt
+
+    # Hash mapper for #s_tt (see #tt_ method description)
+    def nonstoichiometric_tt_ *aa, &b
+      aa.empty? && b.nil? ? s_tt : Hash[ self.s_tt.zip( send *aa, &b ) ]
+    end
+    alias :s_tt_ :nonstoichiometric_tt_
+
+    # Array of sR transition names as symbols
+    def nonstoichiometric_tt_sym
+      nonstoichiometric_tt.map { |n| n.to_sym rescue n }
+    end
+    alias :nonstoichiometric_ttß :nonstoichiometric_tt_sym
+    alias :s_tt_sym :nonstoichiometric_tt_sym
+    alias :s_ttß :nonstoichiometric_tt_sym
+
+    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description)
+    def nonstoichiometric_tt_sym_ *aa, &b
+      if aa.empty? && b.nil? then s_tt_sym else
+        Hash[ s_transitions.map { |t| t.name.to_sym rescue t }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :nonstoichiometric_ttß_ :nonstoichiometric_tt_sym_
+    alias :s_tt_sym_ :nonstoichiometric_tt_sym_
+    alias :s_ttß_ :nonstoichiometric_tt_sym_
+
   end # class Simulation
 end # module YPetri
