@@ -313,7 +313,13 @@ module YPetri
     end
     alias :clamped_ppß_ :clamped_pp_sym_
 
-=begin
+
+
+
+
+
+
+
 
     # Marking of free places as a column vector
     def marking_vector
@@ -1436,8 +1442,5 @@ module YPetri
         λ { t.rate_closure.( *( p2d * 𝖒! ).column_to_a ) }
       }
     end
-
-=end
-
   end # class Simulation
 end # module YPetri
