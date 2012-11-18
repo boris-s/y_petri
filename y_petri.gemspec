@@ -17,4 +17,5 @@ Gem::Specification.new do |gem|
   
   gem.add_dependency "y_support"
   gem.add_dependency "gnuplot"
+  gem.add_dependency "const_magic_ersatz"
 end
