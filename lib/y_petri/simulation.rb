@@ -219,6 +219,100 @@ module YPetri
       place_clamps.with_keys { |k| k.name.nil? ? k : k.name.to_sym }
     end
 
+    # Free places (array of instances)
+    def free_places; places.select { |p| @initial_marking.keys.include? p } end
+
+    # Without parameters, it behaves as #free_places. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of free places, and which
+    # are then presented as hash { place_instance => object }.
+    def free_places_ *aa, &b
+      aa.empty? && b.nil? ? free_places :
+        Hash[ free_places.zip( send *aa, &b ) ]
+    end
+
+    # Clamped places (array of instances)
+    def clamped_places; places.select { |p| @place_clamps.keys.include? p } end
+
+    # Without parameters, it behaves as #clamped_places. If parameters are
+    # given, these are treated as a message to be sent to self (as #send
+    # method parameters), with the return value expected to be a collection
+    # of objects, whose number is the same as the number of clamped places,
+    # and which are then presented as hash { place_instance => object }.
+    def clamped_places_ *aa, &b
+       aa.empty? && b.nil? ? clamped_places :
+        Hash[ clamped_places.zip( send *aa, &b ) ]
+    end
+
+    # Free places (array of instance names)
+    def free_pp; free_places.map &:name end
+
+    # Without parameters, it behaves as #free_pp. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of free places, and which
+    # are then presented as hash { place_instance_name => object }. Place
+    # instances are used as keys for nameless places.
+    def free_pp_ *aa, &b
+      if aa.empty? and b.nil? then free_pp else
+        Hash[ free_places.map { |p| p.name.nil? ? p : p.name }
+                .zip( send *aa, &b ) ]
+      end
+    end
+
+    # Free places (array of instance names as symbols)
+    def free_pp_sym; free_pp.map { |o| o.to_sym rescue nil } end
+    alias :free_ppß :free_pp_sym
+
+    # Without parameters, it behaves as #free_pp_sym. If parameters are
+    # given, these are treated as a message to be sent to self (as #send
+    # method parameters), with the return value expected to be a collection
+    # of objects, whose number is the same as the number of free places,
+    # and which are then returned as hash { free_place_name_symbol => object }.
+    # Place instances are used as keys for nameless places
+    def free_pp_sym_ *aa, &b
+      if aa.empty? and b.nil? then free_pp_sym else
+        Hash[ free_places.map { |p| p.name.to_sym rescue p }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :free_ppß_ :free_pp_sym_
+
+    # Clamped places (array of instance names)
+    def clamped_pp *aa; clamped_places.map &:name end
+
+    # Without parameters, it behaves as #clamped_pp. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of clamped places, and
+    # which are then presented as hash { place_instance_name => object }. Place
+    # instances are used as keys for nameless places.
+    def clamped_pp_ *aa, &b
+      if aa.empty? and b.nil? then clamped_pp else
+        Hash[ clamped_places.map { |p| p.name.nil? ? p : p.name }
+                .zip( send *aa, &b ) ]
+      end
+    end
+
+    # Clamped places (array of instance names as symbols)
+    def clamped_pp_sym *aa; clamped_pp.map { |o| o.to_sym rescue nil } end
+    alias :clamped_ppß :clamped_pp_sym
+
+    # Without parameters, it behaves as #clamped_pp_sym. If parameters are
+    # given, these are treated as a message to be sent to self (as #send
+    # method parameters), with the return value expected to be a collection
+    # of objects, whose number is the same as the number of clamped places,
+    # and which are then returned as hash { clamped_place_name_symbol =>
+    # object }. Place instances are used as keys for nameless places
+    def clamped_pp_sym_ *aa, &b
+      if aa.empty? and b.nil? then clamped_pp_sym else
+        Hash[ clamped_places.map { |p| p.name.to_sym rescue p }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :clamped_ppß_ :clamped_pp_sym_
+
 =begin
 
     # Marking of free places as a column vector
