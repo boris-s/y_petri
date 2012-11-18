@@ -116,5 +116,136 @@ module YPetri
       reset!
     end
 
+    # Exposing @net
+    attr_reader :net
+
+    # Exposing @places (array of instances)
+    attr_reader :places, :transitions
+
+    # Without parameters, it behaves as #places. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of places, and which
+    # are then presented as hash { place_instance => object }.
+    def places_ *aa, &b
+      aa.empty? && b.nil? ? places : Hash[ places.zip( send *aa, &b ) ]
+    end
+    
+    # Exposing @transitions (array of instances)
+    attr_reader :transitions
+
+    # Without parameters, it behaves as #transitions. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of transitions, and
+    # which are then presented as hash { transition_instance => object }.
+    def transitions_ *aa, &b
+      aa.empty? && b.nil? ? transitions : Hash[ transitions.zip( send *aa, &b ) ]
+    end
+
+    # Array of place names.
+    def pp; places.map &:name end
+
+    # Without parameters, it behaves as #pp. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of places, and which
+    # are then presented as hash { place_name => object }. Place instances
+    # are used as hash keys for nameless places.
+    def pp_ *aa, &b
+      if aa.empty? and b.nil? then pp else
+        Hash[ places.map { |p| p.name.nil? ? p : p.name }
+                .zip( send *aa, &b ) ]
+      end
+    end
+
+    # Array of place names as symbols.
+    def pp_sym; pp.map { |o| o.to_sym rescue nil } end
+    alias :ppß :pp_sym
+
+    # Without parameters, it behaves as #pp_sym. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of places, and which
+    # are then presented as hash { place_name_symbol => object }. Place
+    # instances are used as keys for nameless places.
+    def pp_sym_ *aa, &b
+      if aa.empty? and b.nil? then pp_sym else
+        Hash[ places.map { |p| p.name.to_sym rescue p }
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :ppß_ :pp_sym_
+
+    # Array of transition names.
+    def tt; transitions.map &:name end
+
+    # Without parameters, it behaves as #tt. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of transitions, and
+    # which are then presented as hash { transition_name => object }.
+    # Transition instances are used as hash keys for nameless transitions.
+    def tt_ *aa, &b
+      if aa.empty? and b.nil? then tt else
+        Hash[ transitions.map { |t| t.name.nil? ? t : t.name }
+                .zip( send *aa, &b ) ]
+      end
+    end
+
+    # Array of transition names as symbols.
+    def tt_sym; tt.map { |o| o.to_sym rescue nil } end
+    alias :ttß :tt_sym
+
+    # Without parameters, it behaves as #tt_sym. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of transitions, and
+    # which are then returned as hash { transition_name_symbol => object }.
+    # Transition instances are used as hash keys for nameless transitions.
+    def tt_sym_ *aa, &b
+      if aa.empty? and b.nil? then tt_sym else
+        Hash[ transitions.map { |t| t.name.to_sym rescue t } 
+                .zip( send *aa, &b ) ]
+      end
+    end
+    alias :ttß_ :tt_sym_
+
+    # Exposing @place_clamps (hash with place instances as keys)
+    attr_reader :place_clamps
+
+    # Exposing @p_clamps (hash with place name symbols as keys)
+    def p_clamps
+      place_clamps.with_keys { |k| k.name.nil? ? k : k.name.to_sym }
+    end
+
+    # Free places (array of instances)
+    def free_places; places.select { |p| @initial_marking.keys.include? p } end
+
+    # Without parameters, it behaves as #free_places. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of free places, and which
+    # are then presented as hash { place_instance => object }.
+    def free_places_ *aa, &b
+      aa.empty? && b.nil? ? free_places :
+        Hash[ free_places.zip( send *aa, &b ) ]
+    end
+
+    # Clamped places (array of instances)
+    def clamped_places; places.select { |p| @place_clamps.keys.include? p } end
+
+    # Without parameters, it behaves as #clamped_places. If parameters are
+    # given, these are treated as a message to be sent to self (as #send
+    # method parameters), with the return value expected to be a collection
+    # of objects, whose number is the same as the number of clamped places,
+    # and which are then presented as hash { place_instance => object }.
+    def clamped_places_ *aa, &b
+       aa.empty? && b.nil? ? clamped_places :
+        Hash[ clamped_places.zip( send *aa, &b ) ]
+    end
+
+
+
   end # class Simulation
 end # module YPetri
