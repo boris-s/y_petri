@@ -1458,13 +1458,6 @@ module YPetri
       }
     end
 
-    def create_rate_closures_for_stoichiometric_transitions_with_rate
-      stoichiometric_transitions_with_rate.map{ |t|
-        p2d = Matrix.correspondence_matrix( places, t.domain )
-        λ { t.rate_closure.( *( p2d * 𝖒! ).column_to_a ) }
-      }
-    end
-
 =end
 
   end # class Simulation
