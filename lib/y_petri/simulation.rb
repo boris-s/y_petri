@@ -328,12 +328,5 @@ module YPetri
     def initial_marking_vector; Matrix.column_vector initial_marking_array end
     alias :i𝖒 :initial_marking_vector
 
-    # Marking of free places as an array
-    def marking_array; marking_vector.column( 0 ).to_a end
-    alias :marking_array_of_free_places :marking_array
-
-    # Marking of free places as a hash with place instances as keys
-    def marking; Hash[ free_places.zip( marking_array ) ] end
-
   end # class Simulation
 end # module YPetri
