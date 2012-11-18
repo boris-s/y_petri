@@ -321,25 +321,5 @@ module YPetri
       initial_marking.with_keys { |k| k.name.nil? ? k : k.name.to_sym }
     end
 
-    # Initial marking as array corresponding to free places
-    def initial_marking_array; free_places.map { |p| initial_marking[p] } end
-
-    # Initial marking as a column vector corresponding to free places
-    def initial_marking_vector; Matrix.column_vector initial_marking_array end
-    alias :i𝖒 :initial_marking_vector
-
-    # Marking of free places as an array
-    def marking_array; marking_vector.column( 0 ).to_a end
-    alias :marking_array_of_free_places :marking_array
-
-    # Marking of free places as a hash with place instances as keys
-    def marking; Hash[ free_places.zip( marking_array ) ] end
-
-    # Marking of free places as a hash with place names as keys
-    def m
-      Hash[ free_pp.map{|e| e.to_sym rescue nil }.zip( marking_array ) ]
-    end
-    alias :m_free :m
-
   end # class Simulation
 end # module YPetri
