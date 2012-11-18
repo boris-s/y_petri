@@ -324,5 +324,13 @@ module YPetri
     # Initial marking as array corresponding to free places
     def initial_marking_array; free_places.map { |p| initial_marking[p] } end
 
+    # Initial marking as a column vector corresponding to free places
+    def initial_marking_vector; Matrix.column_vector initial_marking_array end
+    alias :i𝖒 :initial_marking_vector
+
+    # Marking of free places as an array
+    def marking_array; marking_vector.column( 0 ).to_a end
+    alias :marking_array_of_free_places :marking_array
+
   end # class Simulation
 end # module YPetri
