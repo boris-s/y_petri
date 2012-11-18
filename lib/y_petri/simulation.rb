@@ -321,5 +321,8 @@ module YPetri
       initial_marking.with_keys { |k| k.name.nil? ? k : k.name.to_sym }
     end
 
+    # Initial marking as array corresponding to free places
+    def initial_marking_array; free_places.map { |p| initial_marking[p] } end
+
   end # class Simulation
 end # module YPetri
