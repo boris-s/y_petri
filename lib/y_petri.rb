@@ -20,7 +20,8 @@
 
 require 'gnuplot'
 require 'y_support'
-require "y_petri/version"
+require 'const_magic_ersatz'
+require 'y_petri/version'
 
 module YPetri
   DEFAULT_SIMULATION_SETTINGS =
@@ -52,8 +53,6 @@ module YPetri
 
   autoreq :workspace
   autoreq :manipulator
-
-  autoreq :const_magic_ersatz
   
   # Expects either a Place instance, or a name of an existing Place
   # instance. Place instance is returned unchanged, while if name was given,
