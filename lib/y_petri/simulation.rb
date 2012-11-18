@@ -282,5 +282,18 @@ module YPetri
     # Clamped places (array of instance names)
     def clamped_pp *aa; clamped_places.map &:name end
 
+    # Without parameters, it behaves as #clamped_pp. If parameters are given,
+    # these are treated as a message to be sent to self (as #send method
+    # parameters), with the return value expected to be a collection of
+    # objects, whose number is the same as the number of clamped places, and
+    # which are then presented as hash { place_instance_name => object }. Place
+    # instances are used as keys for nameless places.
+    def clamped_pp_ *aa, &b
+      if aa.empty? and b.nil? then clamped_pp else
+        Hash[ clamped_places.map { |p| p.name.nil? ? p : p.name }
+                .zip( send *aa, &b ) ]
+      end
+    end
+
   end # class Simulation
 end # module YPetri
