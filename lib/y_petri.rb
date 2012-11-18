@@ -19,9 +19,12 @@
 # Float (continuous) - the decision should be on the simulator.
 
 require 'gnuplot'
+require 'csv'
 require 'y_support'
 require 'const_magic_ersatz'
 require 'y_petri/version'
+
+include YSupport
 
 module YPetri
   DEFAULT_SIMULATION_SETTINGS =

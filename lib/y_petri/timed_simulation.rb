@@ -1,7 +1,7 @@
 #encoding: utf-8
 
 module YPetri
-  class TimedSimulation
+  class TimedSimulation < Simulation
     SAMPLING_TIME_DECIMAL_PLACES = SAMPLING_DECIMAL_PLACES
 
     # Exposing time-related global simulation settings

@@ -263,7 +263,7 @@ module YPetri
       # 
       sanit = lambda { |symbol|
         oo[symbol] = Array( oo[symbol] ).map { |e| ::YPetri::Place e }
-        oo[symbol].aE "not contain duplicate places", description do |array|
+        oo[symbol].aE "not contain duplicate places", "collection" do |array|
           array == array.uniq
         end
       }

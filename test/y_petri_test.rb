@@ -14,7 +14,7 @@ include Pyper
 #
 describe ::YPetri::Place do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @ç = ::YPetri::Place
     @p = @ç.new default_marking: 3.2, marking: 1.1, quantum: 0.1, name: "p1"
   end
@@ -66,7 +66,7 @@ end
 #
 describe ::YPetri::Transition do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @ç, @pç = ::YPetri::Transition, ::YPetri::Place
     @p1 = @pç.new default_marking: 1.0
     @p2 = @pç.new default_marking: 2.0
@@ -321,7 +321,7 @@ end
 #
 describe "upstream and downstream reference mτs of places and transitions" do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @pç = ::YPetri::Place
     @tç = ::YPetri::Transition
     @a = @pç.new( dflt_m: 1.0 )
@@ -378,7 +378,7 @@ end
 #
 describe ::YPetri::Net do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @ç = ::YPetri::Net
     @pç, @tç = ::YPetri::Place, ::YPetri::Transition
   end
@@ -534,7 +534,7 @@ end
 #
 describe ::YPetri::Simulation do
   before do
-    skip "to make the testing faster"
+    # skip "to make the testing faster"
     ɱ = ::YPetri
     @ç, @pç, @tç, @nç = ɱ::Simulation, ɱ::Place, ɱ::Transition, ɱ::Net
     @p1 = ::YPetri::Place.new( name: "P1", default_marking: 1 )
@@ -897,7 +897,7 @@ end
 #
 describe ::YPetri::TimedSimulation do  
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @a = ::YPetri::Place.new default_marking: 1.0
     @b = ::YPetri::Place.new default_marking: 2.0
     @c = ::YPetri::Place.new default_marking: 3.0
@@ -1037,7 +1037,7 @@ end
 #
 describe ::YPetri::Workspace do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @w = ::YPetri::Workspace.new
     @pp, @tt = [], []
     @pp << @w.new_place( default_marking: 1.0, name: "AA" )
@@ -1198,7 +1198,7 @@ end
 #
 describe ::YPetri do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
   end
 
   it "should have basic classes" do
@@ -1236,7 +1236,7 @@ end
 #
 describe "acceptance tests" do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     # a net of 1 P and 1 T connected to it:
     @net = ::YPetri::Net.new
     @p = ::YPetri::Place.new
