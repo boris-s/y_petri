@@ -335,11 +335,5 @@ module YPetri
     # Marking of free places as a hash with place instances as keys
     def marking; Hash[ free_places.zip( marking_array ) ] end
 
-    # Marking of free places as a hash with place names as keys
-    def m
-      Hash[ free_pp.map{|e| e.to_sym rescue nil }.zip( marking_array ) ]
-    end
-    alias :m_free :m
-
   end # class Simulation
 end # module YPetri
