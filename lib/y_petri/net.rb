@@ -234,14 +234,14 @@ module YPetri
 
     # #inspect
     def inspect
-      "A YPetri::Net of #{places.size} places and " +
-        "#{transitions.size} transitions, object id #{object_id}."
+      "YPetri::Net[ #{name.nil? ? '' : name + ': '} #{pp.size} places, " +
+        "#{tt.size} transitions" +
+        "#{name.nil? ? ', object id: %s' % object_id : ''} ]"
     end
 
     # #to_s
     def to_s
-      "net of #{places.size} places & #{transitions.size} transitions, " +
-        "obj. id #{object_id}"
+      "Net[ #{places.size} places, #{transitions.size} transitions ]"
     end
   end # class Net
 end # module YPetri

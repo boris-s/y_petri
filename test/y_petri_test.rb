@@ -5,8 +5,8 @@
 require 'minitest/spec'
 require 'minitest/autorun'
 require_relative '../lib/y_petri'     # tested component itself
-require 'pyper'
-include Pyper
+
+include Pyper if require 'pyper'
 
 # **************************************************************************
 # Test of Place class, part I.
@@ -415,8 +415,8 @@ describe ::YPetri::Net do
 
     it "should 'standard equipment' methods" do
       assert @net == @net.dup
-      assert @net.inspect.start_with? "A YPetri::Net of 3 places and 0 tr"
-      assert @net.to_s.start_with? "net of 3 places & 0 tr"
+      assert @net.inspect.start_with? "YPetri::Net[ "
+      assert @net.to_s.start_with? "Net[ 3"
       begin
         @net.include_transition! @tç.new( s: { @p_not_included => -1 } )
         flunk "Attempt to include illegal transition fails to raise"
@@ -970,7 +970,7 @@ describe ::YPetri::TimedSimulation do
           "10.0,0.22265,1.22265,3.77735\n" +
           "20.0,0.07131,1.07131,3.92869\n" +
           "30.0,0.02496,1.02496,3.97504\n"
-        assert_equal expected_recording_string, @sim.print_recording
+        assert_equal expected_recording_string, @sim.recording_csv_string
       end
     end
   end
@@ -1090,7 +1090,7 @@ describe ::YPetri::Workspace do
     assert_equal [0.2, 0.1], @w.simulation.𝖋!.column_to_a
     @w.simulation.step!
     @w.simulation.run!
-    rec_string = @w.simulation.print_recording
+    rec_string = @w.simulation.recording_csv_string
     expected_recording_string =
       "0.0,1.0,2.0,3.0\n" +
       "10.0,0.86102,0.86102,4.13898\n" +
@@ -1233,28 +1233,177 @@ end
 # **************************************************************************
 # ACCEPTANCE TESTS
 # **************************************************************************
-#
-describe "acceptance tests" do
+
+# describe "Token game" do
+#   before do
+#     @m = YPetri::Manipulator.new
+#     @m.place name: "A"
+#     @m.place name: "B"
+#     @m.place name: "C", marking: 7.77
+#     @m.transition name: "A2B", stoichiometry: { A: -1, B: 1 }
+#     @m.transition name: "C_decay", stoichiometry: { C: -1 }, rate: 0.05
+#   end
+
+#   it "should work" do
+#     @m.p( :A ).marking = 2
+#     @m.p( :B ).marking = 5
+#     @m.places.map( &:name ).must_equal ["A", "B", "C"]
+#     @m.places.map( &:marking ).must_equal [2, 5, 7.77]
+#     @m.t( :A2B ).connectivity.must_equal [ @m.p( :A ), @m.p( :B ) ]
+#     @m.t( :A2B ).fire!
+#     @m.places.map( &:marking ).must_equal [1, 6, 7.77]
+#     @m.t( :A2B ).fire!
+#     @m.p( :A ).marking.must_equal 0
+#     @m.p( :B ).marking.must_equal 7
+#     2.times do @m.t( :C_decay ).fire! 1 end
+#     @m.t( :C_decay ).fire! 0.1
+#     200.times do @m.t( :C_decay ).fire! 1 end
+#     assert_in_delta @m.p( :C ).marking, 0.00024, 0.00001
+#   end
+# end
+
+# describe "Basic use of TimedSimulation" do
+#   before do
+#     @m = YPetri::Manipulator.new
+#     @m.place( name: "A", default_marking: 0.5 )
+#     @m.place( name: "B", default_marking: 0.5 )
+#     @m.transition( name: "A_pump",
+#                    stoichiometry: { A: -1 },
+#                    rate: proc { 0.005 } )
+#     @m.transition( name: "B_decay",
+#                    stoichiometry: { B: -1 },
+#                    rate: 0.05 )
+#   end
+
+#   it "should work" do
+#     @m.net.must_be_kind_of ::YPetri::Net
+#     @m.run!
+#     @m.simulation.must_be_kind_of ::YPetri::TimedSimulation
+#     @m.plot_recording
+#     sleep 4
+#   end
+# end
+
+describe "Simplified dTTP pathway used for demo with Dr. Chang" do
   before do
-    # skip "to speed up testing"
-    # a net of 1 P and 1 T connected to it:
-    @net = ::YPetri::Net.new
-    @p = ::YPetri::Place.new
-    @net.include_place! @p
-    @t = ::YPetri::Transition.new codomain: @p, sv: 1, flux: 1.0
-    @net.include_transition! @t
-    # simulation with step 1
-    # FIXME: THE FOLLOWING RAISES
-    # @simulation = ::YPetri::Simulation.new net: @net, initial_marking: [ 7 ]
-    
-    # this is for timed simulation
-    #   default_initial_marking: [ 0 ], step: 1, duration: 1, sampling_period: 2.0
+    @m = YPetri::Manipulator.new
+    Cytoplasm_volume_in_litres = 5.0e-11
+    NA = 6.022e23
+    Pieces_per_micromolar = NA / 1_000_000 * Cytoplasm_volume_in_litres
+    @m.set_step 60
+    @m.set_sampling 300
+    @m.set_target_time 60 * 60 * 2
+    AMP = @m.place( name: :AMP, m!: 8695.0 )
+    ADP = @m.place( name: :ADP, m!: 6521.0 )
+    ATP = @m.place( name: :ATP, m!: 3152.0 )
+    Deoxycytidine = @m.place( name: :Deoxycytidine, m!: 0.5 )
+    DeoxyCTP = @m.place( name: :DeoxyCTP, m!: 1.0 )
+    DeoxyGMP = @m.place( name: :DeoxyGMP, m!: 1.0 )
+    UMP_UDP_pool = @m.place( name: :UMP_UDP_pool, m!: 2737.0 )
+    DeoxyUMP_DeoxyUDP_pool = @m.place( name: :DeoxyUMP_DeoxyUDP_pool, m!: 0.0 )
+    DeoxyTMP = @m.place( name: :DeoxyTMP, m!: 3.3 )
+    DeoxyTDP_DeoxyTTP_pool = @m.place( name: :DeoxyTDP_DeoxyTTP_pool, m!: 5.0 )
+    Thymidine = @m.place( name: :Thymidine, m!: 0.5 )
+    TK1 = @m.place( name: :TK1, m!: 100_000 )
+    TYMS = @m.place( name: :TYMS, m!: 100_000 )
+    RNR = @m.place( name: :RNR, m!: 100_000 )
+    TMPK = @m.place( name: :TMPK, m!: 100_000 )
+    TK1_kDa = 24.8
+    TYMS_kDa = 66.0
+    RNR_kDa = 140.0
+    TMPK_kDa = 50.0
+    TK1_a = 5.40
+    TYMS_a = 3.80
+    RNR_a = 1.00
+    TMPK_a = 0.83
+    @m.clamp AMP: 8695.0, ADP: 6521.0, ATP: 3152.0
+    @m.clamp Deoxycytidine: 0.5, DeoxyCTP: 1.0, DeoxyGMP: 1.0
+    @m.clamp Thymidine: 0.5
+    @m.clamp UMP_UDP_pool: 2737.0
+    # Functions
+    Vmax_per_minute_per_enzyme_molecule =
+      lambda { |enzyme_specific_activity_in_micromol_per_minute_per_mg,
+                enzyme_molecular_mass_in_kDa|
+                  enzyme_specific_activity_in_micromol_per_minute_per_mg *
+                    enzyme_molecular_mass_in_kDa }
+    Vmax_per_minute =
+      lambda { |specific_activity, kDa, enzyme_molecules_per_cell|
+               Vmax_per_minute_per_enzyme_molecule.( specific_activity, kDa ) *
+                 enzyme_molecules_per_cell }
+    Vmax_per_second =
+      lambda { |specific_activity, kDa, enzyme_molecules_per_cell|
+               Vmax_per_minute.( specific_activity,
+                                 kDa,
+                                 enzyme_molecules_per_cell ) / 60 }
+    Km_reduced =
+      lambda { |km, ki_hash={}|
+               ki_hash.map { |concentration, ci_Ki|
+                             concentration / ci_Ki
+                           }.reduce( 1, :+ ) * km }
+    Occupancy =
+      lambda { |concentration, reactant_Km, compet_inh_w_Ki_hash={}|
+               concentration / ( concentration +
+                                 Km_reduced.( reactant_Km,
+                                              compet_inh_w_Ki_hash ) ) }
+    MM_with_inh_micromolars_per_second =
+      lambda { |reactant_concentration,
+                enzyme_specific_activity,
+                enzyme_mass_in_kDa,
+                enzyme_molecules_per_cell,
+                reactant_Km,
+                competitive_inh_w_Ki_hash={}|
+                Vmax_per_second.( enzyme_specific_activity,
+                                  enzyme_mass_in_kDa,
+                                  enzyme_molecules_per_cell ) *
+                  Occupancy.( reactant_concentration,
+                              reactant_Km,
+                              competitive_inh_w_Ki_hash ) }
+    MMi = MM_with_inh_micromolars_per_second
+    TK1_Thymidine_Km = 5.0
+    TYMS_DeoxyUMP_Km = 2.0
+    RNR_UDP_Km = 1.0
+    DNA_creation_speed = 3_000_000_000 / ( 12 * 3600 )
+    TMPK_DeoxyTMP_Km = 12.0
+
+    # transitions
+    @m.transition name: :TK1_Thymidine_DeoxyTMP,
+                  domain: [ Thymidine, TK1, DeoxyTDP_DeoxyTTP_pool, DeoxyCTP, Deoxycytidine, AMP, ADP, ATP ],
+                  stoichiometry: { Thymidine: -1, DeoxyTMP: 1 },
+                  rate: proc { |rc, e, pool1, ci2, ci3, master1, master2, master3|
+                               ci1 = pool1 * master3 / ( master2 + master3 )
+                               MMi.( rc, TK1_a, TK1_kDa, e, TK1_Thymidine_Km,
+                                     ci1 => 13.5, ci2 => 0.8, ci3 => 40.0 ) }
+    @m.transition name: :TYMS_DeoxyUMP_DeoxyTMP,
+                  domain: [ DeoxyUMP_DeoxyUDP_pool, TYMS, AMP, ADP, ATP ],
+                  stoichiometry: { DeoxyUMP_DeoxyUDP_pool: -1, DeoxyTMP: 1 },
+                  rate: proc { |pool, e, master1, master2, master3|
+                          rc = pool * master2 / ( master1 + master2 )
+                          MMi.( rc, TYMS_a, TYMS_kDa, e, TYMS_DeoxyUMP_Km ) }
+    @m.transition name: :RNR_UDP_DeoxyUDP,
+                  domain: [ UMP_UDP_pool, RNR, DeoxyUMP_DeoxyUDP_pool, AMP, ADP, ATP ],
+                  stoichiometry: { UMP_UDP_pool: -1, DeoxyUMP_DeoxyUDP_pool: 1 },
+                  rate: proc { |pool, e, master1, master2, master3|
+                               rc = pool * master2 / ( master1 + master2 )
+                               MMi.( rc, RNR_a, RNR_kDa, e, RNR_UDP_Km ) }
+    @m.transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
+                  stoichiometry: { DeoxyTDP_DeoxyTTP_pool: -1 },
+                  rate: proc { DNA_creation_speed / 4 }
+    @m.transition name: :TMPK_DeoxyTMP_DeoxyTDP,
+                  domain: [ DeoxyTMP, TMPK, ADP,
+                            DeoxyTDP_DeoxyTTP_pool,
+                            DeoxyGMP, AMP, ATP ],
+                  stoichiometry: { DeoxyTMP: -1, TMPK: 0, DeoxyTDP_DeoxyTTP_pool: 1 },
+                  rate: proc { |rc, e, ci1, pool, ci4, master1, master3|
+                               master2 = ci1
+                               ci2 = pool * master2 / ( master2 + master3 )
+                               ci3 = pool * master3 / ( master2 + master3 )
+                               MMi.( rc, TMPK_a, TMPK_kDa, e, TMPK_DeoxyTMP_Km,
+                                     ci1 => 250.0, ci2 => 30.0, ci3 => 750, ci4 => 117 ) }
   end
-  
-  it "should give expected result" do
-    # @simulation.reset!
-    # 10.times { @simulation.simple_step 1.0 }
-    # printout = @simulation.print_recording
-    # assert_equal "{0=>[0], 2.0=>[2.0], 4.0=>[4.0], 6.0=>[6.0], 8.0=>[8.0], 10.0=>[10.0]}", printout
+
+  it "should work" do
+    @m.run!
+    @m.plot_recording
+    sleep 10
   end
 end

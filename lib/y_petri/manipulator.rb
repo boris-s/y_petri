@@ -295,7 +295,7 @@ module YPetri
         clamp_collection.merge! workspace.place( aa[0] ) => aa[1]
       end
     end
-    
+
     def initial_marking *aa; oo = aa.extract_options!
       case aa.size
       when 0 then
@@ -325,8 +325,10 @@ module YPetri
     alias :im :initial_marking
 
     def set_step Δt; ssc.merge! step_size: Δt end
+    alias :set_step_size :set_step
 
     def set_time t; ssc.merge! target_time: t end
+    alias :set_target_time :set_time
 
     def set_sampling Δt; ssc.merge! sampling_period: Δt end
 
@@ -340,29 +342,43 @@ module YPetri
 
     def print_recording( filename = nil )
       if filename.nil? then
-        simulation.print_recording
+        puts simulation.recording_csv_string
       else
         File.open( filename, "w" ) do |f|
-          f << simulation.print_recording
+          f << simulation.recording_csv_string
         end
       end
     end
 
     def plot_recording
-      return nil unless @workspace.simulations.values[-1]
+      # Get current simulation
+      return nil unless sim = @workspace.simulations.values[-1]
+      # Simulation time
+      ᴛ = simulation.target_time
+      # Decide about features to plot
+      feature_labels = sim.pp
+      feature_time_series = feature_labels.map.with_index { |flabel, i|
+        sim.recording.map{ |key, val| [ key, val[i] ] }.transpose
+      }
+      
+      gnuplot_recording( ᴛ, feature_labels, feature_time_series )
+    end
+
+    def gnuplot_recording( target_time, feature_labels, feature_time_series )
+      time_series_labels = feature_labels.dup
+      time_series = feature_time_series.dup
+
       Gnuplot.open do |gp|
         Gnuplot::Plot.new( gp ) do |plot|
-          plot.xrange "[-0:30]"
-          plot.title "Recording Plot Example"
+          plot.xrange "[-0:#{target_time}]"
+          plot.title "Recording Plot"
           plot.ylabel "marking"
-          plot.xlabel "time"
-          
-          titles = workspace.simulation.pp
-          (0...titles.size).each{ |i|
-            to_plot = @workspace.simulations.values[-1].recording.map{ |key, val| [key, val[i]] }.transpose
-            plot.data << Gnuplot::DataSet.new( to_plot ) do |ds|
-              ds.with = "linespoints"
-              ds.title = titles.shift
+          plot.xlabel "time [s]"
+
+          time_series_labels.zip( time_series ).each { |label, series|
+            plot.data << Gnuplot::DataSet.new( series ) do |data_series|
+              data_series.with = "linespoints"
+              data_series.title = label
             end
           }
         end

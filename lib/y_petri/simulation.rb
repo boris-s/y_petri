@@ -20,7 +20,19 @@ module YPetri
 
     # LATER: Mathods for timeless simulation.
 
-    def print_recording
+    def settings; nil end
+    alias :simulation_settings :settings
+
+    def inspect
+      "YPetri::Simulation[ #{places.size} places, " +
+        "#{transitions.size} transitions, object id: #{object_id} ]"
+    end
+
+    def to_s
+      "Simulation[ #{pp.size} pp, #{tt.size} tt ]"
+    end
+
+    def recording_csv_string
       CSV.generate do |csv|
         @recording.keys.zip( @recording.values ).map{ |a, b| [ a ] + b.to_a }
           .each{ |line| csv << line }

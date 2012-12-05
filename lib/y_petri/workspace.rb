@@ -165,7 +165,7 @@ module YPetri
       else raise "unexpected argument class: #{o}" end
     end      
 
-    # Access to the workspace's nets. If not net is specified in the argument,
+    # Access to the workspace's nets. If net is not specified in the argument,
     # default (top) net of the workspace is returned.
     def net arg=ℒ()
       return @nets.first if arg.ℓ?

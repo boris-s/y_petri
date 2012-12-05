@@ -10,6 +10,26 @@ module YPetri
     attr_accessor :sampling_period
     attr_accessor :target_time
 
+    def sampling_rate; 1 / sampling_period end
+
+    def time_range; initial_time..target_time end
+
+    def settings
+      { step_size: step_size,
+        sampling_period: sampling_period,
+        time_range: time_range }
+    end
+
+    def inspect
+      "YPetri::TimedSimulation[ #{pp.size} places, #{tt.size} " +
+        "transitions, time: #{time}, object id: #{object_id} ]"
+    end
+
+    def to_s
+      "TimedSimulation[ #{pp.size} places, #{tt.size} transitions, " +
+        "time: #{time} ]"
+    end
+        
     # Exposing time
     attr_reader :time
 

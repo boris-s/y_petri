@@ -28,7 +28,7 @@ include YSupport
 
 module YPetri
   DEFAULT_SIMULATION_SETTINGS =
-    { step_size: 1, sampling_period: 10, target_time: 60 }
+    { step_size: 0.1, sampling_period: 5, target_time: 60 }
 
   def self.included( receiver )
     $YPetriManipulatorInstance = ::YPetri::Manipulator.new
@@ -42,7 +42,9 @@ module YPetri
            :net, :simulation, :ssc, :cc, :imc,
            :place, :transition, :p, :t,
            :clamp, :initial_marking, :im,
-           :set_step, :set_sampling, :set_time,
+           :set_step, :set_step_size,
+           :set_sampling,
+           :set_time, :set_target_time,
            :run!, :plot_recording, :new_timed_simulation,
            to: :$YPetriManipulatorInstance
 

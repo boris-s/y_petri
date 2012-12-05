@@ -1,17 +1,32 @@
 #encoding: utf-8
 
+
 module YPetri
   class Transition
+    BASIC_TRANSITION_TYPES = {
+      "ts" => "timeless nonstoichiometric transition",
+      "tS" => "timeless stoichiometric transition",
+      "Tsr" => "timed rateless nonstoichiometric transition",
+      "TSr" => "timed rateless stoichiometric transition",
+      "sR" => "nostoichiometric transition with rate",
+      "SR" => "stoichiometric transition with rate"
+    }
+
     include ConstMagicErsatz
 
-    # Domain of a transition is a collection of places whose marking directly
-    # affects its action.
+    # Transition domain: Places whose marking directly affect its action.
     attr_reader :domain
     alias :domain_arcs :domain
     alias :domain_places :domain
     alias :upstream :domain
     alias :upstream_arcs :domain
     alias :upstream_places :domain
+    def domain_pp; domain.map &:name end
+    alias :upstream_pp :domain_pp
+    def domain_pp_sym; domain_pp.map &:to_sym end
+    alias :upstream_pp_sym :domain_pp_sym
+    alias :domain_ppß :domain_pp_sym
+    alias :ustream_ppß :domain_pp_sym
 
     # "Action arcs" is a collection of places, whose marking is directly
     # changed by firing the transition.
@@ -22,10 +37,19 @@ module YPetri
     alias :downstream_arcs :codomain
     alias :downstream_places :codomain
     alias :action_arcs :codomain
+    def codomain_pp; codomain.map &:name end
+    alias :downstream_pp :codomain_pp
+    def codomain_pp_sym; codomain_pp.map &:to_sym end
+    alias :downstream_pp_sym :codomain_pp_sym
+    alias :codomain_ppß :codomain_pp_sym
+    alias :downstream_ppß :codomain_pp_sym
 
     # #arcs returns union of action arcs and test arcs.
     def arcs; domain | codomain end
     alias :connectivity :arcs
+    def cc; connectivity.map &:name end
+    def cc_sym; cc.map &:to_sym end
+    alias :ccß :cc_sym
 
     # Is the transition stoichiometric?
     def stoichiometric?; @stoichiometric end
@@ -72,6 +96,19 @@ module YPetri
     def functional?; @functional end
     def functionless?; not functional? end
 
+    # Reports transition membership in one of 6 basic types of YPetri transitions:
+    # 1. ts ..... timeless nonstoichiometric
+    # 2. tS ..... timeless stoichiometric
+    # 3. Tsr .... timed rateless nonstoichiometric
+    # 4. TSr .... timed rateless stoichiometric
+    # 5. sR ..... nostoichiometric with rate
+    # 6. SR ..... stoichiometric with rate
+    def basic_type
+      if has_rate? then stoichiometric? ? "SR" : "sR"
+      elsif timed? then stoichiometric? ? "TSr" : "Tsr"
+      else stoichiometric? ? "tS" : "ts" end
+    end
+
     # Is it assignment transition?
     # A transition can be specified to have 'assignment action', in which
     # case it completely replaces codomain marking with the objects resulting
@@ -94,8 +131,8 @@ module YPetri
     def initialize *aa
       check_in_arguments *aa     # the big work of checking in the arguments
       # Inform the relevant places that they have been connected:
-      upstream.each{ |place| place.register_downstream_transition( self ) }
-      downstream.each{ |place| place.register_upstream_transition( self ) }
+      upstream.each{ |place| place.register_downstream_transition self }
+      downstream.each{ |place| place.register_upstream_transition self }
       # transitions initialize uncocked:
       @cocked = false
     end
@@ -107,22 +144,24 @@ module YPetri
     def codomain_marking; codomain.map &:marking end
 
     # Result of the operating function, regardless of the enabling status.
-    def action( delta_t=nil )
-      # looks awkward, as I tried to think about speed a bit here.
+    def action( Δt=nil )
+      raise AE, "Δtime argument required for timed transitions!" if
+        timed? and Δt.nil?
+      # the code here looks awkward, because I was trying to speed it up
       if has_rate? then
         if stoichiometric? then
           rate = rate_closure.( *domain_marking )
-          stoichiometry.map{ |coeff| rate * coeff * delta_t }
+          stoichiometry.map{ |coeff| rate * coeff * Δt }
         else # assuming correct return value arity from the rate closure:
-          rate_closure.( *domain_marking ).map{ |e| component * delta_t }
+          rate_closure.( *domain_marking ).map{ |e| component * Δt }
         end
       else # rateless
         if timed? then
           if stoichiometric? then
-            rslt = action_closure.( delta_t, *domain_marking )
+            rslt = action_closure.( Δt, *domain_marking )
             stoichiometry.map{ |coeff| rslt * coeff }
           else
-            action_closure.( delta_t, *domain_marking ) # caveat result arity!
+            action_closure.( Δt, *domain_marking ) # caveat result arity!
           end
         else # timeless
           if stoichiometric? then
@@ -140,17 +179,18 @@ module YPetri
 
     # Changes to the marking of codomain exactly as they would happen if
     # #fire was called right now.
-    def action_after_feasibility_check( delta_t=nil )
-      act = Array( action( delta_t ) )
+    def action_after_feasibility_check( Δt=nil )
+      raise AE, "Δtime argument required for timed transitions!" if
+        timed? and Δt.nil?
+      act = Array( action Δt )
       # Assignment actions are always feasible - no need to check:
       return act if assignment?
       # check if the marking after the action would still be positive
-      enabled = codomain.zip( act ).all?{ |place, change|
-        place.marking >= -change }
-      if enabled then act
-      else
-        raise "firing of #{self}" +
-          "#{ delta_t ? ' with delta time %s' % delta_t : '' } " +
+      enabled = codomain
+        .zip( act )
+        .all?{ |place, change| place.marking.to_f >= -change.to_f }
+      if enabled then act else
+        raise "firing of #{self}#{ Δt ? ' with Δtime %s' % Δt : '' } " +
           "would result in negative marking"
         zero_action
       end
@@ -166,20 +206,26 @@ module YPetri
     # If #fire method of a transition applies its action (token adding/taking)
     # on its domain, depending on codomain marking. Time step is expected as
     # argument if the transition is timed.
-    def fire( delta_t=nil )
+    def fire( Δt=nil )
+      raise AE, "Δtime argument required for timed transitions!" if
+        timed? and Δt.nil?
       return false unless cocked?
       uncock
-      fire!
+      fire! Δt
       return true
     end
 
     # #fire! (with bang) fires the transition without checking cocked status.
-    def fire!( delta_t=nil )
+    def fire!( Δt=nil )
+      raise AE, "Δtime argument required for timed transitions!" if
+        timed? and Δt.nil?
       if assignment_action? then
-        codomain.zip( Array action( delta_t ) )
+        codomain
+          .zip( Array action( Δt ) )
           .each{ |place, new_marking| place.marking = new_marking }
       else
-        codomain.zip( action_after_feasibility_check( delta_t ) )
+        codomain
+          .zip( action_after_feasibility_check( Δt ) )
           .each{ |place, change| place.add change }
       end
       return nil
@@ -189,9 +235,12 @@ module YPetri
     # Sanity of execution is ensured by Petri's notion of transitions being
     # "enabled" if and only if the intended action can immediately take
     # place without getting places into forbidden state (negative marking).
-    def enabled?( delta_t=nil )
-      codomain.zip( action( delta_t ) ).all?{ |place, change|
-        place.marking >= -change }
+    def enabled?( Δt=nil )
+      raise AE, "Δtime argument required for timed transitions!" if
+        timed? and Δt.nil?
+      codomain
+        .zip( action Δt )
+        .all?{ |place, change| place.marking.to_f >= -change.to_f }
     end
 
     # Recursive firing of upstream net portion:
@@ -238,10 +287,18 @@ module YPetri
     end
 
     # #inspect
-    def inspect; "YPetri::Transition instance id %s" % object_id end
+    def inspect
+      "YPetri::Transition[ #{name.nil? ? '' : name + ': ' }" +
+        "#{BASIC_TRANSITION_TYPES[ basic_type ]}" +
+        "#{assignment_action? ? ' with assignment action' : ''}" +
+        "#{name.nil? ? ', object_id: %s' % object_id : ''} ]"
+    end
 
     # #to_s
-    def to_s; "transition [ %s ]" % object_id end
+    def to_s
+      "#{name.nil? ? 'Transition' : name }[ #{basic_type}%s ]" %
+        if assignment_action? then " A" else "" end
+    end
     
     private
 
@@ -292,7 +349,7 @@ module YPetri
         case oo[:stoichiometry]
         when Hash then # split that hash into codomain and stoichiometry
           @codomain, @stoichiometry =
-            oo[:stoichiometry].ew◉ [[], []] do |pair, memo|
+            oo[:stoichiometry].each_with_object [[], []] do |pair, memo|
               memo[0] << ::YPetri::Place( pair[0] )
               memo[1] << pair[1]
             end
@@ -431,7 +488,7 @@ module YPetri
         @assignment_action = false # no assignment action
         
         case tentative_rate = oo[:rate] # let's look at what we've received
-        when Numeric then # we received a number
+        when ~:to_f then # we received a number
           # Barring the caller's error, stoichiometry must have been supplied,
           # unless, by chance, codomain consists of only one place:
           if not stoichiometric? then
@@ -455,6 +512,7 @@ module YPetri
             end
             
           else # the transition is stoichiometric
+
             # In this case, mass action law will be used to derive the rate
             # closure from the number supplied as :rate. The transition is still
             # considered 'functional':
@@ -463,11 +521,11 @@ module YPetri
               markings.zip( nonpositive_coeffs ).map { |m, coeff|
                 next m if coeff == 0 # zero coeffs taken to indicate simple factors
                 coeff == -1 ? m : m ** -coeff # otherwise normal mass action law:
-              }.reduce( :* ) * tentative_rate # finally, take product * rate
+              }.reduce( tentative_rate, :* ) # finally, take product * rate
             }
             # stoichiometric transition, so no need to check if domain_missing
           end
-        when Proc then # transitions with :rate specified as Proc object
+        when ~:call then # transitions with :rate specified as Proc object
           @rate_closure = tentative_rate # a Proc gets admitted right in
           
           # But we do have to be concerned about domain_missing being true. If
@@ -485,8 +543,19 @@ module YPetri
             else # no good deduction of caller's intent possible:
               raise AE, msg.chop + ", domain should be given explicitly."
             end
-          else # domain not missing, the arity must match the domain:
-            raise AE, msg unless @rate_closure.arity == domain.size
+          else
+            # domain not missing, the arity must match the domain or be zero
+            # (for fixed rate transitions)
+            if @rate_closure.lambda? then
+              if @rate_closure.arity != domain.size then
+                raise AE, msg.chop + ", domain size is #{domain.size}"
+              end
+            else
+              unless @rate_closure.arity.abs <= domain.size
+                raise AE, msg.chop +
+                  ", arity more than domain size (#{domain.size})"
+              end
+            end
           end
           
         else raise AE, "Object of unexpected class " +
