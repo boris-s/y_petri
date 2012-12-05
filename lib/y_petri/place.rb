@@ -1,6 +1,6 @@
 #encoding: utf-8
 
-# A Petri net place.
+# This class represents Petri net places.
 
 module YPetri
   class Place
@@ -17,25 +17,27 @@ module YPetri
 
     attr_reader :upstream_arcs # Transitions that add/remove tokens from here.
     alias :upstream_transitions :upstream_arcs
-    # Greek digamma ϝ alias is mnemonic for "function" in the spreadsheet sense,
-    # that is, collection of transitions affecting this place.
+    # Greek digamma ϝ alias is mnemonic for "function" in the spreadsheet sense:
+    # That is, collection of transitions affecting this place.
     alias :ϝ :upstream_arcs
 
     attr_reader :downstream_arcs # Transitions that depend on this place.
     alias :downstream_transitions :downstream_arcs
 
-    # #inspect
-    def inspect
-      nm, d, q = instance_description_strings
-      "YPetri::Place[ #{USE_QUANTUM ? nm + d + q : nm + d} ]"
-    end
-
-    # #to_s
-    def to_s
-      n, m = name, marking
-      "#{n.nil? ? 'Place' : n}[ #{m.nil? ? 'nil' : m} ]"
-    end
-
+    # Named parameters supplied upon place initialization may include:
+    # 
+    # * :marking (alias :m)
+    # * :default_marking (alias :dflt_m or :m!)
+    # * :quantum (alias :q)
+    # 
+    # While 'marking' is a standard Petri net concept, and default marking
+    # is self-explanatory, place quantum is the concept by which YPetri
+    # reconciles with letter H in the abbreviation HFPN. YPetri places are
+    # always considered discrete, and it is true insomuch, as their marking
+    # is represented by a finite-digit number. The place quantum feature is
+    # not supported yet, but in future, it should enable smooth transition
+    # between continuous and stochastic modes of simulation.
+    # 
     def initialize *aa; oo = aa.extract_options!
       # set domain and codomain of the place empty
       @upstream_arcs = []
@@ -45,14 +47,14 @@ module YPetri
       @marking = oo.may_have( :marking, syn!: :m ) || @default_marking
     end
 
-    # Union of action and test arcs
+    # Returns an array of all the transitions connected to the place.
     def arcs
       upstream_arcs | downstream_arcs
     end
     alias :connectivity :arcs
 
-    # Precedents returns union of domains of the transitions associated
-    # with the action arcs of this place.
+    # Returns the union of domains of the transitions associated
+    # with the upstream arcs of this place.
     def precedents
       upstream_transitions
         .map( &:upstream_places )
@@ -60,8 +62,8 @@ module YPetri
     end
     alias :upstream_places :precedents
 
-    # Dependents returns union of codomains of the transitions associated
-    # with the test arcs of this place.
+    # Returns the union of codomains of the transitions associated
+    # with the downstream arcs originating from this place.
     def dependents
       downstream_transitions
         .map( &:downstream_places )
@@ -69,32 +71,24 @@ module YPetri
     end
     alias :downstream_places :dependents
 
-    # Adding tokens
+    # Adds tokens to the place.
     def add( amount_of_tokens )
       @marking += amount_of_tokens
     end
 
-    # Subtracting tokens
+    # Subtracts tokens from the place.
     def subtract( amount_of_tokens)
       @marking -= amount_of_tokens
     end
 
-    # Resets marking back to default marking
+    # Resets place marking back to its default marking.
     def reset_marking
       @marking = @default_marking
     end
 
-    # Registering upstream transition
-    def register_upstream_transition( transition )
-      @upstream_arcs << transition
-    end
-
-    # Registering downstream transition
-    def register_downstream_transition( transition )
-      @downstream_arcs << transition
-    end
-
-    # Cocking-independent firing of upstream transition
+    # Firing of upstream transitions regardless of cocking. (To #fire
+    # transitions, they have to be cocked with #cock method; the firing
+    # methods with exclamation marks disregard cocking.)
     def fire_upstream!
       @upstream_arcs.each &:fire!
     end
@@ -108,7 +102,9 @@ module YPetri
     end
     alias :fire_upstream! :fire_upstream_recursively
 
-    # Cock-independent firing of downstream transitions
+    # Firing of downstream transitions regardless of cocking. (To #fire
+    # transitions, they have to be cocked with #cock method; the firing
+    # methods with exclamation marks disregard cocking.)
     def fire_downstream!; @downstream_arcs.each &:fire! end
 
     # Fires whole downstream portion of the net.
@@ -119,7 +115,25 @@ module YPetri
     end
     alias :fire_downstream! :fire_downstream_recursively
 
+    # Generates a string describing the place.
+    def to_s
+      n, m = name, marking
+      "#{n.nil? ? 'Place' : n}[ #{m.nil? ? 'nil' : m} ]"
+    end
+
     private
+
+    # Makes the place notice an upstream transition;
+    # to be called from the connecting transitions.
+    def register_upstream_transition( transition )
+      @upstream_arcs << transition
+    end
+
+    # Makes the place notice a downstream transition;
+    # to be called from the connecting transitions.
+    def register_downstream_transition( transition )
+      @downstream_arcs << transition
+    end
 
     def instance_description_strings
       m, n, d, q = marking, name, default_marking, quantum
@@ -130,4 +144,9 @@ module YPetri
       return nmς, dς, qς
     end
   end # class Place
+  
+  def inspect
+    nm, d, q = instance_description_strings
+    "YPetri::Place[ #{USE_QUANTUM ? nm + d + q : nm + d} ]"
+  end
 end # module YPetri

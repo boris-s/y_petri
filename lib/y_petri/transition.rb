@@ -131,8 +131,8 @@ module YPetri
     def initialize *aa
       check_in_arguments *aa     # the big work of checking in the arguments
       # Inform the relevant places that they have been connected:
-      upstream.each{ |place| place.register_downstream_transition self }
-      downstream.each{ |place| place.register_upstream_transition self }
+      upstream.each{ |place| place.send :register_downstream_transition, self }
+      downstream.each{ |place| place.send :register_upstream_transition, self }
       # transitions initialize uncocked:
       @cocked = false
     end

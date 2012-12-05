@@ -51,8 +51,6 @@ describe ::YPetri::Place do
   end
 
   it "should respond to register and fire conn. transitions methods" do
-    assert_respond_to @p, :register_upstream_transition
-    assert_respond_to @p, :register_downstream_transition
     assert_respond_to @p, :fire_upstream!
     assert_respond_to @p, :fire_downstream!
     assert_respond_to @p, :fire_upstream_recursively
