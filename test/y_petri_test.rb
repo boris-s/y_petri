@@ -329,8 +329,6 @@ describe "upstream and downstream reference mτs of places and transitions" do
 
   describe "Place" do
     it "should have #register_ustream/downstream_transition methods" do
-      @a.must_respond_to :register_upstream_transition
-      @a.must_respond_to :register_downstream_transition
       @t1 = @tç.new s: {}
       @a.instance_variable_get( :@upstream_arcs ).must_equal []
       @a.instance_variable_get( :@downstream_arcs ).must_equal []
