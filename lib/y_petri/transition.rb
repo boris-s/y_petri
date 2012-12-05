@@ -1,6 +1,97 @@
 #encoding: utf-8
 
-
+# Represents a Petri net transition. YPetri transitions come in 6
+# basic types
+#
+# === Basic transition types
+# 
+# * <b>ts</b> – timeless nonstoichiometric
+# * <b>tS</b> – timeless stoichiometric
+# * <b>Tsr</b> – timed rateless nonstoichiometric
+# * <b>TSr</b> – timed rateless stoichiometric
+# * <b>sR</b> – nostoichiometric with rate
+# * <b>SR</b> – stoichiometric with rate
+#
+# These 6 kinds of YPetri transitions correspond to the vertices
+# of a cube with 3 dimensions:
+# 
+# - stoichiometric (S) / nonstoichiometric (s)
+# - timed (T) / timeless (t)
+# - having rate (R) / not having rate (r)
+# 
+# Since transitions with rate are always timed, and vice-versa, timeless
+# transitions cannot have rate, there are only 6 permissible combinations,
+# mentioned above.
+#
+# === Domain and codomin
+#
+# Each transition has a domain, or 'upstream places': A collection of places
+# whose marking directly affects the transition's operation. Also, each
+# transition has a codomain, or 'downstream places': A collection of places,
+# whose marking is directly affected by the transition's operation.
+#
+# === Action and action vector
+#
+# Regardless of the type, every transition has <em>action</em>:
+# A prescription of how the transition changes the marking of its codomain
+# when it fires. With respect to the transition's codomain, we can also
+# talk about <em>action vector</em>. For non-stoichiometric transitions,
+# the action vector is directly the output of the action closure or rate
+# closure multiplied by Δtime, while for stoichiometric transitions, this
+# needs to be additionaly multiplied by the transitions stoichiometric
+# vector. Now we are finally equipped to talk about the exact meaning of
+# 3 basic transition properties.
+#
+# === Meaning of the 3 basic transition properties
+#
+# ==== Stoichiometric / non-stoichiometric
+# * For stoichiometric transitions:
+#    - Rate vector is computed as rate * stoichiometry vector, or
+#    - Δ vector is computed a action * stoichometry vector
+# * For non-stoichiometric transitions:
+#    - Rate vector is obtained as the rate closure result, or
+#    - action vector is obtained as the action closure result.
+# 
+# Conclusion: stoichiometricity distinguishes *need to multiply the
+# rate/action closure result by stoichiometry*.
+#
+# ==== Having / not having rate
+# * For transitions with rate, the closure result has to be
+# multiplied by the time step duration (Δt) to get the action.
+# * For rateless transitions, the closure result is used as is.
+#
+# Conclusion: has_rate? distinguishes *need to multiply the closure
+# result by delta time* - differentiability of action by time.
+#
+# ==== Timed / Timeless
+# * For timed transitions, action is time-dependent. Transitions with
+# rate are thus always timed. In rateless transitions, timedness means
+# that the action closure expects time step length (delta_t) as its first
+# argument - its arity is thus codomain size + 1. 
+# * For timeless transitions, action is time-independent. Timeless
+# transitions are necessarily also rateless. Arity of the action closure
+# is expected to match the domain size.
+# 
+# Conclusion: Transitions with rate are always timed. In rateless
+# transitions, timedness distinguishes the need to supply time step
+# duration as the first argument to the action closure.
+#
+# === Other transition types
+#
+# ==== Assignment transitions
+# Named argument :assignment_action set to true indicates that the
+# transitions acts by replacing the object stored as place marking by
+# the object supplied by the transition. (Same as in with spreadsheet
+# functions.) For numeric types, same effect can be achieved by subtracting
+# the old number from the place and subsequently adding the new value to it.
+#
+# ==== Functional / Functionless transitions
+# Original Petri net definition does not talk about transition "functions",
+# but it more or less assumes the stoichiometric vector. So in YPetri,
+# stoichiometric transitions with no action / rate closure specified become
+# functionless transitions as per Carl Adam Petri.
+# 
+# 
 module YPetri
   class Transition
     BASIC_TRANSITION_TYPES = {
@@ -14,7 +105,9 @@ module YPetri
 
     include ConstMagicErsatz
 
-    # Transition domain: Places whose marking directly affect its action.
+    # Domain, or 'upstream arcs', is a collection of places, whose marking
+    # directly affects the transition's action.
+    # 
     attr_reader :domain
     alias :domain_arcs :domain
     alias :domain_places :domain
@@ -28,8 +121,9 @@ module YPetri
     alias :domain_ppß :domain_pp_sym
     alias :ustream_ppß :domain_pp_sym
 
-    # "Action arcs" is a collection of places, whose marking is directly
-    # changed by firing the transition.
+    # Codomain, 'downstream arcs', or 'action arcs' is a collection of places,
+    # whose marking is directly changed by firing the trinsition.
+    # 
     attr_reader :codomain
     alias :codomain_arcs :codomain
     alias :codomain_places :codomain
@@ -37,32 +131,62 @@ module YPetri
     alias :downstream_arcs :codomain
     alias :downstream_places :codomain
     alias :action_arcs :codomain
+
+    # Returns codomain as names.
+    # 
     def codomain_pp; codomain.map &:name end
     alias :downstream_pp :codomain_pp
+
+    # Returns codomain as name symbols.
+    # 
     def codomain_pp_sym; codomain_pp.map &:to_sym end
     alias :downstream_pp_sym :codomain_pp_sym
     alias :codomain_ppß :codomain_pp_sym
     alias :downstream_ppß :codomain_pp_sym
 
-    # #arcs returns union of action arcs and test arcs.
+    # Returns the union of action arcs and test arcs.
+    # 
     def arcs; domain | codomain end
     alias :connectivity :arcs
+
+    # Returns connectivity as names.
+    # 
     def cc; connectivity.map &:name end
+
+    # Returns connectivity as name symbols.
+    # 
     def cc_sym; cc.map &:to_sym end
     alias :ccß :cc_sym
 
     # Is the transition stoichiometric?
+    # 
     def stoichiometric?; @stoichiometric end
     alias :s? :stoichiometric?
+
+    # Is the transition nonstoichiometric? (Opposite of #stoichiometric?)
+    # 
     def nonstoichiometric?; not stoichiometric? end
 
-    # Stoichiometry (implies that the transition is stoichiometric)
+    # Stoichiometry (implies that the transition is stoichiometric).
+    # 
     attr_reader :stoichiometry
+
+    # Stoichiometry as a hash of pairs:
+    # { codomain_place_instance => stoichiometric_coefficient }
+    # 
     def stoichio; Hash[ codomain.zip( @stoichiometry ) ] end
+
+    # Stoichiometry as a hash of pairs:
+    # { codomain_place_name_symbol => stoichiometric_coefficient }
+    # 
     def s; stoichio.with_keys { |k| k.name.to_sym } end
 
     # Does the transition have rate?
+    # 
     def has_rate?; @has_rate end
+
+    # Is the transition rateless?
+    # 
     def rateless?; not has_rate? end
 
     # The term 'flux' (meaning flow) is associated with continuous transitions,
@@ -71,7 +195,9 @@ module YPetri
     # computation is the responsibility of the simulation method, considering
     # current marking of the transition's connectivity and quanta of its
     # codomain. To emphasize unity of 'flux' and 'propensity', term 'rate' is
-    # used to represent both of them:
+    # used to represent both of them. Rate closure input arguments must
+    # correspond to the domain places.
+    # 
     attr_reader :rate_closure
     alias :rate :rate_closure
     alias :flux_closure :rate_closure
@@ -79,21 +205,32 @@ module YPetri
     alias :propensity_closure :rate_closure
     alias :propensity :rate_closure
 
-    # For rateless transition, action closure must be present:
+    # For rateless transition, action closure must be present. Action closure
+    # input arguments must correspond to the domain places, and for timed
+    # transitions, the first argument of the action closure must be Δtime.
+    # 
     attr_reader :action_closure
     alias :action :action_closure
 
     # Does the transition's action depend on delta time?
+    # 
     def timed?; @timed end
+
+    # Is the transition timeless? (Opposite of #timed?)
+    # 
     def timeless?; not timed? end
 
     # Is the transition functional?
-    # Explanation: If rate or action closure is supplied, a transition is alway
+    # Explanation: If rate or action closure is supplied, a transition is always
     # considered 'functional'. Otherwise, it is considered not 'functional'.
     # Note that even transitions that are not functional still have standard
     # action acc. to Petri's definition. Also note that a timed transition is
     # necessarily functional.
+    # 
     def functional?; @functional end
+
+    # Opposite of #functional?
+    # 
     def functionless?; not functional? end
 
     # Reports transition membership in one of 6 basic types of YPetri transitions:
@@ -103,6 +240,7 @@ module YPetri
     # 4. TSr .... timed rateless stoichiometric
     # 5. sR ..... nostoichiometric with rate
     # 6. SR ..... stoichiometric with rate
+    # 
     def basic_type
       if has_rate? then stoichiometric? ? "SR" : "sR"
       elsif timed? then stoichiometric? ? "TSr" : "Tsr"
@@ -119,13 +257,18 @@ module YPetri
     # is a matter of necessity only when codomain marking involves objects
     # not supporting subtraction/addition (which is out of the scope of Petri's
     # original specification anyway.)
+    # 
     def assignment_action?; @assignment_action end
     alias :assignment? :assignment_action?
 
     # Is the transition cocked?
     # The transition has to be cocked before #fire method can be called
     # successfully. (Can be overriden using #fire! method.)
+    # 
     def cocked?; @cocked end
+
+    # Opposite of #cocked?
+    # 
     def uncocked?; not cocked? end
 
     def initialize *aa
@@ -137,13 +280,16 @@ module YPetri
       @cocked = false
     end
 
-    # Marking of the domain places
+    # Marking of the domain places.
+    # 
     def domain_marking; domain.map &:marking end
 
-    # Marking of the codomain places
+    # Marking of the codomain places.
+    # 
     def codomain_marking; codomain.map &:marking end
 
     # Result of the operating function, regardless of the enabling status.
+    # 
     def action( Δt=nil )
       raise AE, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
@@ -197,15 +343,21 @@ module YPetri
       # LATER: This use of #zip here should be avoided for speed
     end
 
-    # Allows #fire method (#fire! is self-cocking)
+    # Allows #fire method to succeed. (#fire! disregards cocking.)
+    # 
     def cock; @cocked = true end
     alias :cock! :cock
+
+    # Uncocks a cocked transition without firing it.
+    # 
     def uncock; @cocked = false end
     alias :uncock! :uncock
 
     # If #fire method of a transition applies its action (token adding/taking)
     # on its domain, depending on codomain marking. Time step is expected as
-    # argument if the transition is timed.
+    # argument if the transition is timed. Only works if the transition has
+    # been cocked and causes the transition to uncock.
+    # 
     def fire( Δt=nil )
       raise AE, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
@@ -215,7 +367,8 @@ module YPetri
       return true
     end
 
-    # #fire! (with bang) fires the transition without checking cocked status.
+    # #fire! (with bang) fires the transition regardless of cocked status.
+    # 
     def fire!( Δt=nil )
       raise AE, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
@@ -235,6 +388,7 @@ module YPetri
     # Sanity of execution is ensured by Petri's notion of transitions being
     # "enabled" if and only if the intended action can immediately take
     # place without getting places into forbidden state (negative marking).
+    # 
     def enabled?( Δt=nil )
       raise AE, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
@@ -243,7 +397,8 @@ module YPetri
         .all?{ |place, change| place.marking.to_f >= -change.to_f }
     end
 
-    # Recursive firing of upstream net portion:
+    # Recursive firing of the upstream net portion.
+    # 
     def fire_upstream_recursively
       return false unless cocked?
       uncock
@@ -252,7 +407,8 @@ module YPetri
       return true
     end
 
-    # Recursive firing of downstream net portion:
+    # Recursive firing of the downstream net portion.
+    # 
     def fire_downstream_recursively
       return false unless cocked?
       uncock
@@ -261,32 +417,41 @@ module YPetri
       return true
     end
 
-    def force_disabled
-      # LATER
-    end
-    alias :disable! :force_disabled
+    # def lock
+    #   # LATER
+    # end
+    # alias :disable! :force_disabled
 
-    def remove_force_disabled
-      # LATER
-    end
-    alias :undisable! :remove_force_disabled
+    # def unlock
+    #   # LATER
+    # end
+    # alias :undisable! :remove_force_disabled
 
-    def force_enabled!
-      # LATER
-    end
+    # def force_enabled!( boolean )
+    #   # true - the transition is always regarded as enabled
+    #   # false - the status is removed
+    #   # LATER
+    # end
 
-    def remove_force_enabled
-      # LATER
-    end
+    # def clamp
+    #   # LATER
+    # end
 
-    def reset!
-      uncock
-      remove_force_disabled
-      remove_force_enabled
-      return self
-    end
+    # def remove_clamp
+    #   # LATER
+    # end
 
-    # #inspect
+    # def reset!
+    #   uncock
+    #   remove_force_disabled
+    #   remove_force_enabled
+    #   remove_clamp
+    #   return self
+    # end
+
+    # A very long description of how to prescribe transitions will be at this
+    # place.
+    # 
     def inspect
       "YPetri::Transition[ #{name.nil? ? '' : name + ': ' }" +
         "#{BASIC_TRANSITION_TYPES[ basic_type ]}" +
@@ -294,7 +459,8 @@ module YPetri
         "#{name.nil? ? ', object_id: %s' % object_id : ''} ]"
     end
 
-    # #to_s
+    # Generates a string describing the transition somewhat.
+    # 
     def to_s
       "#{name.nil? ? 'Transition' : name }[ #{basic_type}%s ]" %
         if assignment_action? then " A" else "" end
@@ -332,7 +498,7 @@ module YPetri
       # Let' see whether stoichiometric vector was given:
       @stoichiometric = oo.has? :stoichiometry, syn!: [ :stoichio, :s ]
 
-      # Let's note whether codomain was given as separate argument:
+      # Let's note whether the codomain was given as a separate argument:
       codomain_argument_given =
         oo.has? :codomain, syn!: [ :codomain_arcs,
                                    :codomain_places,
