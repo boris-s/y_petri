@@ -627,7 +627,7 @@ describe ::YPetri::Simulation do
     @s.im.must_equal( { P2: 2, P3: 3, P4: 4 } )
     @s.initial_marking_array.must_equal [ 2, 3, 4 ]
     @s.initial_marking_vector.must_equal Matrix[[2], [3], [4]]
-    @s.initial_marking_vector.must_equal @s.i𝖒
+    @s.initial_marking_vector.must_equal @s.iᴍ
   end
 
   it "exposes marking (simulation state)" do
@@ -637,7 +637,7 @@ describe ::YPetri::Simulation do
     @s.m.must_equal( { P2: 2, P3: 3, P4: 4 } )
     @s.m_free.must_equal @s.m
     @s.marking_vector.must_equal Matrix[[2], [3], [4]]
-    [ @s.𝖒, @s.marking_vector_of_free_places, @s.𝖒_free ]
+    [ @s.ᴍ, @s.marking_vector_of_free_places, @s.ᴍ_free ]
       .each &[:must_equal, @s.marking_vector]
   end
   
@@ -646,7 +646,7 @@ describe ::YPetri::Simulation do
     @s.marking_of_clamped_places.must_equal( { @p1 => 2, @p5 => 2 } )
     @s.m_clamped.must_equal( { P1: 2, P5: 2 } )
     @s.marking_vector_of_clamped_places.must_equal Matrix[[2], [2]]
-    @s.𝖒_clamped.must_equal @s.marking_vector_of_clamped_places
+    @s.ᴍ_clamped.must_equal @s.marking_vector_of_clamped_places
   end
 
   it "exposes marking of all places (with capitalized M)" do
@@ -658,8 +658,8 @@ describe ::YPetri::Simulation do
     @s.m!.must_equal @s.m_all
     @s.marking_vector_of_all_places.must_equal Matrix[[2], [2], [3], [4], [2]]
     @s.marking_vector!.must_equal @s.marking_vector_of_all_places
-    @s.𝖒_all.must_equal @s.marking_vector!
-    @s.𝖒!.must_equal @s.marking_vector!
+    @s.ᴍ_all.must_equal @s.marking_vector!
+    @s.ᴍ!.must_equal @s.marking_vector!
   end
   
   it "has #create_stoichiometry_matrix_for" do
@@ -667,22 +667,22 @@ describe ::YPetri::Simulation do
     assert_equal Matrix[[-1], [0], [1]], @s.create_stoichiometry_matrix_for( [@t1] )
     x = Matrix[[-1, -1], [0, 0], [1, 1]]
     x.must_equal @s.create_stoichiometry_matrix_for( [@t1, @t3] )
-    x.must_equal( @s.create_𝕾_for( [@t1, @t3] ) )
-    @s.𝕾_for!( [] ).must_equal Matrix.empty( 5, 0 )
+    x.must_equal( @s.create_S_for( [@t1, @t3] ) )
+    @s.S_for!( [] ).must_equal Matrix.empty( 5, 0 )
   end
 
   it "has stoichiometry matrix for 3. timeless stoichiometric transitions" do
     @s.stoichiometry_matrix_for_timeless_stoichiometric_transitions
       .must_equal Matrix.empty( 3, 0 )
     @s.stoichiometry_matrix_for_tS_transitions.must_equal Matrix.empty( 3, 0 )
-    @s.𝕾_for_tS_transitions.must_equal Matrix.empty( 3, 0 )
+    @s.S_for_tS_transitions.must_equal Matrix.empty( 3, 0 )
   end
 
   it "has stoichiometry matrix for 4. timed rateless stoichiometric transitions" do
     @s.stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
       .must_equal Matrix.empty( 3, 0 )
     @s.stoichiometry_matrix_for_TSr_transitions.must_equal Matrix.empty( 3, 0 )
-    @s.𝕾_for_TSr_transitions.must_equal Matrix.empty( 3, 0 )
+    @s.S_for_TSr_transitions.must_equal Matrix.empty( 3, 0 )
   end
 
   it "has stoichiometry matrix for 6. stoichiometric transitions with rate" do
@@ -690,8 +690,8 @@ describe ::YPetri::Simulation do
       .must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
     @s.stoichiometry_matrix_for_SR_transitions
       .must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
-    @s.𝕾_for_SR_transitions.must_equal @s.stoichiometry_matrix_for_SR_transitions
-    @s.𝕾!.must_equal @s.𝕾_for_SR_transitions
+    @s.S_for_SR_transitions.must_equal @s.stoichiometry_matrix_for_SR_transitions
+    @s.S!.must_equal @s.S_for_SR_transitions
   end
 
   it "presents 1. timeless nonstoichiometric (ts) transitions" do
@@ -830,7 +830,7 @@ describe ::YPetri::Simulation do
   it "3. handles timeless stoichiometric transitions" do
     @s.action_closures_for_tS_transitions.must_equal []
     @s.action_vector_for_tS_transitions.must_equal Matrix.column_vector( [] )
-    @s.𝖆_for_t_transitions!.must_equal Matrix.column_vector( [] )
+    @s.α_for_t_transitions!.must_equal Matrix.column_vector( [] )
     @s.Δ_if_tS_transitions_fire_once
       .must_equal Matrix.zero( @s.free_places.size, 1 )
   end
@@ -863,12 +863,12 @@ describe ::YPetri::Simulation do
       .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
     @s.flux_vector_for_SR_transitions
       .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.𝖋_for_stoichiometric_transitions_with_rate
+    @s.φ_for_stoichiometric_transitions_with_rate
       .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.𝖋_for_SR_transitions
+    @s.φ_for_SR_transitions
       .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
     @s.flux_vector!.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.𝖋!.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
+    @s.φ!.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
     @s.flux_for_SR_ttß.must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
     @s.f!.must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
     @s.Euler_action_vector_for_SR_transitions( 1 )
@@ -881,10 +881,10 @@ describe ::YPetri::Simulation do
 
   it "presents sparse stoichiometry vectors for its transitions" do
     @s.sparse_stoichiometry_vector( @t1 ).must_equal Matrix.cv( [-1, 0, 1] )
-    @s.sparse_𝖘( @t1 ).must_equal Matrix.cv( [-1, 0, 1] )
+    @s.sparse_σ( @t1 ).must_equal Matrix.cv( [-1, 0, 1] )
     @s.sparse_stoichiometry_vector!( @t1 )
       .must_equal Matrix.cv( [-1, -1, 0, 1, 0] )
-    @s.sparse_𝖘!( @t1 ).must_equal Matrix.cv( [-1, -1, 0, 1, 0] )
+    @s.sparse_σ!( @t1 ).must_equal Matrix.cv( [-1, -1, 0, 1, 0] )
   end
 
   it "presents correspondence matrices free, clamped => all places" do
@@ -1091,7 +1091,7 @@ describe ::YPetri::Workspace do
     assert_equal 2, @w.simulation.SR_transitions.size
     @tt[0].domain.must_equal [ @pp[0], @pp[1] ]
     @tt[1].domain.must_equal []
-    assert_equal [0.2, 0.1], @w.simulation.𝖋!.column_to_a
+    assert_equal [0.2, 0.1], @w.simulation.φ!.column_to_a
     @w.simulation.step!
     @w.simulation.run!
     rec_string = @w.simulation.recording_csv_string

@@ -338,7 +338,7 @@ module YPetri
 
     # Initial marking as a column vector corresponding to free places
     def initial_marking_vector; Matrix.column_vector initial_marking_array end
-    alias :i𝖒 :initial_marking_vector
+    alias :iᴍ :initial_marking_vector
 
     # Marking of free places as an array
     def marking_array; marking_vector.column( 0 ).to_a end
@@ -357,9 +357,9 @@ module YPetri
     def marking_vector
       free_places_to_all_places_matrix.t * @marking_vector
     end
-    alias :𝖒 :marking_vector
+    alias :ᴍ :marking_vector
     alias :marking_vector_of_free_places :marking_vector
-    alias :𝖒_free :marking_vector
+    alias :ᴍ_free :marking_vector
 
     # Marking of clamped places as an array
     def marking_array_of_clamped_places
@@ -381,7 +381,7 @@ module YPetri
     def marking_vector_of_clamped_places
       clamped_places_to_all_places_matrix.t * @marking_vector
     end
-    alias :𝖒_clamped :marking_vector_of_clamped_places
+    alias :ᴍ_clamped :marking_vector_of_clamped_places
 
     # Marking array for all places
     def marking_array_of_all_places; marking_vector!.column( 0 ).to_a end
@@ -400,8 +400,8 @@ module YPetri
     # Marking of all places as a column vector
     def marking_vector_of_all_places; @marking_vector end
     alias :marking_vector! :marking_vector_of_all_places
-    alias :𝖒_all :marking_vector_of_all_places
-    alias :𝖒! :marking_vector_of_all_places
+    alias :ᴍ_all :marking_vector_of_all_places
+    alias :ᴍ! :marking_vector_of_all_places
 
     # Creation of stoichiometry matrix for an arbitrary array of stoichio.
     # transitions, that maps (has the number of rows equal to) the free places.
@@ -409,9 +409,9 @@ module YPetri
       array_of_S_transitions.map { |t| sparse_stoichiometry_vector( t ) }
         .reduce( Matrix.empty( free_places.size, 0 ), :join_right )
     end
-    alias :create_𝕾_for :create_stoichiometry_matrix_for
+    alias :create_S_for :create_stoichiometry_matrix_for
     alias :stoichiometry_matrix_for :create_stoichiometry_matrix_for
-    alias :𝕾_for :create_stoichiometry_matrix_for
+    alias :S_for :create_stoichiometry_matrix_for
 
     # Creation of stoichiometry matrix for an arbitrary array of stoichio.
     # transitions, that maps (has the number of rows equal to) all the places.
@@ -419,29 +419,29 @@ module YPetri
       array_of_S_transitions.map { |t| sparse_stoichiometry_vector! t }
         .reduce( Matrix.empty( places.size, 0 ), :join_right )
     end
-    alias :create_𝕾_for! :create_stoichiometry_matrix_for!
+    alias :create_S_for! :create_stoichiometry_matrix_for!
     alias :stoichiometry_matrix_for! :create_stoichiometry_matrix_for!
-    alias :𝕾_for! :create_stoichiometry_matrix_for!
+    alias :S_for! :create_stoichiometry_matrix_for!
 
     # 3. Stoichiometry matrix for timeless stoichiometric transitions
     attr_reader :stoichiometry_matrix_for_timeless_stoichiometric_transitions
     alias :stoichiometry_matrix_for_tS_transitions \
           :stoichiometry_matrix_for_timeless_stoichiometric_transitions
-    alias :𝕾_for_tS_transitions \
+    alias :S_for_tS_transitions \
           :stoichiometry_matrix_for_timeless_stoichiometric_transitions
 
     # 4. Stoichiometry matrix for timed rateless stoichiometric transitions
     attr_reader :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
     alias :stoichiometry_matrix_for_TSr_transitions \
           :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
-    alias :𝕾_for_TSr_transitions \
+    alias :S_for_TSr_transitions \
           :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
 
     # 6. Stoichiometry matrix for stoichiometric transitions with rate
     attr_reader :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
     alias :stoichiometry_matrix_for_SR_transitions \
           :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
-    alias :𝕾_for_SR_transitions \
+    alias :S_for_SR_transitions \
           :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
 
     # Stoichiometry matrix for stoichiometric transitions with rate.
@@ -453,7 +453,7 @@ module YPetri
       raise txt unless s_transitions.empty? && r_transitions.empty?
       return stoichiometry_matrix_for_stoichiometric_transitions_with_rate
     end
-    alias :𝕾! :stoichiometry_matrix!
+    alias :S! :stoichiometry_matrix!
 
     # ----------------------------------------------------------------------
     # Exposing the collection of 1. ts transitions
@@ -1081,7 +1081,7 @@ module YPetri
     end
     alias :action_vector_for_tS_transitions \
           :action_vector_for_timeless_stoichiometric_transitions
-    alias :𝖆_for_tS_transitions \
+    alias :α_for_tS_transitions \
           :action_vector_for_timeless_stoichiometric_transitions
 
     # Action vector if tS transitions fire once, like the previous method.
@@ -1096,11 +1096,11 @@ module YPetri
     end
     alias :action_vector_for_t_transitions! \
           :action_vector_for_timeless_transitions!
-    alias :𝖆_for_t_transitions! :action_vector_for_timeless_transitions!
+    alias :α_for_t_transitions! :action_vector_for_timeless_transitions!
 
     # Δ state contribution for tS transitions 
     def delta_state_if_timeless_stoichiometric_transitions_fire_once
-      𝕾_for_tS_transitions * action_vector_for_tS_transitions
+      self.S_for_tS_transitions * action_vector_for_tS_transitions
     end
     alias :Δ_if_timeless_stoichiometric_transitions_fire_once \
           :delta_state_if_timeless_stoichiometric_transitions_fire_once
@@ -1137,7 +1137,7 @@ module YPetri
     end
     alias :action_vector_for_TSr_transitions \
           :action_vector_for_timed_rateless_stoichiometric_transitions
-    alias :𝖆_for_TSr_transitions \
+    alias :α_for_TSr_transitions \
           :action_vector_for_timed_rateless_stoichiometric_transitions
 
     # Action vector for timed rateless stoichiometric transitions
@@ -1152,11 +1152,11 @@ module YPetri
     end
     alias :action_vector_for_Tr_transitions! \
           :action_vector_for_timed_rateless_transitions!
-    alias :𝖆_for_Tr_transitions! :action_vector_for_Tr_transitions!
+    alias :α_for_Tr_transitions! :action_vector_for_Tr_transitions!
 
     # Computes Δ state for TSr transitions, given a Δt
     def delta_state_for_timed_rateless_stoichiometric_transitions( Δt )
-      𝕾_for_TSr_transitions * action_vector_for_TSr_transitions( Δt )
+      self.S_for_TSr_transitions * action_vector_for_TSr_transitions( Δt )
     end
     alias :Δ_for_timed_rateless_stoichiometric_transitions \
           :delta_state_for_timed_rateless_stoichiometric_transitions
@@ -1257,9 +1257,9 @@ module YPetri
     end
     alias :flux_vector_for_SR_transitions \
           :flux_vector_for_stoichiometric_transitions_with_rate
-    alias :𝖋_for_stoichiometric_transitions_with_rate \
+    alias :φ_for_stoichiometric_transitions_with_rate \
           :flux_vector_for_stoichiometric_transitions_with_rate
-    alias :𝖋_for_SR_transitions \
+    alias :φ_for_SR_transitions \
           :flux_vector_for_stoichiometric_transitions_with_rate
 
     # Flux vector for SR transitions. Same as the previous method, but
@@ -1270,7 +1270,7 @@ module YPetri
         "with rate!" unless s_transitions.empty? && r_transitions.empty?
       flux_vector_for_stoichiometric_transitions_with_rate
     end
-    alias :𝖋! :flux_vector!
+    alias :φ! :flux_vector!
 
     # Flux of SR transitions as hash with transition name symbols as keys.
     def flux_for_SR_tt_sym; self.SR_ttß_ :flux_vector_for_SR_transitions end
@@ -1301,11 +1301,11 @@ module YPetri
           :Euler_action_vector_for_stoichiometric_transitions_with_rate
     alias :euler_action_vector_for_SR_transitions \
           :Euler_action_vector_for_SR_transitions
-    alias :Euler_𝖆_for_stoichiometric_transitions_with_rate \
+    alias :Euler_α_for_stoichiometric_transitions_with_rate \
           :euler_action_vector_for_SR_transitions
-    alias :Euler_𝖆_for_SR_transitions \
+    alias :Euler_α_for_SR_transitions \
           :euler_action_vector_for_SR_transitions
-    alias :euler_𝖆_for_SR_transitions \
+    alias :euler_α_for_SR_transitions \
           :euler_action_vector_for_SR_transitions
 
     # Euler action fro SR transitions as has with tr. name symbols as keys.
@@ -1346,7 +1346,7 @@ module YPetri
       Matrix.correspondence_matrix( t.codomain, free_places ) *
         Matrix.column_vector( t.stoichiometry )
     end
-    alias :sparse_𝖘 :sparse_stoichiometry_vector
+    alias :sparse_σ :sparse_stoichiometry_vector
     
     # For a transition specified by the argument, this method returns a sparse
     # stoichiometry vector mapped to all the places of the simulation.
@@ -1355,7 +1355,7 @@ module YPetri
       Matrix.correspondence_matrix( t.codomain, places ) *
         Matrix.column_vector( t.stoichiometry )
     end
-    alias :sparse_𝖘! :sparse_stoichiometry_vector!
+    alias :sparse_σ! :sparse_stoichiometry_vector!
 
     # Correspondence matrix free places => all places
     attr_reader :free_places_to_all_places_matrix
@@ -1434,7 +1434,7 @@ module YPetri
       timeless_nonstoichiometric_transitions.map { |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
         c2f = Matrix.correspondence_matrix( t.codomain, free_places )
-        λ { c2f * t.action_closure.( *( p2d * 𝖒! ).column_to_a ) }
+        λ { c2f * t.action_closure.( *( p2d * ᴍ! ).column_to_a ) }
       }
     end
 
@@ -1442,21 +1442,21 @@ module YPetri
       timed_rateless_nonstoichiometric_transitions.map { |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
         c2f = Matrix.correspondence_matrix( t.codomain, free_places )
-        λ { |Δt| c2f * t.action_closure.( Δt, *( p2d * 𝖒! ).column_to_a ) }
+        λ { |Δt| c2f * t.action_closure.( Δt, *( p2d * ᴍ! ).column_to_a ) }
       }
     end
 
     def create_action_closures_for_timeless_stoichiometric_transitions
       timeless_stoichiometric_transitions.map{ |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
-        λ { t.action_closure.( *( p2d * 𝖒! ).column_to_a ) }
+        λ { t.action_closure.( *( p2d * ᴍ! ).column_to_a ) }
       }
     end
 
     def create_action_closures_for_timed_rateless_stoichiometric_transitions
       timed_rateless_stoichiometric_transitions.map{ |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
-        λ { |Δt| t.action_closure.( Δt, *( p2d * 𝖒! ).column_to_a ) }
+        λ { |Δt| t.action_closure.( Δt, *( p2d * ᴍ! ).column_to_a ) }
       }
     end
 
@@ -1464,14 +1464,14 @@ module YPetri
       nonstoichiometric_transitions_with_rate.map{ |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
         c2f = Matrix.correspondence_matrix( t.codomain, free_places )
-        λ { c2f * t.rate_closure.( *( p2d * 𝖒! ).column_to_a ) }
+        λ { c2f * t.rate_closure.( *( p2d * ᴍ! ).column_to_a ) }
       }
     end
 
     def create_rate_closures_for_stoichiometric_transitions_with_rate
       stoichiometric_transitions_with_rate.map{ |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
-        λ { t.rate_closure.( *( p2d * 𝖒! ).column_to_a ) }
+        λ { t.rate_closure.( *( p2d * ᴍ! ).column_to_a ) }
       }
     end
   end # class Simulation

@@ -44,7 +44,7 @@ module YPetri
     #   note_state_change
     # end
 
-    # # Return projection of Δ𝖒 by mysode-ing the interior.
+    # # Return projection of Δᴍ by mysode-ing the interior.
     # def project_mysode_interior( Δt )
     #   # So far, no interior
     #   # the internals of this method were already heavily obsolete
@@ -71,7 +71,7 @@ module YPetri
 
     # Scalar field gradient for free places
     def gradient_for_free_places
-      𝕾_for_SR_transitions * flux_vector_for_SR_transitions +
+      self.S_for_SR_transitions * flux_vector_for_SR_transitions +
         ∂_for_nonstoichiometric_transitions_with_rate
     end
     alias :∂_free :gradient_for_free_places
