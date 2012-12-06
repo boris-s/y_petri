@@ -48,6 +48,7 @@ module YPetri
     end
 
     # Returns an array of all the transitions connected to the place.
+    # 
     def arcs
       upstream_arcs | downstream_arcs
     end
@@ -55,6 +56,7 @@ module YPetri
 
     # Returns the union of domains of the transitions associated
     # with the upstream arcs of this place.
+    # 
     def precedents
       upstream_transitions
         .map( &:upstream_places )
@@ -64,6 +66,7 @@ module YPetri
 
     # Returns the union of codomains of the transitions associated
     # with the downstream arcs originating from this place.
+    # 
     def dependents
       downstream_transitions
         .map( &:downstream_places )
@@ -72,16 +75,19 @@ module YPetri
     alias :downstream_places :dependents
 
     # Adds tokens to the place.
+    # 
     def add( amount_of_tokens )
       @marking += amount_of_tokens
     end
 
     # Subtracts tokens from the place.
+    # 
     def subtract( amount_of_tokens)
       @marking -= amount_of_tokens
     end
 
     # Resets place marking back to its default marking.
+    # 
     def reset_marking
       @marking = @default_marking
     end
@@ -89,12 +95,14 @@ module YPetri
     # Firing of upstream transitions regardless of cocking. (To #fire
     # transitions, they have to be cocked with #cock method; the firing
     # methods with exclamation marks disregard cocking.)
+    # 
     def fire_upstream!
       @upstream_arcs.each &:fire!
     end
     alias :fire! :fire_upstream!
 
     # Fires whole upstream portion of the net.
+    # 
     def fire_upstream_recursively
       # LATER: so far, implemented without concerns about infinite loops
       # LATER: This as a global hash { place => fire_list }
@@ -105,18 +113,26 @@ module YPetri
     # Firing of downstream transitions regardless of cocking. (To #fire
     # transitions, they have to be cocked with #cock method; the firing
     # methods with exclamation marks disregard cocking.)
-    def fire_downstream!; @downstream_arcs.each &:fire! end
+    # 
+    def fire_downstream!
+      @downstream_arcs.each &:fire!
+    end
 
     # Fires whole downstream portion of the net.
+    # 
     def fire_downstream_recursively
       # LATER: so far, implemented withoud concerns about infinite loops
       # LATER: This as a global hash { place => fire_list }
       @downstream_arcs.each &:fire_downstream_recursively
     end
     alias :fire_downstream! :fire_downstream_recursively
+    
+    def inspect                      # :nodoc:
+      nm, d, q = instance_description_strings
+      "YPetri::Place[ #{USE_QUANTUM ? nm + d + q : nm + d} ]"
+    end
 
-    # Generates a string describing the place.
-    def to_s
+    def to_s                         # :nodoc:
       n, m = name, marking
       "#{n.nil? ? 'Place' : n}[ #{m.nil? ? 'nil' : m} ]"
     end
@@ -144,9 +160,4 @@ module YPetri
       return nmς, dς, qς
     end
   end # class Place
-  
-  def inspect
-    nm, d, q = instance_description_strings
-    "YPetri::Place[ #{USE_QUANTUM ? nm + d + q : nm + d} ]"
-  end
 end # module YPetri
