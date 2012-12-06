@@ -34,8 +34,8 @@ module YPetri
     $YPetriManipulatorInstance = ::YPetri::Manipulator.new
     [ Place, Transition, Net ].each { |klass|
       klass.name_magic_hook do |new_instance|
-        txt = "#{target_instance} rejected by the workspace!"
-        $YPetriManipulatorInstance.workspace << new_instance rescue warn txt
+        txt = lambda { "#{new_instance} rejected by the workspace!" }
+        $YPetriManipulatorInstance.workspace << new_instance rescue warn txt.call
       end
     }
   end
