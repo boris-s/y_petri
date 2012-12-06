@@ -1,8 +1,9 @@
 #encoding: utf-8
 
-# This class represents Petri net places.
-
 module YPetri
+
+  # This class represents Petri net places.
+
   class Place
     USE_QUANTUM = false
     include NameMagic

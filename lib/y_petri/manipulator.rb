@@ -1,8 +1,9 @@
 #encoding: utf-8
 
-# Public command interface of YPetri.
-
 module YPetri
+
+  # Public command interface of YPetri.
+  # 
   class Manipulator
     attr_reader :workspace
 

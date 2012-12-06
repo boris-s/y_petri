@@ -1,97 +1,98 @@
 #encoding: utf-8
 
-# Represents a Petri net transition. YPetri transitions come in 6
-# basic types
-#
-# === Basic transition types
-# 
-# * <b>ts</b> – timeless nonstoichiometric
-# * <b>tS</b> – timeless stoichiometric
-# * <b>Tsr</b> – timed rateless nonstoichiometric
-# * <b>TSr</b> – timed rateless stoichiometric
-# * <b>sR</b> – nonstoichiometric with rate
-# * <b>SR</b> – stoichiometric with rate
-#
-# These 6 kinds of YPetri transitions correspond to the vertices
-# of a cube with 3 dimensions:
-# 
-# - stoichiometric (S) / nonstoichiometric (s)
-# - timed (T) / timeless (t)
-# - having rate (R) / not having rate (r)
-# 
-# Since transitions with rate are always timed, and vice-versa, timeless
-# transitions cannot have rate, there are only 6 permissible combinations,
-# mentioned above.
-#
-# === Domain and codomin
-#
-# Each transition has a domain, or 'upstream places': A collection of places
-# whose marking directly affects the transition's operation. Also, each
-# transition has a codomain, or 'downstream places': A collection of places,
-# whose marking is directly affected by the transition's operation.
-#
-# === Action and action vector
-#
-# Regardless of the type, every transition has <em>action</em>:
-# A prescription of how the transition changes the marking of its codomain
-# when it fires. With respect to the transition's codomain, we can also
-# talk about <em>action vector</em>. For non-stoichiometric transitions,
-# the action vector is directly the output of the action closure or rate
-# closure multiplied by Δtime, while for stoichiometric transitions, this
-# needs to be additionaly multiplied by the transitions stoichiometric
-# vector. Now we are finally equipped to talk about the exact meaning of
-# 3 basic transition properties.
-#
-# === Meaning of the 3 basic transition properties
-#
-# ==== Stoichiometric / non-stoichiometric
-# * For stoichiometric transitions:
-#    [Rate vector] is computed as rate * stoichiometry vector, or
-#    [Δ vector] is computed a action * stoichometry vector
-# * For non-stoichiometric transitions:
-#    [Rate vector] is obtained as the rate closure result, or
-#    [action vector] is obtained as the action closure result.
-# 
-# Conclusion: stoichiometricity distinguishes <b>need to multiply the
-# rate/action closure result by stoichiometry</b>.
-#
-# ==== Having / not having rate
-# * For transitions with rate, the closure result has to be
-# multiplied by the time step duration (Δt) to get the action.
-# * For rateless transitions, the closure result is used as is.
-#
-# Conclusion: has_rate? distinguishes <b>the need to multiply the closure
-# result by delta time</b> - differentiability of action by time.
-#
-# ==== Timed / Timeless
-# * For timed transitions, action is time-dependent. Transitions with
-# rate are thus always timed. In rateless transitions, timedness means
-# that the action closure expects time step length (delta_t) as its first
-# argument - its arity is thus codomain size + 1. 
-# * For timeless transitions, action is time-independent. Timeless
-# transitions are necessarily also rateless. Arity of the action closure
-# is expected to match the domain size.
-# 
-# Conclusion: Transitions with rate are always timed. In rateless
-# transitions, timedness distinguishes <b>the need to supply time step
-# duration as the first argument to the action closure</b>.
-#
-# === Other transition types
-#
-# ==== Assignment transitions
-# Named argument :assignment_action set to true indicates that the
-# transitions acts by replacing the object stored as place marking by
-# the object supplied by the transition. (Same as in with spreadsheet
-# functions.) For numeric types, same effect can be achieved by subtracting
-# the old number from the place and subsequently adding the new value to it.
-#
-# ==== Functional / Functionless transitions
-# Original Petri net definition does not talk about transition "functions",
-# but it more or less assumes the stoichiometric vector. So in YPetri,
-# stoichiometric transitions with no action / rate closure specified become
-# functionless transitions as per Carl Adam Petri.
-
 module YPetri
+
+  # Represents a Petri net transition. YPetri transitions come in 6
+  # basic types
+  #
+  # === Basic transition types
+  # 
+  # * <b>ts</b> – timeless nonstoichiometric
+  # * <b>tS</b> – timeless stoichiometric
+  # * <b>Tsr</b> – timed rateless nonstoichiometric
+  # * <b>TSr</b> – timed rateless stoichiometric
+  # * <b>sR</b> – nonstoichiometric with rate
+  # * <b>SR</b> – stoichiometric with rate
+  #
+  # These 6 kinds of YPetri transitions correspond to the vertices
+  # of a cube with 3 dimensions:
+  # 
+  # - stoichiometric (S) / nonstoichiometric (s)
+  # - timed (T) / timeless (t)
+  # - having rate (R) / not having rate (r)
+  # 
+  # Since transitions with rate are always timed, and vice-versa, timeless
+  # transitions cannot have rate, there are only 6 permissible combinations,
+  # mentioned above.
+  #
+  # === Domain and codomin
+  #
+  # Each transition has a domain, or 'upstream places': A collection of places
+  # whose marking directly affects the transition's operation. Also, each
+  # transition has a codomain, or 'downstream places': A collection of places,
+  # whose marking is directly affected by the transition's operation.
+  #
+  # === Action and action vector
+  #
+  # Regardless of the type, every transition has <em>action</em>:
+  # A prescription of how the transition changes the marking of its codomain
+  # when it fires. With respect to the transition's codomain, we can also
+  # talk about <em>action vector</em>. For non-stoichiometric transitions,
+  # the action vector is directly the output of the action closure or rate
+  # closure multiplied by Δtime, while for stoichiometric transitions, this
+  # needs to be additionaly multiplied by the transitions stoichiometric
+  # vector. Now we are finally equipped to talk about the exact meaning of
+  # 3 basic transition properties.
+  #
+  # === Meaning of the 3 basic transition properties
+  #
+  # ==== Stoichiometric / non-stoichiometric
+  # * For stoichiometric transitions:
+  #    [Rate vector] is computed as rate * stoichiometry vector, or
+  #    [Δ vector] is computed a action * stoichometry vector
+  # * For non-stoichiometric transitions:
+  #    [Rate vector] is obtained as the rate closure result, or
+  #    [action vector] is obtained as the action closure result.
+  # 
+  # Conclusion: stoichiometricity distinguishes <b>need to multiply the
+  # rate/action closure result by stoichiometry</b>.
+  #
+  # ==== Having / not having rate
+  # * For transitions with rate, the closure result has to be
+  # multiplied by the time step duration (Δt) to get the action.
+  # * For rateless transitions, the closure result is used as is.
+  #
+  # Conclusion: has_rate? distinguishes <b>the need to multiply the closure
+  # result by delta time</b> - differentiability of action by time.
+  #
+  # ==== Timed / Timeless
+  # * For timed transitions, action is time-dependent. Transitions with
+  # rate are thus always timed. In rateless transitions, timedness means
+  # that the action closure expects time step length (delta_t) as its first
+  # argument - its arity is thus codomain size + 1. 
+  # * For timeless transitions, action is time-independent. Timeless
+  # transitions are necessarily also rateless. Arity of the action closure
+  # is expected to match the domain size.
+  # 
+  # Conclusion: Transitions with rate are always timed. In rateless
+  # transitions, timedness distinguishes <b>the need to supply time step
+  # duration as the first argument to the action closure</b>.
+  #
+  # === Other transition types
+  #
+  # ==== Assignment transitions
+  # Named argument :assignment_action set to true indicates that the
+  # transitions acts by replacing the object stored as place marking by
+  # the object supplied by the transition. (Same as in with spreadsheet
+  # functions.) For numeric types, same effect can be achieved by subtracting
+  # the old number from the place and subsequently adding the new value to it.
+  #
+  # ==== Functional / Functionless transitions
+  # Original Petri net definition does not talk about transition "functions",
+  # but it more or less assumes the stoichiometric vector. So in YPetri,
+  # stoichiometric transitions with no action / rate closure specified become
+  # functionless transitions as per Carl Adam Petri.
+  
   class Transition
     include NameMagic
     

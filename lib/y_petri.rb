@@ -1,5 +1,13 @@
 #encoding: utf-8
 
+require 'gnuplot'
+require 'csv'
+require 'y_support'
+require 'name_magic'
+require 'y_petri/version'
+
+include YSupport
+
 # YPetri represents Petri net (PN) formalism.
 #
 # A PN consists of places and transitions. There are also arcs, "arrows"
@@ -17,14 +25,6 @@
 # fluid transition between Fixnum and Bignum, there should be fluid
 # transition between token amount representation as Integer (discrete) or
 # Float (continuous) - the decision should be on the simulator.
-
-require 'gnuplot'
-require 'csv'
-require 'y_support'
-require 'name_magic'
-require 'y_petri/version'
-
-include YSupport
 
 module YPetri
   DEFAULT_SIMULATION_SETTINGS =

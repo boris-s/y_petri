@@ -1,6 +1,9 @@
 #encoding: utf-8
 
 module YPetri
+
+  # A descendant class of YPetri::Simulation that introduces timekeeping.
+  # 
   class TimedSimulation < Simulation
     SAMPLING_TIME_DECIMAL_PLACES = SAMPLING_DECIMAL_PLACES
 

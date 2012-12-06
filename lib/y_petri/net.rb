@@ -1,11 +1,12 @@
 #encoding: utf-8
 
-# YPetri::Net represents a Petri net: A collection of places and
-# transitions. The connector arrows are considered a property of a
-# transition, and 'arcs' is a synonym for 'places connected to a
-# transition'.
-
 module YPetri
+
+  # YPetri::Net represents a Petri net: A collection of places and
+  # transitions. The connector arrows are considered a property of a
+  # transition, and 'arcs' is a synonym for 'places connected to a
+  # transition'.
+
   class Net
     include NameMagic
     

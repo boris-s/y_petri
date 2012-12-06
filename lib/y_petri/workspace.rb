@@ -1,12 +1,13 @@
 #encoding: utf-8
 
-# Workspace holds places, transitions, nets and other assets needed for
-# simulation (settings, clamps, initial markings etc.). It has basic methods
-# to handle creation of places, transitions and other mentioned
-# assets. Workspace interface is not considered too public; it is used
-# mainly by Manipulator to create convenient public interface.
-
 module YPetri
+  
+  # Workspace holds places, transitions, nets and other assets needed for
+  # simulation (settings, clamps, initial markings etc.). It has basic methods
+  # to handle creation of places, transitions and other mentioned
+  # assets. Workspace interface is not considered too public; it is used
+  # mainly by Manipulator to create convenient public interface.
+
   class Workspace
     attr_reader :clamp_collections,
     :initial_marking_collections,
