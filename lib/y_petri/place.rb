@@ -5,7 +5,7 @@
 module YPetri
   class Place
     USE_QUANTUM = false
-    include ConstMagicErsatz
+    include NameMagic
 
     attr_reader :quantum
     attr_accessor :default_marking

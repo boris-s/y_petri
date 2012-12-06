@@ -5,7 +5,7 @@
 module YPetri
   class Manipulator
     attr_reader :workspace
-    
+
     def note_new_Petri_net_object_instance( i )
       workspace << i rescue warn "Instance rejected by the workspace!"
     end

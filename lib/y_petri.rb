@@ -21,7 +21,7 @@
 require 'gnuplot'
 require 'csv'
 require 'y_support'
-require 'const_magic_ersatz'
+require 'name_magic'
 require 'y_petri/version'
 
 include YSupport
@@ -32,6 +32,12 @@ module YPetri
 
   def self.included( receiver )
     $YPetriManipulatorInstance = ::YPetri::Manipulator.new
+    [ Place, Transition, Net ].each { |klass|
+      klass.name_magic_hook do |target_instance|
+        txt = "#{target_instance} rejected by the workspace!"
+        $YPetriManipulatorInstance.workspace << target_instance rescue warn txt
+      end
+    }
   end
 
   delegate :workspace,
@@ -58,7 +64,7 @@ module YPetri
 
   autoreq :workspace
   autoreq :manipulator
-  
+
   # Expects either a Place instance, or a name of an existing Place
   # instance. Place instance is returned unchanged, while if name was given,
   # correspondingly named instance is returned.

@@ -7,7 +7,7 @@
 
 module YPetri
   class Net
-    include ConstMagicErsatz
+    include NameMagic
     
     def initialize *args; oo = args.extract_options!
       @places, @transitions = [], [] # empty arrays so far
