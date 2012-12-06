@@ -5,6 +5,7 @@
 require 'minitest/spec'
 require 'minitest/autorun'
 require_relative '../lib/y_petri'     # tested component itself
+# require 'y_petri'
 
 include Pyper if require 'pyper'
 
