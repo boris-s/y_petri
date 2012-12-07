@@ -27,6 +27,23 @@ include YSupport
 # Float (continuous) - the decision should be on the simulator.
 
 module YPetri
+  require_relative 'y_petri/place'
+  require_relative 'y_petri/transition'
+  require_relative 'y_petri/net'
+  require_relative 'y_petri/simulation'
+  require_relative 'y_petri/timed_simulation'
+  require_relative 'y_petri/workspace'
+  require_relative 'y_petri/manipulator'
+
+  # autoreq :place
+  # autoreq :transition
+  # autoreq :net
+  # autoreq :simulation
+  # autoreq :timed_simulation
+  # autoreq :hybrid_timed_simulation # not yet, LATER
+  # autoreq :workspace
+  # autoreq :manipulator
+
   DEFAULT_SIMULATION_SETTINGS =
     { step_size: 0.1, sampling_period: 5, target_time: 60 }
 
@@ -53,17 +70,6 @@ module YPetri
            :set_time, :set_target_time,
            :run!, :plot_recording, :new_timed_simulation,
            to: :$YPetriManipulatorInstance
-
-  autoreq :place
-  autoreq :transition
-  autoreq :net
-
-  autoreq :simulation
-  autoreq :timed_simulation
-  # autoreq :hybrid_timed_simulation # not yet, LATER
-
-  autoreq :workspace
-  autoreq :manipulator
 
   # Expects either a Place instance, or a name of an existing Place
   # instance. Place instance is returned unchanged, while if name was given,
