@@ -42,7 +42,7 @@ module YPetri
   }
 
   def self.included( receiver )      # :nodoc:
-    $YPetriManipulator = YPetri::Manipulator.new
+    receiver.instance_variable_set :@YPetriManipulator, Manipulator.new
   end
 
   delegate :workspace,
@@ -64,5 +64,5 @@ module YPetri
            :set_time, :set_target_time,
            :new_timed_simulation,
            :run!, :plot_recording,
-           to: :$YPetriManipulator
+           to: :@YPetriManipulator
 end
