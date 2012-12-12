@@ -51,7 +51,7 @@ module YPetri
            :p, :t, :n,
            :places, :transitions, :nets, :simulations,
            :pp, :tt, :nn,
-           :clamp_collections, :clamp_cc
+           :clamp_collections, :clamp_cc,
            :initial_marking_collections, :initial_marking_cc,
            :simulation_settings_collections, :simulation_settings_cc,
            :clamp_collection, :cc,
