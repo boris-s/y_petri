@@ -42,20 +42,27 @@ module YPetri
   }
 
   def self.included( receiver )      # :nodoc:
-    @manipulator = ::YPetri::Manipulator.new
+    $YPetriManipulator = YPetri::Manipulator.new
   end
 
   delegate :workspace,
+           :Place, :Transition, :Net,
+           :place, :transition, :net, :simulation,
+           :p, :t, :n,
            :places, :transitions, :nets, :simulations,
-           :ccc, :imcc, :sscc,
            :pp, :tt, :nn,
+           :clamp_collections, :clamp_cc
+           :initial_marking_collections, :initial_marking_cc,
+           :simulation_settings_collections, :simulation_settings_cc,
+           :clamp_collection, :cc,
+           :initial_marking_collection, :imc,
+           :simulation_settings_collection, :ssc,
            :print_recording, :plot_recording,
-           :net, :simulation, :ssc, :cc, :imc,
-           :place, :transition, :p, :t,
            :clamp, :initial_marking, :im,
            :set_step, :set_step_size,
            :set_sampling,
            :set_time, :set_target_time,
-           :run!, :plot_recording, :new_timed_simulation,
-           to: :$YPetriManipulatorInstance
+           :new_timed_simulation,
+           :run!, :plot_recording,
+           to: :$YPetriManipulator
 end
