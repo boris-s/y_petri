@@ -16,51 +16,60 @@ include Pyper if require 'pyper'
 describe ::YPetri::Place do
   before do
     # skip "to speed up testing"
-    @ç = ::YPetri::Place
-    @p = @ç.new default_marking: 3.2, marking: 1.1, quantum: 0.1, name: "p1"
+    @pç = pç = Class.new ::YPetri::Place
+    @p = pç.new! default_marking: 3.2,
+                 marking: 1.1,
+                 quantum: 0.1,
+                 name: "P1"
   end
 
-  it "should have constant magic included" do
-    assert_respond_to @p, :name
-    assert_equal @p.name, "p1"
-  end
+  describe "place behavior" do
+    before do
+      @p.m = 1.1
+    end
+    
+    it "should have constant magic included" do
+      assert_respond_to @p, :name
+      assert_equal @p.name, "P1"
+    end
 
-  it "should have own marking and be able to update it" do
-    assert_equal 1.1, @p.marking
-    assert_equal 0.1, @p.quantum
-    assert_equal "p1", @p.name
-    @p.add 1
-    assert_equal 2.1, @p.value        # alias for #marking
-    @p.subtract 0.5
-    assert_equal 1.6, @p.m
-    @p.reset_marking
-    assert_equal 3.2, @p.marking
-  end
-  
-  it "should respond to the arc getters" do
-    # #action_arcs & aliases
-    assert_equal [], @p.upstream_arcs
-    assert_equal [], @p.upstream_transitions
-    assert_equal [], @p.ϝ
-    # #test_arcs & aliases
-    assert_equal [], @p.downstream_arcs
-    assert_equal [], @p.downstream_transitions
-    # #arcs & aliases
-    assert_equal [], @p.arcs
-    assert_equal [], @p.connectivity
-    # #precedents & aliases
-    assert_equal [], @p.precedents
-    assert_equal [], @p.upstream_places
-    # #dependents & aliases
-    assert_equal [], @p.dependents
-    assert_equal [], @p.downstream_places
-  end
-
-  it "should respond to register and fire conn. transitions methods" do
-    assert_respond_to @p, :fire_upstream!
-    assert_respond_to @p, :fire_downstream!
-    assert_respond_to @p, :fire_upstream_recursively
-    assert_respond_to @p, :fire_downstream_recursively
+    it "should have own marking and be able to update it" do
+      assert_equal 1.1, @p.marking
+      assert_equal 0.1, @p.quantum
+      assert_equal "P1", @p.name
+      @p.add 1
+      assert_equal 2.1, @p.value        # alias for #marking
+      @p.subtract 0.5
+      assert_equal 1.6, @p.m
+      @p.reset_marking
+      assert_equal 3.2, @p.marking
+    end
+    
+    it "should respond to the arc getters" do
+      # #action_arcs & aliases
+      assert_equal [], @p.upstream_arcs
+      assert_equal [], @p.upstream_transitions
+      assert_equal [], @p.ϝ
+      # #test_arcs & aliases
+      assert_equal [], @p.downstream_arcs
+      assert_equal [], @p.downstream_transitions
+      # #arcs & aliases
+      assert_equal [], @p.arcs
+      assert_equal [], @p.connectivity
+      # #precedents & aliases
+      assert_equal [], @p.precedents
+      assert_equal [], @p.upstream_places
+      # #dependents & aliases
+      assert_equal [], @p.dependents
+      assert_equal [], @p.downstream_places
+    end
+    
+    it "should respond to register and fire conn. transitions methods" do
+      assert_respond_to @p, :fire_upstream!
+      assert_respond_to @p, :fire_downstream!
+      assert_respond_to @p, :fire_upstream_recursively
+      assert_respond_to @p, :fire_downstream_recursively
+    end
   end
 end
 
@@ -71,12 +80,20 @@ end
 describe ::YPetri::Transition do
   before do
     # skip "to speed up testing"
-    @ç, @pç = ::YPetri::Transition, ::YPetri::Place
-    @p1 = @pç.new default_marking: 1.0
-    @p2 = @pç.new default_marking: 2.0
-    @p3 = @pç.new default_marking: 3.0
-    @p4 = @pç.new default_marking: 4.0
-    @p5 = @pç.new default_marking: 5.0
+    @ç = ç = Class.new ::YPetri::Transition
+    @pç = pç = Class.new ::YPetri::Place
+    [ ç, pç ].each { |ç|
+      ç.class_exec {
+        define_method :Place do pç end
+        define_method :Transition do ç end
+        private :Place, :Transition
+      }
+    }
+    @p1 = pç.new default_marking: 1.0
+    @p2 = pç.new default_marking: 2.0
+    @p3 = pç.new default_marking: 3.0
+    @p4 = pç.new default_marking: 4.0
+    @p5 = pç.new default_marking: 5.0
   end
 
   describe "1. timeless nonstoichiometric (ts) transitions" do
@@ -94,10 +111,6 @@ describe ::YPetri::Transition do
       @t4 = @ç.new action: λ { [ 0.5, 0.5 ] }, codomain: [ @p1, @p3 ]
       # ... also for stoichiometric variety
       @t5 = @ç.new action: λ { 0.5 }, codomain: [ @p1, @p3 ], s: [ 1, 1 ]
-    end
-
-    it "should have constant magic included" do
-      
     end
 
     it "should raise errors for bad parameters" do
@@ -154,19 +167,19 @@ describe ::YPetri::Transition do
 
       before do
         # timeless transition with stoichiometric vector only, as hash
-        @t1 = ::YPetri::Transition.new stoichiometry: { @p1 => 1 }
+        @ftS1 = @ç.new stoichiometry: { @p1 => 1 }
         # timeless transition with stoichiometric vector as array + codomain
-        @t2 = ::YPetri::Transition.new stoichiometry: 1, codomain: @p1
+        @ftS2 = @ç.new stoichiometry: 1, codomain: @p1
         # :stoichiometric_vector is aliased as :sv
-        @t3 = ::YPetri::Transition.new s: 1, codomain: @p1
+        @ftS3 = @ç.new s: 1, codomain: @p1
         # :codomain is aliased as :action_arcs
-        @t4 = ::YPetri::Transition.new s: 1, action_arcs: @p1
+        @ftS4 = @ç.new s: 1, action_arcs: @p1
         # dropping of square brackets around size 1 vectors is optional
-        @t5 = ::YPetri::Transition.new s: [ 1 ], downstream: [ @p1 ]
+        @ftS5 = @ç.new s: [ 1 ], downstream: [ @p1 ]
         # another alias for :codomain is :downstream_places
-        @t6 = ::YPetri::Transition.new s: [ 1 ], downstream_places: [ @p1 ]
+        @ftS6 = @ç.new s: [ 1 ], downstream_places: [ @p1 ]
         # and now, all of the above transitions...
-        @tt = @t1, @t2, @t3, @t4, @t5, @t6
+        @tt = @ftS1, @ftS2, @ftS3, @ftS4, @ftS5, @ftS6
       end
 
       it "should work" do
@@ -185,22 +198,22 @@ describe ::YPetri::Transition do
         # and having nullary action closure
         assert @tt.all?{ |t| t.action_closure.arity == 0 }
         # the transitions should be able to #fire!
-        @t1.fire!
+        @ftS1.fire!
         # the difference is apparent: marking of place @p1 jumped to 2:
         assert_equal 2, @p1.marking
         # but should not #fire (no exclamation mark) unless cocked
-        assert !@t1.cocked?
-        @t1.fire
+        assert !@ftS1.cocked?
+        @ftS1.fire
         assert_equal 2, @p1.marking
         # cock it
-        @t1.cock
-        assert @t1.cocked?
+        @ftS1.cock
+        assert @ftS1.cocked?
         # uncock again, just to test cocking
-        @t1.uncock
-        assert @t1.uncocked?
-        @t1.cock
-        assert !@t1.uncocked?
-        @t1.fire
+        @ftS1.uncock
+        assert @ftS1.uncocked?
+        @ftS1.cock
+        assert !@ftS1.uncocked?
+        @ftS1.fire
         assert_equal 3, @p1.marking
         # enough playing, we'll reset @p1 marking
         @p1.reset_marking
@@ -227,17 +240,17 @@ describe ::YPetri::Transition do
 
       before do
         # stoichiometric vector given as hash
-        @t1 = @ç.new action_closure: λ { 1 }, s: { @p1 => 1 }
+        @FtS1 = @ç.new action_closure: λ { 1 }, s: { @p1 => 1 }
         # instead of :action_closure, just saying :action is enough
-        @t2 = @ç.new action: λ { 1 }, s: { @p1 => 1 }
+        @FtS2 = @ç.new action: λ { 1 }, s: { @p1 => 1 }
         # stoichiometric vector given as coeff. array + codomain
-        @t3 = @ç.new s: 1, codomain: @p1, action: λ { 1 }
+        @FtS3 = @ç.new s: 1, codomain: @p1, action: λ { 1 }
         # while saying timed: false and timeless: true should be ok
-        @t4 = @ç.new s: { @p1 => 1 }, action: λ { 1 }, timed: false
-        @t5 = @ç.new s: { @p1 => 1 }, action: λ { 1 }, timeless: true
+        @FtS4 = @ç.new s: { @p1 => 1 }, action: λ { 1 }, timed: false
+        @FtS5 = @ç.new s: { @p1 => 1 }, action: λ { 1 }, timeless: true
         # even both are ok
-        @t6 = @ç.new s: { @p1 => 1 }, action: λ { 1 }, timed: false, timeless: true
-        @tt = @t1, @t2, @t3, @t4, @t5, @t6
+        @FtS6 = @ç.new s: { @p1 => 1 }, action: λ { 1 }, timed: false, timeless: true
+        @tt = @FtS1, @FtS2, @FtS3, @FtS4, @FtS5, @FtS6
       end
 
       it "should raise errors for bad parameters" do
@@ -263,7 +276,7 @@ describe ::YPetri::Transition do
         # and having nullary action closure
         assert @tt.all?{ |t| t.action_closure.arity == 0 }
         # the transitions should be able to #fire!
-        @t1.fire!
+        @FtS1.fire!
         # no need for more testing here
       end
     end
@@ -289,31 +302,31 @@ describe ::YPetri::Transition do
   describe "6. stoichiometric transitions with rate (SR transitions)" do
     before do
       # now this should give standard mass action by magic:
-      @t1 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, flux_closure: 0.1
+      @SR1 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, flux_closure: 0.1
       # while this has custom flux closure
-      @t2 = @ç.new s: { @p1 => -1, @p3 => 1 }, flux_closure: λ { |a| a * 0.5 }
+      @SR2 = @ç.new s: { @p1 => -1, @p3 => 1 }, flux_closure: λ { |a| a * 0.5 }
       # while this one even has domain specified:
-      @t3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, upstream_arcs: @p3, flux: λ { |a| a * 0.5 }
+      @SR3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, upstream_arcs: @p3, flux: λ { |a| a * 0.5 }
     end
 
     it "should init and work" do
-      assert_equal true, @t1.has_rate?
-      assert_equal [ @p1, @p2 ], @t1.upstream_arcs
-      assert_equal [ @p1, @p2, @p4 ], @t1.action_arcs
-      assert_equal [ @p1 ], @t2.domain
-      assert_equal [ @p1, @p3 ], @t2.action_arcs
-      assert_equal [ @p3 ], @t3.domain
-      assert_equal [ @p1, @p2, @p4 ], @t3.action_arcs
+      assert_equal true, @SR1.has_rate?
+      assert_equal [ @p1, @p2 ], @SR1.upstream_arcs
+      assert_equal [ @p1, @p2, @p4 ], @SR1.action_arcs
+      assert_equal [ @p1 ], @SR2.domain
+      assert_equal [ @p1, @p3 ], @SR2.action_arcs
+      assert_equal [ @p3 ], @SR3.domain
+      assert_equal [ @p1, @p2, @p4 ], @SR3.action_arcs
       # and flex them
-      @t1.fire! 1.0
+      @SR1.fire! 1.0
       assert_equal [ 0.8, 1.8, 4.2 ], [ @p1, @p2, @p4 ].map( &:marking )
-      @t2.fire! 1.0
+      @SR2.fire! 1.0
       assert_equal [ 0.4, 3.4 ], [ @p1, @p3 ].map( &:marking )
       # the action t3 cannot fire with delta time 1.0
-      assert_raises RuntimeError do @t3.fire! 1.0 end
+      assert_raises RuntimeError do @SR3.fire! 1.0 end
       assert_equal [ 0.4, 1.8, 3.4, 4.2 ], [ @p1, @p2, @p3, @p4 ].map( &:marking )
       # but it can fire with eg. delta time 0.1
-      @t3.fire! 0.1
+      @SR3.fire! 0.1
       assert_in_epsilon 0.23, @p1.marking, 1e-15
       assert_in_epsilon 1.63, @p2.marking, 1e-15
       assert_in_epsilon 3.4, @p3.marking, 1e-15
@@ -330,8 +343,15 @@ end
 describe "upstream and downstream reference mτs of places and transitions" do
   before do
     # skip "to speed up testing"
-    @pç = ::YPetri::Place
-    @tç = ::YPetri::Transition
+    @tç = tç = Class.new ::YPetri::Transition
+    @pç = pç = Class.new ::YPetri::Place
+    [ tç, pç ].each { |ç|
+      ç.class_exec {
+        define_method :Place do pç end
+        define_method :Transition do tç end
+        private :Place, :Transition
+      }
+    }
     @a = @pç.new( dflt_m: 1.0 )
     @b = @pç.new( dflt_m: 2.0 )
     @c = @pç.new( dflt_m: 3.0 )
@@ -384,18 +404,30 @@ end
 describe ::YPetri::Net do
   before do
     # skip "to speed up testing"
-    @ç = ::YPetri::Net
-    @pç, @tç = ::YPetri::Place, ::YPetri::Transition
+    @tç = tç = Class.new ::YPetri::Transition
+    @pç = pç = Class.new ::YPetri::Place
+    @nç = nç = Class.new ::YPetri::Net
+    [ tç, pç, nç ].each { |ç|
+      ç.class_exec {
+        define_method :Place do pç end
+        define_method :Transition do tç end
+        define_method :Net do nç end
+        private :Place, :Transition, :Net
+      }
+    }
+    @p1 = pç.new ɴ: "A", quantum: 0.1, marking: 1.1
+    @p2 = pç.new ɴ: "B", quantum: 0.1, marking: 2.2
+    @p3 = pç.new ɴ: "C", quantum: 0.1, marking: 3.3
+    @net = nç.new
+    [ @p1, @p2, @p3 ].each { |p| @net.include_place! p }
+    @p_not_included = pç.new ɴ: "X", m: 0
   end
 
   describe "net of 3 places and no transitions" do
     before do
-      @net = @ç.new
-      @p1 = @pç.new name: "A", quantum: 0.1, marking: 1.1
-      @p2 = @pç.new name: "B", quantum: 0.1, marking: 2.2
-      @p3 = @pç.new name: "C", quantum: 0.1, marking: 3.3
-      @p_not_included = @pç.new name: "X", marking: 0
-      [ @p1, @p2, @p3 ].each{ |p| @net.include_place! p }
+      @p1.m = 1.1
+      @p2.m = 2.2
+      @p3.m = 3.3
     end
 
     it "should expose its elements" do
@@ -422,15 +454,20 @@ describe ::YPetri::Net do
       assert @net == @net.dup
       assert @net.inspect.start_with? "YPetri::Net[ "
       assert @net.to_s.start_with? "Net[ 3"
+      assert @net.include?( @p1 )
+      assert ! @net.include?( @p_not_included )
       begin
-        @net.include_transition! @tç.new( s: { @p_not_included => -1 } )
+        @net.exclude_place! @p_not_included
+        @net.include_transition! YPetri::Transition.new( s: { @p_not_included => -1 } )
         flunk "Attempt to include illegal transition fails to raise"
       rescue; end
     end
 
     describe "plus 1 stoichio. transition with rate" do
       before do
-        @t1 = @tç.new ɴ: "T1", s: { @p1 => 1, @p2 => -1, @p3 => -1 }, rate: 0.01
+        @t1 = @tç.new!( ɴ: "T1",
+                        s: { @p1 => 1, @p2 => -1, @p3 => -1 },
+                        rate: 0.01 )
         @net.include_transition! @t1
       end
 
@@ -454,8 +491,8 @@ describe ::YPetri::Net do
       end
 
       it "should have #place & #transition for safe access to the said elements" do
-        @net.place( @p1 ).must_equal @p1
-        @net.transition( @t1 ).must_equal @t1
+        @net.send( :place, @p1 ).must_equal @p1
+        @net.send( :transition, @t1 ).must_equal @t1
       end
 
       it "has #new_simulation & #new_timed_simulation constructors" do
@@ -475,7 +512,7 @@ describe ::YPetri::Net do
         before do
           @net << ( @t2 = @tç.new s: { @p2 => -1, @p3 => 1 } )
         end
-        
+
         it "should expose its elements" do
           assert_equal [@t1, @t2], @net.transitions
           assert_equal ['T1', nil], @net.tt
@@ -540,33 +577,49 @@ end
 describe ::YPetri::Simulation do
   before do
     # skip "to make the testing faster"
-    ɱ = ::YPetri
-    @ç, @pç, @tç, @nç = ɱ::Simulation, ɱ::Place, ɱ::Transition, ɱ::Net
-    @p1 = ::YPetri::Place.new( name: "P1", default_marking: 1 )
-    @p2 = ::YPetri::Place.new( name: "P2", default_marking: 2 )
-    @p3 = ::YPetri::Place.new( name: "P3", default_marking: 3 )
-    @p4 = ::YPetri::Place.new( name: "P4", default_marking: 4 )
-    @p5 = ::YPetri::Place.new( name: "P5", default_marking: 5 )
-    @t1 = ::YPetri::Transition.new( ɴ: "T1",
-                                    s: { @p1 => -1, @p2 => -1, @p4 => 1 },
-                                    flux_closure: 0.1 )
-    @t2 = ::YPetri::Transition.new( ɴ: "T2",
-                                    s: { @p1 => -1, @p3 => 1 },
-                                    flux_closure: λ { |a| a * 0.5 } )
-    @t3 = ::YPetri::Transition.new( ɴ: "T3",
-                                    s: { @p1 => -1, @p2 => -1, @p4 => 1 },
-                                    domain: @p3, flux: λ { |a| a * 0.5 } )
-    @net = ::YPetri::Net.new << @p1 << @p2 << @p3 << @p4 << @p5 <<
-                                @t1 << @t2 << @t3
-    @s = ::YPetri::Simulation.new net: @net,
-                                  place_clamps: { @p1 => 2.0, @p5 => 2.0 },
-                                  initial_marking: { @p2 => @p2.default_marking,
-                                                     @p3 => @p3.default_marking,
-                                                     @p4 => @p4.default_marking }
+    @pç = pç = Class.new( ::YPetri::Place )
+    @tç = tç = Class.new( ::YPetri::Transition )
+    @nç = nç = Class.new( ::YPetri::Net )
+    [ @pç, @tç, @nç ].each { |klass|
+      klass.class_exec {
+        private
+        define_method :Place do pç end
+        define_method :Transition do tç end
+        define_method :Net do nç end
+      }
+    }
+    @p1 = @pç.new name: "P1", default_marking: 1
+    @p2 = @pç.new name: "P2", default_marking: 2
+    @p3 = @pç.new name: "P3", default_marking: 3
+    @p4 = @pç.new name: "P4", default_marking: 4
+    @p5 = @pç.new name: "P5", default_marking: 5
+    @t1 = @tç.new name: "T1",
+                  s: { @p1 => -1, @p2 => -1, @p4 => 1 },
+                  flux_closure: 0.1
+    @t2 = @tç.new name: "T2",
+                  s: { @p1 => -1, @p3 => 1 },
+                  flux_closure: λ { |a| a * 0.5 }
+    @t3 = @tç.new name: "T3",
+                  s: { @p1 => -1, @p2 => -1, @p4 => 1 },
+                  domain: @p3, flux: λ { |a| a * 0.5 }
+    @net = @nç.new << @p1 << @p2 << @p3 << @p4 << @p5 << @t1 << @t2 << @t3
+    @s = YPetri::Simulation.new net: @net,
+                                place_clamps: { @p1 => 2.0, @p5 => 2.0 },
+                                initial_marking: { @p2 => @p2.default_marking,
+                                                   @p3 => @p3.default_marking,
+                                                   @p4 => @p4.default_marking }
   end
 
   it "exposes the net" do
     @s.net.must_equal @net
+    @s.net.places.size.must_equal 5
+    assert @net.include? @t1
+    assert @s.net.include? @t1
+    assert @net.include? @t2
+    assert @s.net.include? @t2
+    assert @net.include? @t3
+    assert @s.net.include? @t3
+    @s.net.transitions.size.must_equal 3
   end
 
   it "exposes Petri net places" do
@@ -593,7 +646,7 @@ describe ::YPetri::Simulation do
     @s.tt_sym_( :tt ).must_equal @s.ttß_( :tt )
     @s.tt_( :ttß ).must_equal( { "T1" => :T1, "T2" => :T2, "T3" => :T3 } )
   end
-  
+
   it "exposes place clamps" do
     @s.place_clamps.must_equal( { @p1 => 2, @p5 => 2 } )
     @s.p_clamps.must_equal( { P1: 2, P5: 2 } )
@@ -641,7 +694,7 @@ describe ::YPetri::Simulation do
     [ @s.ᴍ, @s.marking_vector_of_free_places, @s.ᴍ_free ]
       .each &[:must_equal, @s.marking_vector]
   end
-  
+
   it "separately exposes marking of clamped places" do
     @s.marking_array_of_clamped_places.must_equal [ 2, 2 ]
     @s.marking_of_clamped_places.must_equal( { @p1 => 2, @p5 => 2 } )
@@ -662,7 +715,7 @@ describe ::YPetri::Simulation do
     @s.ᴍ_all.must_equal @s.marking_vector!
     @s.ᴍ!.must_equal @s.marking_vector!
   end
-  
+
   it "has #create_stoichiometry_matrix_for" do
     assert_equal Matrix.empty(3, 0), @s.create_stoichiometry_matrix_for( [] )
     assert_equal Matrix[[-1], [0], [1]], @s.create_stoichiometry_matrix_for( [@t1] )
@@ -1044,19 +1097,17 @@ describe ::YPetri::Workspace do
   before do
     # skip "to speed up testing"
     @w = ::YPetri::Workspace.new
-    @pp, @tt = [], []
-    @pp << @w.new_place( default_marking: 1.0, name: "AA" )
-    @pp << @w.new_place( default_marking: 2.0, name: "BB" )
-    @pp << ::YPetri::Place.new( ɴ: "CC", default_marking: 3.0 )
-    @w.include_place! @pp[-1]
-    @tt << @w.new_transition( s: { @pp[0] => -1, @pp[1] => -1, @pp[2] => 1 },
-                              rate: 0.1,
-                              ɴ: "AA_&_BB_assembly" )
-    @tt << ::YPetri::Transition.new( ɴ: "AA_appearing",
-                                     codomain: @pp[0],
-                                     rate: λ{ 0.1 },
-                                     stoichiometry: 1 )
-    @w.include_transition! @tt[-1]
+    a = @w.Place.new!( default_marking: 1.0, name: "AA" )
+    b = @w.Place.new!( default_marking: 2.0, name: "BB" )
+    c = @w.Place.new!( ɴ: "CC", default_marking: 3.0 )
+    t1 = @w.Transition.new! s: { a => -1, b => -1, c => 1 },
+                            rate: 0.1,
+                            ɴ: "AA_BB_assembly"
+    t2 = @w.Transition.new! ɴ: "AA_appearing",
+                            codomain: a,
+                            rate: λ{ 0.1 },
+                            stoichiometry: 1
+    @pp, @tt = [a, b, c], [t1, t2]
     @f_name = "test_output.csv"
     @w.set_imc @pp.τBᴍHτ( &:default_marking )
     @w.set_ssc step: 0.1, sampling: 10, target_time: 50
@@ -1066,10 +1117,10 @@ describe ::YPetri::Workspace do
   end
 
   it "should present places, transitions, nets, simulations" do
-    assert_kind_of ::YPetri::Net, @w.net
+    assert_kind_of ::YPetri::Net, @w.Net::Top
     assert_equal @pp[0], @w.place( "AA" )
     assert_equal "AA", @w.p( @pp[0] )
-    assert_equal @tt[0], @w.transition( "AA_&_BB_assembly" )
+    assert_equal @tt[0], @w.transition( "AA_BB_assembly" )
     assert_equal "AA_appearing", @w.t( @tt[1] )
     assert_equal @pp, @w.places
     assert_equal @tt, @w.transitions
@@ -1079,15 +1130,16 @@ describe ::YPetri::Workspace do
     assert_equal 3, @w.imc.size
     assert [0.1, 10, 50].each { |e| @w.ssc.include? e }
     assert_equal @sim, @w.simulation
-    assert_equal [:base], @w.ccc
-    assert_equal [:base], @w.imcc
-    assert_equal [:base], @w.sscc
+    assert_equal [:Base], @w.clamp_collections.keys
+    assert_equal [:Base], @w.initial_marking_collections.keys
+    assert_equal [:Base], @w.simulation_settings_collections.keys
     assert_equal ["AA", "BB", "CC"], @w.pp
-    assert_equal ["AA_&_BB_assembly", "AA_appearing"], @w.tt
-    assert_equal [nil], @w.nn
+    assert_equal ["AA_BB_assembly", "AA_appearing"], @w.tt
+    assert_equal ["Top"], @w.nn
   end
 
   it "should simulate" do
+    assert_equal 1, @w.simulations.size
     assert_kind_of( ::YPetri::Simulation, @w.simulation )
     assert_equal 2, @w.simulation.SR_transitions.size
     @tt[0].domain.must_equal [ @pp[0], @pp[1] ]
@@ -1117,9 +1169,8 @@ describe ::YPetri::Manipulator do
   it "has net basic points" do
     # --- net point related assets ---
     @m.net_point_reset
-    @m.net_point_to @m.workspace.net
-    @m.net.must_equal @m.workspace.net
-    @m.net_point_position.must_equal 0
+    @m.net_point_to @m.workspace.net( :Top )
+    @m.net.must_equal @m.workspace.Net::Top
     # --- simulation point related assets ---
     @m.simulation_point_reset
     @m.simulation_point_to nil
@@ -1127,22 +1178,22 @@ describe ::YPetri::Manipulator do
     @m.simulation_point_position.must_equal nil
     # --- cc point related assets ---
     @m.cc_point_reset
-    @m.cc_point_to :base
+    @m.cc_point_to :Base
     @m.cc.must_equal @m.workspace.clamp_collection
-    @m.cc.wont_equal :base
-    @m.cc_point_position.must_equal :base
+    @m.cc.wont_equal :Base
+    @m.cc_point_position.must_equal :Base
     # --- imc point related assets ---
     @m.imc_point_reset
-    @m.imc_point_to :base
+    @m.imc_point_to :Base
     @m.imc.must_equal @m.workspace.initial_marking_collection
-    @m.imc.wont_equal :base
-    @m.imc_point_position.must_equal :base
+    @m.imc.wont_equal :Base
+    @m.imc_point_position.must_equal :Base
     # --- ssc point related assets ---
     @m.ssc_point_reset
-    @m.ssc_point_to :base
+    @m.ssc_point_to :Base
     @m.ssc.must_equal @m.workspace.simulation_settings_collection
-    @m.ssc.wont_equal :base
-    @m.ssc_point_position.must_equal :base
+    @m.ssc.wont_equal :Base
+    @m.ssc_point_position.must_equal :Base
   end
 
   it "has basic selections" do
@@ -1169,20 +1220,23 @@ describe ::YPetri::Manipulator do
     [ @m.clamp_collections,
       @m.initial_marking_collections,
       @m.simulation_settings_collections ].map( &:size ).must_equal [ 1, 1, 1 ]
-    [ @m.ccc, @m.imcc, @m.sscc ].must_equal [[:base]] * 3
+    [ @m.clamp_collections,
+      @m.initial_marking_collections,
+      @m.simulation_settings_collections ]
+    .map( &:keys ).must_equal [[:Base]] * 3
     @m.pp.must_equal []
     @m.tt.must_equal []
-    @m.nn.must_equal [ nil ]         # ie. one nameless net
+    @m.nn.must_equal [ "Top" ]       # ie. :Top net spanning whole workspace
   end
   
   describe "slightly more complicated case" do
     before do
-      @p = @m.place ɴ: "P", default_marking: 1
-      @q = @m.place ɴ: "Q", default_marking: 1
-      @m.transition ɴ: "Tp", s: { P: -1 }, rate: 0.1
-      @m.transition ɴ: "Tq", s: { Q: 1 }, rate: λ{ 0.02 }
-      @m.clamp @p, 1.2
-      @m.initial_marking @q, 2
+      @p = @m.Place ɴ: "P", default_marking: 1
+      @q = @m.Place ɴ: "Q", default_marking: 1
+      @decay_t = @m.Transition ɴ: "Tp", s: { P: -1 }, rate: 0.1
+      @constant_flux_t = @m.Transition ɴ: "Tq", s: { Q: 1 }, rate: λ{ 0.02 }
+      @m.initial_marking @p => 1.2
+      @m.initial_marking @q => 2
       @m.set_step 0.01
       @m.set_sampling 1
       @m.set_time 30
@@ -1190,6 +1244,13 @@ describe ::YPetri::Manipulator do
     
     it "works" do
       @m.run!
+      @m.simulation.places.must_equal [ @p, @q ]
+      @m.simulation.transitions.must_equal [ @decay_t, @constant_flux_t ]
+      @m.simulation.SR_tt.must_equal [ "Tp", "Tq" ]
+      @m.simulation.sparse_stoichiometry_vector!( :Tp ).must_equal Matrix.column_vector( [-1, 0] )
+      @m.simulation.stoichiometry_matrix!.column_size.must_equal 2
+      @m.simulation.stoichiometry_matrix!.row_size.must_equal 2
+      @m.simulation.flux_vector!.row_size.must_equal 2
       @m.plot_recording
       sleep 3
     end
@@ -1212,26 +1273,6 @@ describe ::YPetri do
       :Workspace, :Manipulator ].each { |ß|
       assert_kind_of Module, ::YPetri.const_get( ß ) }
   end
-
-  describe "'typesafe access' methods Place, Transition, Net" do
-    before do
-      @a = ::YPetri::Place.new name: "Abc", marking: 7
-      @b = ::YPetri::Place.new name: "Bcd", marking: 8
-      @t = ::YPetri::Transition.new name: "Tuv", s: { @a => -1, @b => 1 }
-      @net = ::YPetri::Net.new( name: "XXX_Net" ) << @a << @b << @t
-    end
-
-    it "should work" do
-      ::YPetri.Net( @net ).must_equal @net
-      ::YPetri.Net( "XXX_Net" ).must_equal @net
-      ::YPetri.Net( :XXX_Net ).must_equal @net
-      ( ::YPetri.Net( "不知火" ) rescue :raised ).must_equal :raised
-      ::YPetri.Place( @a ).must_equal @a
-      ::YPetri.Place( :Abc ).must_equal @a
-      ::YPetri.Transition( @t ).must_equal @t
-      ::YPetri.Transition( :Tuv ).must_equal @t
-    end
-  end
 end
 
 
@@ -1242,40 +1283,40 @@ end
 # describe "Token game" do
 #   before do
 #     @m = YPetri::Manipulator.new
-#     @m.place name: "A"
-#     @m.place name: "B"
-#     @m.place name: "C", marking: 7.77
-#     @m.transition name: "A2B", stoichiometry: { A: -1, B: 1 }
-#     @m.transition name: "C_decay", stoichiometry: { C: -1 }, rate: 0.05
+#     @m.Place name: "A"
+#     @m.Place name: "B"
+#     @m.Place name: "C", marking: 7.77
+#     @m.Transition name: "A2B", stoichiometry: { A: -1, B: 1 }
+#     @m.Transition name: "C_decay", stoichiometry: { C: -1 }, rate: 0.05
 #   end
 
 #   it "should work" do
-#     @m.p( :A ).marking = 2
-#     @m.p( :B ).marking = 5
+#     @m.place( :A ).marking = 2
+#     @m.place( :B ).marking = 5
 #     @m.places.map( &:name ).must_equal ["A", "B", "C"]
 #     @m.places.map( &:marking ).must_equal [2, 5, 7.77]
-#     @m.t( :A2B ).connectivity.must_equal [ @m.p( :A ), @m.p( :B ) ]
-#     @m.t( :A2B ).fire!
+#     @m.transition( :A2B ).connectivity.must_equal [ @m.place( :A ), @m.place( :B ) ]
+#     @m.transition( :A2B ).fire!
 #     @m.places.map( &:marking ).must_equal [1, 6, 7.77]
-#     @m.t( :A2B ).fire!
-#     @m.p( :A ).marking.must_equal 0
-#     @m.p( :B ).marking.must_equal 7
-#     2.times do @m.t( :C_decay ).fire! 1 end
-#     @m.t( :C_decay ).fire! 0.1
-#     200.times do @m.t( :C_decay ).fire! 1 end
-#     assert_in_delta @m.p( :C ).marking, 0.00024, 0.00001
+#     @m.transition( :A2B ).fire!
+#     @m.place( :A ).marking.must_equal 0
+#     @m.place( :B ).marking.must_equal 7
+#     2.times do @m.transition( :C_decay ).fire! 1 end
+#     @m.transition( :C_decay ).fire! 0.1
+#     200.times do @m.transition( :C_decay ).fire! 1 end
+#     assert_in_delta @m.place( :C ).marking, 0.00024, 0.00001
 #   end
 # end
 
 # describe "Basic use of TimedSimulation" do
 #   before do
 #     @m = YPetri::Manipulator.new
-#     @m.place( name: "A", default_marking: 0.5 )
-#     @m.place( name: "B", default_marking: 0.5 )
-#     @m.transition( name: "A_pump",
+#     @m.Place( name: "A", default_marking: 0.5 )
+#     @m.Place( name: "B", default_marking: 0.5 )
+#     @m.Transition( name: "A_pump",
 #                    stoichiometry: { A: -1 },
 #                    rate: proc { 0.005 } )
-#     @m.transition( name: "B_decay",
+#     @m.Transition( name: "B_decay",
 #                    stoichiometry: { B: -1 },
 #                    rate: 0.05 )
 #   end
@@ -1298,21 +1339,21 @@ end
 #     @m.set_step 60
 #     @m.set_sampling 300
 #     @m.set_target_time 60 * 60 * 2
-#     AMP = @m.place( name: :AMP, m!: 8695.0 )
-#     ADP = @m.place( name: :ADP, m!: 6521.0 )
-#     ATP = @m.place( name: :ATP, m!: 3152.0 )
-#     Deoxycytidine = @m.place( name: :Deoxycytidine, m!: 0.5 )
-#     DeoxyCTP = @m.place( name: :DeoxyCTP, m!: 1.0 )
-#     DeoxyGMP = @m.place( name: :DeoxyGMP, m!: 1.0 )
-#     UMP_UDP_pool = @m.place( name: :UMP_UDP_pool, m!: 2737.0 )
-#     DeoxyUMP_DeoxyUDP_pool = @m.place( name: :DeoxyUMP_DeoxyUDP_pool, m!: 0.0 )
-#     DeoxyTMP = @m.place( name: :DeoxyTMP, m!: 3.3 )
-#     DeoxyTDP_DeoxyTTP_pool = @m.place( name: :DeoxyTDP_DeoxyTTP_pool, m!: 5.0 )
-#     Thymidine = @m.place( name: :Thymidine, m!: 0.5 )
-#     TK1 = @m.place( name: :TK1, m!: 100_000 )
-#     TYMS = @m.place( name: :TYMS, m!: 100_000 )
-#     RNR = @m.place( name: :RNR, m!: 100_000 )
-#     TMPK = @m.place( name: :TMPK, m!: 100_000 )
+#     AMP = @m.Place( name: :AMP, m!: 8695.0 )
+#     ADP = @m.Place( name: :ADP, m!: 6521.0 )
+#     ATP = @m.Place( name: :ATP, m!: 3152.0 )
+#     Deoxycytidine = @m.Place( name: :Deoxycytidine, m!: 0.5 )
+#     DeoxyCTP = @m.Place( name: :DeoxyCTP, m!: 1.0 )
+#     DeoxyGMP = @m.Place( name: :DeoxyGMP, m!: 1.0 )
+#     UMP_UDP_pool = @m.Place( name: :UMP_UDP_pool, m!: 2737.0 )
+#     DeoxyUMP_DeoxyUDP_pool = @m.Place( name: :DeoxyUMP_DeoxyUDP_pool, m!: 0.0 )
+#     DeoxyTMP = @m.Place( name: :DeoxyTMP, m!: 3.3 )
+#     DeoxyTDP_DeoxyTTP_pool = @m.Place( name: :DeoxyTDP_DeoxyTTP_pool, m!: 5.0 )
+#     Thymidine = @m.Place( name: :Thymidine, m!: 0.5 )
+#     TK1 = @m.Place( name: :TK1, m!: 100_000 )
+#     TYMS = @m.Place( name: :TYMS, m!: 100_000 )
+#     RNR = @m.Place( name: :RNR, m!: 100_000 )
+#     TMPK = @m.Place( name: :TMPK, m!: 100_000 )
 #     TK1_kDa = 24.8
 #     TYMS_kDa = 66.0
 #     RNR_kDa = 140.0
@@ -1371,29 +1412,29 @@ end
 #     TMPK_DeoxyTMP_Km = 12.0
 
 #     # transitions
-#     @m.transition name: :TK1_Thymidine_DeoxyTMP,
+#     @m.Transition name: :TK1_Thymidine_DeoxyTMP,
 #                   domain: [ Thymidine, TK1, DeoxyTDP_DeoxyTTP_pool, DeoxyCTP, Deoxycytidine, AMP, ADP, ATP ],
 #                   stoichiometry: { Thymidine: -1, DeoxyTMP: 1 },
 #                   rate: proc { |rc, e, pool1, ci2, ci3, master1, master2, master3|
 #                                ci1 = pool1 * master3 / ( master2 + master3 )
 #                                MMi.( rc, TK1_a, TK1_kDa, e, TK1_Thymidine_Km,
 #                                      ci1 => 13.5, ci2 => 0.8, ci3 => 40.0 ) }
-#     @m.transition name: :TYMS_DeoxyUMP_DeoxyTMP,
+#     @m.Transition name: :TYMS_DeoxyUMP_DeoxyTMP,
 #                   domain: [ DeoxyUMP_DeoxyUDP_pool, TYMS, AMP, ADP, ATP ],
 #                   stoichiometry: { DeoxyUMP_DeoxyUDP_pool: -1, DeoxyTMP: 1 },
 #                   rate: proc { |pool, e, master1, master2, master3|
 #                           rc = pool * master2 / ( master1 + master2 )
 #                           MMi.( rc, TYMS_a, TYMS_kDa, e, TYMS_DeoxyUMP_Km ) }
-#     @m.transition name: :RNR_UDP_DeoxyUDP,
+#     @m.Transition name: :RNR_UDP_DeoxyUDP,
 #                   domain: [ UMP_UDP_pool, RNR, DeoxyUMP_DeoxyUDP_pool, AMP, ADP, ATP ],
 #                   stoichiometry: { UMP_UDP_pool: -1, DeoxyUMP_DeoxyUDP_pool: 1 },
 #                   rate: proc { |pool, e, master1, master2, master3|
 #                                rc = pool * master2 / ( master1 + master2 )
 #                                MMi.( rc, RNR_a, RNR_kDa, e, RNR_UDP_Km ) }
-#     @m.transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
+#     @m.Transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
 #                   stoichiometry: { DeoxyTDP_DeoxyTTP_pool: -1 },
 #                   rate: proc { DNA_creation_speed / 4 }
-#     @m.transition name: :TMPK_DeoxyTMP_DeoxyTDP,
+#     @m.Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
 #                   domain: [ DeoxyTMP, TMPK, ADP,
 #                             DeoxyTDP_DeoxyTTP_pool,
 #                             DeoxyGMP, AMP, ATP ],

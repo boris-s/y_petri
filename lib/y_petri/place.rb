@@ -3,7 +3,7 @@
 module YPetri
 
   # This class represents Petri net places.
-
+  # 
   class Place
     USE_QUANTUM = false
     include NameMagic
@@ -13,16 +13,28 @@ module YPetri
     attr_accessor :marking           # instance-attached marking
     alias :value :marking
     alias :m :marking
-    alias :value= :marking=
-    alias :m= :marking=
 
-    attr_reader :upstream_arcs # Transitions that add/remove tokens from here.
+    # Alias for #marking=
+    # 
+    def value=( marking ); self.marking = marking end
+
+    # Alias for #marking=
+    # 
+    def m=( marking ); self.marking = marking end
+    
+    # Transitions that can directly add/remove tokens from this place.
+    # It is aliased as #upstream_transitions and #ϝ. (ϝ (Greek digamma) looks
+    # like "function", which we know from spreadsheet software: A collection
+    # of transitions directly affecting marking of this place.)
+    # 
+    attr_reader :upstream_arcs
     alias :upstream_transitions :upstream_arcs
-    # Greek digamma ϝ alias is mnemonic for "function" in the spreadsheet sense:
-    # That is, collection of transitions affecting this place.
     alias :ϝ :upstream_arcs
 
-    attr_reader :downstream_arcs # Transitions that depend on this place.
+    # Transitions whose action directly depends on this place. Aliased
+    # as #downstream_transitions.
+    # 
+    attr_reader :downstream_arcs
     alias :downstream_transitions :downstream_arcs
 
     # Named parameters supplied upon place initialization may include:
@@ -160,5 +172,17 @@ module YPetri
       qς = q.nil? ? '' : ", quantum: #{q}"
       return nmς, dς, qς
     end
+
+    # Place, Transition, Net class
+    # 
+    def Place; ::YPetri::Place end
+    def Transition; ::YPetri::Transition end
+    def Net; ::YPetri::Net end
+
+    # Instance identification methods.
+    # 
+    def place( which ); Place().instance( which ) end
+    def transition( which ); Transition().instance( which ) end
+    def net( which ); Net().instance( which ) end
   end # class Place
 end # module YPetri

@@ -1,218 +1,294 @@
 #encoding: utf-8
 
 module YPetri
-  
+
   # Workspace holds places, transitions, nets and other assets needed for
   # simulation (settings, clamps, initial markings etc.). It has basic methods
   # to handle creation of places, transitions and other mentioned
   # assets. Workspace interface is not considered too public; it is used
   # mainly by Manipulator to create convenient public interface.
-
+  # 
+  # --- net point --------------------------------------------------------
+  # Net instances are stored in ::YPetri::Workspace nets array. The
+  # instances themselves can have name.
+  # 
+  # --- simulation point -------------------------------------------------
+  # Simulation instances in the workspace are stored in @simulations hash
+  # of key => instance pairs. The key can be either specified by the
+  # caller (as first ordered parameter of Workspace#new_timed_simulation
+  # method), or it will be constructed automatically by the said method
+  # using simulation settings. Simulation point then refers to this key.
+  # Simulation instances themselves do not have name.
+  # 
   class Workspace
-    attr_reader :clamp_collections,
-    :initial_marking_collections,
-    :simulation_settings_collections
-    
-    alias :c_collections :clamp_collections
-    alias :im_collections :initial_marking_collections
-    alias :ss_collections :simulation_settings_collections
+    include NameMagic
 
+    # Workspace-specific place class.
+    # 
+    attr_reader :Place
+
+    # Workspace-specific transition class.
+    # 
+    attr_reader :Transition
+
+    # Workspace-specific net class.
+    # 
+    attr_reader :Net
+
+    attr_reader :clamp_collections,
+                :initial_marking_collections,
+                :simulation_settings_collections
+
+    # Upon initialization, a Workspace instance will create its own anonymous
+    # subclasses of <tt>YPetri::Place</tt>, <tt>YPetri::Transition</tt> and
+    # <tt>YPetri::Net</tt>. These are available under readers <tt>#Place</tt>,
+    # <tt>#Transition</tt>, <tt>#Net</tt>. Instances of these can be created
+    # by calling <tt>#new</tt> construtor on them. Furthermore, a <tt>#Net</tt>
+    # instance named "Top" will be created, representing a Petri net, that
+    # includes all the places and all the transitions of the workspace.
+    #
+    # Apart from Petri net objects, a workspace holds clamp collections,
+    # initial marking collections, simulation settings collections and
+    # simulations themselves. To create a simulation, one must specify which
+    # clamp collection, initial marking collection, and which collection of
+    # simulation settings to use.
+    #
+    # A <em>clamp</em>, more specifically, <em>place clamp</em> or <em>marking
+    # clamp</em>, means a fixed value, at which the marking of a particular
+    # place is held. Similarly, <em>initial marking</em> of a place is the
+    # marking held by the place when the simulation starts. For example, having
+    # places named "P1".."P5", places "P1" and "P2" could be clamped to marking
+    # 4 and 5, written as follows:
+    # 
+    # * clamps = { P1: 4, P2: 5 }
+    #
+    # Places "P3", "P4", "P5" are thus <em>free</em>, which means that their
+    # initial marking has to be specified (let's say, 1, 2 and 3):
+    #
+    # * initial_markings = { P3: 1, P4: 2, P5: 3 }
+    #
+    # As for simulation settings, the 3 common parameters (at least for
+    # <tt>YPetri::TimedSimulation</tt> class) are <em>step_size</em>,
+    # <em>sampling_period</em>, <em>target_time</em>. For example, default
+    # simulation settings are:
+    #
+    # * default_ss = { step_size: 0.1, sampling_period: 5, target_time: 60 }
+    # 
     def initialize
-      @places = Array.new
-      @transitions = Array.new
-      @nets = [ Net.new ]
+      # Place subclass specific to this workspace
+      @Place = workspace_specific_place_class = Class.new Place
+      # Transition subclass specific to this workspace
+      @Transition = workspace_specific_transition_class = Class.new Transition
+      # Net subclass specific to this workspace
+      @Net = workspace_specific_net_class = Class.new Net
+      # Let's explain to these new anonymous subclasses that they
+      # should work together by modifying their class knowledge methods:
+      [ @Place, @Transition, @Net ].each { |klass|
+        klass.class_exec {
+          define_method :Place do workspace_specific_place_class end
+          define_method :Transition do workspace_specific_transition_class end
+          define_method :Net do workspace_specific_net_class end
+          private :Place, :Transition, :Net
+        }
+      }
+      # Create the top net instance (containing all the places and transitons
+      # of this workspace)
+      @Net.new name: :Top
+      # Set hook for new @place to add itself automatically to the top net
+      @Place.name_magic_hook { |new_inst| Net()::Top << new_inst }
+      # Set hook for new @transition to add itself automatically to the top net
+      @Transition.name_magic_hook { |new_inst| Net()::Top << new_inst }
+      # A hash of simulations of this workspace { simulation => its settings }
       @simulations = {}
-      @clamp_collections = { base: {} }
-      @initial_marking_collections = { base: {} }
-      @simulation_settings_collections = { base: DEFAULT_SIMULATION_SETTINGS }
+      # A hash of clamp collections { collection name => clamp hash }
+      @clamp_collections = { Base: {} }
+      # A hash of initial marking collections { collection name => init. m. hash }
+      @initial_marking_collections = { Base: {} }
+      # A hash of sim. set. collections { collection name => sim. set. hash }
+      @simulation_settings_collections = { Base: DEFAULT_SIMULATION_SETTINGS }
     end
 
-    attr_reader :places, :transitions, :nets, :simulations
+    # Returns a place specified by the argument. If name (string or symbol) is
+    # given, place instance is returned. If a place instance is given, it is
+    # returned unchanged.
+    # 
+    def place which; @Place.instance which end
 
+    # Returns a transition specified by the argument. If name (string or symbol)
+    # is given, transition instance is returned. If a transition instance is
+    # given, it is returned unchanged.
+    # 
+    def transition which; @Transition.instance which end
+
+    # Returns a net specified by the argument. If name (string or symbol) is
+    # given, net instance is returned.
+    # 
+    def net which; @Net.instance which end
+
+    # Returns the name of a place specified by the argument.
+    # 
+    def p which; place( which ).name end
+
+    # Returns the name of a transition specified by the argument.
+    # 
+    def t which; transition( which ).name end
+
+    # Returns the name of a net specified by the argument.
+    # 
+    def n which; net( which ).name end
+
+    # Places in the workspace.
+    # 
+    def places; @Place.instances.keys end
+
+    # Transitions in the workspace.
+    # 
+    def transitions; @Transition.instances.keys end
+
+    # Nets in the workspace.
+    # 
+    def nets; @Net.instances.keys end
+
+    # Simulations in the workspace.
+    # 
+    def simulations; @simulations end
+
+    # Names of places in the workspace.
+    # 
     def pp; places.map &:name end
+
+    # Names of transitions in the workspace.
+    # 
     def tt; transitions.map &:name end
+
+    # Names of nets in the workspace.
+    # 
     def nn; nets.map &:name end
 
-    def ccc; @clamp_collections.keys end
-    def imcc; @initial_marking_collections.keys end
-    def sscc; @simulation_settings_collections.keys end
+    # Names of clamp collections in the workspace.
+    # 
+    def clamp_cc; @clamp_collections.keys end
 
-    # Presents a clamp collection specified by the argument
-    def clamp_collection id=:base; @clamp_collections[id] end
+    # Names of initial marking collections in the workspace.
+    # 
+    def initial_marking_cc; @initial_marking_collections.keys end
+
+    # Names of simulation settings collections in the workspace.
+    # 
+    def simulation_settings_cc; @simulation_settings_collections.keys end
+
+    # Presents a clamp collection specified by the argument.
+    # 
+    def clamp_collection name=:Base
+      @clamp_collections[name]
+    end
     alias :cc :clamp_collection
 
-    # Presents a marking collection specified by the argument
-    def initial_marking_collection id=:base
-      @initial_marking_collections[id] end
+    # Presents a marking collection specified by the argument.
+    # 
+    def initial_marking_collection name=:Base
+      @initial_marking_collections[name]
+    end
     alias :imc :initial_marking_collection
 
-    # Presents a collection of simulation settings spec. by the argument
-    def simulation_settings_collection id=:base
-      @simulation_settings_collections[id] end
+    # Presents a simulation settings collection specified by the argument.
+    # 
+    def simulation_settings_collection name=:Base
+      @simulation_settings_collections[name]
+    end
     alias :ssc :simulation_settings_collection
 
-    # Sets the clamp collection whose id is given as the first argument to
-    # be equal to the hash supplied as the second argument.
-    def set_clamp_collection id=:base, hsh
-      @clamp_collections[id] = hsh.aE_kind_of Hash
+    # Creates a clamp collection.
+    # 
+    def set_clamp_collection( name=:Base, clamp_hash )
+      @clamp_collections[name] =
+        clamp_hash.aE_kind_of Hash
     end
     alias :set_cc :set_clamp_collection
 
-    # Sets the initial marking collection whose id is given as the first
-    # argument to be equal to the hash supplied as the second argument.
-    def set_initial_marking_collection id=:base, hsh
-      @initial_marking_collections[id] = hsh.aE_kind_of Hash
+    # Creates an initial marking collection.
+    # 
+    def set_initial_marking_collection( name=:Base, initial_marking_hash )
+      @initial_marking_collections[name] =
+        initial_marking_hash.aE_kind_of Hash
     end
     alias :set_imc :set_initial_marking_collection
 
-    # Sets the collection of simulation settings whose id is given as the
-    # first argument to be equal to the hash supplied as the second argument.
-    def set_simulation_settings_collection id=:base, hsh
-      @simulation_settings_collections[id] = hsh.aE_kind_of Hash
+    # Creates a simulation settings collection. Basic simulation settings are:
+    # * step_size: 0.1 by default
+    # * sampling_period: 5 by default
+    # * target_time: 60 by default
+    # 
+    def set_simulation_settings_collection( name=:Base,
+                                            simulation_settings_hash )
+      @simulation_settings_collections[name] =
+        simulation_settings_hash.aE_kind_of Hash
     end
     alias :set_ssc :set_simulation_settings_collection
 
     # Presents a simulation specified by the argument, which must be a hash
-    # with four items: :net, 
-    def simulation *aa; oo = aa.extract_options!
-      oo.may_have :net, syn!: :n
-      net_instance = net( oo[:net] || net )
-      cc_id = oo.may_have( :clamp_collection, syn!: :cc ) || :base
-      imc_id = oo.may_have( :initial_marking_collection, syn!: :imc ) || :base
-      ssc_id = oo.may_have( :simulation_settings_collection, syn!: :ssc ) || :base
-      key = if aa.empty? then
+    # with four items: (:net, :clamp_collection, :inital_marking_collection and
+    # :simulation_settings_collection)
+    # 
+    def simulation settings={}
+      key = if settings.is_a? Hash then
+              net_instance = net( settings[:net] || self.Net::Top )
+              cc_id = settings
+                .may_have( :clamp_collection, syn!: :cc ) || :Base
+              imc_id = settings
+                .may_have( :initial_marking_collection, syn!: :imc ) || :Base
+              ssc_id = settings
+                .may_have( :simulation_settings_collection, syn!: :ssc ) || :Base
               { net: net_instance, cc: cc_id, imc: imc_id, ssc: ssc_id }
-            elsif aa.size > 1 then raise AE, "Too many parameters"
-            else key = aa[0] end
-      simulations[ key ]
+            else settings end
+      @simulations[ key ]
     end
 
     # Makes a new timed simulation. Named arguments are same as for
-    # TimedSimulation.new, but in addition, one ordered argument can be
-    # supplied to serv as a key in the workspace list of simulations.
-    def new_timed_simulation *aa; oo = aa.extract_options!
-      oo.may_have( :net, syn!: :n )
-      net_instance = net( oo[:net] || net )
-      cc_id = oo.may_have( :clamp_collection, syn!: :cc ) || :base
-      imc_id = oo.may_have( :initial_marking_collection, syn!: :imc ) || :base
-      ssc_id = oo.may_have( :simulation_settings_collection, syn!: :ssc ) ||
-        :base
-      key = if aa.empty? then
-              { net: net_instance, cc: cc_id, imc: imc_id, ssc: ssc_id }
-            elsif aa.size > 1 then raise AE, "Too many parameters"
-            else key = aa[0] end
-      args = ssc( ssc_id ).merge( initial_marking: imc( imc_id ),
-                        place_clamps: cc( cc_id ) )
-      # Create a new simulation instance
-      instance = net_instance.new_timed_simulation args
-      # Make a reference to it from the simulations collection
-      simulations[ key ] = instance
-    end
-
-    # Creates a new place in the workspace, arguments as Place.new
-    def new_place *aa, &b; include_place! ::YPetri::Place.new *aa, &b end
-
-    # Includes an existing place in the workspace
-    def include_place! instance; instance.aE_is_a ::YPetri::Place
-      ɴ = instance.name
-      raise "Another place named #{ɴ} already in this workspace!" unless
-        places.select { |p| p.name == ɴ && p != instance }.empty?
-      places << instance unless places.include? instance
-      raise "Another place named #{ɴ} already in the top net!" unless
-        net.places.select { |p| p.name == ɴ && p != instance }.empty?
-      net << instance unless @nets.include? instance
-      # Let us notice the default marking into :base collection, if given
-      imc( :base ).update( instance => instance.default_marking ) if
-        instance.default_marking
-      return instance
-    end
-
-    # Creates a new transition in the workspace, arguments as Transition.new
-    def new_transition *aa, &b
-      include_transition! ::YPetri::Transition.new *aa, &b
-    end
-
-    # Includes an existing transition in the workspace
-    def include_transition! instance; instance.aE_is_a ::YPetri::Transition
-      ɴ = instance.name
-      raise "Another transition named #{ɴ} already in this workspace!" unless
-        transitions.select { |t| t.name == ɴ && t != instance }.empty?
-      transitions << instance unless transitions.include? instance
-      raise "Another transition named #{ɴ} already in the top net!" unless
-        net.transitions.select { |t| t.name == ɴ && t != instance }.empty?
-      # Top net relied upon to check legality of the transition's arcs
-      net << instance unless nets.include? instance
-      return instance
-    end
-
-    # Creates a new net in the workspace, arguments as Net.new
-    def new_net *aa, &b; include_net! ::YPetri::Net.new *aa, &b end
-
-    # Includes an existing net int the workspace
-    def include_net! instance; instance.aE_is_a ::YPetri::Net
-      ɴ = instance.name
-      raise "Another net named #{ɴ} already in this workspace!" unless
-        nets.select { |n| n.name = ɴ && t != instance }.empty?
-      nets << instance unless nets.include? instance
-      return instance
-    end
-
-    # Includes an object in the workspace
-    def << o
-      case o
-      when ::YPetri::Place then include_place! o
-      when ::YPetri::Transition then include_transition! o
-      when ::YPetri::Net then include_net! o
-      else raise "unexpected argument class: #{o}" end
-    end      
-
-    # Access to the workspace's nets. If net is not specified in the argument,
-    # default (top) net of the workspace is returned.
-    def net arg=ℒ()
-      return @nets.first if arg.ℓ?
-      @nets[arg] rescue nets.include?( i = ::YPetri::Net( arg ) ) ? i : nil
-    end
-
-    # Safe access of place instances
-    def place arg
-      case arg
-      when ::YPetri::Place then
-        if places.include? arg then arg else
-          raise AE, "Place #{arg} not in this workspace." end
-      when String, Symbol then
-        if pp.include? arg.to_s then
-          selection = places.select { |p| p.name == arg.to_s }
-          raise "More than one place with name '#{arg}'" +
-            "exists in this workspace" if selection.size > 1
-          selection.first
-        else raise AE, "Place named #{arg} not included in this workspace." end
-      else raise AE, "Unexpected argument class: #{arg.class}." end
-    end
-
-    # Safe access of place names
-    def p arg; place( arg ).name end
-
-    # Safe access of transition instances
-    def transition arg
-      case arg
-      when ::YPetri::Transition then
-        if transitions.include? arg then arg else
-          raise AE, "Transition #{arg} not included in this workspace." end
-      when String, Symbol then
-        if tt.include? arg.to_s then
-          selection = transitions.select { |t| t.name == arg.to_s }
-          raise "More than one transition with name '#{arg}'" +
-            "exists in this workspace" if selection.size > 1
-          selection.first
-        else
-          raise AE, "Transition named #{arg} not included in this workspace."
-        end
+    # TimedSimulation.new, but in addition, :name named argument can be
+    # supplied to serve a name for the simulation in this workspace.
+    # 
+    def new_timed_simulation settings={}
+      settings.must_be_kind_of Hash
+      net_instance = net( settings[:net] || self.Net::Top )
+      cc_id = settings
+        .may_have( :clamp_collection, syn!: :cc ) || :Base
+      imc_id = settings
+        .may_have( :initial_marking_collection, syn!: :imc ) || :Base
+      ssc_id = settings
+        .may_have( :simulation_settings_collection, syn!: :ssc ) || :Base
+      settings.may_have :name, syn!: :ɴ
+      key = settings[:name] ||
+        { net: net_instance, cc: cc_id, imc: imc_id, ssc: ssc_id }
+      # let's clarify what we got so far
+      simulation_settings = ssc( ssc_id )
+      clamp_hash = cc( cc_id )
+      im_hash = imc( imc_id )
+      # Now let's make sure to use places' :default_marking in those cases,
+      # where no clamp or no explicit initial marking is specified
+      untreated_places = net_instance.places.select { |place|
+        ! clamp_hash.keys.map { |key| place( key ) }.include? place and
+        ! im_hash.keys.map { |key| place( key ) }.include? place
+      }
+      im_complement = Hash[ untreated_places
+                              .zip( untreated_places.map &:default_marking ) ]
+      awol = im_complement.select { |key, val| val.nil? }
+      txt = "Unable to instantiate TimedSimulation: " +
+        "Missing clamp or initial marking for %s."
+      case awol.size
+      when 0 then im_hash = im_hash.merge im_complement
+      when 1 then raise ArgumentError, txt % awol.keys[0]
+      when 2 then raise ArgumentError, txt % "#{awol.keys[0]} and #{awol.keys[1]}"
+      when 3 then
+        raise ArgumentError, txt %
+          "#{awol.keys[0]}, #{awol.keys[1]} and #{awol.keys[2]}"
       else
-        raise AE, "Unexpected argument class: #{arg.class}."
+        raise ArgumentError, txt %
+          "#{awol.keys[0]}, #{awol.keys[1]} and #{awol.size - 2} other places"
       end
+      named_args = simulation_settings.merge( initial_marking: im_hash,
+                                              place_clamps: clamp_hash )
+      @simulations[ key ] = net_instance.new_timed_simulation named_args
     end
-
-    # Safe access of transition names
-    def t arg; transition( arg ).name end
   end # class Workspace
 end # module YPetri

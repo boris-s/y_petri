@@ -39,13 +39,23 @@ module YPetri
       end        
     end
 
-    def initialize *aa; oo = aa.extract_options!
+    def initialize *args; oo = args.extract_options!
       # ------------ Net --------------
       # Currently, @net is immutable within Simulation class. In other words,
       # upon initialize, Simulation forms a 'mental image' of the net, which it
       # does not change anymore, regardless of what happens to the original net.
-      @net = oo.must_have :net do |o| o.declares_module_compliance? Net end.dup
-      @places, @transitions = @net.places.dup, @net.transitions.dup
+      oo.must_have :net do |o| o.declares_module_compliance? ::YPetri::Net end
+      net = oo[:net]
+      @net = net.dup
+      @places = @net.places.dup
+      @transitions = @net.transitions.dup
+
+      self.singleton_class.class_exec {
+        define_method :Place do net.send :Place end
+        define_method :Transition do net.send :Transition end
+        define_method :Net do net.send :Net end
+        private :Place, :Transition, :Net
+      }
 
       # ---- Simulation parameters ----
       # From Simulation's point of view, there are 2 kinds of places: free and
@@ -54,40 +64,29 @@ module YPetri
       # expected as hash type named parameters:
       @place_clamps =
         ( oo.may_have( :place_clamps, syn!: :marking_clamps ) || {} )
-        .with_keys do |key| ::YPetri::Place( key ) end
+        .with_keys do |key| place( key ) end
       @initial_marking =
         ( oo.may_have( :initial_marking, syn!: :initial_marking_vector ) || {} )
-        .with_keys do |key| ::YPetri::Place( key ) end
-      [ @place_clamps, @initial_marking ].each { |hsh|
-        hsh.aE_is_a Hash          # both are required to be hashes
-        hsh.with_keys do |key|    # with places or place names as keys
-          case key
-          when Place then places.find { |p| p == key } or
-              raise AE, "Place '#{key}' not in the simulated net."
-          when String, Symbol then places.find { |p| p.name == key.to_s } or
-              raise AE, "Place named '#{key}' not in the simulated net."
-          else raise AE, "When specifying place clamps and initial marking," +
-              "each key of the hash must be either a Place instance or a name"
-          end
-        end
-        hsh.keys.aE_equal hsh.keys.uniq # keys must be unique
-        hsh.values.aE_all_numeric    # values must be numeric (for now)
-      } # each |hsh|
+        .with_keys do |key| place( key ) end
+      # keys in the hashes must be unique
+      @place_clamps.keys.aE_equal @place_clamps.keys.uniq
+      @initial_marking.keys.aE_equal @initial_marking.keys.uniq
 
       # ------ Consistency check ------
-      # Clamped place must not have initial marking:
-
-      # FIXME: Commented out for now
-      # @place_clamps.keys.each { |p|
-      #   p.aE_not "clamped place #{p}", "have specified initial marking" do |p|
-      #     @initial_marking.keys.include? p
+      # # Clamped places must not have explicit initial marking specified:
+      # @place_clamps.keys.each { |place|
+      #   place.aE_not "clamped place #{place}",
+      #                "have explicitly specified initial marking" do |place|
+      #     @initial_marking.keys.include? place
       #   end
       # }
 
       # Each place must be treated: either clamped, or have initial marking
-      places.each { |p|
-        p.aE "have either clamp or initial marking", "place #{p}" do |p|
-          @place_clamps.keys.include?( p ) || @initial_marking.keys.include?( p )
+      places.each { |place|
+        place.aE "have either clamp or initial marking",
+                 "place #{p}" do |place|
+          @place_clamps.keys.include?( place ) ||
+            @initial_marking.keys.include?( place )
         end
       }
 
@@ -447,6 +446,7 @@ module YPetri
     # Stoichiometry matrix for stoichiometric transitions with rate.
     # By calling this method, the caller asserts that there are only
     # stoichiometric transitions with rate in the simulation (or error).
+    # 
     def stoichiometry_matrix!
       txt = "The simulation contains also non-stoichiometric transitions. " +
             "Use method #stoichiometry_matrix_for_stoichiometric_transitions."
@@ -1341,8 +1341,11 @@ module YPetri
 
     # For a transition specified by the argument, this method returns a sparse
     # stoichiometry vector mapped to free places of the simulation.
-    def sparse_stoichiometry_vector tr; t = transition( tr )
-      raise AE, "Transition #{tr} not stoichiometric!" unless t.stoichiometric?
+    # 
+    def sparse_stoichiometry_vector transition
+      t = transition( transition )
+      raise AE, "Transition #{transition} not stoichiometric!" unless
+        t.stoichiometric?
       Matrix.correspondence_matrix( t.codomain, free_places ) *
         Matrix.column_vector( t.stoichiometry )
     end
@@ -1350,8 +1353,11 @@ module YPetri
     
     # For a transition specified by the argument, this method returns a sparse
     # stoichiometry vector mapped to all the places of the simulation.
-    def sparse_stoichiometry_vector! tr; t = transition( tr )
-      raise AE, "Transition #{tr} not stoichiometric!" unless t.stoichiometric?
+    # 
+    def sparse_stoichiometry_vector! transition
+      t = transition( transition )
+      raise AE, "Transition #{transition} not stoichiometric!" unless
+        t.stoichiometric?
       Matrix.correspondence_matrix( t.codomain, places ) *
         Matrix.column_vector( t.stoichiometry )
     end
@@ -1365,9 +1371,6 @@ module YPetri
     alias :c2p_matrix :clamped_places_to_all_places_matrix
 
     private
-
-    # These two provide typesafe access to places & transitions
-    delegate :place, :transition, to: :net
 
     # Resets the simulation
     def reset!
@@ -1474,5 +1477,15 @@ module YPetri
         λ { t.rate_closure.( *( p2d * ᴍ! ).column_to_a ) }
       }
     end
+
+    # Place, Transition, Net class
+    # 
+    def Place; ::YPetri::Place end
+    def Transition; ::YPetri::Transition end
+
+    # Instance identification methods.
+    # 
+    def place( which ); Place().instance( which ) end
+    def transition( which ); Transition().instance( which ) end
   end # class Simulation
 end # module YPetri

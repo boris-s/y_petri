@@ -95,7 +95,7 @@ module YPetri
   
   class Transition
     include NameMagic
-    
+
     BASIC_TRANSITION_TYPES = {
       "ts" => "timeless nonstoichiometric transition",
       "tS" => "timeless stoichiometric transition",
@@ -104,7 +104,7 @@ module YPetri
       "sR" => "nonstoichiometric transition with rate",
       "SR" => "stoichiometric transition with rate"
     }
-    
+
     # Domain, or 'upstream arcs', is a collection of places, whose marking
     # directly affects the transition's action.
     # 
@@ -114,13 +114,19 @@ module YPetri
     alias :upstream :domain
     alias :upstream_arcs :domain
     alias :upstream_places :domain
+
+    # Names of upstream places.
+    # 
     def domain_pp; domain.map &:name end
     alias :upstream_pp :domain_pp
+
+    # Names of upstream places as symbols.
+    # 
     def domain_pp_sym; domain_pp.map &:to_sym end
     alias :upstream_pp_sym :domain_pp_sym
     alias :domain_ppß :domain_pp_sym
     alias :ustream_ppß :domain_pp_sym
-    
+
     # Codomain, 'downstream arcs', or 'action arcs' is a collection of places,
     # whose marking is directly changed by firing the trinsition.
     # 
@@ -131,64 +137,64 @@ module YPetri
     alias :downstream_arcs :codomain
     alias :downstream_places :codomain
     alias :action_arcs :codomain
-    
-    # Returns codomain as names.
+
+    # Names of downstream places.
     # 
     def codomain_pp; codomain.map &:name end
     alias :downstream_pp :codomain_pp
-    
-    # Returns codomain as name symbols.
+
+    # Names of downstream places as symbols.
     # 
     def codomain_pp_sym; codomain_pp.map &:to_sym end
     alias :downstream_pp_sym :codomain_pp_sym
     alias :codomain_ppß :codomain_pp_sym
     alias :downstream_ppß :codomain_pp_sym
-    
+
     # Returns the union of action arcs and test arcs.
     # 
     def arcs; domain | codomain end
     alias :connectivity :arcs
-    
+
     # Returns connectivity as names.
     # 
     def cc; connectivity.map &:name end
-    
+
     # Returns connectivity as name symbols.
     # 
     def cc_sym; cc.map &:to_sym end
     alias :ccß :cc_sym
-    
+
     # Is the transition stoichiometric?
     # 
     def stoichiometric?; @stoichiometric end
     alias :s? :stoichiometric?
-    
+
     # Is the transition nonstoichiometric? (Opposite of #stoichiometric?)
     # 
     def nonstoichiometric?; not stoichiometric? end
-    
+
     # Stoichiometry (implies that the transition is stoichiometric).
     # 
     attr_reader :stoichiometry
-    
+
     # Stoichiometry as a hash of pairs:
     # { codomain_place_instance => stoichiometric_coefficient }
     # 
     def stoichio; Hash[ codomain.zip( @stoichiometry ) ] end
-    
+
     # Stoichiometry as a hash of pairs:
     # { codomain_place_name_symbol => stoichiometric_coefficient }
     # 
     def s; stoichio.with_keys { |k| k.name.to_sym } end
-    
+
     # Does the transition have rate?
     # 
     def has_rate?; @has_rate end
-    
+
     # Is the transition rateless?
     # 
     def rateless?; not has_rate? end
-    
+
     # The term 'flux' (meaning flow) is associated with continuous transitions,
     # while term 'propensity' is used with discrete stochastic transitions.
     # By the design of YPetri, distinguishing between discrete and continuous
@@ -204,22 +210,22 @@ module YPetri
     alias :flux :rate_closure
     alias :propensity_closure :rate_closure
     alias :propensity :rate_closure
-    
+
     # For rateless transition, action closure must be present. Action closure
     # input arguments must correspond to the domain places, and for timed
     # transitions, the first argument of the action closure must be Δtime.
     # 
     attr_reader :action_closure
     alias :action :action_closure
-    
+
     # Does the transition's action depend on delta time?
     # 
     def timed?; @timed end
-    
+
     # Is the transition timeless? (Opposite of #timed?)
     # 
     def timeless?; not timed? end
-    
+
     # Is the transition functional?
     # Explanation: If rate or action closure is supplied, a transition is always
     # considered 'functional'. Otherwise, it is considered not 'functional'.
@@ -228,11 +234,11 @@ module YPetri
     # necessarily functional.
     # 
     def functional?; @functional end
-    
+
     # Opposite of #functional?
     # 
     def functionless?; not functional? end
-    
+
     # Reports transition membership in one of 6 basic types of YPetri transitions:
     # 1. ts ..... timeless nonstoichiometric
     # 2. tS ..... timeless stoichiometric
@@ -246,7 +252,7 @@ module YPetri
       elsif timed? then stoichiometric? ? "TSr" : "Tsr"
       else stoichiometric? ? "tS" : "ts" end
     end
-    
+
     # Is it an assignment transition?
     # 
     # A transition can be specified to have 'assignment action', in which case
@@ -261,18 +267,18 @@ module YPetri
     # 
     def assignment_action?; @assignment_action end
     alias :assignment? :assignment_action?
-    
+
     # Is the transition cocked?
     # 
     # The transition has to be cocked before #fire method can be called
     # successfully. (Can be overriden using #fire! method.)
     # 
     def cocked?; @cocked end
-    
+
     # Opposite of #cocked?
     # 
     def uncocked?; not cocked? end
-    
+
     # The constructor syntax for the various types of transitions varies.
     # By using different syntax, different types of transitions are created.
     # As a rule, domain (upstream arcs) and codomain (downstream arcs) has
@@ -335,15 +341,15 @@ module YPetri
       # transitions initialize uncocked:
       @cocked = false
     end
-    
+
     # Marking of the domain places.
     # 
     def domain_marking; domain.map &:marking end
-    
+
     # Marking of the codomain places.
     # 
     def codomain_marking; codomain.map &:marking end
-    
+
     # Result of the transition's "function", regardless of the #enabled? status.
     # 
     def action( Δt=nil )
@@ -375,13 +381,13 @@ module YPetri
         end
       end
     end # action
-    
+
     # Zero action
     # 
     def zero_action
       codomain.map { 0 }
     end
-    
+
     # Changes to the marking of codomain, as they would happen if #fire! was
     # called right now (ie. honoring #enabled?, but not #cocked? status.
     # 
@@ -402,17 +408,17 @@ module YPetri
       end
       # LATER: This use of #zip here should be avoided for speed
     end
-    
+
     # Allows #fire method to succeed. (#fire! disregards cocking.)
     # 
     def cock; @cocked = true end
     alias :cock! :cock
-    
+
     # Uncocks a cocked transition without firing it.
     # 
     def uncock; @cocked = false end
     alias :uncock! :uncock
-    
+
     # If #fire method of a transition applies its action (token adding/taking)
     # on its domain, depending on codomain marking. Time step is expected as
     # argument if the transition is timed. Only works if the transition has
@@ -426,7 +432,7 @@ module YPetri
       fire! Δt
       return true
     end
-    
+
     # #fire! (with bang) fires the transition regardless of cocked status.
     # 
     def fire!( Δt=nil )
@@ -443,7 +449,7 @@ module YPetri
       end
       return nil
     end
-    
+
     # Sanity of execution is ensured by Petri's notion of transitions being
     # "enabled" if and only if the intended action can immediately take
     # place without getting places into forbidden state (negative marking).
@@ -455,7 +461,7 @@ module YPetri
         .zip( action Δt )
         .all? { |place, change| place.marking.to_f >= -change.to_f }
     end
-    
+
     # Recursive firing of the upstream net portion (honors #cocked?).
     # 
     def fire_upstream_recursively
@@ -480,26 +486,26 @@ module YPetri
     #   # LATER
     # end
     # alias :disable! :force_disabled
-    
+
     # def unlock
     #   # LATER
     # end
     # alias :undisable! :remove_force_disabled
-    
+
     # def force_enabled!( boolean )
     #   # true - the transition is always regarded as enabled
     #   # false - the status is removed
     #   # LATER
     # end
-    
+
     # def clamp
     #   # LATER
     # end
-    
+
     # def remove_clamp
     #   # LATER
     # end
-    
+
     # def reset!
     #   uncock
     #   remove_force_disabled
@@ -507,31 +513,29 @@ module YPetri
     #   remove_clamp
     #   return self
     # end
-    
+
     def inspect                      # :nodoc:
       "YPetri::Transition[ #{name.nil? ? '' : name + ': ' }" +
         "#{BASIC_TRANSITION_TYPES[ basic_type ]}" +
         "#{assignment_action? ? ' with assignment action' : ''}" +
         "#{name.nil? ? ', object_id: %s' % object_id : ''} ]"
     end
-    
+
     def to_s                         # :nodoc:
       "#{name.nil? ? 'Transition' : name }[ #{basic_type}%s ]" %
         if assignment_action? then " A" else "" end
     end
-    
+
     private
-    
+
     # **********************************************************************
     # ARGUMENT CHECK-IN UPON INITIALIZATION
     # **********************************************************************
-    
+
     # The following big job is basically defining the duck type of the input
     # argument collection.
     # 
     def check_in_arguments *args; oo = args.extract_options!
-      # Name is optional:
-      @name = oo.may_have :name, syn!: :ɴ
 
       # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       # We'll first prepare the sanitization closure for place collections,
@@ -539,7 +543,7 @@ module YPetri
       # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       # 
       sanit = lambda { |symbol|
-        oo[symbol] = Array( oo[symbol] ).map { |e| ::YPetri::Place e }
+        oo[symbol] = Array( oo[symbol] ).map { |e| place( e ) }
         oo[symbol].aE "not contain duplicate places", "collection" do |array|
           array == array.uniq
         end
@@ -569,7 +573,7 @@ module YPetri
         when Hash then # split that hash into codomain and stoichiometry
           @codomain, @stoichiometry =
             oo[:stoichiometry].each_with_object [[], []] do |pair, memo|
-              memo[0] << ::YPetri::Place( pair[0] )
+              memo[0] << place( pair[0] )
               memo[1] << pair[1]
             end
           raise AE, "With hash-type stoichiometry, :codomain argument " +
@@ -865,5 +869,17 @@ module YPetri
         @assignment_action = false
       end
     end # def check_in_arguments
+
+    # Place, Transition, Net class
+    # 
+    def Place; ::YPetri::Place end
+    def Transition; ::YPetri::Transition end
+    def Net; ::YPetri::Net end
+
+    # Instance identification methods.
+    # 
+    def place( which ); Place().instance( which ) end
+    def transition( which ); Transition().instance( which ) end
+    def net( which ); Net().instance( which ) end
   end # class Transition
 end # module YPetri

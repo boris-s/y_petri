@@ -5,14 +5,14 @@ module YPetri
   # Public command interface of YPetri.
   # 
   class Manipulator
-    attr_reader :workspace
 
-    def note_new_Petri_net_object_instance( i )
-      workspace << i rescue warn "Instance rejected by the workspace!"
-    end
+    # Current workspace
+    # 
+    def workspace; @workspace end
 
     def initialize
-      @workspace = ::YPetri::Workspace.new
+      new_workspace_instance = ::YPetri::Workspace.new
+      @workspace = new_workspace_instance
       net_point_reset
       net_selection_clear
       simulation_point_reset
@@ -24,50 +24,59 @@ module YPetri
       imc_point_reset
       imc_selection_clear
     end
-
-    delegate :places, :transitions, :nets, :simulations,
+    
+    delegate :Place, :Transition, :Net,
+             :place, :transition,
+             :p, :t, :n,
+             :places, :transitions, :nets,
+             :simulations,
+             :pp, :tt, :nn,
              :clamp_collections,
              :initial_marking_collections,
              :simulation_settings_collections,
-             :pp, :tt, :nn,
-             :ccc, :imcc, :sscc,
+             :clamp_cc, :initial_marking_cc, :simulation_settings_cc,
              to: :workspace
 
-    # ---------------------------------------------------------------------
-    # Point (cursor) for net, simulation, cc, imc and ssc.
+    # Place constructor: Creates a new place in the current workspace.
+    # 
+    def Place *args; workspace.Place.new *args end
 
-    # --- net point --------------------------------------------------------
-    # Net instances are stored in ::YPetri::Workspace nets array. The
-    # instances themselves can have name.
+    # Transiton constructor: Creates a new transition in the current workspace.
+    # 
+    def Transition *args; workspace.Transition.new *args end
 
-    # Sets net point to worspace's top net.
-    def net_point_reset; net_point_to workspace.net end
+    # Net constructor: Creates a new net in the current workspace.
+    # 
+    def Net *args; workspace.Net.new *args end
 
-    # Sets the net point to the specified net (net instance or name).
-    def net_point_to arg; @net_point = workspace.net arg end
-    alias :net→ :net_point_to
-
-    # Returns the net at point, or specified by the argument.
-    def net arg=ℒ(); arg.ℓ? ? @net_point : workspace.net( arg ) end
-
-    # Returns the net point position (nets array index)
-    def net_point_position; workspace.nets.index( @net_point ) end
-
-    # --- simulation point -------------------------------------------------
-    # Simulation instances in the workspace are stored in @simulations hash
-    # of key => instance pairs. The key can be either specified by the
-    # caller (as first ordered parameter of Workspace#new_timed_simulation
-    # method), or it will be constructed automatically by the said method
-    # using simulation settings. Simulation point then refers to this key.
-    # Simulation instances themselves do not have name.
-
-    # Sets the simulation point to the first key of workspace's simulations.
-    def simulation_point_reset
-      @simulation_point = workspace.simulations.empty? ? nil :
-        simulation_point_to( workspace.simulations.first[0] )
+    # Sets current net to workspace.Net::Top
+    # 
+    def net_point_reset
+      net_point_to( workspace.Net::Top )
     end
 
-    # Shifts simulation point
+    # Sets current net to the specified net (net instance or name).
+    # 
+    def net_point_to which_net
+      @net_point = workspace.net which_net
+    end
+    alias :net→ :net_point_to
+
+    # Returns the net at point, or one specified by the argument.
+    # 
+    def net which=nil
+      which.nil? ? @net_point : workspace.net( which )
+    end
+
+    # Sets current simulation to the first key of workspace's simulations hash.
+    # 
+    def simulation_point_reset
+      @simulation_point =
+        workspace.simulations.empty? ? nil :
+          simulation_point_to( workspace.simulations.first[0] )
+    end
+
+    # Sets current simulation to the specified simulation.
     def simulation_point_to *aa; oo = aa.extract_options!
       key = if aa.empty? then
               raise AE, "Simulation point position not supplied" if oo.empty?
@@ -118,7 +127,7 @@ module YPetri
     # points to its keys.
 
     # Resets cc point to :base
-    def cc_point_reset; @cc_point = :base end
+    def cc_point_reset; @cc_point = :Base end
 
     # Sets the cc point to the specified cc.
     def cc_point_to arg
@@ -130,9 +139,10 @@ module YPetri
 
     # Returns clamp collection corresp. to cc point (if no argument), or to
     # the argument (if this was given).
-    def clamp_collection arg=ℒ()
-      workspace.clamp_collections[ arg.ℓ? ? @cc_point : arg ] or
-        raise AE, "No clamp collection #{arg} in this workspace."
+    def clamp_collection collection_name=nil
+      cɴ = collection_name.nil? ? @cc_point : collection_name
+      workspace.clamp_collections[ cɴ ] or
+        raise AE, "No clamp collection #{cɴ} in this workspace."
     end
     alias :cc :clamp_collection
 
@@ -144,7 +154,7 @@ module YPetri
     # The imc point points to its keys.
 
     # Resets imc point to :base
-    def imc_point_reset; @imc_point = :base end
+    def imc_point_reset; @imc_point = :Base end
 
     # Sets the imc point to the specified imc.
     def imc_point_to arg
@@ -158,9 +168,10 @@ module YPetri
 
     # Returns initial marking collection corresp. to imc point (if no
     # argument), or to the argument (if this was given).
-    def initial_marking_collection arg=ℒ()
-      workspace.initial_marking_collections[ arg.ℓ? ? @imc_point : arg ] or
-        raise AE, "No initial marking collection #{arg} in this workspace."
+    def initial_marking_collection collection_name=nil
+      cɴ = collection_name.nil? ? @imc_point : collection_name
+      workspace.initial_marking_collections[ cɴ ] or
+        raise AE, "No initial marking collection #{cɴ} in this workspace."
     end
     alias :imc :initial_marking_collection
 
@@ -172,7 +183,7 @@ module YPetri
     # The ssc point of manipulator points to its keys.
 
     # Resets ssc point to :base
-    def ssc_point_reset; @ssc_point = :base end
+    def ssc_point_reset; @ssc_point = :Base end
 
     # Sets the ssc point to the specified ssc.
     def ssc_point_to arg
@@ -184,9 +195,10 @@ module YPetri
 
     # Returns simulation setting collection corresp. to ssc point (if no
     # argument), or to the argument (if this was given).
-    def simulation_settings_collection arg=ℒ()
-      workspace.simulation_settings_collections[ arg.ℓ? ? @ssc_point : arg ] or
-        raise AE, "No simulations settings collection #{arg} in this workspace."
+    def simulation_settings_collection  collection_name=nil
+      cɴ = collection_name.nil? ? @ssc_point : collection_name
+      workspace.simulation_settings_collections[ cɴ ] or
+        raise AE, "No simulations settings collection #{cɴ} in this workspace."
     end
     alias :ssc :simulation_settings_collection
 
@@ -272,55 +284,52 @@ module YPetri
     # --- rest of the world ------------------------------------------------
     # FIXME: This is going to be tested
 
-    def place *aa, &b; workspace.new_place *aa, &b end
-    def transition *aa, &b; workspace.new_transition *aa, &b end
-
-    def p arg
-      instance = workspace.place arg
-      arg.kind_of?( ::YPetri::Place ) ? instance.name : instance
+    def clamp clamp_hash
+      clamp_hash.each_pair { |pl, cl|
+        clamp_collection.merge! workspace.place( pl ) => cl
+      }
     end
 
-    def t arg
-      instance = workspace.transition arg
-      arg.kind_of?( ::YPetri::Transition ) ? instance.name : instance
-    end
-
-    def clamp *aa; oo = aa.extract_options!
-      if aa.empty? then # oo contains place => clamp pairs
-        oo.each_pair { |pl, cl|
-          clamp_collection.merge! workspace.place( pl ) => cl
-        }
-      else # aa is expected to consist of 2 params: place and clamp
-        raise AE, "If ordered parameters are given, their number must be 2" unless
-          aa.size == 2
-        clamp_collection.merge! workspace.place( aa[0] ) => aa[1]
-      end
-    end
-
-    def initial_marking *aa; oo = aa.extract_options!
-      case aa.size
+    def initial_marking *args;
+      oo = args.extract_options!
+      case args.size
       when 0 then
-        if oo.empty? then imc else
-          imc.merge!( oo.with_keys do |k| ::YPetri::Place k end )
+        # no ordered arguments were given
+        if oo.empty? then
+          # no arguments at all were given - current imc will be returned
+          initial_marking_collection
+        else
+          # hash was supplied as an argument
+          # it is assumed that it is a hash of pairs { place_id => marking }
+          # and it will be merged with current imc
+          initial_marking_collection
+            .merge!( oo.with_keys do |key| place( key ) end )
         end
       when 1 then
+        # one ordered argument was given
         if oo.empty? then
-          begin
-            imc[ ::YPetri::Place aa[0] ]
-          rescue
-            imc aa[0]
-          end
+          # without any other arguments, it is assumed that the one ordered
+          # argument represents a place
+          place = place( args[0] )
+          # and initial marking of this place in the current imc is returned
+          initial_marking_collection[ place ]
         else
-          imc( aa[0] ).update oo.with_keys do |k| ::YPetri::Place k end
+          # apart from one ordered argument, a hash was given
+          # it is assumed that the ordered argument represents an imc
+          init_m_coll = initial_marking_collection( args[0] )
+          # and imc thus specified is updated with the initial markings
+          # spefied in the hash, which is assumed to consist of pairs
+          # { place_id => marking }
+          init_m_coll.update( oo.with_keys do |key| place( key ) end )
         end
       when 2 then
-        begin
-          imc[ ::YPetri::Place aa[0] ] = aa[1] # LATER: Taking a parameter here
-        rescue
-          imc( aa[0] )[ ::YPetri::Place aa[1] ]
-        end
-      when 3 then
-        imc( aa[0] )[ ::YPetri::Place aa[1] ] = aa[2]
+        # 2 ordered arguments were given
+        # it is assumed that the first argument represents an imc
+        init_m_coll = initial_marking_collection( args[0] )
+        # while the second represents a place
+        place = place( args[1] )
+        # whose marking is returned
+        init_m_coll[ place ]
       else raise AE, "Too many ordered parameters" end
     end
     alias :im :initial_marking
@@ -358,7 +367,8 @@ module YPetri
       ᴛ = simulation.target_time
       # Decide about features to plot
       feature_labels = sim.pp
-      feature_time_series = feature_labels.map.with_index { |flabel, i|
+      feature_time_series = feature_labels
+        .map.with_index { |flabel, i|
         sim.recording.map{ |key, val| [ key, val[i] ] }.transpose
       }
       
