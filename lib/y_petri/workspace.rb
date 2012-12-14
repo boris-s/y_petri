@@ -228,7 +228,7 @@ module YPetri
 
     # Presents a simulation specified by the argument, which must be a hash
     # with four items: (:net, :clamp_collection, :inital_marking_collection and
-    # :simulation_settings_collection)
+    # :simulation_settings_collection).
     # 
     def simulation settings={}
       key = if settings.is_a? Hash then

@@ -88,11 +88,11 @@ module YPetri
   # the old number from the place and subsequently adding the new value to it.
   #
   # ==== Functional / Functionless transitions
-  # Original Petri net definition does not talk about transition "functions",
-  # but it more or less assumes the stoichiometric vector. So in YPetri,
-  # stoichiometric transitions with no action / rate closure specified become
-  # functionless transitions as per Carl Adam Petri.
-  
+  # Original Petri net definition does not speak about transition "functions",
+  # but it more or less assumes timeless action according to the stoichiometry.
+  # So in YPetri, stoichiometric transitions with no action / rate closure
+  # specified become functionless transitions as meant by Carl Adam Petri.
+  # 
   class Transition
     include NameMagic
 
@@ -279,15 +279,23 @@ module YPetri
     # 
     def uncocked?; not cocked? end
 
-    # The constructor syntax for the various types of transitions varies.
-    # By using different syntax, different types of transitions are created.
-    # As a rule, domain (upstream arcs) and codomain (downstream arcs) has
-    # to be specified – implicitly or explicitly. Also, transition action has
-    # to be determined, but there is more than one way of doing so. For
-    # transitions with rate, rate closure can determine the action. For
-    # timeless stoichiometric transition, default action will be generated
-    # from the stoichiometry vector, if no action is specified explicitly,
-    # and so on.
+    # As you could have noted in the introduction, Transition class encompasses
+    # all different kinds of Petri net transitions. This is considered a good
+    # design pattern for cases like this, but it makes the transition class and
+    # its constructor look a bit complicated. Should you feel that way, please
+    # remember that you only learn one constructor, but can create many kinds
+    # of transition – the computer is doing a lot of work behind the scenes for
+    # you. The type of a transition created depends on the qualities of supplied
+    # arguments. However, you can also explicitly specify what kind of
+    # transition do you want, to exclude any ambiguity.
+    # 
+    # Whatever arguments you supply, the constructor will always need a way to
+    # determine domain (upstream arcs) and codomain (downstream arcs) of your
+    # transitions, implicitly or explicitly. Secondly, the constructor must
+    # have a way to determine the transition's action, although there is more
+    # than one way of doing so. So enough talking and onto the examples. We
+    # will imagine having 3 places A, B, C, for which we will create various
+    # transitions:
     # 
     # ==== Timeless nonstoichiometric (ts) transitions
     # Action closure has to be supplied, whose return arity correspons to
@@ -329,9 +337,14 @@ module YPetri
     # contribution for marking of the codomain places.
     # 
     # ==== Stoichiometric transitions with rate (SR)
-    # Rate closure has to be supplied, whose arity should correspond to the
-    # domain size (Δt argument is not needed). Return arity of this closure
-    # should be 1 (to be multiplied by the stoichiometry vector)
+    #
+    # Rate closure and stoichiometry has to be supplied, whose arity should
+    # correspond to the domain size. Return arity of this closure should be 1
+    # (to be multiplied by the stoichiometry vector, as in all stoichiometric
+    # transitions).
+    #
+    # <tt>Transition( stoichiometry: { A: -1, B: 1 },
+    #                 rate: λ { |a| a * 0.5 } )
     #       
     def initialize *aa
       check_in_arguments *aa     # the big work of checking in the arguments

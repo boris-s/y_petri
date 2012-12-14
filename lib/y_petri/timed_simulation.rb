@@ -7,33 +7,43 @@ module YPetri
   class TimedSimulation < Simulation
     SAMPLING_TIME_DECIMAL_PLACES = SAMPLING_DECIMAL_PLACES
 
-    # Exposing time-related global simulation settings
+    # ==== Exposing time-related global simulation settings
+
+    # Simulation parameter: :initial_time.
+    # 
     attr_reader :initial_time
+
+    # Simulation parameter: :step_size
+    # 
     attr_accessor :step_size
+
+    # Simulation parameter: :sampling_period
+    # 
     attr_accessor :sampling_period
+
+    # Simulation parameter: :target_time
+    # 
     attr_accessor :target_time
 
+    # Reads sampling rate.
+    # 
     def sampling_rate; 1 / sampling_period end
 
+    # Reads time range of the simulation.
+    # 
     def time_range; initial_time..target_time end
 
+    # Reads simulation settings
+    # (:step_size, :sampling_period and :time_range).
+    # 
     def settings
       { step_size: step_size,
         sampling_period: sampling_period,
         time_range: time_range }
     end
-
-    def inspect
-      "YPetri::TimedSimulation[ #{pp.size} places, #{tt.size} " +
-        "transitions, time: #{time}, object id: #{object_id} ]"
-    end
-
-    def to_s
-      "TimedSimulation[ #{pp.size} places, #{tt.size} transitions, " +
-        "time: #{time} ]"
-    end
         
-    # Exposing time
+    # Exposing time.
+    # 
     attr_reader :time
 
     # def stop; end # LATER
@@ -56,6 +66,11 @@ module YPetri
     #   Δ_Euler_free
     # end
 
+    # In addition to the arguments required by the regular simulation
+    # constructor, timed simulation constructor also expects :step_size
+    # (alias :step), :sampling_period (alias :sampling), and :target_time
+    # named arguments.
+    # 
     def initialize *aa; oo = aa.extract_options!
       # LATER: possibility of transition clamps
       # @simulation_method = :implicit_euler # hard-wired so far
@@ -70,9 +85,11 @@ module YPetri
     end
 
     # At the moment, near alias for #run_to_target_time!
+    # 
     def run! target=target_time; run_until_target_time! target; return self end
 
-    # Scalar field gradient for free places
+    # Scalar field gradient for free places.
+    # 
     def gradient_for_free_places
       self.S_for_SR_transitions * flux_vector_for_SR_transitions +
         ∂_for_nonstoichiometric_transitions_with_rate
@@ -81,13 +98,15 @@ module YPetri
     alias :gradient :gradient_for_free_places
     alias :∂ :gradient_for_free_places
 
-    # Scalar field gradient for all places
+    # Scalar field gradient for all places.
+    # 
     def gradient_for_all_places; free_places_to_all_places_matrix * ∂_free end
     alias :∂_all :gradient_for_all_places
     alias :gradient! :gradient_for_all_places
     alias :∂! :gradient_for_all_places
 
     # Δ state for free places that would happen by a single Euler step Δt.
+    # 
     def delta_state_Euler_for_free_places( Δt=step_size )
       ∂_free * Δt + Δ_for_TSr_transitions( Δt ) + Δ_for_Tsr_transitions( Δt )
       # Here, ∂_free already comprises transitions with rate, and
@@ -102,7 +121,8 @@ module YPetri
     alias :Δ_Euler :delta_state_Euler_for_free_places
     alias :Δ_euler :delta_state_Euler_for_free_places
 
-    # Δ state for all places that would happen by a single Euler step Δt
+    # Δ state for all places that would happen by a single Euler step Δt.
+    # 
     def delta_state_Euler_for_all_places( Δt=step_size )
       free_places_to_all_places_matrix * Δ_Euler_free( Δt )
     end
@@ -112,6 +132,7 @@ module YPetri
 
     # Steps once, using implicit Euler on whole system (ie. no mysode). Custom
     # step length will be used, if given as an argument to the function.
+    # 
     def Euler_step!( Δt=@step_size ) # implicit Euler method
       update_marking! Δ_Euler_free( Δt )
       update_time! Δt
@@ -121,8 +142,10 @@ module YPetri
     alias :E! :Euler_step!
     alias :e! :Euler_step!
 
-    # At the moment, near alias of #euler_step!. LATER: Use mysode on "interior"
+    # At the moment, near alias of #euler_step!
+    # 
     def step! Δt=step_size
+      # LATER: Use mysode on "interior"
       Euler_step!( Δt )
       return self
     end
@@ -151,6 +174,15 @@ module YPetri
       else raise "Invalid stepping option: #{stepping_opt}" end
     end
 
+    def inspect                      # :nodoc:
+      "YPetri::TimedSimulation[ #{pp.size} places, #{tt.size} " +
+        "transitions, time: #{time}, object id: #{object_id} ]"
+    end
+
+    def to_s                         # :nodoc:
+      "TimedSimulation[ #{pp.size} places, #{tt.size} transitions, " +
+        "time: #{time} ]"
+    end
 
     private
 

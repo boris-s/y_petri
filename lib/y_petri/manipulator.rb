@@ -25,9 +25,8 @@ module YPetri
       imc_selection_clear
     end
     
-    delegate :Place, :Transition, :Net,
-             :place, :transition,
-             :p, :t, :n,
+    delegate :place, :transition,
+             :p, :t,
              :places, :transitions, :nets,
              :simulations,
              :pp, :tt, :nn,
@@ -62,11 +61,14 @@ module YPetri
     end
     alias :net→ :net_point_to
 
-    # Returns the net at point, or one specified by the argument.
+    # Returns the net at point, or one identified by the argument.
     # 
     def net which=nil
       which.nil? ? @net_point : workspace.net( which )
     end
+
+    # Name of the net at point, or one identified by the argument.
+    def n which=nil; net( which ).name end
 
     # Sets current simulation to the first key of workspace's simulations hash.
     # 
@@ -77,6 +79,7 @@ module YPetri
     end
 
     # Sets current simulation to the specified simulation.
+    # 
     def simulation_point_to *aa; oo = aa.extract_options!
       key = if aa.empty? then
               raise AE, "Simulation point position not supplied" if oo.empty?
@@ -99,6 +102,7 @@ module YPetri
 
 
     # Returns simulation at point, or a simulation specified by a key.
+    # 
     def simulation *aa; oo = aa.extract_options!
       if aa.empty? then
         oo.empty? ? workspace.simulation( @simulation_point ) :
@@ -119,17 +123,20 @@ module YPetri
     # KLUGE
     def simulation; @workspace.simulations.values[-1] end
 
-    # Returns parameters of the simulation at point
+    # Returns parameters of the simulation at point.
+    # 
     def simulation_point_position; @simulation_point end
 
-    # --- cc point (cc = clamp collection) ---------------------------------
+    # ==== cc point (cc = clamp collection)
     # Clamp collections are stored in workplace in a hash. The cc point
     # points to its keys.
 
-    # Resets cc point to :base
+    # Resets cc point to :base.
+    # 
     def cc_point_reset; @cc_point = :Base end
 
     # Sets the cc point to the specified cc.
+    # 
     def cc_point_to arg
       if workspace.clamp_collections.has_key? arg
         @cc_point = arg
@@ -139,6 +146,7 @@ module YPetri
 
     # Returns clamp collection corresp. to cc point (if no argument), or to
     # the argument (if this was given).
+    # 
     def clamp_collection collection_name=nil
       cɴ = collection_name.nil? ? @cc_point : collection_name
       workspace.clamp_collections[ cɴ ] or
@@ -146,17 +154,20 @@ module YPetri
     end
     alias :cc :clamp_collection
 
-    # Returns the cc point position (cc hash key)
+    # Returns the cc point position (cc hash key).
+    # 
     def cc_point_position; @cc_point end
 
-    # --- imc point ( imc = initial marking collection ) -------------------
+    # ==== imc point ( imc = initial marking collection )
     # Initial marking collections are stored in a workplace in a hash.
     # The imc point points to its keys.
 
-    # Resets imc point to :base
+    # Resets imc point to :base.
+    # 
     def imc_point_reset; @imc_point = :Base end
 
     # Sets the imc point to the specified imc.
+    # 
     def imc_point_to arg
       if workspace.initial_marking_collections.has_key? arg
         @imc_point = arg
@@ -168,6 +179,7 @@ module YPetri
 
     # Returns initial marking collection corresp. to imc point (if no
     # argument), or to the argument (if this was given).
+    # 
     def initial_marking_collection collection_name=nil
       cɴ = collection_name.nil? ? @imc_point : collection_name
       workspace.initial_marking_collections[ cɴ ] or
@@ -175,17 +187,20 @@ module YPetri
     end
     alias :imc :initial_marking_collection
 
-    # Returns the ssc point position (ssc hash key)
+    # Returns the ssc point position (ssc hash key).
+    # 
     def imc_point_position; @imc_point end
 
-    # --- ssc point (ssc = simulation settings collection) -----------------
+    # ==== ssc point (ssc = simulation settings collection)
     # Simulation settings collections are stored in workplace in a hash.
     # The ssc point of manipulator points to its keys.
 
-    # Resets ssc point to :base
+    # Resets ssc point to :base.
+    # 
     def ssc_point_reset; @ssc_point = :Base end
 
     # Sets the ssc point to the specified ssc.
+    # 
     def ssc_point_to arg
       if workspace.simulation_settings_collections.has_key? arg
         @ssc_point = arg
@@ -195,6 +210,7 @@ module YPetri
 
     # Returns simulation setting collection corresp. to ssc point (if no
     # argument), or to the argument (if this was given).
+    # 
     def simulation_settings_collection  collection_name=nil
       cɴ = collection_name.nil? ? @ssc_point : collection_name
       workspace.simulation_settings_collections[ cɴ ] or
@@ -202,17 +218,34 @@ module YPetri
     end
     alias :ssc :simulation_settings_collection
 
-    # Returns the ssc point position (ssc hash key)
+    # Returns the ssc point position (ssc hash key).
+    # 
     def ssc_point_position; @ssc_point end
 
 
-    # ----------------------------------------------------------------------
-    # Selection mechanism for net, simulation, cc, imc and ssc
+    # ==== Selection mechanism for net, simulation, cc, imc and ssc
 
-    attr_reader :net_selection, :simulation_selection
-    attr_reader :ssc_selection, :cc_selection, :imc_selection
+    # Net selection.
+    # 
+    attr_reader :net_selection
 
-    # --- net selection --------------------------------------------------------------
+    # Simulation selection.
+    # 
+    attr_reader :simulation_selection
+
+    # Simulation settings collection selection.
+    # 
+    attr_reader :ssc_selection
+
+    # Clamp collection selection.
+    # 
+    attr_reader :cc_selection
+
+    # Initial marking collection selection.
+    # 
+    attr_reader :imc_selection
+
+    # ==== Net selection
 
     def net_selection_clear
       @net_selection ||= []
