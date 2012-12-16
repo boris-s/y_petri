@@ -4,8 +4,13 @@ require 'gnuplot'
 require 'csv'
 require 'y_support/all'
 require 'y_petri/version'
-
-include YSupport
+require_relative 'y_petri/place'
+require_relative 'y_petri/transition'
+require_relative 'y_petri/net'
+require_relative 'y_petri/simulation'
+require_relative 'y_petri/timed_simulation'
+require_relative 'y_petri/workspace'
+require_relative 'y_petri/manipulator'
 
 # YPetri represents Petri net (PN) formalism.
 #
@@ -26,14 +31,6 @@ include YSupport
 # Float (continuous) - the decision should be on the simulator.
 
 module YPetri
-  require_relative 'y_petri/place'
-  require_relative 'y_petri/transition'
-  require_relative 'y_petri/net'
-  require_relative 'y_petri/simulation'
-  require_relative 'y_petri/timed_simulation'
-  require_relative 'y_petri/workspace'
-  require_relative 'y_petri/manipulator'
-
   DEFAULT_SIMULATION_SETTINGS = {
     step_size: 0.1,
     sampling_period: 5,
