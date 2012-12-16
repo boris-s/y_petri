@@ -13,9 +13,9 @@ set_step 60
 set_target_time 60 * 60 * 24
 
 # places
-AMP = place m!: 8695.0
-ADP = place m!: 6521.0
-ATP = place m!: 3152.0
+AMP = Place m!: 8695.0
+ADP = Place m!: 6521.0
+ATP = Place m!: 3152.0
 Deoxycytidine = place( m!: 0.5 )
 DeoxyCTP = place( m!: 1.0 )
 DeoxyGMP = place( m!: 1.0 )

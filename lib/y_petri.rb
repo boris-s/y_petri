@@ -2,8 +2,7 @@
 
 require 'gnuplot'
 require 'csv'
-require 'y_support'
-require 'name_magic'
+require 'y_support/all'
 require 'y_petri/version'
 
 include YSupport

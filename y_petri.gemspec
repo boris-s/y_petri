@@ -17,5 +17,4 @@ Gem::Specification.new do |gem|
   
   gem.add_dependency "y_support"
   gem.add_dependency "gnuplot"
-  gem.add_dependency "name_magic"
 end
