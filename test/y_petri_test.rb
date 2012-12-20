@@ -637,7 +637,7 @@ describe ::YPetri::Simulation do
 
   it "exposes Petri net transitions" do
     @s.transitions.must_equal [ @t1, @t2, @t3 ]
-    @s.tt.must_equal [ "T1", "T2", "T3" ]
+    @s.tt.must_equal [ :T1, :T2, :T3 ]
     @s.tt_sym.must_equal [:T1, :T2, :T3]
     @s.ttß.must_equal @s.tt_sym
     @s.transitions_( :ttß ).must_equal( { @t1 => :T1, @t2 => :T2, @t3 => :T3 } )
@@ -666,7 +666,7 @@ describe ::YPetri::Simulation do
 
   it "presents clamped places" do
     @s.clamped_places.must_equal [ @p1, @p5 ]
-    @s.clamped_pp.must_equal [ "P1", "P5" ]
+    @s.clamped_pp.must_equal [ :P1, :P5 ]
     @s.clamped_pp_sym.must_equal [ :P1, :P5 ]
     @s.clamped_ppß.must_equal @s.clamped_pp_sym
     @s.clamped_places_( :clamped_ppß ).must_equal( { @p1 => :P1, @p5 => :P5 } )
@@ -856,8 +856,8 @@ describe ::YPetri::Simulation do
 
   it "presents transitions with rate (R transitions), of any kind" do
     assert_equal [@t1, @t2, @t3], @s.transitions_with_rate
-    assert_equal ["T1", "T2", "T3"], @s.tt_with_rate
-    assert_equal( { T1: "T1", T2: "T2", T3: "T3" }, @s.R_ttß_( :R_tt ) )
+    assert_equal [:T1, :T2, :T3], @s.tt_with_rate
+    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.R_tt_( :R_tt ) )
   end
 
   it "presents transitions without rate (r transitions), of any kind" do

@@ -252,26 +252,6 @@ module YPetri
       end
     end
 
-    # Free places (array of instance names as symbols).
-    # 
-    def free_pp_sym; free_pp.map { |o| o.to_sym rescue nil } end
-    alias :free_ppß :free_pp_sym
-
-    # Without parameters, it behaves as #free_pp_sym. If parameters are
-    # given, these are treated as a message to be sent to self (as #send
-    # method parameters), with the return value expected to be a collection
-    # of objects, whose number is the same as the number of free places,
-    # and which are then returned as hash { free_place_name_symbol => object }.
-    # Place instances are used as keys for nameless places.
-    # 
-    def free_pp_sym_ *aa, &b
-      if aa.empty? and b.nil? then free_pp_sym else
-        Hash[ free_places.map { |p| p.name.to_sym rescue p }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :free_ppß_ :free_pp_sym_
-
     # Clamped places (array of instance names).
     # 
     def clamped_pp *aa; clamped_places.map &:name end
@@ -289,26 +269,6 @@ module YPetri
                 .zip( send *aa, &b ) ]
       end
     end
-
-    # Clamped places (array of instance names as symbols).
-    # 
-    def clamped_pp_sym *aa; clamped_pp.map { |o| o.to_sym rescue nil } end
-    alias :clamped_ppß :clamped_pp_sym
-
-    # Without parameters, it behaves as #clamped_pp_sym. If parameters are
-    # given, these are treated as a message to be sent to self (as #send
-    # method parameters), with the return value expected to be a collection
-    # of objects, whose number is the same as the number of clamped places,
-    # and which are then returned as hash { clamped_place_name_symbol =>
-    # object }. Place instances are used as keys for nameless places.
-    # 
-    def clamped_pp_sym_ *aa, &b
-      if aa.empty? and b.nil? then clamped_pp_sym else
-        Hash[ clamped_places.map { |p| p.name.to_sym rescue p }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :clamped_ppß_ :clamped_pp_sym_
 
     # Exposing @initial_marking (hash with place instances as keys).
     # 
@@ -499,28 +459,6 @@ module YPetri
     end
     alias :ts_tt_ :timeless_nonstoichiometric_tt_
 
-    # Array of ts transition names as symbols.
-    # 
-    def timeless_nonstoichiometric_tt_sym
-      timeless_nonstoichiometric_tt.map { |t| t.to_sym rescue nil }
-    end
-    alias :timeless_nonstoichiometric_ttß :timeless_nonstoichiometric_tt_sym
-    alias :ts_tt_sym :timeless_nonstoichiometric_tt
-    alias :ts_ttß :ts_tt_sym
-
-    # Hash mapper for #ts_tt_sym (see #tt_sym_ method description).
-    # 
-    def timeless_nonstoichiometric_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then ts_tt_sym else
-        Hash[ ts_transitions
-              .map { |t| t.name.to_sym rescue t }
-              .zip( send *aa, &b ) ]
-      end
-    end
-    alias :timeless_nonstoichiometric_ttß_ :timeless_nonstoichiometric_tt_sym_
-    alias :ts_tt_sym_ :timeless_nonstoichiometric_tt_sym_
-    alias :ts_ttß_ :ts_tt_sym_
-
     # ==== Exposing the collection of 2. tS transitions
 
     # Array of tS transitions.
@@ -553,28 +491,6 @@ module YPetri
       aa.empty? && b.nil? ? tS_tt : Hash[ tS_tt.zip( send *aa, &b ) ]
     end
     alias :tS_tt_ :timeless_stoichiometric_tt_
-
-    # Array of tS transition name symbols.
-    # 
-    def timeless_stoichiometric_tt_sym
-      timeless_stoichiometric_tt.map { |n| n.to_sym rescue nil }
-    end
-    alias :timeless_stoichiometric_ttß :timeless_stoichiometric_tt_sym
-    alias :tS_tt_sym :timeless_stoichiometric_tt_sym
-    alias :tS_ttß :timeless_stoichiometric_ttß
-
-    # Hash mapper for #tS_tt_sym (see #tt_sym_ method description).
-    # 
-    def timeless_stoichiometric_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then tS_tt_sym else
-        Hash[ tS_transitions
-                .map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :timeless_stoichiometric_ttß_ :timeless_stoichiometric_tt_sym_
-    alias :tS_tt_sym_ :timeless_stoichiometric_tt_sym_
-    alias :tS_ttß :timeless_stoichiometric_tt_sym_
 
     # ==== Exposing the collection of 3. Tsr transitions
 
@@ -619,30 +535,6 @@ module YPetri
           :timed_nonstoichiometric_transitions_without_rate_
     alias :Tsr_tt_ :timed_nonstoichiometric_tt_without_rate_
 
-    # Array of Tsr transition names as symbols.
-    # 
-    def timed_rateless_nonstoichiometric_tt_sym
-      timed_rateless_nonstoichiometric_tt.map { |n| n.to_sym rescue n }
-    end
-    alias :timed_rateless_nonstoichiometric_ttß \
-          :timed_rateless_nonstoichiometric_tt_sym
-    alias :Tsr_tt_sym :timed_rateless_nonstoichiometric_tt_sym
-    alias :Tsr_ttß :timed_rateless_nonstoichiometric_tt_sym
-
-    # Hash mapper for #Tsr_tt_sym (see #tt_sym_ method description).
-    # 
-    def timed_rateless_nonstoichiometric_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then self.Tsr_tt_sym else
-        Hash[ self.Tsr_transitions
-                .map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :timed_rateless_nonstoichiometric_ttß_ \
-          :timed_rateless_nonstoichiometric_tt_sym_
-    alias :Tsr_tt_sym_ :timed_rateless_nonstoichiometric_tt_sym_
-    alias :Tsr_ttß_ :timed_rateless_nonstoichiometric_tt_sym_
-
     # ==== Exposing the collection of 4. TSr transitions
 
     # Array of TSr transitions.
@@ -686,30 +578,6 @@ module YPetri
           :timed_stoichiometric_transitions_without_rate_
     alias :TSr_tt_ :timed_stoichiometric_tt_without_rate_
 
-    # Array of TSr transition names as symbols.
-    # 
-    def timed_rateless_stoichiometric_tt_sym
-      timed_rateless_stoichiometric_tt.map { |n| n.to_sym rescue n }
-    end
-    alias :timed_rateless_stoichiometric_ttß \
-          :timed_rateless_stoichiometric_tt_sym
-    alias :TSr_tt_sym :timed_rateless_stoichiometric_tt_sym
-    alias :TSr_ttß :timed_rateless_stoichiometric_tt_sym
-
-    # Hash mapper for #Tsr_tt_sym (see #tt_sym_ method description).
-    # 
-    def timed_rateless_stoichiometric_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then self.TSr_tt_sym else
-        Hash[ self.TSr_transitions
-                .map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :timed_rateless_stoichiometric_ttß_ \
-          :timed_rateless_stoichiometric_tt_sym_
-    alias :TSr_tt_sym_ :timed_rateless_stoichiometric_tt_sym_
-    alias :TSr_ttß_ :timed_rateless_stoichiometric_tt_sym_
-
     # ==== Exposing the collection of 5. sR transitions
 
     # Array of sR transitions.
@@ -742,23 +610,6 @@ module YPetri
       aa.empty? && b.nil? ? sR_tt : Hash[ sR_tt.zip( send *aa, &b ) ]
     end
     alias :sR_tt_ :nonstoichiometric_tt_with_rate_
-
-    # Array of sR transition names as symbols.
-    # 
-    def sR_tt_sym
-      nonstoichiometric_tt_with_rate.map { |n| n.to_sym rescue n }
-    end
-    alias :sR_ttß :sR_tt_sym
-
-    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description).
-    # 
-    def sR_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then sR_tt_sym else
-        Hash[ sR_transitions.map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :sR_ttß_ :sR_tt_sym_
 
     # ==== Exposing the collection of 6. SR transitions
 
@@ -793,23 +644,6 @@ module YPetri
         Hash[ self.SR_tt.zip( send *aa, &b ) ]
     end
     alias :SR_tt_ :stoichiometric_tt_with_rate_
-
-    # Array of sR transition names as symbols.
-    # 
-    def SR_tt_sym
-      stoichiometric_tt_with_rate.map { |n| n.to_sym rescue n }
-    end
-    alias :SR_ttß :SR_tt_sym
-
-    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description).
-    # 
-    def SR_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then self.SR_tt_sym else
-        Hash[ self.SR_transitions.map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :SR_ttß_ :SR_tt_sym_
 
     # ==== Exposing the collection of assignment (A) transitions
 
@@ -849,27 +683,6 @@ module YPetri
     alias :assignment_tt_ :tt_with_explicit_assignment_action_
     alias :A_tt_ :tt_with_explicit_assignment_action_
 
-    # Array of A transition names as symbols.
-    # 
-    def assignment_tt_sym
-      assignment_tt.map { |n| n.to_sym rescue n }
-    end
-    alias :assignment_ttß :assignment_tt_sym
-    alias :A_tt_sym :assignment_tt_sym
-    alias :A_ttß :assignment_tt_sym
-
-    # Hash mapper for #A_tt (see #tt_sym_ method description).
-    # 
-    def assignment_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then self.A_tt_sym else
-        Hash[ self.A_transitions.map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :assignment_ttß_ :assignment_tt_sym_
-    alias :A_tt_sym_ :assignment_tt_sym_
-    alias :A_ttß_ :assignment_tt_sym_
-
     # ==== Stoichiometric transitions of any kind (S transitions)
 
     # Array of stoichiometric transitions (of any kind).
@@ -900,27 +713,6 @@ module YPetri
       aa.empty? && b.nil? ? self.S_tt : Hash[ self.S_tt.zip( send *aa, &b ) ]
     end
     alias :S_tt_ :stoichiometric_tt_
-
-    # Array of S transition names as symbols.
-    # 
-    def stoichiometric_tt_sym
-      stoichiometric_tt_with_rate.map { |n| n.to_sym rescue n }
-    end
-    alias :stoichiometric_ttß :stoichiometric_tt_sym
-    alias :S_tt_sym :stoichiometric_tt_sym
-    alias :S_ttß :stoichiometric_tt_sym
-
-    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description).
-    # 
-    def stoichiometric_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then self.S_tt_sym else
-        Hash[ self.S_transitions.map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :stoichiometric_ttß_ :stoichiometric_tt_sym_
-    alias :S_tt_sym_ :stoichiometric_tt_sym_
-    alias :S_ttß_ :stoichiometric_tt_sym_
 
     # ==== Nonstoichiometric transitions of any kind (s transitions)
 
@@ -953,27 +745,6 @@ module YPetri
     end
     alias :s_tt_ :nonstoichiometric_tt_
 
-    # Array of sR transition names as symbols.
-    # 
-    def nonstoichiometric_tt_sym
-      nonstoichiometric_tt.map { |n| n.to_sym rescue n }
-    end
-    alias :nonstoichiometric_ttß :nonstoichiometric_tt_sym
-    alias :s_tt_sym :nonstoichiometric_tt_sym
-    alias :s_ttß :nonstoichiometric_tt_sym
-
-    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description).
-    # 
-    def nonstoichiometric_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then s_tt_sym else
-        Hash[ s_transitions.map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :nonstoichiometric_ttß_ :nonstoichiometric_tt_sym_
-    alias :s_tt_sym_ :nonstoichiometric_tt_sym_
-    alias :s_ttß_ :nonstoichiometric_tt_sym_
-
     # ==== Transitions with rate (R transitions), otherwise of any kind
 
     # Array of transitions with rate (of any kind).
@@ -1004,23 +775,6 @@ module YPetri
       aa.empty? && b.nil? ? self.R_tt : Hash[ self.R_tt.zip( send *aa, &b ) ]
     end
     alias :R_tt_ :tt_with_rate_
-
-    # Array of sR transition names as symbols.
-    # 
-    def R_tt_sym
-      self.R_tt.map { |n| n.to_sym rescue n }
-    end
-    alias :R_ttß :R_tt_sym
-
-    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description).
-    # 
-    def R_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then self.R_tt_sym else
-        Hash[ self.R_transitions.map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :R_ttß_ :R_tt_sym_
 
     # ==== Rateless transitions (r transitions), otherwise of any kind
 
@@ -1056,23 +810,6 @@ module YPetri
     end
     alias :rateless_tt_ :tt_without_rate_
     alias :r_tt_ :tt_without_rate_
-
-    # Array of sR transition names as symbols.
-    # 
-    def r_tt_sym
-      tt_without_rate.map { |n| n.to_sym rescue n }
-    end
-    alias :r_ttß :r_tt_sym
-
-    # Hash mapper for #sR_tt_sym (see #tt_sym_ method description).
-    # 
-    def r_tt_sym_ *aa, &b
-      if aa.empty? && b.nil? then r_tt_sym else
-        Hash[ r_transitions.map { |t| t.name.to_sym rescue t }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :r_ttß_ :r_tt_sym_
 
     # === Methods presenting other simulation assets
 
@@ -1346,10 +1083,9 @@ module YPetri
 
     # Flux of SR transitions as hash with transition name symbols as keys.
     # 
-    def flux_for_SR_tt_sym; self.SR_ttß_ :flux_vector_for_SR_transitions end
-    alias :flux_for_SR_ttß :flux_for_SR_tt_sym
+    def flux_for_SR_tt; self.SR_tt_ :flux_vector_for_SR_transitions end
 
-    # Same as #flux_for_SR_tt_sym, but with caller asserting that there are
+    # Same as #flux_for_SR_tt, but with caller asserting that there are
     # none but SR transitions in the simulation (or error).
     # 
     def f!; self.SR_ttß_ :flux_vector! end
@@ -1384,14 +1120,12 @@ module YPetri
     alias :euler_α_for_SR_transitions \
           :euler_action_vector_for_SR_transitions
 
-    # Euler action fro SR transitions as has with tr. name symbols as keys.
+    # Euler action fro SR transitions as hash with tr. names as keys.
     # 
-    def Euler_action_for_SR_tt_sym( Δt )
-      stoichiometric_ttß_ :Euler_action_vector_for_SR_transitions, Δt
+    def Euler_action_for_SR_tt( Δt )
+      stoichiometric_tt_ :Euler_action_vector_for_SR_transitions, Δt
     end
-    alias :euler_action_for_SR_tt_sym :Euler_action_for_SR_tt_sym
-    alias :Euler_action_for_SR_ttß :Euler_action_for_SR_tt_sym
-    alias :euler_action_for_SR_ttß :euler_action_for_SR_tt_sym
+    alias :euler_action_for_SR_tt :Euler_action_for_SR_tt
 
     # Convenience calculator of Δ state for SR transitions, assuming a single
     # Eulerian step with Δt given as parameter.
@@ -1408,12 +1142,10 @@ module YPetri
     # Δ state for SR transitions under Eulerian step with Δt as parameter,
     # returning a hash with free place symbols as keys.
     # 
-    def Δ_Euler_for_SR_tt_sym( Δt )
-      free_ppß_ :Δ_Euler_for_SR_transitions, Δt
+    def Δ_Euler_for_SR_tt( Δt )
+      free_pp_ :Δ_Euler_for_SR_transitions, Δt
     end
-    alias :Δ_euler_for_SR_tt_sym :Δ_Euler_for_SR_tt_sym
-    alias :Δ_Euler_for_SR_ttß :Δ_Euler_for_SR_tt_sym
-    alias :Δ_euler_for_SR_ttß :Δ_Euler_for_SR_tt_sym
+    alias :Δ_euler_for_SR_tt :Δ_Euler_for_SR_tt
 
     # ==== Sparse stoichiometry vectors for transitions
 
@@ -1428,7 +1160,7 @@ module YPetri
         Matrix.column_vector( t.stoichiometry )
     end
     alias :sparse_σ :sparse_stoichiometry_vector
-    
+
     # For a transition specified by the argument, this method returns a sparse
     # stoichiometry vector mapped to all the places of the simulation.
     # 
