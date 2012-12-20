@@ -29,13 +29,13 @@ describe ::YPetri::Place do
     
     it "should have constant magic included" do
       assert_respond_to @p, :name
-      assert_equal @p.name, "P1"
+      assert_equal @p.name, :P1
     end
 
     it "should have own marking and be able to update it" do
       assert_equal 1.1, @p.marking
       assert_equal 0.1, @p.quantum
-      assert_equal "P1", @p.name
+      assert_equal :P1, @p.name
       @p.add 1
       assert_equal 2.1, @p.value        # alias for #marking
       @p.subtract 0.5
@@ -623,27 +623,17 @@ describe ::YPetri::Simulation do
 
   it "exposes Petri net places" do
     @s.places.must_equal [ @p1, @p2, @p3, @p4, @p5 ]
-    @s.pp.must_equal [ "P1", "P2", "P3", "P4", "P5" ]
-    @s.pp_sym.must_equal [ :P1, :P2, :P3, :P4, :P5 ]
-    @s.ppß.must_equal @s.pp_sym
-    @s.places_( :pp_sym ).must_equal( { @p1 => :P1, @p2 => :P2,
-                                        @p3 => :P3, @p4 => :P4, @p5 => :P5 } )
-    @s.pp_sym_( :pp ).must_equal( { P1: "P1", P2: "P2", P3: "P3",
-                                    P4: "P4", P5: "P5" } )
-    @s.ppß_( :pp ).must_equal @s.pp_sym_( :pp )
-    @s.pp_( :ppß ).must_equal( { "P1" => :P1, "P2" => :P2, "P3" => :P3,
-                                 "P4" => :P4, "P5" => :P5 } )
+    @s.pp.must_equal [ :P1, :P2, :P3, :P4, :P5 ]
+    @s.places_( :pp ).must_equal( { @p1 => :P1, @p2 => :P2, @p3 => :P3,
+                                    @p4 => :P4, @p5 => :P5 } )
+    @s.pp_( :pp ).must_equal( { P1: :P1, P2: :P2, P3: :P3, P4: :P4, P5: :P5 } )
   end
 
   it "exposes Petri net transitions" do
     @s.transitions.must_equal [ @t1, @t2, @t3 ]
     @s.tt.must_equal [ :T1, :T2, :T3 ]
-    @s.tt_sym.must_equal [:T1, :T2, :T3]
-    @s.ttß.must_equal @s.tt_sym
-    @s.transitions_( :ttß ).must_equal( { @t1 => :T1, @t2 => :T2, @t3 => :T3 } )
-    @s.tt_sym_( :tt ).must_equal( { T1: "T1", T2: "T2", T3: "T3" } )
-    @s.tt_sym_( :tt ).must_equal @s.ttß_( :tt )
-    @s.tt_( :ttß ).must_equal( { "T1" => :T1, "T2" => :T2, "T3" => :T3 } )
+    @s.transitions_( :tt ).must_equal( { @t1 => :T1, @t2 => :T2, @t3 => :T3 } )
+    @s.tt_( :tt ).must_equal( { T1: :T1, T2: :T2, T3: :T3 } )
   end
 
   it "exposes place clamps" do
@@ -653,26 +643,19 @@ describe ::YPetri::Simulation do
 
   it "presents free places" do
     @s.free_places.must_equal [ @p2, @p3, @p4 ]
-    @s.free_pp.must_equal [ "P2", "P3", "P4" ]
-    @s.free_pp_sym.must_equal [ :P2, :P3, :P4 ]
-    @s.free_ppß.must_equal @s.free_pp_sym
-    @s.free_places_( :free_ppß )
+    @s.free_pp.must_equal [ :P2, :P3, :P4 ]
+    @s.free_places_( :free_pp )
       .must_equal( { @p2 => :P2, @p3 => :P3, @p4 => :P4 } )
-    @s.free_pp_( :free_ppß )
-      .must_equal( { "P2" => :P2, "P3" => :P3, "P4" => :P4 } )
-    @s.free_ppß_( :free_pp ).must_equal( { P2: "P2", P3: "P3", P4: "P4" } )
-    @s.free_pp_sym_( :free_pp ).must_equal @s.free_ppß_( :free_pp )
+    @s.free_pp_( :free_pp )
+      .must_equal( { P2: :P2, P3: :P3, P4: :P4 } )
   end
 
   it "presents clamped places" do
     @s.clamped_places.must_equal [ @p1, @p5 ]
     @s.clamped_pp.must_equal [ :P1, :P5 ]
-    @s.clamped_pp_sym.must_equal [ :P1, :P5 ]
-    @s.clamped_ppß.must_equal @s.clamped_pp_sym
-    @s.clamped_places_( :clamped_ppß ).must_equal( { @p1 => :P1, @p5 => :P5 } )
-    @s.clamped_pp_( :clamped_ppß ).must_equal( { "P1" => :P1, "P5" => :P5 } )
-    @s.clamped_pp_sym_( :clamped_pp ).must_equal( { P1: "P1", P5: "P5" } )
-    @s.clamped_ppß_( :clamped_pp ).must_equal @s.clamped_pp_sym_( :clamped_pp )
+    @s.clamped_places_( :clamped_pp ).must_equal( { @p1 => :P1, @p5 => :P5 } )
+    @s.clamped_pp_( :clamped_pp ).must_equal( { P1: :P1, P5: :P5 } )
+    @s.clamped_pp_( :clamped_pp ).must_equal( { P1: :P1, P5: :P5 } )
   end
 
   it "exposes initial marking" do
@@ -754,11 +737,6 @@ describe ::YPetri::Simulation do
     assert_equal [], @s.timeless_nonstoichiometric_tt
     assert_equal [], @s.ts_tt
     assert_equal( {}, @s.ts_tt_( :ts_tt_ ) )
-    assert_equal [], @s.timeless_nonstoichiometric_tt_sym
-    assert_equal [], @s.timeless_nonstoichiometric_ttß
-    assert_equal [], @s.ts_tt_sym
-    assert_equal [], @s.ts_ttß
-    assert_equal( {}, @s.ts_ttß_( :ts_ttß ) )
   end
 
   it "presents 2. timeless stoichiometric (tS) transitions" do
@@ -768,11 +746,6 @@ describe ::YPetri::Simulation do
     assert_equal [], @s.timeless_stoichiometric_tt
     assert_equal [], @s.tS_tt
     assert_equal( {}, @s.tS_tt_( :tS_tt_ ) )
-    assert_equal [], @s.timeless_stoichiometric_tt_sym
-    assert_equal [], @s.timeless_nonstoichiometric_ttß
-    assert_equal [], @s.ts_tt_sym
-    assert_equal [], @s.ts_ttß
-    assert_equal( {}, @s.ts_ttß_( :ts_ttß ) )
   end
 
   it "presents 3. timed rateless nonstoichiometric (Tsr) transitions" do
@@ -784,11 +757,6 @@ describe ::YPetri::Simulation do
     assert_equal [], @s.timed_rateless_nonstoichiometric_tt
     assert_equal [], @s.Tsr_tt
     assert_equal( {}, @s.Tsr_tt_( :Tsr_tt ) )
-    assert_equal [], @s.timed_rateless_nonstoichiometric_tt_sym
-    assert_equal [], @s.timed_rateless_nonstoichiometric_ttß
-    assert_equal [], @s.Tsr_tt_sym
-    assert_equal [], @s.Tsr_ttß
-    assert_equal( {}, @s.Tsr_ttß_( :Tsr_ttß ) )
   end
 
   it "presents 4. timed rateless stoichiometric (TSr) transitions" do
@@ -800,11 +768,6 @@ describe ::YPetri::Simulation do
     assert_equal [], @s.timed_rateless_stoichiometric_tt
     assert_equal [], @s.TSr_tt
     assert_equal( {}, @s.TSr_tt_( :TSr_tt ) )
-    assert_equal [], @s.timed_rateless_stoichiometric_tt_sym
-    assert_equal [], @s.timed_rateless_stoichiometric_ttß
-    assert_equal [], @s.TSr_tt_sym
-    assert_equal [], @s.TSr_ttß
-    assert_equal( {}, @s.TSr_ttß_( :TSr_ttß ) )
   end
 
   it "presents 5. nonstoichiometric transitions with rate" do
@@ -814,20 +777,16 @@ describe ::YPetri::Simulation do
     assert_equal [], @s.nonstoichiometric_tt_with_rate
     assert_equal [], @s.sR_tt
     assert_equal( {}, @s.sR_tt_( :sR_tt ) )
-    assert_equal [], @s.sR_tt_sym
-    assert_equal [], @s.sR_ttß
-    assert_equal( {}, @s.sR_ttß_( :sR_ttß ) )
   end
 
   it "presents 6. stoichiometric transitions with rate" do
     assert_equal [@t1, @t2, @t3], @s.stoichiometric_transitions_with_rate
     assert_equal @s.stoichiometric_transitions_with_rate, @s.SR_transitions
-    assert_equal( { @t1 => :T1, @t2 => :T2, @t3 => :T3 }, @s.SR_transitions_( :SR_ttß ) )
-    assert_equal ["T1", "T2", "T3"], @s.stoichiometric_tt_with_rate
+    assert_equal( { @t1 => :T1, @t2 => :T2, @t3 => :T3 },
+                  @s.SR_transitions_( :SR_tt ) )
+    assert_equal [:T1, :T2, :T3], @s.stoichiometric_tt_with_rate
     assert_equal @s.stoichiometric_tt_with_rate, @s.SR_tt
-    assert_equal [:T1, :T2, :T3], @s.SR_tt_sym
-    assert_equal @s.SR_tt_sym, @s.SR_ttß
-    assert_equal( { T1: "T1", T2: "T2", T3: "T3" }, @s.SR_ttß_( :SR_tt ) )
+    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.SR_tt_( :SR_tt ) )
   end
 
   it "presents transitions with explicit assignment action (A transitions)" do
@@ -836,22 +795,19 @@ describe ::YPetri::Simulation do
     assert_equal( {}, @s.assignment_transitions_( :assignment_tt ) )
     assert_equal [], @s.tt_with_explicit_assignment_action
     assert_equal [], @s.assignment_tt
-    assert_equal( {}, @s.assignment_tt_( :assignment_ttß ) )
-    assert_equal [], @s.assignment_tt_sym
-    assert_equal [], @s.assignment_ttß
-    assert_equal( {}, @s.assignment_ttß_( :assignment_tt ) )
+    assert_equal( {}, @s.assignment_tt_( :assignment_tt ) )
   end
 
   it "presents stoichiometric transitions of any kind (S transitions)" do
     assert_equal [@t1, @t2, @t3], @s.stoichiometric_transitions
-    assert_equal ["T1", "T2", "T3"], @s.stoichiometric_tt
-    assert_equal( { T1: "T1", T2: "T2", T3: "T3" }, @s.S_ttß_( :S_tt ) )
+    assert_equal [:T1, :T2, :T3], @s.stoichiometric_tt
+    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.S_tt_( :S_tt ) )
   end
 
   it "presents nonstoichiometric transitions of any kind (s transitions)" do
     assert_equal [], @s.nonstoichiometric_transitions
     assert_equal [], @s.nonstoichiometric_tt
-    assert_equal( {}, @s.s_ttß_( :s_tt ) )
+    assert_equal( {}, @s.s_tt_( :s_tt ) )
   end
 
   it "presents transitions with rate (R transitions), of any kind" do
@@ -865,7 +821,6 @@ describe ::YPetri::Simulation do
     @s.rateless_transitions.must_equal @s.transitions_without_rate
     assert_equal [], @s.tt_without_rate
     @s.rateless_tt.must_equal @s.tt_without_rate
-    assert_equal( {}, @s.r_ttß_( :r_tt ) )
   end
 
   it "1. handles timeless nonstoichiometric transitions" do
@@ -922,7 +877,7 @@ describe ::YPetri::Simulation do
       .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
     @s.flux_vector!.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
     @s.φ!.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.flux_for_SR_ttß.must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
+    @s.flux_for_SR_tt.must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
     @s.f!.must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
     @s.Euler_action_vector_for_SR_transitions( 1 )
       .must_equal Matrix.column_vector [ 0.4, 1.0, 1.5 ]

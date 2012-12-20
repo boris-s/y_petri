@@ -1088,7 +1088,7 @@ module YPetri
     # Same as #flux_for_SR_tt, but with caller asserting that there are
     # none but SR transitions in the simulation (or error).
     # 
-    def f!; self.SR_ttß_ :flux_vector! end
+    def f!; self.SR_tt_ :flux_vector! end
 
     # State differential for SR transitions.
     # 
