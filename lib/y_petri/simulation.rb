@@ -176,26 +176,6 @@ module YPetri
       end
     end
 
-    # Array of place names as symbols.
-    # 
-    def pp_sym; pp.map { |o| o.to_sym rescue nil } end
-    alias :ppß :pp_sym
-
-    # Without parameters, it behaves as #pp_sym. If parameters are given,
-    # these are treated as a message to be sent to self (as #send method
-    # parameters), with the return value expected to be a collection of
-    # objects, whose number is the same as the number of places, and which
-    # are then presented as hash { place_name_symbol => object }. Place
-    # instances are used as keys for nameless places.
-    # 
-    def pp_sym_ *aa, &b
-      if aa.empty? and b.nil? then pp_sym else
-        Hash[ places.map { |p| p.name.to_sym rescue p }
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :ppß_ :pp_sym_
-
     # Array of transition names.
     # 
     def tt; transitions.map &:name end
@@ -213,26 +193,6 @@ module YPetri
                 .zip( send *aa, &b ) ]
       end
     end
-
-    # Array of transition names as symbols.
-    # 
-    def tt_sym; tt.map { |o| o.to_sym rescue nil } end
-    alias :ttß :tt_sym
-
-    # Without parameters, it behaves as #tt_sym. If parameters are given,
-    # these are treated as a message to be sent to self (as #send method
-    # parameters), with the return value expected to be a collection of
-    # objects, whose number is the same as the number of transitions, and
-    # which are then returned as hash { transition_name_symbol => object }.
-    # Transition instances are used as hash keys for nameless transitions.
-    # 
-    def tt_sym_ *aa, &b
-      if aa.empty? and b.nil? then tt_sym else
-        Hash[ transitions.map { |t| t.name.to_sym rescue t } 
-                .zip( send *aa, &b ) ]
-      end
-    end
-    alias :ttß_ :tt_sym_
 
     # Exposing @place_clamps (hash with place instances as keys).
     # 
