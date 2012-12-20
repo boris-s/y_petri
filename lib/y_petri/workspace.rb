@@ -95,9 +95,9 @@ module YPetri
       # of this workspace)
       @Net.new name: :Top
       # Set hook for new @place to add itself automatically to the top net
-      @Place.name_magic_hook { |new_inst| Net()::Top << new_inst }
+      @Place.new_instance_hook { |new_inst| Net()::Top << new_inst }
       # Set hook for new @transition to add itself automatically to the top net
-      @Transition.name_magic_hook { |new_inst| Net()::Top << new_inst }
+      @Transition.new_instance_hook { |new_inst| Net()::Top << new_inst }
       # A hash of simulations of this workspace { simulation => its settings }
       @simulations = {}
       # A hash of clamp collections { collection name => clamp hash }

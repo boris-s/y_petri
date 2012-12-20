@@ -12,6 +12,7 @@ require_relative 'y_petri/timed_simulation'
 require_relative 'y_petri/workspace'
 require_relative 'y_petri/manipulator'
 
+
 # YPetri represents Petri net (PN) formalism.
 #
 # A PN consists of places and transitions. There are also arcs, that is,
@@ -29,7 +30,7 @@ require_relative 'y_petri/manipulator'
 # fluid transition between Fixnum and Bignum, there should be fluid
 # transition between token amount representation as Integer (discrete) or
 # Float (continuous) - the decision should be on the simulator.
-
+# 
 module YPetri
   DEFAULT_SIMULATION_SETTINGS = {
     step_size: 0.1,
