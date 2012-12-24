@@ -16,18 +16,18 @@ set_target_time 60 * 60 * 24
 AMP = Place m!: 8695.0
 ADP = Place m!: 6521.0
 ATP = Place m!: 3152.0
-Deoxycytidine = place( m!: 0.5 )
-DeoxyCTP = place( m!: 1.0 )
-DeoxyGMP = place( m!: 1.0 )
-UMP_UDP_pool = place( m!: 2737.0 )
-DeoxyUMP_DeoxyUDP_pool = place( m!: 0.0 )
-DeoxyTMP = place( m!: 3.3 )
-DeoxyTDP_DeoxyTTP_pool = place( m!: 5.0 )
-Thymidine = place( m!: 0.5 )
-TK1 = place( m!: 100_000 )
-TYMS = place( m!: 100_000 )
-RNR = place( m!: 100_000 )
-TMPK = place( m!: 100_000 )
+Deoxycytidine = Place( m!: 0.5 )
+DeoxyCTP = Place( m!: 1.0 )
+DeoxyGMP = Place( m!: 1.0 )
+UMP_UDP_pool = Place( m!: 2737.0 )
+DeoxyUMP_DeoxyUDP_pool = Place( m!: 0.0 )
+DeoxyTMP = Place( m!: 3.3 )
+DeoxyTDP_DeoxyTTP_pool = Place( m!: 5.0 )
+Thymidine = Place( m!: 0.5 )
+TK1 = Place( m!: 100_000 )
+TYMS = Place( m!: 100_000 )
+RNR = Place( m!: 100_000 )
+TMPK = Place( m!: 100_000 )
 
 # molecular masses
 TK1_kDa = 24.8
