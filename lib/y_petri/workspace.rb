@@ -249,7 +249,7 @@ module YPetri
     # supplied to serve a name for the simulation in this workspace.
     # 
     def new_timed_simulation settings={}
-      settings.must_be_kind_of Hash
+      settings.tE_kind_of Hash
       net_instance = net( settings[:net] || self.Net::Top )
       cc_id = settings
         .may_have( :clamp_collection, syn!: :cc ) || :Base
