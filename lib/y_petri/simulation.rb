@@ -41,6 +41,7 @@ module YPetri
     # other arguments in addition to the ones just named.)
     # 
     def initialize *args; oo = args.extract_options!
+      puts "starting to set up Simulation" if DEBUG
       # ------------ Net --------------
       # Currently, @net is immutable within Simulation class.
       oo.must_have :net do |o| o.declares_module_compliance? ::YPetri::Net end
@@ -56,6 +57,8 @@ module YPetri
         private :Place, :Transition, :Net
       }
 
+      puts "setup of :net mental image complete" if DEBUG
+
       # ---- Simulation parameters ----
       # From Simulation's point of view, there are 2 kinds of places: free and
       # clamped. For free places, initial value has to be specified. For clamped
@@ -70,6 +73,8 @@ module YPetri
       # keys in the hashes must be unique
       @place_clamps.keys.aE_equal @place_clamps.keys.uniq
       @initial_marking.keys.aE_equal @initial_marking.keys.uniq
+
+      puts "setup of clamps and initial marking done" if DEBUG
 
       # ------ Consistency check ------
       # # Clamped places must not have explicit initial marking specified:
@@ -89,6 +94,8 @@ module YPetri
         end
       }
 
+      puts "consistency check for clamps and initial marking passed" if DEBUG
+
       # --- free pl. => pl. matrix ----
       # multiplying this matrix by a marking vector for free places gives
       # corresponding marking vector for all places; used for marking update
@@ -97,6 +104,8 @@ module YPetri
       @clamped_places_to_all_places_matrix =
         Matrix.correspondence_matrix( clamped_places, places )
 
+      puts "correspondence matrices set up" if DEBUG
+
       # --- Stoichiometry matrices ----
       @stoichiometry_matrix_for_timeless_stoichiometric_transitions =
         create_stoichiometry_matrix_for( timeless_stoichiometric_transitions )
@@ -104,6 +113,8 @@ module YPetri
         create_stoichiometry_matrix_for( stoichiometric_transitions_with_rate )
       @stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions =
         create_stoichiometry_matrix_for( timed_rateless_stoichiometric_transitions )
+
+      puts "stoichiometry matrices set up" if DEBUG
 
       # ----- Create other assets -----
       @delta_state_closures_for_timeless_nonstoichiometric_transitions =
@@ -119,11 +130,16 @@ module YPetri
       @rate_closures_for_stoichiometric_transitions_with_rate =
         create_rate_closures_for_stoichiometric_transitions_with_rate
 
+
       @zero_column_vector_sized_as_free_places =
         Matrix.zero( free_places.size, 1 )
 
+      puts "other assets set up, about to reset" if DEBUG
+
       # ----------- Reset -------------
       reset!
+
+      puts "reset complete" if DEBUG
     end
 
     # Exposing @net
@@ -1197,14 +1213,27 @@ module YPetri
     # Resets the simulation
     # 
     def reset!
+      puts "Starting #reset! method" if DEBUG
       zero_vector = Matrix.column_vector( places.map {0.0} ) # Float zeros
-      clamped_component = clamped_places_to_all_places_matrix *
-        compute_marking_vector_of_clamped_places
-      free_component = free_places_to_all_places_matrix *
-        compute_initial_marking_vector_of_free_places
+      puts "zero vector prepared" if DEBUG
+      mv_clamped = compute_marking_vector_of_clamped_places
+      puts "#reset! obtained marking vector of clamped places" if DEBUG
+      clamped_2_all = clamped_places_to_all_places_matrix
+      puts "#reset! obtained conversion matrix #{clamped_2_all}" if DEBUG
+      clamped_component = clamped_2_all * mv_clamped
+      puts "clamped component of marking vector prepared" if DEBUG
+      mv_free = compute_initial_marking_vector_of_free_places
+      puts "#reset! obtained initial marking vector of free places" if DEBUG
+      free_2_all = free_places_to_all_places_matrix
+      puts "#reset! obtained conversion matrix #{free_2_all}" if DEBUG
+      free_component = free_2_all * mv_free
+      puts "free component of marking vector prepared" if DEBUG
       @marking_vector = zero_vector + clamped_component + free_component
+      puts "marking vector assembled, about to reset recording" if DEBUG
       reset_recording!
+      puts "reset recording done, about to initiate sampling process" if DEBUG
       note_state_change!
+      puts "sampling process initiated, #reset! done" if DEBUG
       return self
     end
 
@@ -1231,23 +1260,46 @@ module YPetri
     # Called upon initialzation
     # 
     def compute_initial_marking_vector_of_free_places
-      Matrix.column_vector( free_places.map { |p| @initial_marking[p] }
-                              .map { |im|
-                                im = im.value rescue im # try #value
-                                im.call rescue im       # try #call
-                              # the above unwraps place and/or closure
-                             } )
+      puts "computing the marking vector of free places" if DEBUG
+      results = free_places.map { |p|
+        im = @initial_marking[ p ]
+        puts "doing free place #{p} with init. marking #{im}" if DEBUG
+        # unwrap places / cells
+        im = case im
+             when Place then im.marking
+             else im end
+        case im
+        when Proc then im.call
+        else im end
+      }
+      # and create the matrix out of the results
+      puts "about to create the column vector" if DEBUG
+      cv = Matrix.column_vector results
+      puts "column vector #{cv} prepared" if DEBUG
+      return cv
     end
 
     # Called upon initialization
     # 
     def compute_marking_vector_of_clamped_places
-      Matrix.column_vector( clamped_places.map { |p| @place_clamps[p] }
-                              .map { |clamp|
-                                clamp = clamp.value rescue clamp # try #value
-                                clamp.call rescue clamp          # try #call
-                              # the above unwraps place and/or closure
-                            } )
+      puts "computing the marking vector of clamped places" if DEBUG
+      results = clamped_places.map { |p|
+        clamp = @place_clamps[ p ]
+        puts "doing clamped place #{p} with clamp #{clamp}" if DEBUG
+        # unwrap places / cells
+        clamp = case clamp
+                when Place then clamp.marking
+                else clamp end
+        # unwrap closure by calling it
+        case clamp
+        when Proc then clamp.call
+        else clamp end
+      }
+      # and create the matrix out of the results
+      puts "about to create the column vector" if DEBUG
+      cv = Matrix.column_vector results
+      puts "column vector #{cv} prepared" if DEBUG
+      return cv
     end
 
     # Expects a Δ marking vector for free places and performs the specified

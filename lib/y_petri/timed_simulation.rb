@@ -72,6 +72,7 @@ module YPetri
     # named arguments.
     # 
     def initialize *aa; oo = aa.extract_options!
+      puts "starting TimedSimulation init" if DEBUG
       # LATER: possibility of transition clamps
       # @simulation_method = :implicit_euler # hard-wired so far
       @initial_time = 0 # simulation step size
@@ -81,10 +82,12 @@ module YPetri
       @sampling_period = oo.delete :sampling_period
       oo.may_have :target_time
       @target_time = oo.delete :target_time
+      puts "about to call super" if DEBUG
       super *aa, oo
+      puts "successfuly set up a TimedSimulation" if DEBUG
     end
 
-    # At the moment, near alias for #run_to_target_time!
+    # At the moment, near alias for #run_to_arget_time!
     # 
     def run! target=target_time; run_until_target_time! target; return self end
 
