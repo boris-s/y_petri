@@ -80,10 +80,10 @@ module YPetri
     def << place_or_transition
       begin
         include_place!( place_or_transition )
-      rescue ArgumentError
+      rescue TypeError
         begin
           include_transition!( place_or_transition )
-        rescue ArgumentError
+        rescue TypeError
         end
       ensure
         return self
@@ -95,13 +95,13 @@ module YPetri
     def include? place_or_transition
       p = begin
             place( place_or_transition )
-          rescue ArgumentError
+          rescue TypeError
             nil
           end
       if p then return @places.include? p end
       t = begin
             transition( place_or_transition )
-          rescue ArgumentError
+          rescue TypeError
             nil
           end
       if t then return @transitions.include? t end

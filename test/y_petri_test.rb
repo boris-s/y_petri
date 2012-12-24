@@ -3,8 +3,8 @@
 
 require 'minitest/spec'
 require 'minitest/autorun'
-# require_relative '../lib/y_petri'     # tested component itself
-require 'y_petri'
+require_relative '../lib/y_petri'     # tested component itself
+# require 'y_petri'
 
 include Pyper if require 'pyper'
 
@@ -431,7 +431,7 @@ describe ::YPetri::Net do
 
     it "should expose its elements" do
       assert_equal [@p1, @p2, @p3], @net.places
-      assert_equal ["A", "B", "C"], @net.pp
+      assert_equal [:A, :B, :C], @net.pp
       assert_equal [], @net.transitions
     end
 
@@ -472,7 +472,7 @@ describe ::YPetri::Net do
 
       it "should expose its elements" do
         assert_equal [@t1], @net.transitions
-        assert_equal ["T1"], @net.tt
+        assert_equal [:T1], @net.tt
       end
 
       it "should expose transition groups" do
@@ -509,14 +509,15 @@ describe ::YPetri::Net do
 
       describe "plus 1 more nameless timeless functionless transition" do
         before do
-          @net << ( @t2 = @tç.new s: { @p2 => -1, @p3 => 1 } )
+          @t2 = @tç.new s: { @p2 => -1, @p3 => 1 }
+          @net.include_transition! @t2
         end
 
         it "should expose its elements" do
           assert_equal [@t1, @t2], @net.transitions
-          assert_equal ['T1', nil], @net.tt
+          assert_equal [:T1, nil], @net.tt
           @net.tap{ |n| n.exclude_transition! @t1 }.exclude_transition! @t2
-          @net.tap{ |n| n.exclude_place! @p3 }.pp.must_equal [?A, ?B]
+          @net.tap{ |n| n.exclude_place! @p3 }.pp.must_equal [:A, :B]
         end
 
         it "should expose transition groups" do
@@ -535,7 +536,7 @@ describe ::YPetri::Net do
           assert_equal [], @net.nonstoichiometric_transitions_with_rate
           assert_equal [], @net.nonstoichiometric_tt_with_rate
           assert_equal [@t1], @net.stoichiometric_transitions_with_rate
-          assert_equal ['T1'], @net.stoichiometric_tt_with_rate
+          assert_equal [:T1], @net.stoichiometric_tt_with_rate
           assert_equal [], @net.transitions_with_explicit_assignment_action
           assert_equal [], @net.transitions_with_assignment_action
           assert_equal [], @net.assignment_transitions
@@ -543,15 +544,15 @@ describe ::YPetri::Net do
           assert_equal [], @net.tt_with_assignment_action
           assert_equal [], @net.assignment_tt
           assert_equal [@t1, @t2], @net.stoichiometric_transitions
-          assert_equal ['T1', nil], @net.stoichiometric_tt
+          assert_equal [:T1, nil], @net.stoichiometric_tt
           assert_equal [], @net.nonstoichiometric_transitions
           assert_equal [], @net.nonstoichiometric_tt
           assert_equal [@t1], @net.timed_transitions
-          assert_equal ['T1'], @net.timed_tt
+          assert_equal [:T1], @net.timed_tt
           assert_equal [@t2], @net.timeless_transitions
           assert_equal [nil], @net.timeless_tt
           assert_equal [@t1], @net.transitions_with_rate
-          assert_equal ['T1'], @net.tt_with_rate
+          assert_equal [:T1], @net.tt_with_rate
           assert_equal [@t2], @net.rateless_transitions
           assert_equal [nil], @net.rateless_tt
         end
@@ -881,10 +882,10 @@ describe ::YPetri::Simulation do
     @s.f!.must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
     @s.Euler_action_vector_for_SR_transitions( 1 )
       .must_equal Matrix.column_vector [ 0.4, 1.0, 1.5 ]
-    @s.Euler_action_for_SR_tt_sym( 1 ).must_equal( T1: 0.4, T2: 1.0, T3: 1.5 )
+    @s.Euler_action_for_SR_tt( 1 ).must_equal( T1: 0.4, T2: 1.0, T3: 1.5 )
     @s.Δ_Euler_for_SR_transitions( 1 ).must_equal Matrix[[-1.9], [1.0], [1.9]]
-    @s.Δ_Euler_for_SR_ttß( 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
-    @s.Δ_euler_for_SR_ttß( 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
+    @s.Δ_Euler_for_SR_tt( 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
+    @s.Δ_euler_for_SR_tt( 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
   end
 
   it "presents sparse stoichiometry vectors for its transitions" do
@@ -1180,7 +1181,7 @@ describe ::YPetri::Manipulator do
     .map( &:keys ).must_equal [[:Base]] * 3
     @m.pp.must_equal []
     @m.tt.must_equal []
-    @m.nn.must_equal [ "Top" ]       # ie. :Top net spanning whole workspace
+    @m.nn.must_equal [ :Top ]       # ie. :Top net spanning whole workspace
   end
   
   describe "slightly more complicated case" do
@@ -1200,7 +1201,7 @@ describe ::YPetri::Manipulator do
       @m.run!
       @m.simulation.places.must_equal [ @p, @q ]
       @m.simulation.transitions.must_equal [ @decay_t, @constant_flux_t ]
-      @m.simulation.SR_tt.must_equal [ "Tp", "Tq" ]
+      @m.simulation.SR_tt.must_equal [ :Tp, :Tq ]
       @m.simulation.sparse_stoichiometry_vector!( :Tp ).must_equal Matrix.column_vector( [-1, 0] )
       @m.simulation.stoichiometry_matrix!.column_size.must_equal 2
       @m.simulation.stoichiometry_matrix!.row_size.must_equal 2
@@ -1246,7 +1247,7 @@ end
 #   it "should work" do
 #     @m.place( :A ).marking = 2
 #     @m.place( :B ).marking = 5
-#     @m.places.map( &:name ).must_equal ["A", "B", "C"]
+#     @m.places.map( &:name ).must_equal [:A, :B, :C]
 #     @m.places.map( &:marking ).must_equal [2, 5, 7.77]
 #     @m.transition( :A2B ).connectivity.must_equal [ @m.place( :A ), @m.place( :B ) ]
 #     @m.transition( :A2B ).fire!
@@ -1279,7 +1280,7 @@ end
 #     @m.run!
 #     @m.simulation.must_be_kind_of ::YPetri::TimedSimulation
 #     @m.plot_recording
-#     sleep 4
+#     sleep 3
 #   end
 # end
 
@@ -1403,6 +1404,6 @@ end
 #   it "should work" do
 #     @m.run!
 #     @m.plot_recording
-#     sleep 10
+#     sleep 3
 #   end
 # end

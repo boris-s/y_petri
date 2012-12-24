@@ -527,16 +527,19 @@ module YPetri
     #   return self
     # end
 
-    def inspect                      # :nodoc:
-      "YPetri::Transition[ #{name.nil? ? '' : name + ': ' }" +
-        "#{BASIC_TRANSITION_TYPES[ basic_type ]}" +
-        "#{assignment_action? ? ' with assignment action' : ''}" +
-        "#{name.nil? ? ', object_id: %s' % object_id : ''} ]"
+    # Inspect string for a transition.
+    # 
+    def inspect
+      to_s
     end
 
-    def to_s                         # :nodoc:
-      "#{name.nil? ? 'Transition' : name }[ #{basic_type}%s ]" %
-        if assignment_action? then " A" else "" end
+    # Conversion to a string.
+    # 
+    def to_s
+      "#<Transition: %s >" %
+        "#{name.nil? ? '' : '%s ' % name }(#{basic_type}%s)%s" %
+        [ "#{assignment_action? ? ' Assign.' : ''}",
+          "#{name.nil? ? ' id:%s' % object_id : ''}" ]
     end
 
     private
@@ -794,7 +797,7 @@ module YPetri
 
         # Breaking down rateless transitions into with and wo action closure:
         if action_given then
-          @action_closure = oo[:action].aE_is_a( Proc, "supplied :action" )
+          @action_closure = oo[:action].tE_is_a( Proc, "supplied :action" )
           @functional = true    # the transition still considered functional
           if timed_given or timeless_given then
             @timed = timed_given ? oo[:timed] : !oo[:timeless]

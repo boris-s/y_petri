@@ -139,15 +139,15 @@ module YPetri
 
     # Places in the workspace.
     # 
-    def places; @Place.instances.keys end
+    def places; @Place.instances end
 
     # Transitions in the workspace.
     # 
-    def transitions; @Transition.instances.keys end
+    def transitions; @Transition.instances end
 
     # Nets in the workspace.
     # 
-    def nets; @Net.instances.keys end
+    def nets; @Net.instances end
 
     # Simulations in the workspace.
     # 
@@ -202,7 +202,7 @@ module YPetri
     # 
     def set_clamp_collection( name=:Base, clamp_hash )
       @clamp_collections[name] =
-        clamp_hash.aE_kind_of Hash
+        clamp_hash.tE_kind_of Hash
     end
     alias :set_cc :set_clamp_collection
 
@@ -210,7 +210,7 @@ module YPetri
     # 
     def set_initial_marking_collection( name=:Base, initial_marking_hash )
       @initial_marking_collections[name] =
-        initial_marking_hash.aE_kind_of Hash
+        initial_marking_hash.tE_kind_of Hash
     end
     alias :set_imc :set_initial_marking_collection
 
@@ -222,7 +222,7 @@ module YPetri
     def set_simulation_settings_collection( name=:Base,
                                             simulation_settings_hash )
       @simulation_settings_collections[name] =
-        simulation_settings_hash.aE_kind_of Hash
+        simulation_settings_hash.tE_kind_of Hash
     end
     alias :set_ssc :set_simulation_settings_collection
 
