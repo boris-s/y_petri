@@ -381,13 +381,23 @@ module YPetri
 
     def set_sampling Δt; ssc.merge! sampling_period: Δt end
 
-    def new_timed_simulation *aa
-      instance = workspace.new_timed_simulation *aa
+    # Create a new timed simulation and make it available in the simulations
+    # table.
+    # 
+    def new_timed_simulation *args, &block
+      instance = workspace
+        .new_timed_simulation *args, &block
+      puts "new timede simulation successfuly created!"
+      # Set the point to this simulation
       simulation_point_to( simulations.rassoc( instance )[0] )
       return instance
     end
 
-    def run!; new_timed_simulation.run! end
+    # Create a new timed simulation and run it.
+    # 
+    def run!
+      new_timed_simulation.run!
+    end
 
     def print_recording( filename = nil )
       if filename.nil? then
