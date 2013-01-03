@@ -44,8 +44,8 @@ module YPetri
       puts "starting to set up Simulation" if DEBUG
 
       oo.must_have :net do |o| o.class_complies? ::YPetri::Net end
-      oo.may_have: :place_clamps, syn!: :marking_clamps
-      oo.may_have: :initial_marking, syn!: :initial_marking_vector
+      oo.may_have :place_clamps, syn!: :marking_clamps
+      oo.may_have :initial_marking, syn!: :initial_marking_vector
 
       # === Net
       # 
