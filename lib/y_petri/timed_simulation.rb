@@ -190,8 +190,7 @@ module YPetri
     end
 
     def to_s                         # :nodoc:
-      "TimedSimulation[ #{pp.size} places, #{tt.size} transitions, " +
-        "time: #{time} ]"
+      "TimedSimulation[ #{pp.size} pp, #{tt.size} tt, T: #{time} ]"
     end
 
     private
