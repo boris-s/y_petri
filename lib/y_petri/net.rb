@@ -308,13 +308,15 @@ module YPetri
 
     # Creates a new simulation from the net.
     # 
-    def new_simulation *args; oo = args.extract_options!
+    def new_simulation *args
+      oo = args.extract_options!
       YPetri::Simulation.new *args, oo.merge( net: self )
     end
 
     # Creates a new timed simulation from the net.
     # 
-    def new_timed_simulation *args; oo = args.extract_options!
+    def new_timed_simulation *args
+      oo = args.extract_options!
       YPetri::TimedSimulation.new oo.merge( net: self )
     end
 
