@@ -385,9 +385,10 @@ module YPetri
     # table.
     # 
     def new_timed_simulation *args, &block
+      puts "manipulator is about to create new timed simulation"
       instance = workspace
         .new_timed_simulation *args, &block
-      puts "new timede simulation successfuly created!"
+      puts "new timed simulation successfuly created!"
       # Set the point to this simulation
       simulation_point_to( simulations.rassoc( instance )[0] )
       return instance
@@ -396,6 +397,7 @@ module YPetri
     # Create a new timed simulation and run it.
     # 
     def run!
+      puts "hello from manipulator's #run!"
       new_timed_simulation.run!
     end
 

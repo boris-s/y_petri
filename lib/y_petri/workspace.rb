@@ -281,6 +281,7 @@ module YPetri
     # supplied to serve a name for the simulation in this workspace.
     # 
     def new_timed_simulation settings={}
+      puts "hello from workspace's #new_timed_simulation"
       settings.aT_responds_to :may_have
       settings.may_have :net
       settings.may_have :cc, syn!: :clamp_collection
