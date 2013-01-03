@@ -42,11 +42,15 @@ module YPetri
     # 
     def initialize *args; oo = args.extract_options!
       puts "starting to set up Simulation" if DEBUG
-      # ------------ Net --------------
-      # Currently, @net is immutable within Simulation class.
+
       oo.must_have :net do |o| o.class_complies? ::YPetri::Net end
-      net = oo[:net]
-      @net = net.dup
+      oo.may_have: :place_clamps, syn!: :marking_clamps
+      oo.may_have: :initial_marking, syn!: :initial_marking_vector
+
+      # === Net
+      # 
+      # Currently, @net is immutable within Simulation class.
+      @net = oo[:net].dup
       @places = @net.places.dup
       @transitions = @net.transitions.dup
 
@@ -59,27 +63,28 @@ module YPetri
 
       puts "setup of :net mental image complete" if DEBUG
 
-      # ---- Simulation parameters ----
+      # === Simulation parameters
+      # 
       # From Simulation's point of view, there are 2 kinds of places: free and
       # clamped. For free places, initial value has to be specified. For clamped
       # places, clamps have to be specified. Both (initial values and clamps) are
       # expected as hash type named parameters:
-      @place_clamps =
-        ( oo.may_have( :place_clamps, syn!: :marking_clamps ) || {} )
+      @place_clamps = ( oo[:place_clamps] || {} )
         .with_keys do |key| place( key ) end
-      @initial_marking =
-        ( oo.may_have( :initial_marking, syn!: :initial_marking_vector ) || {} )
+      @initial_marking = ( oo[:initial_marking] || {} )
         .with_keys do |key| place( key ) end
-      # keys in the hashes must be unique
+
+      # Enforce that keys in the hashes must be unique:
       @place_clamps.keys.aT_equal @place_clamps.keys.uniq
       @initial_marking.keys.aT_equal @initial_marking.keys.uniq
 
       puts "setup of clamps and initial marking done" if DEBUG
 
-      # ------ Consistency check ------
+      # === Consistency check
+      # 
       # # Clamped places must not have explicit initial marking specified:
       # @place_clamps.keys.each { |place|
-      #   place.aE_not "clamped place #{place}",
+      #   place.aT_not "clamped place #{place}",
       #                "have explicitly specified initial marking" do |place|
       #     @initial_marking.keys.include? place
       #   end
