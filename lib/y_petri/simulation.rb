@@ -92,6 +92,7 @@ module YPetri
 
       # Each place must be treated: either clamped, or have initial marking
       places.each { |place|
+        puts "Checking consistency of place #{place.name}"
         place.tE "have either clamp or initial marking",
                  "place #{p}" do |place|
           @place_clamps.keys.include?( place ) ||
