@@ -389,7 +389,9 @@ module YPetri
     #       
     def initialize *args
       # do the big work of checking in the arguments
+      puts "hello from Transition init"
       check_in_arguments *args
+      puts "arguments checked in successfuly"
       # Inform the relevant places that they have been connected:
       upstream.each{ |place| place.send :register_downstream_transition, self }
       downstream.each{ |place| place.send :register_upstream_transition, self }
