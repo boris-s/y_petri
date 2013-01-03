@@ -665,7 +665,7 @@ module YPetri
         rescue NameError
           raise TErr, "#{c} member #{pl_id} does not specify a valid place!"
         end
-      end.tE what_is_collection, "not contain duplicate places" do |collection|
+      end.aT what_is_collection, "not contain duplicate places" do |collection|
         collection == collection.uniq
       end
     end
