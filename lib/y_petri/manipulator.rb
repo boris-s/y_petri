@@ -45,6 +45,8 @@ module YPetri
     # Transiton constructor: Creates a new transition in the current workspace.
     # 
     def Transition *args, &block
+      puts "hello from Manipulator#Transition"
+      puts "everything's OK" if workspace.Transition < Transition
       workspace.Transition.new *args, &block
     end
 

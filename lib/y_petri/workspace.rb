@@ -76,18 +76,18 @@ module YPetri
     # 
     def initialize
       # Place subclass specific to this workspace
-      @Place = workspace_specific_place_class = Class.new Place
+      @Place = parametrized_subclass_of_place = Class.new Place
       # Transition subclass specific to this workspace
-      @Transition = workspace_specific_transition_class = Class.new Transition
+      @Transition = parametrized_subclass_of_transition = Class.new Transition
       # Net subclass specific to this workspace
-      @Net = workspace_specific_net_class = Class.new Net
+      @Net = parametrized_subclass_of_net = Class.new Net
       # Let's explain to these new anonymous subclasses that they
       # should work together by modifying their class knowledge methods:
       [ @Place, @Transition, @Net ].each { |klass|
         klass.class_exec {
-          define_method :Place do workspace_specific_place_class end
-          define_method :Transition do workspace_specific_transition_class end
-          define_method :Net do workspace_specific_net_class end
+          define_method :Place do parametrized_subclass_of_place end
+          define_method :Transition do parametrized_subclass_of_transition end
+          define_method :Net do parametrized_subclass_of_net end
           private :Place, :Transition, :Net
         }
       }
