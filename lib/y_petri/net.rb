@@ -327,14 +327,15 @@ module YPetri
       places == other.places && transitions == other.transitions
     end
 
-    def to_s                         # :nodoc:
-      "Net[ #{places.size} places, #{transitions.size} transitions ]"
-    end
-
-    def inspect                      # :nodoc:
-      "#<Net: #{name.nil? ? '' : name + ': '} #{self.pp.size} places, " +
-        "#{tt.size} transitions" +
-        "#{name.nil? ? ', object id: %s' % object_id : ''} >"
+    # Returns a string briefly describing the net.
+    # 
+    def to_s
+      "#<Net: %s >" %
+        ( if name.nil? then
+            "%s"
+          else
+            "name: #{name}, %s"
+          end % "#{places.size} pp, #{transitions.size} tt" )
     end
 
     private

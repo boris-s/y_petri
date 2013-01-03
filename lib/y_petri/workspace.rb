@@ -112,70 +112,102 @@ module YPetri
     # given, place instance is returned. If a place instance is given, it is
     # returned unchanged.
     # 
-    def place which; @Place.instance which end
+    def place which
+      @Place.instance which
+    end
 
     # Returns a transition specified by the argument. If name (string or symbol)
     # is given, transition instance is returned. If a transition instance is
     # given, it is returned unchanged.
     # 
-    def transition which; @Transition.instance which end
+    def transition which
+      @Transition.instance which
+    end
 
     # Returns a net specified by the argument. If name (string or symbol) is
     # given, net instance is returned.
     # 
-    def net which; @Net.instance which end
+    def net which
+      @Net.instance which
+    end
 
     # Returns the name of a place specified by the argument.
     # 
-    def p which; place( which ).name end
+    def p which
+      place( which ).name
+    end
 
     # Returns the name of a transition specified by the argument.
     # 
-    def t which; transition( which ).name end
+    def t which
+      transition( which ).name
+    end
 
     # Returns the name of a net specified by the argument.
     # 
-    def n which; net( which ).name end
+    def n which
+      net( which ).name
+    end
 
     # Places in the workspace.
     # 
-    def places; @Place.instances end
+    def places
+      @Place.instances
+    end
 
     # Transitions in the workspace.
     # 
-    def transitions; @Transition.instances end
+    def transitions
+      @Transition.instances
+    end
 
     # Nets in the workspace.
     # 
-    def nets; @Net.instances end
+    def nets
+      @Net.instances
+    end
 
     # Simulations in the workspace.
     # 
-    def simulations; @simulations end
+    def simulations
+      @simulations
+    end
 
     # Names of places in the workspace.
     # 
-    def pp; places.map &:name end
+    def pp
+      places.map &:name
+    end
 
     # Names of transitions in the workspace.
     # 
-    def tt; transitions.map &:name end
+    def tt
+      transitions.map &:name
+    end
 
     # Names of nets in the workspace.
     # 
-    def nn; nets.map &:name end
+    def nn
+      nets.map &:name
+    end
 
     # Names of clamp collections in the workspace.
     # 
-    def clamp_cc; @clamp_collections.keys end
+    def clamp_cc
+      @clamp_collections.keys
+    end
 
     # Names of initial marking collections in the workspace.
     # 
-    def initial_marking_cc; @initial_marking_collections.keys end
+    def initial_marking_cc
+      @initial_marking_collections.keys
+    end
 
     # Names of simulation settings collections in the workspace.
     # 
-    def simulation_settings_cc; @simulation_settings_collections.keys end
+    def simulation_settings_cc
+      @simulation_settings_collections.keys
+    end
 
     # Presents a clamp collection specified by the argument.
     # 
@@ -201,16 +233,14 @@ module YPetri
     # Creates a clamp collection.
     # 
     def set_clamp_collection( name=:Base, clamp_hash )
-      @clamp_collections[name] =
-        clamp_hash.aT_kind_of Hash
+      @clamp_collections[name] = clamp_hash
     end
     alias :set_cc :set_clamp_collection
 
     # Creates an initial marking collection.
     # 
     def set_initial_marking_collection( name=:Base, initial_marking_hash )
-      @initial_marking_collections[name] =
-        initial_marking_hash.aT_kind_of Hash
+      @initial_marking_collections[name] = initial_marking_hash
     end
     alias :set_imc :set_initial_marking_collection
 
@@ -219,10 +249,8 @@ module YPetri
     # * sampling_period: 5 by default
     # * target_time: 60 by default
     # 
-    def set_simulation_settings_collection( name=:Base,
-                                            simulation_settings_hash )
-      @simulation_settings_collections[name] =
-        simulation_settings_hash.aT_kind_of Hash
+    def set_simulation_settings_collection( name=:Base, sim_set_hash )
+      @simulation_settings_collections[name] = sim_set_hash
     end
     alias :set_ssc :set_simulation_settings_collection
 
@@ -231,16 +259,20 @@ module YPetri
     # :simulation_settings_collection).
     # 
     def simulation settings={}
-      key = if settings.is_a? Hash then
-              net_instance = net( settings[:net] || self.Net::Top )
-              cc_id = settings
-                .may_have( :clamp_collection, syn!: :cc ) || :Base
-              imc_id = settings
-                .may_have( :initial_marking_collection, syn!: :imc ) || :Base
-              ssc_id = settings
-                .may_have( :simulation_settings_collection, syn!: :ssc ) || :Base
-              { net: net_instance, cc: cc_id, imc: imc_id, ssc: ssc_id }
-            else settings end
+      key = case settings
+            when ~:may_have then # it is a hash or equivalent
+              settings.may_have :net
+              settings.may_have :cc, syn!: :clamp_collection
+              settings.may_have :imc, syn!: :initial_marking_collection
+              settings.may_have :ssc, syn!: :simulation_settings_collection
+              # now, based on the above, let's prepare the key
+              { net: net( settings[:net] || self.Net::Top ),
+                cc: settings[:cc] || :Base,
+                imc: settings[:imc] || :Base,
+                ssc: settings[:ssc] || :Base }
+            else # use the unprocessed argument itself as the key
+              settings
+            end
       @simulations[ key ]
     end
 
@@ -249,46 +281,54 @@ module YPetri
     # supplied to serve a name for the simulation in this workspace.
     # 
     def new_timed_simulation settings={}
-      settings.aT_kind_of Hash
-      net_instance = net( settings[:net] || self.Net::Top )
-      cc_id = settings
-        .may_have( :clamp_collection, syn!: :cc ) || :Base
-      imc_id = settings
-        .may_have( :initial_marking_collection, syn!: :imc ) || :Base
-      ssc_id = settings
-        .may_have( :simulation_settings_collection, syn!: :ssc ) || :Base
+      settings.aT_responds_to :may_have
+      settings.may_have :net
+      settings.may_have :cc, syn!: :clamp_collection
+      settings.may_have :imc, syn!: :initial_marking_collection
+      settings.may_have :ssc, syn!: :simulation_settings_collection
       settings.may_have :name, syn!: :ɴ
-      key = settings[:name] ||
-        { net: net_instance, cc: cc_id, imc: imc_id, ssc: ssc_id }
-      # let's clarify what we got so far
-      simulation_settings = ssc( ssc_id )
-      clamp_hash = cc( cc_id )
-      im_hash = imc( imc_id )
+      # Let's prepare the key.
+      key = settings[:name] || {
+        net: ( net_instance = net( settings[:net] || self.Net::Top ) ),
+        cc: ( cc_id = settings[:cc] || :Base ),
+        imc: ( imc_id = settings[:imc] || :Base ),
+        ssc: ( ssc_id = settings[:ssc] || :Base ) 
+      }
+      # Let's clarify what we got so far.
+      simulation_settings = self.ssc( ssc_id )
+      clamp_hash = self.cc( cc_id )
+      im_hash = self.imc( imc_id )
       # Now let's make sure to use places' :default_marking in those cases,
-      # where no clamp or no explicit initial marking is specified
+      # where no clamp or no explicit initial marking is specified:
       untreated_places = net_instance.places.select { |place|
         ! clamp_hash.keys.map { |key| place( key ) }.include? place and
         ! im_hash.keys.map { |key| place( key ) }.include? place
       }
+      # For the untreated places, let's just use their default marking:
       im_complement = Hash[ untreated_places
                               .zip( untreated_places.map &:default_marking ) ]
-      awol = im_complement.select { |key, val| val.nil? }
-      txt = "Unable to instantiate TimedSimulation: " +
-        "Missing clamp or initial marking for %s."
-      case awol.size
-      when 0 then im_hash = im_hash.merge im_complement
-      when 1 then raise ArgumentError, txt % awol.keys[0]
-      when 2 then raise ArgumentError, txt % "#{awol.keys[0]} and #{awol.keys[1]}"
+      # If there is no default marking, and no initial marking, let's raise
+      # beautiful errors.
+      missing = im_complement.select { |key, val| val.nil? }
+      msg = "Missing clamp and/or initial marking for %s!"
+      case missing.size
+      when 0 then # In this case only, everything is OK.
+        im_hash = im_hash.merge im_complement
+      when 1 then
+        raise TypeError, msg % missing.keys[0]
+      when 2 then
+        raise TypeError, msg % "#{missing.keys[0]} and #{missing.keys[1]}"
       when 3 then
-        raise ArgumentError, txt %
-          "#{awol.keys[0]}, #{awol.keys[1]} and #{awol.keys[2]}"
+        raise TypeError, msg %
+          "#{missing.keys[0]}, #{missing.keys[1]} and #{missing.keys[2]}"
       else
-        raise ArgumentError, txt %
-          "#{awol.keys[0]}, #{awol.keys[1]} and #{awol.size - 2} other places"
+        raise TypeError, msg % ( "#{missing.keys[0]}, #{missing.keys[1]} " +
+                                 "and #{missing.size - 2} other places" )
       end
-      named_args = simulation_settings.merge( initial_marking: im_hash,
-                                              place_clamps: clamp_hash )
-      @simulations[ key ] = net_instance.new_timed_simulation named_args
+      @simulations[ key ] = net_instance
+        .new_timed_simulation( simulation_settings
+                                 .merge( initial_marking: im_hash,
+                                         place_clamps: clamp_hash ) )
     end
   end # class Workspace
 end # module YPetri

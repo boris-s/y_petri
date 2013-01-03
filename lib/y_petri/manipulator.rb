@@ -38,15 +38,21 @@ module YPetri
 
     # Place constructor: Creates a new place in the current workspace.
     # 
-    def Place *args; workspace.Place.new *args end
+    def Place *args, &block
+      workspace.Place.new *args, &block
+    end
 
     # Transiton constructor: Creates a new transition in the current workspace.
     # 
-    def Transition *args; workspace.Transition.new *args end
+    def Transition *args, &block
+      workspace.Transition.new *args, &block
+    end
 
     # Net constructor: Creates a new net in the current workspace.
     # 
-    def Net *args; workspace.Net.new *args end
+    def Net *args, &block
+      workspace.Net.new *args, &block
+    end
 
     # Sets current net to workspace.Net::Top
     # 

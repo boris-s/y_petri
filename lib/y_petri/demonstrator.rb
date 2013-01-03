@@ -97,29 +97,29 @@ TMPK_DeoxyTMP_Km = 12.0
 DNA_creation_speed = 3_000_000_000 / ( 12 * 3600 )
 
 # transitions
-@m.transition name: :TK1_Thymidine_DeoxyTMP,
+@m.Transition name: :TK1_Thymidine_DeoxyTMP,
               domain: [ Thymidine, TK1, DeoxyTDP_DeoxyTTP_pool, DeoxyCTP, Deoxycytidine, AMP, ADP, ATP ],
               stoichiometry: { Thymidine: -1, DeoxyTMP: 1 },
               rate: proc { |rc, e, pool1, ci2, ci3, master1, master2, master3|
                            ci1 = pool1 * master3 / ( master2 + master3 )
                            MMi.( rc, TK1_a, TK1_kDa, e, TK1_Thymidine_Km,
                                  ci1 => 13.5, ci2 => 0.8, ci3 => 40.0 ) }
-@m.transition name: :TYMS_DeoxyUMP_DeoxyTMP,
+@m.Transition name: :TYMS_DeoxyUMP_DeoxyTMP,
               domain: [ DeoxyUMP_DeoxyUDP_pool, TYMS, AMP, ADP, ATP ],
               stoichiometry: { DeoxyUMP_DeoxyUDP_pool: -1, DeoxyTMP: 1 },
               rate: proc { |pool, e, master1, master2, master3|
                       rc = pool * master2 / ( master1 + master2 )
                       MMi.( rc, TYMS_a, TYMS_kDa, e, TYMS_DeoxyUMP_Km ) }
-@m.transition name: :RNR_UDP_DeoxyUDP,
+@m.Transition name: :RNR_UDP_DeoxyUDP,
               domain: [ UMP_UDP_pool, RNR, DeoxyUMP_DeoxyUDP_pool, AMP, ADP, ATP ],
               stoichiometry: { UMP_UDP_pool: -1, DeoxyUMP_DeoxyUDP_pool: 1 },
               rate: proc { |pool, e, master1, master2, master3|
                            rc = pool * master2 / ( master1 + master2 )
                            MMi.( rc, RNR_a, RNR_kDa, e, RNR_UDP_Km ) }
-@m.transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
+@m.Transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
               stoichiometry: { DeoxyTDP_DeoxyTTP_pool: -1 },
               rate: proc { DNA_creation_speed / 4 }
-@m.transition name: :TMPK_DeoxyTMP_DeoxyTDP,
+@m.Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
               domain: [ DeoxyTMP, TMPK, ADP,
                         DeoxyTDP_DeoxyTTP_pool,
                         DeoxyGMP, AMP, ATP ],
