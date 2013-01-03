@@ -14,7 +14,7 @@ include Pyper if require 'pyper'
 #
 describe ::YPetri::Place do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @pç = pç = Class.new ::YPetri::Place
     @p = pç.new! default_marking: 3.2,
                  marking: 1.1,
@@ -78,7 +78,7 @@ end
 #
 describe ::YPetri::Transition do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @ç = ç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     [ ç, pç ].each { |ç|
@@ -114,9 +114,9 @@ describe ::YPetri::Transition do
 
     it "should raise errors for bad parameters" do
       # omitting the domain should raise ArgumentError about too much ambiguity:
-      assert_raises AE do @ç.new codomain: [ @p1, @p3 ], action: λ { |t| [ t, t ] } end
+      assert_raises AErr do @ç.new codomain: [ @p1, @p3 ], action: λ { |t| [ t, t ] } end
       # saying that the transition is timeless points to a conflict:
-      assert_raises AE do @ç.new codomain: [ @p1, @p3 ], action: λ { |t| [ t, t ] }, timeless: true end
+      assert_raises AErr do @ç.new codomain: [ @p1, @p3 ], action: λ { |t| [ t, t ] }, timeless: true end
     end
 
     it "should initi and perform" do
@@ -254,12 +254,12 @@ describe ::YPetri::Transition do
 
       it "should raise errors for bad parameters" do
         # saying timed: true should raise a complaint:
-        assert_raises AE do @ç.new sv: { @p1 => 1 }, action: λ{ 1 }, timed: true end
+        assert_raises AErr do @ç.new sv: { @p1 => 1 }, action: λ{ 1 }, timed: true end
         # same for saying timeless: false
-        assert_raises AE do
+        assert_raises AErr do
           @ç.new sv: { @p1 => 1 }, action: λ{ 1 }, timeless: false end
         # while conflicting values will raise error
-        assert_raises AE do
+        assert_raises AErr do
           @ç.new sv: { @p1 => 1 }, action: λ { 1 }, timeless: true, timed: true
         end
       end
@@ -341,7 +341,7 @@ end
 #
 describe "upstream and downstream reference mτs of places and transitions" do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @tç = tç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     [ tç, pç ].each { |ç|
@@ -389,6 +389,9 @@ describe "upstream and downstream reference mτs of places and transitions" do
     it "should work" do
       @p.marking = 3
       assert_equal 3, @p.marking
+      assert @t.assignment_action?
+      assert_equal @t.domain, []
+      assert_equal 0, @t.action_closure.arity
       @t.fire!
       assert_equal 1, @p.marking
     end
@@ -402,7 +405,7 @@ end
 #
 describe ::YPetri::Net do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @tç = tç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     @nç = nç = Class.new ::YPetri::Net
@@ -451,8 +454,8 @@ describe ::YPetri::Net do
 
     it "should 'standard equipment' methods" do
       assert @net == @net.dup
-      assert @net.inspect.start_with? "YPetri::Net[ "
-      assert @net.to_s.start_with? "Net[ 3"
+      assert @net.inspect.start_with? "#<Net:"
+      assert @net.to_s.start_with? "Net"
       assert @net.include?( @p1 )
       assert ! @net.include?( @p_not_included )
       begin
@@ -576,7 +579,7 @@ end
 #
 describe ::YPetri::Simulation do
   before do
-    skip "to make the testing faster"
+    # skip "to make the testing faster"
     @pç = pç = Class.new( ::YPetri::Place )
     @tç = tç = Class.new( ::YPetri::Transition )
     @nç = nç = Class.new( ::YPetri::Net )
@@ -602,7 +605,10 @@ describe ::YPetri::Simulation do
     @t3 = @tç.new name: "T3",
                   s: { @p1 => -1, @p2 => -1, @p4 => 1 },
                   domain: @p3, flux: λ { |a| a * 0.5 }
-    @net = @nç.new << @p1 << @p2 << @p3 << @p4 << @p5 << @t1 << @t2 << @t3
+    @net = @nç.new << @p1 << @p2 << @p3 << @p4 << @p5
+    @net.include_transition! @t1
+    @net.include_transition! @t2
+    @net << @t3
     @s = YPetri::Simulation.new net: @net,
                                 place_clamps: { @p1 => 2.0, @p5 => 2.0 },
                                 initial_marking: { @p2 => @p2.default_marking,
@@ -613,6 +619,7 @@ describe ::YPetri::Simulation do
   it "exposes the net" do
     @s.net.must_equal @net
     @s.net.places.size.must_equal 5
+    @s.net.transitions.size.must_equal 3
     assert @net.include? @t1
     assert @s.net.include? @t1
     assert @net.include? @t2
@@ -722,7 +729,7 @@ describe ::YPetri::Simulation do
     @s.S_for_TSr_transitions.must_equal Matrix.empty( 3, 0 )
   end
 
-  it "has stoichiometry matrix for 6. stoichiometric transitions with rate" do
+  it "has stoichiometry matrix for 6. stoichiometric transitions with rate " do
     @s.stoichiometry_matrix_for_stoichiometric_transitions_with_rate
       .must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
     @s.stoichiometry_matrix_for_SR_transitions
@@ -910,7 +917,7 @@ end
 #
 describe ::YPetri::TimedSimulation do  
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @a = ::YPetri::Place.new default_marking: 1.0
     @b = ::YPetri::Place.new default_marking: 2.0
     @c = ::YPetri::Place.new default_marking: 3.0
@@ -1050,7 +1057,7 @@ end
 #
 describe ::YPetri::Workspace do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @w = ::YPetri::Workspace.new
     a = @w.Place.new!( default_marking: 1.0, name: "AA" )
     b = @w.Place.new!( default_marking: 2.0, name: "BB" )
@@ -1117,7 +1124,7 @@ end
 #
 describe ::YPetri::Manipulator do
   before do
-    skip "for now"
+    # skip "for now"
     @m = ::YPetri::Manipulator.new
   end
   
@@ -1218,7 +1225,7 @@ end
 #
 describe ::YPetri do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
   end
 
   it "should have basic classes" do
@@ -1408,135 +1415,136 @@ end
 #   end
 # end
 
-describe "Use of TimedSimulation with units" do
-  before do
-    require 'sy'
+# describe "Use of TimedSimulation with units" do
+#   before do
+#     require 'sy'
 
-    @m = YPetri::Manipulator.new
+#     @m = YPetri::Manipulator.new
   
-    # === General assumptions
-    Cytoplasm_volume = 5.0e-11.l
-    Pieces_per_concentration = SY::Nᴀ * Cytoplasm_volume
+#     # === General assumptions
+#     Cytoplasm_volume = 5.0e-11.l
+#     Pieces_per_concentration = SY::Nᴀ * Cytoplasm_volume
     
-    # === Simulation settings
-    @m.set_step 60.s
-    @m.set_target_time 24.h
+#     # === Simulation settings
+#     @m.set_step 60.s
+#     @m.set_target_time 24.h
+#     @m.set_sampling 300.s
     
-    # === Places
-    AMP = @m.Place m!: 8695.0.µM
-    ADP = @m.Place m!: 6521.0.µM
-    ATP = @m.Place m!: 3152.0.µM
-    Deoxycytidine = @m.Place m!: 0.5.µM
-    DeoxyCTP = @m.Place m!: 1.0.µM
-    DeoxyGMP = @m.Place m!: 1.0.µM
-    U12P = @m.Place m!: 2737.0.µM
-    DeoxyU12P = @m.Place m!: 0.0.µM
-    DeoxyTMP = @m.Place m!: 3.3.µM
-    DeoxyT23P = @m.Place m!: 5.0.µM
-    Thymidine = @m.Place m!: 0.5.µM
-    TK1 = @m.Place m!: 100_000 / Cytoplasm_volume
-    TYMS = @m.Place m!: 100_000 / Cytoplasm_volume
-    RNR = @m.Place m!: 100_000 / Cytoplasm_volume
-    TMPK = @m.Place m!: 100_000 / Cytoplasm_volume
+#     # === Places
+#     AMP = @m.Place m!: 8695.0.µM
+#     ADP = @m.Place m!: 6521.0.µM
+#     ATP = @m.Place m!: 3152.0.µM
+#     Deoxycytidine = @m.Place m!: 0.5.µM
+#     DeoxyCTP = @m.Place m!: 1.0.µM
+#     DeoxyGMP = @m.Place m!: 1.0.µM
+#     U12P = @m.Place m!: 2737.0.µM
+#     DeoxyU12P = @m.Place m!: 0.0.µM
+#     DeoxyTMP = @m.Place m!: 3.3.µM
+#     DeoxyT23P = @m.Place m!: 5.0.µM
+#     Thymidine = @m.Place m!: 0.5.µM
+#     TK1 = @m.Place m!: 100_000 / Cytoplasm_volume
+#     TYMS = @m.Place m!: 100_000 / Cytoplasm_volume
+#     RNR = @m.Place m!: 100_000 / Cytoplasm_volume
+#     TMPK = @m.Place m!: 100_000 / Cytoplasm_volume
     
-    # === Enzyme molecular masses
-    TK1_m = 24.8.kDa
-    TYMS_m = 66.0.kDa
-    RNR_m = 140.0.kDa
-    TMPK_m = 50.0.kDa
+#     # === Enzyme molecular masses
+#     TK1_m = 24.8.kDa
+#     TYMS_m = 66.0.kDa
+#     RNR_m = 140.0.kDa
+#     TMPK_m = 50.0.kDa
     
-    # === Specific activities of the enzymes
-    TK1_a = 5.40.µmol.min⁻¹.mg⁻¹
-    TYMS_a = 3.80.µmol.min⁻¹.mg⁻¹
-    RNR_a = 1.00.µmol.min⁻¹.mg⁻¹
-    TMPK_a = 0.83.µmol.min⁻¹.mg⁻¹
+#     # === Specific activities of the enzymes
+#     TK1_a = 5.40.µmol.min⁻¹.mg⁻¹
+#     TYMS_a = 3.80.µmol.min⁻¹.mg⁻¹
+#     RNR_a = 1.00.µmol.min⁻¹.mg⁻¹
+#     TMPK_a = 0.83.µmol.min⁻¹.mg⁻¹
     
-    # === Clamps
-    @m.clamp AMP: 8695.0.µM, ADP: 6521.0.µM, ATP: 3152.0.µM
-    @m.clamp Deoxycytidine: 0.5.µM, DeoxyCTP: 1.0.µM, DeoxyGMP: 1.0.µM
-    @m.clamp Thymidine: 0.5.µM
-    @m.clamp U12P: 2737.0.µM
+#     # === Clamps
+#     @m.clamp AMP: 8695.0.µM, ADP: 6521.0.µM, ATP: 3152.0.µM
+#     @m.clamp Deoxycytidine: 0.5.µM, DeoxyCTP: 1.0.µM, DeoxyGMP: 1.0.µM
+#     @m.clamp Thymidine: 0.5.µM
+#     @m.clamp U12P: 2737.0.µM
     
-    # === Function closures
-    # Vmax of an enzyme.
-    Vmax_enzyme = lambda { |specific_activity, mass|
-      specific_activity * mass
-    }
+#     # === Function closures
+#     # Vmax of an enzyme.
+#     Vmax_enzyme = lambda { |specific_activity, mass|
+#       specific_activity * mass
+#     }
     
-    # Michaelis constant reduced for competitive inhibitors.
-    Km_reduced = lambda { |km, ki_hash={}|
-      ki_hash.map { |concentration, ci_Ki| concentration / ci_Ki }
-        .reduce( 1, :+ ) * km
-    }
+#     # Michaelis constant reduced for competitive inhibitors.
+#     Km_reduced = lambda { |km, ki_hash={}|
+#       ki_hash.map { |concentration, ci_Ki| concentration / ci_Ki }
+#         .reduce( 1, :+ ) * km
+#     }
     
-    # Occupancy of enzyme active sites at given concentration of reactants
-    # and competitive inhibitors.
-    Occupancy = lambda { |concentration, reactant_Km, ci_Ki={}|
-      concentration / ( concentration + Km_reduced.( reactant_Km, ci_Ki ) )
-    }
+#     # Occupancy of enzyme active sites at given concentration of reactants
+#     # and competitive inhibitors.
+#     Occupancy = lambda { |concentration, reactant_Km, ci_Ki={}|
+#       concentration / ( concentration + Km_reduced.( reactant_Km, ci_Ki ) )
+#     }
     
-    # Michaelis and Menten equation with competitive inhibitors.
-    MMi = MM_equation_with_inhibitors = lambda {
-      |r_conc, enz_spec_act, enz_mass, enz_amount, r_Km, ci_Ki={}|
-      Vmax_enzyme.( enz_spec_act, enz_mass ) * enz_amount *
-      Occupancy.( r_conc, r_Km, ci_Ki )
-    }
+#     # Michaelis and Menten equation with competitive inhibitors.
+#     MMi = MM_equation_with_inhibitors = lambda {
+#       |r_conc, enz_spec_act, enz_mass, enz_amount, r_Km, ci_Ki={}|
+#       Vmax_enzyme.( enz_spec_act, enz_mass ) * enz_amount *
+#       Occupancy.( r_conc, r_Km, ci_Ki )
+#     }
     
-    # === Michaelis constants of the enzymes involved.
-    TK1_Thymidine_Km = 5.0.µM
-    TYMS_DeoxyUMP_Km = 2.0.µM
-    RNR_UDP_Km = 1.0.µM
-    TMPK_DeoxyTMP_Km = 12.0.µM
+#     # === Michaelis constants of the enzymes involved.
+#     TK1_Thymidine_Km = 5.0.µM
+#     TYMS_DeoxyUMP_Km = 2.0.µM
+#     RNR_UDP_Km = 1.0.µM
+#     TMPK_DeoxyTMP_Km = 12.0.µM
     
-    # === DNA synthesis speed.
-    DNA_creation_speed = 3_000_000_000.unit / 12.h
+#     # === DNA synthesis speed.
+#     DNA_creation_speed = 3_000_000_000.unit / 12.h
     
-    # === Transitions
-    # Synthesis of TMP by TK1.
-    TK1_Thymidine_DeoxyTMP = @m.Transition s: { Thymidine: -1, DeoxyTMP: 1 },
-      domain: [ Thymidine, TK1, DeoxyT23P, DeoxyCTP, Deoxycytidine, AMP, ADP, ATP ],
-        rate: proc { |rc, e, pool1, ci2, ci3, master1, master2, master3|
-                ci1 = pool1 * master3 / ( master2 + master3 )
-                MMi.( rc, TK1_a, TK1_m, e, TK1_Thymidine_Km,
-                      ci1 => 13.5.µM, ci2 => 0.8.µM, ci3 => 40.0.µM )
-              }
+#     # === Transitions
+#     # Synthesis of TMP by TK1.
+#     TK1_Thymidine_DeoxyTMP = @m.Transition s: { Thymidine: -1, DeoxyTMP: 1 },
+#       domain: [ Thymidine, TK1, DeoxyT23P, DeoxyCTP, Deoxycytidine, AMP, ADP, ATP ],
+#         rate: proc { |rc, e, pool1, ci2, ci3, master1, master2, master3|
+#                 ci1 = pool1 * master3 / ( master2 + master3 )
+#                 MMi.( rc, TK1_a, TK1_m, e, TK1_Thymidine_Km,
+#                       ci1 => 13.5.µM, ci2 => 0.8.µM, ci3 => 40.0.µM )
+#               }
     
-    # Methylation of DeoxyUMP into TMP by TYMS.
-    TYMS_DeoxyUMP_DeoxyTMP = @m.Transition s: { DeoxyU12P: -1, DeoxyTMP: 1 },
-      domain: [ DeoxyU12P, TYMS, AMP, ADP, ATP ],
-        rate: proc { |pool, e, master1, master2, master3|
-                rc = pool * master2 / ( master1 + master2 )
-                MMi.( rc, TYMS_a, TYMS_m, e, TYMS_DeoxyUMP_Km )
-              }
+#     # Methylation of DeoxyUMP into TMP by TYMS.
+#     TYMS_DeoxyUMP_DeoxyTMP = @m.Transition s: { DeoxyU12P: -1, DeoxyTMP: 1 },
+#       domain: [ DeoxyU12P, TYMS, AMP, ADP, ATP ],
+#         rate: proc { |pool, e, master1, master2, master3|
+#                 rc = pool * master2 / ( master1 + master2 )
+#                 MMi.( rc, TYMS_a, TYMS_m, e, TYMS_DeoxyUMP_Km )
+#               }
     
-    # Reduction of UDP into DeoxyUDP by RNR.
-    RNR_UDP_DeoxyUDP = @m.Transition s: { U12P: -1, DeoxyU12P: 1 },
-      domain: [ U12P, RNR, DeoxyU12P, AMP, ADP, ATP ],
-        rate: proc { |pool, e, master1, master2, master3|
-                rc = pool * master2 / ( master1 + master2 )
-                MMi.( rc, RNR_a, RNR_kDa, e, RNR_UDP_Km )
-              }
+#     # Reduction of UDP into DeoxyUDP by RNR.
+#     RNR_UDP_DeoxyUDP = @m.Transition s: { U12P: -1, DeoxyU12P: 1 },
+#       domain: [ U12P, RNR, DeoxyU12P, AMP, ADP, ATP ],
+#         rate: proc { |pool, e, master1, master2, master3|
+#                 rc = pool * master2 / ( master1 + master2 )
+#                 MMi.( rc, RNR_a, RNR_m, e, RNR_UDP_Km )
+#               }
     
-    # Consumption of TTP by DNA synthesis.
-    DeoxyTTP_to_DNA = @m.Transition s: { DeoxyT23P: -1 },
-        rate: proc { DNA_creation_speed / 4 }
+#     # Consumption of TTP by DNA synthesis.
+#     DeoxyTTP_to_DNA = @m.Transition s: { DeoxyT23P: -1 },
+#         rate: proc { DNA_creation_speed / 4 }
     
-    # Phosphorylation of TMP into TDP-TTP pool.
-    TMPK_DeoxyTMP_DeoxyTDP = @m.Transition s: { DeoxyTMP: -1, TMPK: 0, DeoxyT23P: 1 },
-      domain: [ DeoxyTMP, TMPK, ADP, DeoxyT23P, DeoxyGMP, AMP, ATP ],
-        rate: proc { |rc, e, ci1, pool, ci4, master1, master3|
-                master2 = ci1
-                ci2 = pool * master2 / ( master2 + master3 )
-                ci3 = pool * master3 / ( master2 + master3 )
-                MMi.( rc, TMPK_a, TMPK_kDa, e, TMPK_DeoxyTMP_Km,
-                      ci1 => 250.0, ci2 => 30.0, ci3 => 750, ci4 => 117 )
-              }
-  end
+#     # Phosphorylation of TMP into TDP-TTP pool.
+#     TMPK_DeoxyTMP_DeoxyTDP = @m.Transition s: { DeoxyTMP: -1, TMPK: 0, DeoxyT23P: 1 },
+#       domain: [ DeoxyTMP, TMPK, ADP, DeoxyT23P, DeoxyGMP, AMP, ATP ],
+#         rate: proc { |rc, e, ci1, pool, ci4, master1, master3|
+#                 master2 = ci1
+#                 ci2 = pool * master2 / ( master2 + master3 )
+#                 ci3 = pool * master3 / ( master2 + master3 )
+#                 MMi.( rc, TMPK_a, TMPK_m, e, TMPK_DeoxyTMP_Km,
+#                       ci1 => 250.0.µM, ci2 => 30.0.µM, ci3 => 750.µM, ci4 => 117.µM )
+#               }
+#   end
 
-  it "should work" do
-    # === Simulation execution
-    @m.run!
-    # === Plotting of the results
-    @m.plot_recording
-  end
-end
+#   it "should work" do
+#     # === Simulation execution
+#     @m.run!
+#     # === Plotting of the results
+#     @m.plot_recording
+#   end
+# end

@@ -1,5 +1,46 @@
 #encoding: utf-8
 
+# Now is a good time to talk about transition classification:
+#
+# STOICHIOMETRIC / NON-STOICHIOMETRIC
+# I. For stoichiometric transitions:
+#    1. Rate vector is computed as rate * stoichiometry vector, or
+#    2. Δ vector is computed a action * stoichiometry vector.
+# II. For non-stoichiometric transitions:
+#    1. Rate vector is obtained as the rate closure result, or
+#    2. action vector is obtained as the action closure result.
+# 
+# Conclusion: stoichiometricity distinguishes *need to multiply the
+# rate/action closure result by stoichiometry*.
+#
+# HAVING / NOT HAVING RATE
+# I. For transitions with rate, the closure result has to be
+# multiplied by the time step duration (delta_t) to get action.
+# II. For rateless transitions, the closure result is used as is.
+#
+# Conclusion: has_rate? distinguishes *need to multiply the closure
+# result by delta time* - differentiability of action by time.
+#
+# TIMED / TIMELESS
+# I. For timed transitions, action is time-dependent. Transitions with
+# rate are thus always timed. In rateless transitions, timedness means
+# that the action closure expects time step length (delta_t) as its first
+# argument - its arity is thus codomain size + 1. 
+# II. For timeless transitions, action is time-independent. Timeless
+# transitions are necessarily also rateless. Arity of the action closure
+# is expected to match the domain size.
+# 
+# Conclusion: Transitions with rate are always timed. In rateless
+# transitions, timedness distinguishes the need to supply time step
+# duration as the first argument to the action closure.
+#
+# ASSIGNMENT TRANSITIONS
+# Named argument :assignment_action set to true indicates that the
+# transitions acts by replacing the object stored as place marking by
+# the object supplied by the transition. For numeric types, same
+# effect can be achieved by subtracting the old number from the place
+# and subsequently adding the new value to it.
+#
 module YPetri
 
   # Represents a Petri net transition. YPetri transitions come in 6
@@ -49,7 +90,7 @@ module YPetri
   # ==== Stoichiometric / non-stoichiometric
   # * For stoichiometric transitions:
   #    [Rate vector] is computed as rate * stoichiometry vector, or
-  #    [Δ vector] is computed a action * stoichometry vector
+  #    [Δ vector] is computed a action * stoichiometry vector
   # * For non-stoichiometric transitions:
   #    [Rate vector] is obtained as the rate closure result, or
   #    [action vector] is obtained as the action closure result.
@@ -346,8 +387,9 @@ module YPetri
     # <tt>Transition( stoichiometry: { A: -1, B: 1 },
     #                 rate: λ { |a| a * 0.5 } )
     #       
-    def initialize *aa
-      check_in_arguments *aa     # the big work of checking in the arguments
+    def initialize *args
+      # do the big work of checking in the arguments
+      check_in_arguments *args
       # Inform the relevant places that they have been connected:
       upstream.each{ |place| place.send :register_downstream_transition, self }
       downstream.each{ |place| place.send :register_upstream_transition, self }
@@ -357,16 +399,20 @@ module YPetri
 
     # Marking of the domain places.
     # 
-    def domain_marking; domain.map &:marking end
+    def domain_marking
+      domain.map &:marking
+    end
 
     # Marking of the codomain places.
     # 
-    def codomain_marking; codomain.map &:marking end
+    def codomain_marking
+      codomain.map &:marking
+    end
 
     # Result of the transition's "function", regardless of the #enabled? status.
     # 
     def action( Δt=nil )
-      raise AE, "Δtime argument required for timed transitions!" if
+      raise AErr, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
       # the code here looks awkward, because I was trying to speed it up
       if has_rate? then
@@ -405,7 +451,7 @@ module YPetri
     # called right now (ie. honoring #enabled?, but not #cocked? status.
     # 
     def action_after_feasibility_check( Δt=nil )
-      raise AE, "Δtime argument required for timed transitions!" if
+      raise AErr, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
       act = Array( action Δt )
       # Assignment actions are always feasible - no need to check:
@@ -438,7 +484,7 @@ module YPetri
     # been cocked and causes the transition to uncock.
     # 
     def fire( Δt=nil )
-      raise AE, "Δtime argument required for timed transitions!" if
+      raise AErr, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
       return false unless cocked?
       uncock
@@ -449,16 +495,17 @@ module YPetri
     # #fire! (with bang) fires the transition regardless of cocked status.
     # 
     def fire!( Δt=nil )
-      raise AE, "Δtime argument required for timed transitions!" if
-        timed? and Δt.nil?
+      raise AErr, "Δtime required for timed transitions!" if timed? && Δt.nil?
       if assignment_action? then
-        codomain
-          .zip( Array action( Δt ) )
-          .each { |place, new_marking| place.marking = new_marking }
+        act = Array action( Δt )
+        codomain.each_with_index do |place, i|
+          place.marking = act[i]
+        end
       else
-        codomain
-          .zip( action_after_feasibility_check( Δt ) )
-          .each { |place, change| place.add change }
+        act = action_after_feasibility_check( Δt )
+        codomain.each_with_index do |place, i|
+          place.add act[i]
+        end
       end
       return nil
     end
@@ -468,7 +515,7 @@ module YPetri
     # place without getting places into forbidden state (negative marking).
     # 
     def enabled?( Δt=nil )
-      raise AE, "Δtime argument required for timed transitions!" if
+      raise AErr, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
       codomain
         .zip( action Δt )
@@ -548,354 +595,320 @@ module YPetri
     # ARGUMENT CHECK-IN UPON INITIALIZATION
     # **********************************************************************
 
-    # The following big job is basically defining the duck type of the input
-    # argument collection.
+    # Checking in the arguments supplied to #initialize looks like a big job.
+    # I won't contest to that, but let us not, that it is basically nothing
+    # else then defining the duck type of the input argument collection.
+    # TypeError is therefore raised if invalid collection has been supplied.
     # 
-    def check_in_arguments *args; oo = args.extract_options!
+    def check_in_arguments *args
+      oo = args.extract_options!
+      oo.may_have :stoichiometry, syn!: [ :stoichio,
+                                          :s ]
+      oo.may_have :codomain, syn!: [ :codomain_arcs,
+                                     :codomain_places,
+                                     :downstream,
+                                     :downstream_arcs,
+                                     :downstream_places,
+                                     :action_arcs ]
+      oo.may_have :domain, syn!: [ :domain_arcs,
+                                   :domain_places,
+                                   :upstream,
+                                   :upstream_arcs,
+                                   :upstream_places ]
+      oo.may_have :rate, syn!: [ :flux,
+                                 :propensity,
+                                 :rate_closure,
+                                 :flux_closure,
+                                 :propensity_closure,
+                                 :Φ,
+                                 :φ ]
+      oo.may_have :action, syn!: :action_closure
+      oo.may_have :timed
 
-      # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-      # We'll first prepare the sanitization closure for place collections,
-      # which makes sure that supplied array consists only of YPetri places.
-      # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-      # 
-      sanit = lambda { |symbol|
-        oo[symbol] = Array( oo[symbol] ).map { |e| place( e ) }
-        oo[symbol].aE "not contain duplicate places", "collection" do |array|
-          array == array.uniq
+      # was the rate was given?
+      @has_rate = oo.has? :rate
+
+      # is the transition stoichiometric (S) or nonstoichiometric (s)?
+      @stoichiometric = oo.has? :stoichiometry
+
+      # downstream description arguments: codomain, stoichiometry (if S)
+      if stoichiometric? then
+        @codomain, @stoichiometry = check_in_downstream_description_for_S( oo )
+      else # s transitions have no stoichiometry
+        @codomain = check_in_downstream_description_for_s( oo )
+      end
+
+      # check in domain first, :missing symbol may appear
+      @domain = check_in_domain( oo )
+
+      # upstream description arguments; also takes care of :missing domain
+        if has_rate? then
+          @domain, @rate_closure, @timed, @functional =
+            check_in_upstream_description_for_R( oo )
+        else
+          @domain, @action_closure, @timed, @functional =
+            check_in_upstream_description_for_r( oo )
+        end
+
+      # optional assignment action:
+      @assignment_action = check_in_assignment_action( oo )
+    end # def check_in_arguments
+    
+    # Makes sure that supplied collection consists only of appropriate places.
+    # Second optional argument customizes the error message.
+    # 
+    def sanitize_place_collection place_collection, what_is_collection=nil
+      c = what_is_collection ? what_is_collection.capitalize : "Collection"
+      Array( place_collection ).map do |pl_id|
+        begin
+          place( pl_id )
+        rescue NameError
+          raise TErr, "#{c} member #{pl_id} does not specify a valid place!"
+        end
+      end.tE what_is_collection, "not contain duplicate places" do |collection|
+        collection == collection.uniq
+      end
+    end
+    
+    # Private method, part of #initialize argument checking-in.
+    # 
+    def check_in_domain( oo )
+      if oo.has? :domain then
+        sanitize_place_collection( oo[:domain], "supplied domain" )
+      else
+        if stoichiometric? then
+          # take arcs with non-positive stoichiometry coefficients
+          Hash[ [ @codomain, @stoichiometry ].transpose ]
+            .delete_if{ |place, coeff| coeff > 0 }.keys
+        else
+          :missing
+          # Barring the caller's error, missing domain can mean:
+          # 1. empty domain
+          # 2. domain == codomain
+          # This will be figured later by rate/action closure arity
+        end
+      end
+    end
+
+    def check_in_upstream_description_for_R( oo )
+      _domain = domain               # this method may modify domain
+      # check against colliding :action argument
+      raise TErr, "Rate & action are mutually exclusive!" if oo.has? :action
+      # lets figure the rate closure
+      rate_λ = case rate_arg = oo[:rate]
+               when Proc then # We received the closure directly,
+                 # but we've to be concerned about missing domain.
+                 if domain == :missing then # we've to figure user's intent
+                   _domain = if rate_arg.arity == 0 then
+                               [] # user meant empty domain
+                             else
+                               codomain # user meant domain same as codomain
+                             end
+                 else # domain not missing
+                   raise TErr, "Rate closure arity (#{rate_arg.arity}) " +
+                     "greater than domain size (#{domain.size})!" unless
+                     rate_arg.arity.abs <= domain.size
+                 end
+                 rate_arg
+               else # We received something else,
+                 # we must make assumption user's intent.
+                 if stoichiometric? then # user's intent was mass action
+                   raise TErr, "When a number is supplied as rate, domain " +
+                     "must not be given!" if oo.has? :domain
+                   construct_standard_mass_action( rate_arg )
+                 else # user's intent was constant closure
+                   raise TErr, "When rate is a number and no stoichiometry " +
+                     "is supplied, codomain size must be 1!" unless
+                     codomain.size == 1
+                   # Missing domain is OK here,
+                   _domain = [] if domain == :missing
+                   # but if it was supplied explicitly, it must be empty.
+                   raise TErr, "Rate is a number, but non-empty domain was " +
+                     "supplied!" unless domain.empty? if oo.has?( :domain )
+                   lambda { rate_arg }
+                 end
+               end
+      # R transitions are implicitly timed
+      _timed = true
+      # check against colliding :timed argument
+      oo[:timed].tE :timed, "not be false if rate given" if oo.has? :timed
+      # R transitions are implicitly functional
+      _functional = true
+      return _domain, rate_λ, _timed, _functional
+    end
+
+    def check_in_upstream_description_for_r( oo )
+      _domain = domain               # this method may modify domain
+      _functional = true
+      # was action closure was given explicitly?
+      if oo.has? :action then
+        action_λ = oo[:action].aT_is_a Proc, "supplied action named argument"
+        if oo.has? :timed then
+          _timed = oo[:timed]
+          # Time to worry about the domain_missing
+          if domain == :missing then
+            # figure user's intent from closure arity
+            _domain = if action_λ.arity == ( _timed ? 1 : 0 ) then
+                        [] # user meant empty domain
+                      else
+                        codomain # user meant domain same as codomain
+                      end
+          else # domain not missing
+            raise TErr, "Rate closure arity (#{rate_arg.arity}) > domain " +
+              "size (#{domain.size})!" if action_λ.arity.abs > domain.size
+          end
+        else # :timed argument not supplied
+          if domain == :missing then
+            # If no domain was supplied, there is no way to reasonably figure
+            # out the user's intent, except when arity is 0:
+            _domain = case action_λ.arity
+                      when 0 then
+                        _timed = false
+                        [] # empty domain is implied
+                      else # no deduction of user intent possible
+                        raise AErr, "Too much ambiguity: Neither domain nor " +
+                          "timedness of the rateless transition was specified."
+                      end
+          else # domain not missing
+            # Even if the user did not bother to inform us explicitly about
+            # timedness, we can use closure arity as a clue. If it equals the
+            # domain size, leaving no room for Δtime argument, the user intent
+            # was to create timeless transition. If it equals domain size + 1,
+            # theu user intended to create a timed transition.
+            _timed = case action_λ.arity
+                     when domain.size then false
+                     when domain.size + 1 then true
+                     else # no deduction of user intent possible
+                       raise AErr, "Timedness was not specified, and the " +
+                         "arity of the action supplied action closure " +
+                         "(#{action_λ.arity}) does not give clear hint on it."
+                     end
+          end
+        end
+      else # rateless cases with no action closure specified
+        # Assumption must be made on transition's action. In particular,
+        # lambda { 1 } action closure will be assumed,
+        action_λ = lambda { 1 }
+        # and it will be required that the transition be stoichiometric and
+        # timeless. Domain will thus be required empty.
+        raise AErr, "Stoichiometry is compulsory, if rate/action was " +
+          "not supplied." unless stoichiometric?
+        # With this, we can drop worries about missing domain.
+        raise AErr, "When no rate/action is supplied, the transition can't " +
+          "be declared timed." if oo[:timed] if oo.has? :timed
+        _timed = false
+        _domain = []
+        _functional = false # the transition is considered functionless
+      end
+      return _domain, action_λ, _timed, _functional
+    end
+
+    def construct_standard_mass_action( num )
+      # assume standard mass-action law
+      nonpositive_coeffs = stoichiometry.select { |coeff| coeff <= 0 }
+      # the closure takes markings of the domain as its arguments
+      lambda { |*markings|
+        nonpositive_coeffs.size.times.reduce num do |acc, i|
+          marking, coeff = markings[ i ], nonpositive_coeffs[ i ]
+          # Stoichiometry coefficients equal to zero are taken to indicate
+          # plain factors, assuming that if these places were not involved
+          # in the transition at all, the user would not be mentioning them.
+          case coeff
+          when 0, -1 then marking * acc
+          else marking ** -coeff end
         end
       }
+    end
 
-      # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-      # Downstream description arguments: codomain, stoichiometry...
-      # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-
-      # Let' see whether stoichiometric vector was given:
-      @stoichiometric = oo.has? :stoichiometry, syn!: [ :stoichio, :s ]
-
-      # Let's note whether the codomain was given as a separate argument:
-      codomain_argument_given =
-        oo.has? :codomain, syn!: [ :codomain_arcs,
-                                   :codomain_places,
-                                   :downstream,
-                                   :downstream_arcs,
-                                   :downstream_places,
-                                   :action_arcs ]
-       # Stoichiometric and non-stoichiometric case get separate treatment:
-      if stoichiometric? then # stoichiometry was supplied as either:
-        # I. Array, in which case codomain argument is required, or...
-        # II. Hash { place => stoichiometric coefficient }, implying codomain.
-
+    # Private method, checking in downstream specification from the argument
+    # field for stoichiometric transition.
+    # 
+    def check_in_downstream_description_for_S( oo )
+      codomain, stoichio =
         case oo[:stoichiometry]
-        when Hash then # split that hash into codomain and stoichiometry
-          @codomain, @stoichiometry =
-            oo[:stoichiometry].each_with_object [[], []] do |pair, memo|
-              memo[0] << place( pair[0] )
-              memo[1] << pair[1]
-            end
-          raise AE, "With hash-type stoichiometry, :codomain argument " +
-            "must not be supplied." if codomain_argument_given
-        else # it is an array and accompanying :codomain parameter is expected
-          @stoichiometry = Array oo[:stoichiometry]
-          raise AE, "With array-type stoichiometry, :codomain argument " +
-            "must be supplied." unless codomain_argument_given
-          @codomain = sanit.( :codomain )
-        end
-         # Finally, enforce that stoichiometry vector is all numbers
-        stoichiometry.aE_all_numeric "supplied stoichiometry"
-      else # this is a non-stoichiometric transition
-        # Codomain must be explicitly given - no way around it:
-        raise AE, "For non-stoichiometric transitions, :codomain argument " +
-          "must be supplied." unless codomain_argument_given
-        @codomain = sanit.( :codomain )
-      end
-       # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-      # Thus, codomain has been determined for all possible duck type cases.
-      # Downstream part is now finished and we can move on the arguments
-      # describing the upstream part: domain, action, timed/timeless...
-      # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-       # Let's note the domain argument:
-      domain_argument_given = oo.has? :domain, syn!: [ :domain_arcs,
-                                                       :domain_places,
-                                                       :upstream,
-                                                       :upstream_arcs,
-                                                       :upstream_places ]
-       # Let's note whether rate was given:
-      @has_rate = oo.has? :rate, syn!: [ :flux,
-                                         :propensity,
-                                         :rate_closure,
-                                         :flux_closure,
-                                         :propensity_closure,
-                                         :Φ,
-                                         :φ ]
-       # Let's note whether action was given
-      action_given = oo.has? :action, syn!: :action_closure
-       # Let's note whether timedness / timelessness was explicitly given:
-      timed_given = oo.has? :timed
-      timeless_given = oo.has? :timeless
-       # Now, lets determine the transition domain:
-      if domain_argument_given then # just sanitize it:
-        @domain = sanit.( :domain )
-        domain_missing = false # noting that domain is not missing
-      else # domain was not given and we'll have to guess it
-         # Breaking duck type into stoichiometric and non-stoichiometric case:
-        if stoichiometric? then
-          @domain = # arcs with non-positive stoichio. coeffs
-            Hash[ [ @codomain, @stoichiometry ].transpose ]
-              .delete_if{ |place, coeff| coeff > 0 }.keys
-          domain_missing = false # noting that domain is not missing
-        else # non-stoichiometric case
-          # ----------------------------------------------------------------
-          # Since domain was not given, then, barring the caller's error,
-          # there are two possibilities of what the caller meant:
-          # 1. Omitted domain means empty domain
-          # 2. Omitted domain means domain == codomain
-          # The only clue to distinguishing between these cases is arity
-          # of the supplied rate or action closure. This decision will not
-          # be made immediately here, but left to the code checking in
-          # rate / action closures.
-          # ----------------------------------------------------------------
-          domain_missing = true      # noting that domain is missing
-        end
-      end
-      # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-      # Hereby, the domain question has been treated, except the case of
-      # a non-stoichiometric transition with no explicitly supplied domain.
-      #
-      # Now is a good time to talk about transition classification:
-      #
-      # STOICHIOMETRIC / NON-STOICHIOMETRIC
-      # I. For stoichiometric transitions:
-      #    1. Rate vector is computed as rate * stoichiometry vector, or
-      #    2. Δ vector is computed a action * stoichometry vector.
-      # II. For non-stoichiometric transitions:
-      #    1. Rate vector is obtained as the rate closure result, or
-      #    2. action vector is obtained as the action closure result.
-      # 
-      # Conclusion: stoichiometricity distinguishes *need to multiply the
-      # rate/action closure result by stoichiometry*.
-      #
-      # HAVING / NOT HAVING RATE
-      # I. For transitions with rate, the closure result has to be
-      # multiplied by the time step duration (delta_t) to get action.
-      # II. For rateless transitions, the closure result is used as is.
-      #
-      # Conclusion: has_rate? distinguishes *need to multiply the closure
-      # result by delta time* - differentiability of action by time.
-      #
-      # TIMED / TIMELESS
-      # I. For timed transitions, action is time-dependent. Transitions with
-      # rate are thus always timed. In rateless transitions, timedness means
-      # that the action closure expects time step length (delta_t) as its first
-      # argument - its arity is thus codomain size + 1. 
-      # II. For timeless transitions, action is time-independent. Timeless
-      # transitions are necessarily also rateless. Arity of the action closure
-      # is expected to match the domain size.
-      # 
-      # Conclusion: Transitions with rate are always timed. In rateless
-      # transitions, timedness distinguishes the need to supply time step
-      # duration as the first argument to the action closure.
-      #
-      # ASSIGNMENT TRANSITIONS
-      # Named argument :assignment_action set to true indicates that the
-      # transitions acts by replacing the object stored as place marking by
-      # the object supplied by the transition. For numeric types, same
-      # effect can be achieved by subtracting the old number from the place
-      # and subsequently adding the new value to it.
-      #
-      # Now, let's try to say the same in Ruby code:
-      # ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-      if has_rate? then # Case of transitions with rate
-        @functional = true # transitions with rate are implicitly functional
-        raise AE, "action closure must not be given when rate " +
-          "closure was given" if action_given # action must not be given
-        @timed = true # Transitions with rate are implicitly timed:
-        # There must be no colliding :timed/:timeless named params
-        oo[:timed].aE "be true if rate given",
-                      ":timed named argument" if timed_given
-        oo[:timeless].aE_not "be true if rate given",
-                             ":timeless named argument" if timed_given
-        @assignment_action = false # no assignment action
-
-        case tentative_rate = oo[:rate] # let's look at what we've received
-        when ~:to_f then # we received a number
-          # Barring the caller's error, stoichiometry must have been supplied,
-          # unless, by chance, codomain consists of only one place:
-          if not stoichiometric? then
-            if codomain.size == 1 then # codomain is just one place
-
-              # The single number that we received under :rate is, in this
-              # non-stoichiometric case, understood as constant rate:
-              @rate_closure = λ { tentative_rate }
-            else # multiple codomain places exist, and that's wrong
-              raise AE, "Codomain may consist of only a single place " +
-                "when supplied rate is a single standalone number and " +
-                "no stoichiometry vector was supplied."
-            end
-
-            # Here, domain must be size 0, so it's allowed not to mention it:
-            if domain_missing then @domain = []
-            else # should it mentioned explicitly, it still must be []
-              raise AE, "Single standalone number was supplied as rate, " +
-                "but a non-empty domain was supplied." unless domain.size == 0
-            end
-
-          else # the transition is stoichiometric
-            # In this case, mass action law will be used to derive the rate
-            # closure from the number supplied as :rate. The transition is still
-            # considered 'functional':
-            nonpositive_coeffs = stoichiometry.select { |coeff| coeff <= 0 }
-            @rate_closure = λ { |*markings| # markings of the domain places
-              markings.zip( nonpositive_coeffs ).map { |m, coeff|
-                next m if coeff == 0 # zero coeffs taken to indicate simple factors
-                coeff == -1 ? m : m ** -coeff # otherwise normal mass action law:
-              }.reduce( tentative_rate, :* ) # finally, take product * rate
-            }
-            # stoichiometric transition, so no need to check if domain_missing
+        when Hash then
+          # contains pairs { codomain place => stoichiometry coefficient }
+          raise AErr, "With hash-type stoichiometry, :codomain named " +
+            "argument must not be supplied." if oo.has? :codomain
+          oo[:stoichiometry].each_with_object [[], []] do |pair, memo|
+            codomain_place, stoichio_coeff = pair
+            memo[0] << codomain_place
+            memo[1] << stoichio_coeff
           end
-        when ~:call then # transitions with :rate specified as Proc object
-          @rate_closure = tentative_rate # a Proc gets admitted right in
-
-          # But we do have to be concerned about domain_missing being true. If
-          # so, we have to figure out what did the caller mean.
-
-          # Common error message text for the case of caller error.
-          msg = "Unexpected arity (#{@rate_closure.arity}) of rate closure."
-          if domain_missing then # we have to figure what did the caller mean
-            if @rate_closure.arity == 0 then # the caller meant empty domain:
-              @domain = []
-            elsif @rate_closure.arity == codomain.size then
-              # Caller meant that domain is same as codomain:
-              @domain = codomain
-            else # no good deduction of caller's intent possible:
-              raise AE, msg.chop + ", domain should be given explicitly."
-            end
-          else
-            # domain not missing, the arity must match the domain or be zero
-            # (for fixed rate transitions)
-            if @rate_closure.lambda? then
-              if @rate_closure.arity != domain.size then
-                raise AE, msg.chop + ", domain size is #{domain.size}"
-              end
-            else
-              unless @rate_closure.arity.abs <= domain.size
-                raise AE, msg.chop +
-                  ", arity more than domain size (#{domain.size})"
-              end
-            end
-          end
-
-        else raise AE, "Object of unexpected class " +
-            "(#{tentative_rate.class} given as :rate."
+        else
+          # array of stoichiometry coefficients
+          raise AErr, "With array-type stoichiometry, :codomain named " +
+            "argument must be supplied." unless oo.has? :codomain
+          [ oo[:codomain], Array( oo[:stoichiometry] ) ]
         end
-      else # no :rate argument specified for this transition
-        # Rateless transitions can be both timed or timeless.
-        # Preventing possible collision:
-        raise AE, ":timed and :timeless named arguments collision" if
-          oo[:timed] != !oo[:timeless] if timed_given and timeless_given
-        # Let' see whether action closure was given explicitly:
-        action_given = oo.has? :action, syn!: :action_closure
+      # enforce that stoichiometry is a collection of numbers
+      return sanitize_place_collection( codomain, "supplied codomain" ),
+             stoichio.aT_all_numeric( "supplied stoichiometry" )
+    end
 
-        # Breaking down rateless transitions into with and wo action closure:
-        if action_given then
-          @action_closure = oo[:action].tE_is_a( Proc, "supplied :action" )
-          @functional = true    # the transition still considered functional
-          if timed_given or timeless_given then
-            @timed = timed_given ? oo[:timed] : !oo[:timeless]
-
-            # Time to worry about the domain_missing
-            msg = "Unexpected arity (#{@action_closure.arity}) of " +
-              "action closure."      # base error message
-            if domain_missing then # gotta figure the caller's intent
-              if @action_closure.arity == ( timed? ? 1 : 0 ) then
-                @domain = [] # caller meant empty domain
-              elsif @action_closure.arity == codomain.size + ( timed? ? 1 : 0 )
-                @domain = codomain # caller meant that domain = codomain
-              else # no way to figure what the caller meant
-                raise AE, msg.chop + ", domain should be given explicitly."
-              end
-            else # domain not missing, but the size must match closure arity
-              raise AE, msg unless
-                @action_closure.arity == domain.size + ( timed? ? 1 : 0 )
-            end
-          else # neither :timed nor :timeless argument supplied
-            # Even if the caller did not bother to inform us explicitly
-            # about :timed / :timeless quality of this transition, deduction
-            # is possible based domain size - if action closure arity matches
-            # domain size exactly, leaving no space for time step argument,
-            # then the transition can be assumed timeless. If action closure
-            # arity equals domain size + 1, it can be assumed that it expects
-            # time step as its first parameter, ie. the transition is timed.
-            #
-            # If no domain was supplied either, then there is no way to make
-            # a reasonable assumption on caller's intent, barring when arity
-            # of the supplied action closure is zero, where it is assumed
-            # that the domain is empty.
-            if domain_missing then
-              case @action_closure.arity
-              when 0 then # except this special case,
-                @timed = false; @domain = [] # timeless & empty domain
-              else # no deduction of intent possible
-                raise AE, "Too much ambiguity: Action closure of arity " +
-                  "#{@action_closure.arity} was suplied, but neither " +
-                  "domain nor timedness of the transition was specified."
-              end
-            else # domain not missing, timed/timeless can be figured out:
-              @timed = case @action_closure.arity
-                       when domain.size then false
-                       when domain.size + 1 then true
-                       else raise AE, "unexpected arity " +
-                           "(#{@action_closure.arity}) of action closure"
-                       end
-            end
-          end
-        else # rateless cases with no :action specified
-          # Since every transition does have some action, assumption must be
-          # made on it. In particular, lambda { 1 } will be taken for action,
-          # and it will be required that the transition be stoichiometric and
-          # timeless. Domain therefore will be required to be empty.
-          @action_closure = lambda { 1 }
-          raise AE, "stoichiometry vector must be given if no " +
-            "rate / action closure was given." unless stoichiometric?
-          # With this, we can also drop worries about domain_missing
-          raise AE, ":timed can only be false if no rate and no " +
-            "action closure was given" if timed_given and timed?
-          raise AE, ":timeless can only be true if no rate and no " +
-            "action closure was given" if timeless_given and timed?
-          @timed = false
-
-          @domain = []
-
-          @functional = false # the transition considered not functional
-        end
-      end
-
-      # The last thing: :assignment_action argument:
-      assignment_action_given = oo.has? :assignment_action,
-                                syn!: [ :assignment,
-                                        :assign ]
-      if assignment_action_given
-        if timed? then # timed transitions may not have asssignment action
-          @assignment_action = false
-          raise AE, "timed transitions cannot have assignment action" if
-            oo[:assignment_action] == true
-        else # timeless may
-          @assignment_action = oo[:assignment_action]
-        end
-      else # if not given then implied false
-        @assignment_action = false
-      end
-    end # def check_in_arguments
-
-    # Place, Transition, Net class
+    # Private method, checking in downstream specification from the argument
+    # field for nonstoichiometric transition.
     # 
-    def Place; ::YPetri::Place end
-    def Transition; ::YPetri::Transition end
-    def Net; ::YPetri::Net end
+    def check_in_downstream_description_for_s( oo )
+      # codomain must be explicitly given - no way around it:
+      raise AErr, "For non-stoichiometric transitions, :codomain named " +
+        "argument is compulsory." unless oo.has? :codomain
+      return sanitize_place_collection( oo[:codomain], "supplied codomain" )
+    end
 
-    # Instance identification methods.
+    # Private method, part of #initialize argument checking-in.
     # 
-    def place( which ); Place().instance( which ) end
-    def transition( which ); Transition().instance( which ) end
-    def net( which ); Net().instance( which ) end
+    def check_in_assignment_action( oo )
+      if oo.has? :assignment_action, syn!: [ :assignment, :assign, :A ] then
+        if timed? then
+          msg = "Timed transitions may not have assignment action!"
+          raise TypeError, msg if oo[:assignment_action]
+          false
+        else       # timeless transitions are eligible for assignment action
+          oo[:assignment_action]
+        end
+      else # if assignment action is not specified, false is 
+        false
+      end
+    end
+      
+    # Place class pertinent herein. Provided for the purpose of parametrized
+    # subclassing; expected to be overriden in the subclasses.
+    # 
+    def Place
+      ::YPetri::Place
+    end
+
+    # Transition class pertinent herein. Provided for the purpose of
+    # parametrized subclassing; expected to be overriden in the subclasses.
+    # 
+    def Transition
+      ::YPetri::Transition
+    end
+
+    # Net class pertinent herein. Provided for the purpose of parametrized
+    # subclassing; expected to be overriden in the subclasses.
+    # 
+    def Net
+      ::YPetri::Net
+    end
+
+    # Presents Place instance specified by the argument.
+    # 
+    def place instance_identifier
+      Place().instance( instance_identifier )
+    end
+
+    # Presents Transition instance specified by the argument.
+    # 
+    def transition instance_identifier
+      Transition().instance( instance_identifier )
+    end
+
+    # Presents Net instance specified by the argument.
+    # 
+    def net instance_identifier
+      Net().instance( instance_identifier )
+    end
   end # class Transition
 end # module YPetri

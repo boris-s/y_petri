@@ -140,12 +140,16 @@ module YPetri
     end
     alias :fire_downstream! :fire_downstream_recursively
     
-    def inspect                      # :nodoc:
-      nm, d, q = instance_description_strings
-      "YPetri::Place[ #{USE_QUANTUM ? nm + d + q : nm + d} ]"
+    # Produces the inspect string of the place.
+    # 
+    def inspect
+      n, m, d, q = instance_description_strings
+      "#<Place: #{ ( USE_QUANTUM ? [n, m, d, q] : [n, m, d] ).join ', ' } >"
     end
 
-    def to_s                         # :nodoc:
+    # Returns a string briefly describing the place.
+    # 
+    def to_s
       n, m = name, marking
       "#{n.nil? ? 'Place' : n}[ #{m.nil? ? 'nil' : m} ]"
     end
@@ -166,11 +170,11 @@ module YPetri
 
     def instance_description_strings
       m, n, d, q = marking, name, default_marking, quantum
-      mς = m.nil? ? 'nil' : m
-      nmς = n.nil? ? "marking: #{mς}" : "#{n}: #{mς}"
-      dς = d.nil? ? '' : ", default_marking: #{d}"
-      qς = q.nil? ? '' : ", quantum: #{q}"
-      return nmς, dς, qς
+      nς = "name: #{n.nil? ? '∅' : n}"
+      mς = "marking: #{m.nil? ? 'nil' : m}"
+      dς = "default_marking: #{d.nil? ? '∅' : d}"
+      qς = "quantum: #{q.nil? ? '∅' : q}"
+      return nς, mς, dς, qς
     end
 
     # Place, Transition, Net class

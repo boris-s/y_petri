@@ -95,9 +95,9 @@ module YPetri
       # of this workspace)
       @Net.new name: :Top
       # Set hook for new @place to add itself automatically to the top net
-      @Place.new_instance_hook { |new_inst| Net()::Top << new_inst }
+      @Place.new_instance_closure { |new_inst| Net()::Top << new_inst }
       # Set hook for new @transition to add itself automatically to the top net
-      @Transition.new_instance_hook { |new_inst| Net()::Top << new_inst }
+      @Transition.new_instance_closure { |new_inst| Net()::Top << new_inst }
       # A hash of simulations of this workspace { simulation => its settings }
       @simulations = {}
       # A hash of clamp collections { collection name => clamp hash }
@@ -202,7 +202,7 @@ module YPetri
     # 
     def set_clamp_collection( name=:Base, clamp_hash )
       @clamp_collections[name] =
-        clamp_hash.tE_kind_of Hash
+        clamp_hash.aT_kind_of Hash
     end
     alias :set_cc :set_clamp_collection
 
@@ -210,7 +210,7 @@ module YPetri
     # 
     def set_initial_marking_collection( name=:Base, initial_marking_hash )
       @initial_marking_collections[name] =
-        initial_marking_hash.tE_kind_of Hash
+        initial_marking_hash.aT_kind_of Hash
     end
     alias :set_imc :set_initial_marking_collection
 
@@ -222,7 +222,7 @@ module YPetri
     def set_simulation_settings_collection( name=:Base,
                                             simulation_settings_hash )
       @simulation_settings_collections[name] =
-        simulation_settings_hash.tE_kind_of Hash
+        simulation_settings_hash.aT_kind_of Hash
     end
     alias :set_ssc :set_simulation_settings_collection
 
@@ -249,7 +249,7 @@ module YPetri
     # supplied to serve a name for the simulation in this workspace.
     # 
     def new_timed_simulation settings={}
-      settings.tE_kind_of Hash
+      settings.aT_kind_of Hash
       net_instance = net( settings[:net] || self.Net::Top )
       cc_id = settings
         .may_have( :clamp_collection, syn!: :cc ) || :Base

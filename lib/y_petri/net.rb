@@ -44,7 +44,7 @@ module YPetri
     def include_transition! transition;
       t = transition( transition )
       return false if @transitions.include? t
-      raise "Unable to include the transition #{t} in #{self}: " +
+      raise TypeError, "Unable to include the transition #{t} in #{self}: " +
         "It connects to one or more places outside the net." unless
         t.arcs.all? { |p| include? p }
       @transitions << t
@@ -80,14 +80,15 @@ module YPetri
     def << place_or_transition
       begin
         include_place!( place_or_transition )
-      rescue TypeError
+      rescue NameError
         begin
           include_transition!( place_or_transition )
-        rescue TypeError
+        rescue NameError
+          raise NameError,
+                "Unrecognized place or transition: #{place_or_transition}"
         end
-      ensure
-        return self
       end
+      return self
     end
 
     # Inquirer whether the net includes a place / transition.
@@ -95,16 +96,16 @@ module YPetri
     def include? place_or_transition
       p = begin
             place( place_or_transition )
-          rescue TypeError
+          rescue NameError
             nil
           end
-      if p then return @places.include? p end
+      if p then return places.include? p end
       t = begin
             transition( place_or_transition )
-          rescue TypeError
+          rescue NameError
             nil
           end
-      if t then return @transitions.include? t end
+      if t then return transitions.include? t end
       return false
     end
 
@@ -322,7 +323,7 @@ module YPetri
     # Networks are equal when their places and transitions are equal.
     # 
     def == other
-      return false unless other.declares_module_compliance?( ç )
+      return false unless other.class_complies?( ç )
       places == other.places && transitions == other.transitions
     end
 
@@ -331,9 +332,9 @@ module YPetri
     end
 
     def inspect                      # :nodoc:
-      "YPetri::Net[ #{name.nil? ? '' : name + ': '} #{pp.size} places, " +
+      "#<Net: #{name.nil? ? '' : name + ': '} #{self.pp.size} places, " +
         "#{tt.size} transitions" +
-        "#{name.nil? ? ', object id: %s' % object_id : ''} ]"
+        "#{name.nil? ? ', object id: %s' % object_id : ''} >"
     end
 
     private

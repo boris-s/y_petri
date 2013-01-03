@@ -44,7 +44,7 @@ module YPetri
       puts "starting to set up Simulation" if DEBUG
       # ------------ Net --------------
       # Currently, @net is immutable within Simulation class.
-      oo.must_have :net do |o| o.declares_module_compliance? ::YPetri::Net end
+      oo.must_have :net do |o| o.class_complies? ::YPetri::Net end
       net = oo[:net]
       @net = net.dup
       @places = @net.places.dup
@@ -71,8 +71,8 @@ module YPetri
         ( oo.may_have( :initial_marking, syn!: :initial_marking_vector ) || {} )
         .with_keys do |key| place( key ) end
       # keys in the hashes must be unique
-      @place_clamps.keys.aE_equal @place_clamps.keys.uniq
-      @initial_marking.keys.aE_equal @initial_marking.keys.uniq
+      @place_clamps.keys.aT_equal @place_clamps.keys.uniq
+      @initial_marking.keys.aT_equal @initial_marking.keys.uniq
 
       puts "setup of clamps and initial marking done" if DEBUG
 
@@ -87,7 +87,7 @@ module YPetri
 
       # Each place must be treated: either clamped, or have initial marking
       places.each { |place|
-        place.aE "have either clamp or initial marking",
+        place.tE "have either clamp or initial marking",
                  "place #{p}" do |place|
           @place_clamps.keys.include?( place ) ||
             @initial_marking.keys.include?( place )
@@ -1214,22 +1214,22 @@ module YPetri
     # 
     def reset!
       puts "Starting #reset! method" if DEBUG
-      zero_vector = Matrix.column_vector( places.map {0.0} ) # Float zeros
+      zero_vector = Matrix.column_vector( places.map { Matrix::TOTAL_ZERO.new } ) # Float zeros
       puts "zero vector prepared" if DEBUG
       mv_clamped = compute_marking_vector_of_clamped_places
       puts "#reset! obtained marking vector of clamped places" if DEBUG
       clamped_2_all = clamped_places_to_all_places_matrix
-      puts "#reset! obtained conversion matrix #{clamped_2_all}" if DEBUG
+      puts "#reset! obtained conversion matrix" if DEBUG
       clamped_component = clamped_2_all * mv_clamped
-      puts "clamped component of marking vector prepared" if DEBUG
+      puts "clamped component of marking vector prepared:\n#{clamped_component}" if DEBUG
       mv_free = compute_initial_marking_vector_of_free_places
       puts "#reset! obtained initial marking vector of free places" if DEBUG
       free_2_all = free_places_to_all_places_matrix
-      puts "#reset! obtained conversion matrix #{free_2_all}" if DEBUG
+      puts "#reset! obtained conversion matrix" if DEBUG
       free_component = free_2_all * mv_free
-      puts "free component of marking vector prepared" if DEBUG
+      puts "free component of marking vector prepared:\n#{free_component}" if DEBUG
       @marking_vector = zero_vector + clamped_component + free_component
-      puts "marking vector assembled, about to reset recording" if DEBUG
+      puts "marking vector assembled\n#{m}\n, about to reset recording" if DEBUG
       reset_recording!
       puts "reset recording done, about to initiate sampling process" if DEBUG
       note_state_change!

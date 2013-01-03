@@ -75,13 +75,14 @@ module YPetri
       puts "starting TimedSimulation init" if DEBUG
       # LATER: possibility of transition clamps
       # @simulation_method = :implicit_euler # hard-wired so far
-      @initial_time = 0 # simulation step size
+      # simulation step size
       oo.must_have :step_size, syn!: :step
       @step_size = oo.delete :step_size
       oo.must_have :sampling_period, syn!: :sampling
       @sampling_period = oo.delete :sampling_period
       oo.may_have :target_time
       @target_time = oo.delete :target_time
+      @initial_time = oo.delete( :initial_time ) || @target_time * 0 rescue 0
       puts "about to call super" if DEBUG
       super *aa, oo
       puts "successfuly set up a TimedSimulation" if DEBUG
@@ -94,8 +95,14 @@ module YPetri
     # Scalar field gradient for free places.
     # 
     def gradient_for_free_places
-      self.S_for_SR_transitions * flux_vector_for_SR_transitions +
-        ∂_for_nonstoichiometric_transitions_with_rate
+      puts "about to compute gradient for free places" if DEBUG
+      fv = flux_vector_for_SR_transitions
+      puts "flux vector for SR transitions is \n#{fv}" if DEBUG
+      sm = S_for_SR_transitions()
+      puts "stoichiometry matrix for SR transitions is \n#{sm}" if DEBUG
+      ∂ = sm * fv
+      puts "about to add the contribution of sR transitions" if DEBUG
+      ∂ + ∂_for_nonstoichiometric_transitions_with_rate
     end
     alias :∂_free :gradient_for_free_places
     alias :gradient :gradient_for_free_places
