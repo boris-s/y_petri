@@ -1203,8 +1203,8 @@ module YPetri
     alias :c2p_matrix :clamped_places_to_all_places_matrix
 
     def inspect                      # :nodoc:
-      "YPetri::Simulation[ #{places.size} places, " +
-        "#{transitions.size} transitions, object id: #{object_id} ]"
+      "#<YPetri::Simulation: #{places.size} places, " +
+        "#{transitions.size} transitions, object id: #{object_id} >"
     end
 
     def to_s                         # :nodoc:

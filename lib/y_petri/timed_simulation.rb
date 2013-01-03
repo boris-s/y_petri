@@ -185,8 +185,8 @@ module YPetri
     end
 
     def inspect                      # :nodoc:
-      "YPetri::TimedSimulation[ #{pp.size} places, #{tt.size} " +
-        "transitions, time: #{time}, object id: #{object_id} ]"
+      "#<YPetri::TimedSimulation: #{pp.size} places, #{tt.size} " +
+        "transitions, time: #{time}, object id: #{object_id} >"
     end
 
     def to_s                         # :nodoc:
