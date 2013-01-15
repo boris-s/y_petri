@@ -27,7 +27,7 @@ describe ::YPetri::Place do
     before do
       @p.m = 1.1
     end
-    
+
     it "should have constant magic included" do
       assert_respond_to @p, :name
       assert_equal @p.name, :P1
@@ -44,7 +44,7 @@ describe ::YPetri::Place do
       @p.reset_marking
       assert_equal 3.2, @p.marking
     end
-    
+
     it "should respond to the arc getters" do
       # #action_arcs & aliases
       assert_equal [], @p.upstream_arcs
@@ -63,7 +63,7 @@ describe ::YPetri::Place do
       assert_equal [], @p.dependents
       assert_equal [], @p.downstream_places
     end
-    
+
     it "should respond to register and fire conn. transitions methods" do
       assert_respond_to @p, :fire_upstream!
       assert_respond_to @p, :fire_downstream!
@@ -1507,9 +1507,7 @@ describe "Use of TimedSimulation with units" do
     TK1_Thymidine_DeoxyTMP = @m.Transition s: { Thymidine: -1, DeoxyTMP: 1 },
       domain: [ Thymidine, TK1, DeoxyT23P, DeoxyCTP, Deoxycytidine, AMP, ADP, ATP ],
         rate: proc { |rc, e, pool1, ci2, ci3, master1, master2, master3|
-                puts "pool1: #{pool1}, master1: #{master1}, master2: #{master2}, master3: #{master3}"
                 ci1 = pool1 * master3 / ( master2 + master3 )
-                puts "ci1 is #{ci1}, ci2 is #{ci2}, ci3 is #{ci3}"
                 rslt = MMi.( rc, TK1_a, TK1_m, e, TK1_Thymidine_Km,
                              ci1 => 13.5.µM, ci2 => 0.8.µM, ci3 => 40.0.µM )
                 rslt.aT "#{rslt}" do quantity == SY::Quantity( :Molarity± ) / SY::Time end
@@ -1549,9 +1547,7 @@ describe "Use of TimedSimulation with units" do
 
   it "should work" do
     # === Simulation execution
-    YPetri::DEBUG = true
     @m.run!
-    YPetri::DEBUG = false
     # === Plotting of the results
     @m.plot_recording
   end

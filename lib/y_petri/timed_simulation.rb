@@ -103,7 +103,9 @@ module YPetri
       puts "stoichiometry matrix for SR transitions is \n#{sm}" if DEBUG
       ∂ = sm * fv
       puts "about to add the contribution of sR transitions" if DEBUG
-      ∂ + ∂_for_sR_transitions
+      rslt = ∂ + ∂_for_sR_transitions
+      puts "returning #{rslt}" if DEBUG
+      rslt
     end
     alias :∂_free :gradient_for_free_places
     alias :gradient :gradient_for_free_places
@@ -119,6 +121,7 @@ module YPetri
     # Δ state for free places that would happen by a single Euler step Δt.
     # 
     def delta_state_Euler_for_free_places( Δt=step_size )
+      puts "∂_free is #{∂_free}" if YPetri::DEBUG
       ∂_free * Δt + Δ_for_TSr_transitions( Δt ) + Δ_for_Tsr_transitions( Δt )
       # Here, ∂_free already comprises transitions with rate, and
       # the remaining two terms represent timed rateless transitions.
