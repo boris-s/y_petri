@@ -189,10 +189,11 @@ module YPetri
     # are used as hash keys for nameless places.
     # 
     def pp_ *aa, &b
-      if aa.empty? and b.nil? then pp else
-        Hash[ places.map { |p| p.name.nil? ? p : p.name }
-                .zip( send *aa, &b ) ]
-      end
+      return pp if args.empty? and b.nil?
+      Hash[ places.map { |t| t.ɴ or t }
+              .zip( case args[0]
+                    when Enumerable then args[0]
+                    else places.map { |t| t.send *args, &b } end ) ]
     end
 
     # Array of transition names.
@@ -206,11 +207,12 @@ module YPetri
     # which are then presented as hash { transition_name => object }.
     # Transition instances are used as hash keys for nameless transitions.
     # 
-    def tt_ *aa, &b
-      if aa.empty? and b.nil? then tt else
-        Hash[ transitions.map { |t| t.name.nil? ? t : t.name }
-                .zip( send *aa, &b ) ]
-      end
+    def tt_ *args, &b
+      return tt if args.empty? and b.nil?
+      Hash[ transitions.map { |t| t.ɴ or t }
+              .zip( case args[0]
+                    when Enumerable then args[0]
+                    else transitions.map { |t| t.send *args, &b } end ) ]
     end
 
     # Exposing @place_clamps (hash with place instances as keys).
@@ -1047,10 +1049,14 @@ module YPetri
     # 
     def flux_vector_for_SR_transitions
       rc_results = rate_closures_for_SR_transitions.map( &:call )
-      puts "Rate closure results are #{rc_results}" if YPetri::DEBUG
-      raise "s⁻¹ please!" unless rc_results.all? { |r|
+      puts "Rate closure results are #{tt_( rc_results )}" if YPetri::DEBUG
+      tt_( rc_results ).each { |t, r|
         begin
-          r.dimension == SY::Dimension( "T⁻¹" )
+          begin
+            r.aT { quantity == SY.Quantity( :Molarity± ) / SY::Time }
+          rescue TypeError
+            raise "for #{t} => #{r}, Molarity± / T please!"
+          end
         rescue NoMethodError
           true
         end
