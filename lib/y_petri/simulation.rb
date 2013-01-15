@@ -110,28 +110,28 @@ module YPetri
       puts "correspondence matrices set up" if DEBUG
 
       # --- Stoichiometry matrices ----
-      @stoichiometry_matrix_for_timeless_stoichiometric_transitions =
-        create_stoichiometry_matrix_for( timeless_stoichiometric_transitions )
-      @stoichiometry_matrix_for_stoichiometric_transitions_with_rate =
-        create_stoichiometry_matrix_for( stoichiometric_transitions_with_rate )
-      @stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions =
-        create_stoichiometry_matrix_for( timed_rateless_stoichiometric_transitions )
+      @stoichiometry_matrix_for_tS_transitions =
+        create_stoichiometry_matrix_for( self.tS_transitions )
+      @stoichiometry_matrix_for_SR_transitions =
+        create_stoichiometry_matrix_for( self.SR_transitions )
+      @stoichiometry_matrix_for_TSr_transitions =
+        create_stoichiometry_matrix_for( self.TSr_transitions )
 
       puts "stoichiometry matrices set up" if DEBUG
 
       # ----- Create other assets -----
-      @delta_state_closures_for_timeless_nonstoichiometric_transitions =
-        create_delta_state_closures_for_timeless_nonstoichiometric_transitions
-      @delta_state_closures_for_timed_rateless_nonstoichiometric_transitions =
-        create_delta_state_closures_for_timed_rateless_nonstoichiometric_transitions
-      @action_closures_for_timeless_stoichiometric_transitions =
-        create_action_closures_for_timeless_stoichiometric_transitions
-      @action_closures_for_timed_rateless_stoichiometric_transitions =
-        create_action_closures_for_timed_rateless_stoichiometric_transitions
-      @rate_closures_for_nonstoichiometric_transitions_with_rate =
-        create_rate_closures_for_nonstoichiometric_transitions_with_rate
-      @rate_closures_for_stoichiometric_transitions_with_rate =
-        create_rate_closures_for_stoichiometric_transitions_with_rate
+      @delta_state_closures_for_ts_transitions =
+        create_delta_state_closures_for_ts_transitions
+      @delta_state_closures_for_Tsr_transitions =
+        create_delta_state_closures_for_Tsr_transitions
+      @action_closures_for_tS_transitions =
+        create_action_closures_for_tS_transitions
+      @action_closures_for_TSr_transitions =
+        create_action_closures_for_TSr_transitions
+      @rate_closures_for_sR_transitions =
+        create_rate_closures_for_sR_transitions
+      @rate_closures_for_SR_transitions =
+        create_rate_closures_for_SR_transitions
 
 
       @zero_column_vector_sized_as_free_places =
@@ -301,21 +301,29 @@ module YPetri
 
     # Initial marking as array corresponding to free places.
     # 
-    def initial_marking_array; free_places.map { |p| initial_marking[p] } end
+    def initial_marking_array
+      free_places.map { |p| initial_marking[p] }
+    end
 
     # Initial marking as a column vector corresponding to free places.
     # 
-    def initial_marking_vector; Matrix.column_vector initial_marking_array end
+    def initial_marking_vector
+      Matrix.column_vector initial_marking_array
+    end
     alias :iᴍ :initial_marking_vector
 
     # Marking of free places as an array.
     # 
-    def marking_array; marking_vector.column( 0 ).to_a end
+    def marking_array
+      marking_vector.column( 0 ).to_a
+    end
     alias :marking_array_of_free_places :marking_array
 
     # Marking of free places as a hash with place instances as keys.
     # 
-    def marking; Hash[ free_places.zip( marking_array ) ] end
+    def marking
+      Hash[ free_places.zip( marking_array ) ]
+    end
 
     # Marking of free places as a hash with place names as keys.
     # 
@@ -361,24 +369,30 @@ module YPetri
 
     # Marking array for all places.
     # 
-    def marking_array_of_all_places; marking_vector!.column( 0 ).to_a end
+    def marking_array_of_all_places
+      marking_vector!.column( 0 ).to_a
+    end
     alias :marking_array! :marking_array_of_all_places
 
     # Marking of all places as a hash with place instances as keys.
     # 
-    def marking_of_all_places; Hash[ places.zip( marking_array! ) ] end
+    def marking_of_all_places
+      Hash[ places.zip( marking_array! ) ]
+    end
     alias :marking! :marking_of_all_places
 
     # Marking of all places as a hash with place names as keys.
     # 
-    def m_all; Hash[ pp.map{|e| e.to_sym rescue nil }
-                       .zip( marking_array! ) ]
+    def m_all
+      Hash[ pp.map{|e| e.to_sym rescue nil }.zip( marking_array! ) ]
     end
     alias :m! :m_all
 
     # Marking of all places as a column vector.
     # 
-    def marking_vector_of_all_places; @marking_vector end
+    def marking_vector_of_all_places
+      @marking_vector
+    end
     alias :marking_vector! :marking_vector_of_all_places
     alias :ᴍ_all :marking_vector_of_all_places
     alias :ᴍ! :marking_vector_of_all_places
@@ -407,27 +421,18 @@ module YPetri
 
     # 3. Stoichiometry matrix for timeless stoichiometric transitions.
     # 
-    attr_reader :stoichiometry_matrix_for_timeless_stoichiometric_transitions
-    alias :stoichiometry_matrix_for_tS_transitions \
-          :stoichiometry_matrix_for_timeless_stoichiometric_transitions
-    alias :S_for_tS_transitions \
-          :stoichiometry_matrix_for_timeless_stoichiometric_transitions
+    attr_reader :stoichiometry_matrix_for_tS_transitions
+    alias :S_for_tS_transitions :stoichiometry_matrix_for_tS_transitions
 
     # 4. Stoichiometry matrix for timed rateless stoichiometric transitions.
     # 
-    attr_reader :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
-    alias :stoichiometry_matrix_for_TSr_transitions \
-          :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
-    alias :S_for_TSr_transitions \
-          :stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
+    attr_reader :stoichiometry_matrix_for_TSr_transitions
+    alias :S_for_TSr_transitions :stoichiometry_matrix_for_TSr_transitions
 
     # 6. Stoichiometry matrix for stoichiometric transitions with rate.
     # 
-    attr_reader :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
-    alias :stoichiometry_matrix_for_SR_transitions \
-          :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
-    alias :S_for_SR_transitions \
-          :stoichiometry_matrix_for_stoichiometric_transitions_with_rate
+    attr_reader :stoichiometry_matrix_for_SR_transitions
+    alias :S_for_SR_transitions :stoichiometry_matrix_for_SR_transitions
 
     # Stoichiometry matrix for stoichiometric transitions with rate.
     # By calling this method, the caller asserts that there are only
@@ -437,7 +442,7 @@ module YPetri
       txt = "The simulation contains also non-stoichiometric transitions. " +
             "Use method #stoichiometry_matrix_for_stoichiometric_transitions."
       raise txt unless s_transitions.empty? && r_transitions.empty?
-      return stoichiometry_matrix_for_stoichiometric_transitions_with_rate
+      return stoichiometry_matrix_for_SR_transitions
     end
     alias :S! :stoichiometry_matrix!
 
@@ -836,22 +841,18 @@ module YPetri
 
     # Exposing Δ state closures for ts transitions.
     # 
-    attr_reader :delta_state_closures_for_timeless_nonstoichiometric_transitions
-    alias :Δ_closures_for_ts_transitions \
-          :delta_state_closures_for_timeless_nonstoichiometric_transitions
+    attr_reader :delta_state_closures_for_ts_transitions
+    alias :Δ_closures_for_ts_transitions :delta_state_closures_for_ts_transitions
 
     # Δ state contribution if these ts transitions fire once. The closures
     # are called in their order, but the state update is not performed
     # between the calls (ie. they fire "simultaneously").
     # 
-    def delta_state_if_timeless_nonstoichiometric_transitions_fire_once
+    def delta_state_if_ts_transitions_fire_once
       Δ_closures_for_ts_transitions.map( &:call )
         .reduce( @zero_column_vector_sized_as_free_places, :+ )
     end
-    alias :Δ_if_timeless_nonstoichiometric_transitions_fire_once \
-          :delta_state_if_timeless_nonstoichiometric_transitions_fire_once
-    alias :Δ_if_ts_transitions_fire_once \
-          :Δ_if_timeless_nonstoichiometric_transitions_fire_once
+    alias :Δ_if_ts_transitions_fire_once :delta_state_if_ts_transitions_fire_once
 
     # ==== Timed rateless nonstoichiometric transitions (Tsr_transitions).
     # Their closures do take Δt as argument, but do not expose their ∂
@@ -859,20 +860,16 @@ module YPetri
 
     # Exposing Δ state closures for Tsr transitions.
     # 
-    attr_reader :delta_state_closures_for_timed_rateless_nonstoichiometric_transitions
-    alias :Δ_closures_for_Tsr_transitions \
-          :delta_state_closures_for_timed_rateless_nonstoichiometric_transitions
+    attr_reader :delta_state_closures_for_Tsr_transitions
+    alias :Δ_closures_for_Tsr_transitions :delta_state_closures_for_Tsr_transitions
 
     # Δ state contribution for Tsr transitions given Δt.
     # 
-    def delta_state_for_timed_rateless_nonstoichiometric_transitions( Δt )
+    def delta_state_for_Tsr_transitions( Δt )
       Δ_closures_for_Tsr_transitions.map { |cl| cl.( Δt ) }
         .reduce( @zero_column_vector_sized_as_free_places, :+ )
     end
-    alias :Δ_for_timed_rateless_nonstoichiometric_transitions \
-          :delta_state_for_timed_rateless_nonstoichiometric_transitions
-    alias :Δ_for_Tsr_transitions \
-          :delta_state_for_timed_rateless_nonstoichiometric_transitions
+    alias :Δ_for_Tsr_transitions :delta_state_for_Tsr_transitions
 
     # ==== Timeless stoichiometric transitions (tS_transitions)
     # These transitions are timeless, but stoichiometric. It means that
@@ -883,21 +880,16 @@ module YPetri
 
     # Exposing action closures for tS transitions.
     # 
-    attr_reader :action_closures_for_timeless_stoichiometric_transitions
-    alias :action_closures_for_tS_transitions \
-          :action_closures_for_timeless_stoichiometric_transitions
+    attr_reader :action_closures_for_tS_transitions
 
     # Action vector for if tS transitions fire once. The closures are called
     # in their order, but the state update is not performed between the
     # calls (ie. they fire "simultaneously").
     # 
-    def action_vector_for_timeless_stoichiometric_transitions
-      Matrix.column_vector action_closures_for_tS_transitions.map( &:call )
+    def action_vector_for_tS_transitions
+      Matrix.column_vector( action_closures_for_tS_transitions.map( &:call ) )
     end
-    alias :action_vector_for_tS_transitions \
-          :action_vector_for_timeless_stoichiometric_transitions
-    alias :α_for_tS_transitions \
-          :action_vector_for_timeless_stoichiometric_transitions
+    alias :α_for_tS_transitions :action_vector_for_tS_transitions
 
     # Action vector if tS transitions fire once, like the previous method.
     # But by calling this method, the caller asserts that all timeless
@@ -908,7 +900,7 @@ module YPetri
         "transitions. Consider using " +
         "#action_vector_for_timeless_stoichiometric_transitions."
       raise txt unless timeless_nonstoichiometric_transitions.empty?
-      action_vector_for_timeless_stoichiometric_transitions
+      action_vector_for_tS_transitions
     end
     alias :action_vector_for_t_transitions! \
           :action_vector_for_timeless_transitions!
@@ -916,13 +908,10 @@ module YPetri
 
     # Δ state contribution for tS transitions.
     # 
-    def delta_state_if_timeless_stoichiometric_transitions_fire_once
+    def delta_state_if_tS_transitions_fire_once
       self.S_for_tS_transitions * action_vector_for_tS_transitions
     end
-    alias :Δ_if_timeless_stoichiometric_transitions_fire_once \
-          :delta_state_if_timeless_stoichiometric_transitions_fire_once
-    alias :Δ_if_tS_transitions_fire_once \
-          :Δ_if_timeless_stoichiometric_transitions_fire_once
+    alias :Δ_if_tS_transitions_fire_once :delta_state_if_tS_transitions_fire_once
 
     # ==== Timed rateless stoichiometric transitions (TSr_transitions)
     # Same as Tsr transitions, but stoichiometric - their closures do not
@@ -931,9 +920,7 @@ module YPetri
 
     # Exposing action closures for TSr transitions.
     # 
-    attr_reader :action_closures_for_timed_rateless_stoichiometric_transitions
-    alias :action_closures_for_TSr_transitions \
-          :action_closures_for_timed_rateless_stoichiometric_transitions
+    attr_reader :action_closures_for_TSr_transitions
 
     # By calling this method, the caller asserts that all timeless transitions
     # in this simulation are stoichiometric (or error is raised).
@@ -942,22 +929,19 @@ module YPetri
       txt = "The simulation also contains nonstoichiometric timed rateless " +
         "transitions. Consider using " +
         "#action_closures_for_timed_rateless_stoichiometric_transitions."
-      raise txt unless timed_rateless_stoichiometric_transitions.empty?
-      action_closures_for_timed_rateless_stoichiometric_transitions
+      raise txt unless self.TSr_transitions.empty?
+      action_closures_for_TSr_transitions
     end
     alias :action_closures_for_Tr_transitions! \
           :action_closures_for_timed_rateless_transitions!
 
     # Action vector for timed rateless stoichiometric transitions.
     # 
-    def action_vector_for_timed_rateless_stoichiometric_transitions( Δt )
+    def action_vector_for_TSr_transitions( Δt )
       Matrix.column_vector action_closures_for_TSr_transitions
         .map { |cl| cl.( Δt ) }
     end
-    alias :action_vector_for_TSr_transitions \
-          :action_vector_for_timed_rateless_stoichiometric_transitions
-    alias :α_for_TSr_transitions \
-          :action_vector_for_timed_rateless_stoichiometric_transitions
+    alias :α_for_TSr_transitions :action_vector_for_TSr_transitions
 
     # Action vector for timed rateless stoichiometric transitions
     # By calling this method, the caller asserts that all timeless transitions
@@ -965,10 +949,9 @@ module YPetri
     # 
     def action_vector_for_timed_rateless_transitions!( Δt )
       txt = "The simulation also contains nonstoichiometric timed rateless " +
-        "transitions. Consider using " +
-        "#action_vector_for_timed_rateless_stoichiometric_transitions."
-      raise txt unless timed_rateless_stoichiometric_transitions.empty?
-      action_vector_for_timed_rateless_stoichiometric_transitions( Δt )
+        "transitions. Consider using #action_vector_for_TSr_transitions."
+      raise txt unless self.TSr_transitions.empty?
+      action_vector_for_TSr_transitions( Δt )
     end
     alias :action_vector_for_Tr_transitions! \
           :action_vector_for_timed_rateless_transitions!
@@ -976,13 +959,10 @@ module YPetri
 
     # Computes Δ state for TSr transitions, given a Δt.
     # 
-    def delta_state_for_timed_rateless_stoichiometric_transitions( Δt )
+    def delta_state_for_TSr_transitions( Δt )
       self.S_for_TSr_transitions * action_vector_for_TSr_transitions( Δt )
     end
-    alias :Δ_for_timed_rateless_stoichiometric_transitions \
-          :delta_state_for_timed_rateless_stoichiometric_transitions
-    alias :Δ_for_TSr_transitions \
-          :delta_state_for_timed_rateless_stoichiometric_transitions
+    alias :Δ_for_TSr_transitions :delta_state_for_TSr_transitions
 
     # ==== Nonstoichiometric transitions with rate (sR_transitions)
     # Whether nonstoichiometric, or stoichiometric, transitions with rate
@@ -991,9 +971,7 @@ module YPetri
 
     # Exposing rate closures for sR transitions.
     # 
-    attr_reader :rate_closures_for_nonstoichiometric_transitions_with_rate
-    alias :rate_closures_for_sR_transitions \
-          :rate_closures_for_nonstoichiometric_transitions_with_rate
+    attr_reader :rate_closures_for_sR_transitions
 
     # Rate closures for sR transitions.
     # By calling this method, the caller asserts that there are no rateless
@@ -1011,33 +989,23 @@ module YPetri
 
     # State differential for sR transitions.
     # 
-    def state_differential_for_nonstoichiometric_transitions_with_rate
+    def state_differential_for_sR_transitions
       rate_closures_for_sR_transitions.map( &:call )
         .reduce( @zero_column_vector_sized_as_free_places, :+ )
     end
-    alias :state_differential_for_sR_transitions \
-          :state_differential_for_nonstoichiometric_transitions_with_rate
-    alias :∂_for_nonstoichiometric_transitions_with_rate \
-          :state_differential_for_nonstoichiometric_transitions_with_rate
-    alias :∂_for_sR_transitions \
-          :∂_for_nonstoichiometric_transitions_with_rate
+    alias :∂_for_sR_transitions :state_differential_for_sR_transitions
 
     # While for sR transitions, state differential is what matters the most,
     # as a conveniece, this method for multiplying the differential by
     # provided Δt is added.
     # 
-    def delta_state_Euler_for_nonstoichiometric_transitions_with_rate( Δt )
+    def delta_state_Euler_for_sR_transitions( Δt )
       ∂_for_sR_transitions * Δt
     end
-    alias :delta_state_euler_for_nonstoichiometric_transitions_with_rate \
-          :delta_state_Euler_for_nonstoichiometric_transitions_with_rate
-    alias :Δ_Euler_for_nonstoichiometric_transitions_with_rate \
-          :delta_state_Euler_for_nonstoichiometric_transitions_with_rate
-    alias :Δ_euler_for_nonstoichiometric_transitions_with_rate \
-          :Δ_Euler_for_nonstoichiometric_transitions_with_rate
-    alias :Δ_Euler_for_sR_transitions \
-          :Δ_Euler_for_nonstoichiometric_transitions_with_rate
-    alias :Δ_euler_for_sR_transitions :Δ_Euler_for_sR_transitions
+    alias :delta_state_euler_for_sR_transitions \
+          :delta_state_Euler_for_sR_transitions
+    alias :Δ_Euler_for_sR_transitions :delta_state_Euler_for_sR_transitions
+    alias :Δ_euler_for_sR_transitions :delta_state_Euler_for_sR_transitions
 
     # ==== Stoichiometric transitions with rate (SR_transitions)
     # Whether nonstoichiometric, or stoichiometric, transitions with rate
@@ -1046,9 +1014,7 @@ module YPetri
 
     # Exposing rate closures for SR transitions.
     # 
-    attr_reader :rate_closures_for_stoichiometric_transitions_with_rate
-    alias :rate_closures_for_SR_transitions \
-          :rate_closures_for_stoichiometric_transitions_with_rate
+    attr_reader :rate_closures_for_SR_transitions
 
     # Rate closures for SR transitions.
     # By calling this method, the caller asserts that there are no rateless
@@ -1079,15 +1045,19 @@ module YPetri
     # ∂action / ∂t. This methods return flux for SR transitions as a column
     # vector.
     # 
-    def flux_vector_for_stoichiometric_transitions_with_rate
-      Matrix.column_vector( rate_closures_for_SR_transitions.map( &:call ) )
+    def flux_vector_for_SR_transitions
+      rc_results = rate_closures_for_SR_transitions.map( &:call )
+      puts "Rate closure results are #{rc_results}" if YPetri::DEBUG
+      raise "s⁻¹ please!" unless rc_results.all? { |r|
+        begin
+          r.dimension == SY::Dimension( "T⁻¹" )
+        rescue NoMethodError
+          true
+        end
+      }
+      Matrix.column_vector( rc_results )
     end
-    alias :flux_vector_for_SR_transitions \
-          :flux_vector_for_stoichiometric_transitions_with_rate
-    alias :φ_for_stoichiometric_transitions_with_rate \
-          :flux_vector_for_stoichiometric_transitions_with_rate
-    alias :φ_for_SR_transitions \
-          :flux_vector_for_stoichiometric_transitions_with_rate
+    alias :φ_for_SR_transitions :flux_vector_for_SR_transitions
 
     # Flux vector for SR transitions. Same as the previous method, but
     # the caller asserts that there are only stoichiometric transitions
@@ -1096,48 +1066,40 @@ module YPetri
     def flux_vector!
       raise "The simulation must contain only stoichiometric transitions " +
         "with rate!" unless s_transitions.empty? && r_transitions.empty?
-      flux_vector_for_stoichiometric_transitions_with_rate
+      flux_vector_for_SR_transitions
     end
     alias :φ! :flux_vector!
 
     # Flux of SR transitions as hash with transition name symbols as keys.
     # 
-    def flux_for_SR_tt; self.SR_tt_ :flux_vector_for_SR_transitions end
+    def flux_for_SR_tt
+      self.SR_tt_ :flux_vector_for_SR_transitions
+    end
 
     # Same as #flux_for_SR_tt, but with caller asserting that there are
     # none but SR transitions in the simulation (or error).
     # 
-    def f!; self.SR_tt_ :flux_vector! end
+    def f!
+      self.SR_tt_ :flux_vector!
+    end
 
     # State differential for SR transitions.
     # 
-    def state_differential_for_stoichiometric_transitions_with_rate
+    def state_differential_for_SR_transitions
       stoichiometry_matrix_for_SR_transitions * flux_vector_for_SR_transitions
     end
-    alias :state_differential_for_SR_transitions \
-          :state_differential_for_stoichiometric_transitions_with_rate
-    alias :∂_for_stoichiometric_transitions_with_rate \
-          :state_differential_for_SR_transitions
-    alias :∂_for_SR_transitions :∂_for_stoichiometric_transitions_with_rate
+    alias :∂_for_SR_transitions :state_differential_for_SR_transitions
 
     # Action vector for SR transitions under the assumption of making an
     # Eulerian step, with Δt provided as a parameter.
     # 
-    def Euler_action_vector_for_stoichiometric_transitions_with_rate( Δt )
+    def Euler_action_vector_for_SR_transitions( Δt )
       flux_vector_for_SR_transitions * Δt
     end
-    alias :euler_action_vector_for_stoichiometric_transitions_with_rate \
-          :Euler_action_vector_for_stoichiometric_transitions_with_rate
-    alias :Euler_action_vector_for_SR_transitions \
-          :Euler_action_vector_for_stoichiometric_transitions_with_rate
     alias :euler_action_vector_for_SR_transitions \
-          :Euler_action_vector_for_SR_transitions
-    alias :Euler_α_for_stoichiometric_transitions_with_rate \
-          :euler_action_vector_for_SR_transitions
-    alias :Euler_α_for_SR_transitions \
-          :euler_action_vector_for_SR_transitions
-    alias :euler_α_for_SR_transitions \
-          :euler_action_vector_for_SR_transitions
+          :Euler_action_vector_for_SR_transitions 
+    alias :Euler_α_for_SR_transitions :Euler_action_vector_for_SR_transitions 
+    alias :euler_α_for_SR_transitions :Euler_action_vector_for_SR_transitions
 
     # Euler action fro SR transitions as hash with tr. names as keys.
     # 
@@ -1149,14 +1111,10 @@ module YPetri
     # Convenience calculator of Δ state for SR transitions, assuming a single
     # Eulerian step with Δt given as parameter.
     # 
-    def Δ_Euler_for_stoichiometric_transitions_with_rate( Δt )
+    def Δ_Euler_for_SR_transitions( Δt )
       ∂_for_SR_transitions * Δt
     end
-    alias :Δ_euler_for_stoichiometric_transitions_with_rate \
-          :Δ_Euler_for_stoichiometric_transitions_with_rate
-    alias :Δ_Euler_for_SR_transitions \
-          :Δ_Euler_for_stoichiometric_transitions_with_rate
-    alias :Δ_euler_for_SR_transitions :Δ_Euler_for_SR_transitions
+    alias :Δ_euler_for_SR_transitions :Δ_Euler_for_SR_transitions 
 
     # Δ state for SR transitions under Eulerian step with Δt as parameter,
     # returning a hash with free place symbols as keys.
@@ -1217,7 +1175,7 @@ module YPetri
     # 
     def reset!
       puts "Starting #reset! method" if DEBUG
-      zero_vector = Matrix.column_vector( places.map { Matrix::TOTAL_ZERO.new } ) # Float zeros
+      zero_vector = Matrix.column_vector( places.map { SY::STRONG_ZERO.new } ) # Float zeros
       puts "zero vector prepared" if DEBUG
       mv_clamped = compute_marking_vector_of_clamped_places
       puts "#reset! obtained marking vector of clamped places" if DEBUG
@@ -1230,6 +1188,13 @@ module YPetri
       free_2_all = free_places_to_all_places_matrix
       puts "#reset! obtained conversion matrix" if DEBUG
       free_component = free_2_all * mv_free
+      puts "free component of marking vector prepared:\n#{free_component}" if DEBUG
+      free_component.aT { |v|
+        qnt = v.first.quantity rescue :no_quantity
+        unless qnt == :no_quantity
+          v.all? { |e| e.quantity == qnt }
+        else true end
+      }
       puts "free component of marking vector prepared:\n#{free_component}" if DEBUG
       @marking_vector = zero_vector + clamped_component + free_component
       puts "marking vector assembled\n#{m}\n, about to reset recording" if DEBUG
@@ -1317,7 +1282,7 @@ module YPetri
     # These instance assets are created at the beginning, so the work
     # needs to be performed only once in the instance lifetime.
 
-    def create_delta_state_closures_for_timeless_nonstoichiometric_transitions
+    def create_delta_state_closures_for_ts_transitions
       timeless_nonstoichiometric_transitions.map { |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
         c2f = Matrix.correspondence_matrix( t.codomain, free_places )
@@ -1325,7 +1290,7 @@ module YPetri
       }
     end
 
-    def create_delta_state_closures_for_timed_rateless_nonstoichiometric_transitions
+    def create_delta_state_closures_for_Tsr_transitions
       timed_rateless_nonstoichiometric_transitions.map { |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
         c2f = Matrix.correspondence_matrix( t.codomain, free_places )
@@ -1333,21 +1298,21 @@ module YPetri
       }
     end
 
-    def create_action_closures_for_timeless_stoichiometric_transitions
+    def create_action_closures_for_tS_transitions
       timeless_stoichiometric_transitions.map{ |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
         λ { t.action_closure.( *( p2d * ᴍ! ).column_to_a ) }
       }
     end
 
-    def create_action_closures_for_timed_rateless_stoichiometric_transitions
+    def create_action_closures_for_TSr_transitions
       timed_rateless_stoichiometric_transitions.map{ |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
         λ { |Δt| t.action_closure.( Δt, *( p2d * ᴍ! ).column_to_a ) }
       }
     end
 
-    def create_rate_closures_for_nonstoichiometric_transitions_with_rate
+    def create_rate_closures_for_sR_transitions
       nonstoichiometric_transitions_with_rate.map{ |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
         c2f = Matrix.correspondence_matrix( t.codomain, free_places )
@@ -1355,9 +1320,10 @@ module YPetri
       }
     end
 
-    def create_rate_closures_for_stoichiometric_transitions_with_rate
+    def create_rate_closures_for_SR_transitions
       stoichiometric_transitions_with_rate.map{ |t|
         p2d = Matrix.correspondence_matrix( places, t.domain )
+        puts "Marking vector is #{ᴍ!}" if YPetri::DEBUG
         λ { t.rate_closure.( *( p2d * ᴍ! ).column_to_a ) }
       }
     end

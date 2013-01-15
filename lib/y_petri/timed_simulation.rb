@@ -97,12 +97,13 @@ module YPetri
     def gradient_for_free_places
       puts "about to compute gradient for free places" if DEBUG
       fv = flux_vector_for_SR_transitions
-      puts "flux vector for SR transitions is \n#{fv}" if DEBUG
+      puts "flux vector for SR transitions is \n#{Hash[tt.zip( fv.map &:to_s )]}" if DEBUG
+      puts "List of free places is #{free_pp}" if YPetri::DEBUG
       sm = S_for_SR_transitions()
       puts "stoichiometry matrix for SR transitions is \n#{sm}" if DEBUG
       ∂ = sm * fv
       puts "about to add the contribution of sR transitions" if DEBUG
-      ∂ + ∂_for_nonstoichiometric_transitions_with_rate
+      ∂ + ∂_for_sR_transitions
     end
     alias :∂_free :gradient_for_free_places
     alias :gradient :gradient_for_free_places

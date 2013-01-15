@@ -3,8 +3,9 @@
 
 require 'minitest/spec'
 require 'minitest/autorun'
-# require_relative '../lib/y_petri'     # tested component itself
-require 'y_petri'
+require_relative '../lib/y_petri'     # tested component itself
+require 'sy'
+# require 'y_petri'
 
 include Pyper if require 'pyper'
 
@@ -715,22 +716,16 @@ describe ::YPetri::Simulation do
   end
 
   it "has stoichiometry matrix for 3. timeless stoichiometric transitions" do
-    @s.stoichiometry_matrix_for_timeless_stoichiometric_transitions
-      .must_equal Matrix.empty( 3, 0 )
     @s.stoichiometry_matrix_for_tS_transitions.must_equal Matrix.empty( 3, 0 )
     @s.S_for_tS_transitions.must_equal Matrix.empty( 3, 0 )
   end
 
   it "has stoichiometry matrix for 4. timed rateless stoichiometric transitions" do
-    @s.stoichiometry_matrix_for_timed_rateless_stoichiometric_transitions
-      .must_equal Matrix.empty( 3, 0 )
     @s.stoichiometry_matrix_for_TSr_transitions.must_equal Matrix.empty( 3, 0 )
     @s.S_for_TSr_transitions.must_equal Matrix.empty( 3, 0 )
   end
 
   it "has stoichiometry matrix for 6. stoichiometric transitions with rate " do
-    @s.stoichiometry_matrix_for_stoichiometric_transitions_with_rate
-      .must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
     @s.stoichiometry_matrix_for_SR_transitions
       .must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
     @s.S_for_SR_transitions.must_equal @s.stoichiometry_matrix_for_SR_transitions
@@ -874,11 +869,7 @@ describe ::YPetri::Simulation do
     @s.rate_closures_for_SR_transitions.size.must_equal 3
     @s.rate_closures_for_S_transitions!.size.must_equal 3
     @s.rate_closures!.size.must_equal 3
-    @s.flux_vector_for_stoichiometric_transitions_with_rate
-      .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
     @s.flux_vector_for_SR_transitions
-      .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.φ_for_stoichiometric_transitions_with_rate
       .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
     @s.φ_for_SR_transitions
       .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
@@ -1441,10 +1432,10 @@ end
 #     DeoxyTMP = @m.Place m!: 3.3.µM
 #     DeoxyT23P = @m.Place m!: 5.0.µM
 #     Thymidine = @m.Place m!: 0.5.µM
-#     TK1 = @m.Place m!: 100_000 / Cytoplasm_volume
-#     TYMS = @m.Place m!: 100_000 / Cytoplasm_volume
-#     RNR = @m.Place m!: 100_000 / Cytoplasm_volume
-#     TMPK = @m.Place m!: 100_000 / Cytoplasm_volume
+#     TK1 = @m.Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
+#     TYMS = @m.Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
+#     RNR = @m.Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
+#     TMPK = @m.Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
     
 #     # === Enzyme molecular masses
 #     TK1_m = 24.8.kDa
@@ -1472,7 +1463,10 @@ end
     
 #     # Michaelis constant reduced for competitive inhibitors.
 #     Km_reduced = lambda { |km, ki_hash={}|
-#       ki_hash.map { |concentration, ci_Ki| concentration / ci_Ki }
+#       ki_hash.map { |concentration, ci_Ki|
+#         puts "concentration of comp. inh. is #{concentration}" if YPetri::DEBUG
+#         puts "inhibition constant is #{ci_Ki}" if YPetri::DEBUG
+#         concentration / ci_Ki }
 #         .reduce( 1, :+ ) * km
 #     }
     
@@ -1503,7 +1497,9 @@ end
 #     TK1_Thymidine_DeoxyTMP = @m.Transition s: { Thymidine: -1, DeoxyTMP: 1 },
 #       domain: [ Thymidine, TK1, DeoxyT23P, DeoxyCTP, Deoxycytidine, AMP, ADP, ATP ],
 #         rate: proc { |rc, e, pool1, ci2, ci3, master1, master2, master3|
+#                 puts "pool1: #{pool1}, master1: #{master1}, master2: #{master2}, master3: #{master3}"
 #                 ci1 = pool1 * master3 / ( master2 + master3 )
+#                 puts "ci1 is #{ci1}, ci2 is #{ci2}, ci3 is #{ci3}"
 #                 MMi.( rc, TK1_a, TK1_m, e, TK1_Thymidine_Km,
 #                       ci1 => 13.5.µM, ci2 => 0.8.µM, ci3 => 40.0.µM )
 #               }
@@ -1542,7 +1538,9 @@ end
 
 #   it "should work" do
 #     # === Simulation execution
+#     YPetri::DEBUG = true
 #     @m.run!
+#     YPetri::DEBUG = false
 #     # === Plotting of the results
 #     @m.plot_recording
 #   end
