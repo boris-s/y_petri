@@ -14,7 +14,8 @@ Pieces_per_concentration = SY::Nᴀ * Cytoplasm_volume
 # === Simulation settings
 
 set_step 60.s
-set_target_time 24.h
+set_target_time 20.min
+set_sampling 120.s
 
 
 # === Places
@@ -30,10 +31,10 @@ DeoxyU12P = Place m!: 0.0.µM
 DeoxyTMP = Place m!: 3.3.µM
 DeoxyT23P = Place m!: 5.0.µM
 Thymidine = Place m!: 0.5.µM
-TK1 = Place m!: 100_000 / Cytoplasm_volume
-TYMS = Place m!: 100_000 / Cytoplasm_volume
-RNR = Place m!: 100_000 / Cytoplasm_volume
-TMPK = Place m!: 100_000 / Cytoplasm_volume
+TK1 = Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
+TYMS = Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
+RNR = Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
+TMPK = Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
 
 
 # === Enzyme molecular masses
@@ -64,8 +65,8 @@ clamp U12P: 2737.0.µM
 
 # Vmax of an enzyme.
 # 
-Vmax_enzyme = lambda { |specific_activity, mass|
-  specific_activity * mass
+Vmax_enzyme = lambda { |specific_activity, mass, enz_conc|
+  specific_activity * mass * enz_conc.( SY::Molecularity )
 }
 
 # Michaelis constant reduced for competitive inhibitors.
@@ -78,16 +79,16 @@ Km_reduced = lambda { |km, ki_hash={}|
 # Occupancy of enzyme active sites at given concentration of reactants
 # and competitive inhibitors.
 # 
-Occupancy = lambda { |concentration, reactant_Km, ci_Ki={}|
-  concentration / ( concentration + Km_reduced.( reactant_Km, ci_Ki ) )
+Occupancy = lambda { |reactant_conc, reactant_Km, ci_Ki={}|
+  reactant_conc / ( reactant_conc + Km_reduced.( reactant_Km, ci_Ki ) )
 }
 
 # Michaelis and Menten equation with competitive inhibitors.
 # 
 MMi = MM_equation_with_inhibitors = lambda {
-  |r_conc, enz_spec_act, enz_mass, enz_amount, r_Km, ci_Ki={}|
-  Vmax_enzyme.( enz_spec_act, enz_mass ) * enz_amount *
-    Occupancy.( r_conc, r_Km, ci_Ki )
+  |reactant_conc, enz_spec_act, enz_mass, enz_conc, r_Km, ci_Ki={}|
+  Vmax_enzyme.( enz_spec_act, enz_mass, enz_conc ) *
+    Occupancy.( reactant_conc, r_Km, ci_Ki )
 }
 
 
@@ -101,7 +102,8 @@ TMPK_DeoxyTMP_Km = 12.0.µM
 
 # === DNA synthesis speed.
 
-DNA_creation_speed = 3_000_000_000.unit / 12.h
+DNA_creation_speed =
+  3_000_000_000.unit.( SY::MoleAmount ) / 12.h / Cytoplasm_volume
 
 
 # === Transitions
@@ -131,7 +133,7 @@ RNR_UDP_DeoxyUDP = Transition s: { U12P: -1, DeoxyU12P: 1 },
   domain: [ U12P, RNR, DeoxyU12P, AMP, ADP, ATP ],
     rate: proc { |pool, e, master1, master2, master3|
             rc = pool * master2 / ( master1 + master2 )
-            MMi.( rc, RNR_a, RNR_kDa, e, RNR_UDP_Km )
+            MMi.( rc, RNR_a, RNR_m, e, RNR_UDP_Km )
           }
 
 # Consumption of TTP by DNA synthesis.
@@ -147,13 +149,14 @@ TMPK_DeoxyTMP_DeoxyTDP = Transition s: { DeoxyTMP: -1, TMPK: 0, DeoxyT23P: 1 },
             master2 = ci1
             ci2 = pool * master2 / ( master2 + master3 )
             ci3 = pool * master3 / ( master2 + master3 )
-            MMi.( rc, TMPK_a, TMPK_kDa, e, TMPK_DeoxyTMP_Km,
-                  ci1 => 250.0, ci2 => 30.0, ci3 => 750, ci4 => 117 )
+            MMi.( rc, TMPK_a, TMPK_m, e, TMPK_DeoxyTMP_Km,
+                  ci1 => 250.0.µM, ci2 => 30.0.µM, ci3 => 750.µM, ci4 => 117.µM )
           }
 
 
 # === Simulation execution
 
+# YPetri::DEBUG = true
 run!
 
 
