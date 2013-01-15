@@ -1417,8 +1417,8 @@ describe "Use of TimedSimulation with units" do
 
     # === Simulation settings
     @m.set_step 60.s
-    @m.set_target_time 24.h
-    @m.set_sampling 300.s
+    @m.set_target_time 10.min
+    @m.set_sampling 120.s
 
     # === Places
     AMP = @m.Place m!: 8695.0.µM
@@ -1550,5 +1550,6 @@ describe "Use of TimedSimulation with units" do
     @m.run!
     # === Plotting of the results
     @m.plot_recording
+    sleep 20
   end
 end

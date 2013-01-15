@@ -429,7 +429,7 @@ module YPetri
 
       Gnuplot.open do |gp|
         Gnuplot::Plot.new( gp ) do |plot|
-          plot.xrange "[-0:#{target_time}]"
+          plot.xrange "[-0:#{SY::Time.magnitude( target_time ).amount}]"
           plot.title "Recording Plot"
           plot.ylabel "marking"
           plot.xlabel "time [s]"
