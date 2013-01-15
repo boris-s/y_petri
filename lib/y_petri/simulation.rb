@@ -188,12 +188,12 @@ module YPetri
     # are then presented as hash { place_name => object }. Place instances
     # are used as hash keys for nameless places.
     # 
-    def pp_ *aa, &b
+    def pp_ *args, &b
       return pp if args.empty? and b.nil?
       Hash[ places.map { |t| t.ɴ or t }
               .zip( case args[0]
                     when Enumerable then args[0]
-                    else places.map { |t| t.send *args, &b } end ) ]
+                    else send *args, &b end ) ]
     end
 
     # Array of transition names.
@@ -212,7 +212,7 @@ module YPetri
       Hash[ transitions.map { |t| t.ɴ or t }
               .zip( case args[0]
                     when Enumerable then args[0]
-                    else transitions.map { |t| t.send *args, &b } end ) ]
+                    else send *args, &b end ) ]
     end
 
     # Exposing @place_clamps (hash with place instances as keys).
@@ -1048,20 +1048,7 @@ module YPetri
     # vector.
     # 
     def flux_vector_for_SR_transitions
-      rc_results = rate_closures_for_SR_transitions.map( &:call )
-      puts "Rate closure results are #{tt_( rc_results )}" if YPetri::DEBUG
-      tt_( rc_results ).each { |t, r|
-        begin
-          begin
-            r.aT { quantity == SY.Quantity( :Molarity± ) / SY::Time }
-          rescue TypeError
-            raise "for #{t} => #{r}, Molarity± / T please!"
-          end
-        rescue NoMethodError
-          true
-        end
-      }
-      Matrix.column_vector( rc_results )
+      Matrix.column_vector( rate_closures_for_SR_transitions.map( &:call ) )
     end
     alias :φ_for_SR_transitions :flux_vector_for_SR_transitions
 
@@ -1181,7 +1168,7 @@ module YPetri
     # 
     def reset!
       puts "Starting #reset! method" if DEBUG
-      zero_vector = Matrix.column_vector( places.map { SY::ZERO.new } ) # Float zeros
+      zero_vector = Matrix.column_vector( places.map { SY::ZERO rescue 0 } ) # Float zeros
       puts "zero vector prepared" if DEBUG
       mv_clamped = compute_marking_vector_of_clamped_places
       puts "#reset! obtained marking vector of clamped places" if DEBUG
