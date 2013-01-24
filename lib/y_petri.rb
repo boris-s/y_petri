@@ -41,12 +41,13 @@ module YPetri
   }
 
   def self.included( receiver )      # :nodoc:
-    receiver.instance_variable_set :@YPetriManipulator, Manipulator.new
+    # receiver.instance_variable_set :@YPetriManipulator, Manipulator.new
+    puts "included in #{receiver}"
     receiver.module_exec {
       define_method :y_petri_manipulator do
         singleton_class.instance_variable_get :@YPetriManipulator or
-          singleton_class
-          .instance_variable_set :@YPetriManipulator, Manipulator.new
+          ( puts "defining Manipulator for #{self} singleton class #{singleton_class}";
+            singleton_class.instance_variable_set :@YPetriManipulator, Manipulator.new )
       end
     }
   end
