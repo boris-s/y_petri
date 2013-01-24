@@ -221,7 +221,7 @@ module YPetri
     # 
     def simulation_settings_collection  collection_name=nil
       cɴ = collection_name.nil? ? @ssc_point : collection_name
-      puts "Target workspace is #{workspace}, obj. id #{object_id}"
+      puts "Target workspace is #{workspace}, obj. id #{workspace.object_id}"
       workspace.simulation_settings_collections[ cɴ ] or
         raise AE, "No simulations settings collection #{cɴ} in this workspace."
     end
