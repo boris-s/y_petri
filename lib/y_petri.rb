@@ -34,11 +34,11 @@ require_relative 'y_petri/manipulator'
 module YPetri
   DEBUG = false
 
-  DEFAULT_SIMULATION_SETTINGS = {
-    step_size: 0.1,
-    sampling_period: 5,
-    target_time: 60
-  }
+  DEFAULT_SIMULATION_SETTINGS = lambda do
+    { step_size: 0.1,
+      sampling_period: 5,
+      target_time: 60 }
+  end
 
   def self.included( receiver )      # :nodoc:
     # receiver.instance_variable_set :@YPetriManipulator, Manipulator.new
@@ -46,7 +46,7 @@ module YPetri
     receiver.module_exec {
       define_method :y_petri_manipulator do
         singleton_class.instance_variable_get :@YPetriManipulator or
-          ( puts "defining Manipulator for #{self} singleton class #{singleton_class}";
+          ( # puts "defining Manipulator for #{self} singleton class #{singleton_class}";
             singleton_class.instance_variable_set :@YPetriManipulator, Manipulator.new )
       end
     }

@@ -54,7 +54,7 @@ class YPetri::Workspace
     @initial_marking_collections = { Base: {} }
     # A hash of sim. set. collections { collection name => sim. set. hash }.
     @simulation_settings_collections =
-      { Base: YPetri::DEFAULT_SIMULATION_SETTINGS }
+      { Base: YPetri::DEFAULT_SIMULATION_SETTINGS.call }
   end
 
   # Returns a place instance specified by the argument.
