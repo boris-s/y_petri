@@ -8,7 +8,9 @@ module YPetri
 
     # Current workspace
     # 
-    def workspace; @workspace end
+    def workspace;
+      puts "Manipulator is #{self}, obj. id #{object_id}."
+      @workspace end
 
     def initialize
       new_workspace_instance = ::YPetri::Workspace.new
@@ -219,6 +221,7 @@ module YPetri
     # 
     def simulation_settings_collection  collection_name=nil
       cɴ = collection_name.nil? ? @ssc_point : collection_name
+      puts "Target workspace is #{workspace}, obj. id #{object_id}"
       workspace.simulation_settings_collections[ cɴ ] or
         raise AE, "No simulations settings collection #{cɴ} in this workspace."
     end
