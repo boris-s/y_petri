@@ -181,7 +181,7 @@ module YPetri
         :print_recording,
         :plot_recording
       ].each do |ß|
-        eval "def #{ß}( *aa, &b ); puts '%s, %s' % '#{ß}', self; self.y_petri_manipulator.send #{ß}, *aa, &b end"
+        eval "def #{ß}( *aa, &b ); puts '%s, %s' % ['#{ß}', self]; self.y_petri_manipulator.send #{ß}, *aa, &b end"
       end
     }
   end
