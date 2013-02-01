@@ -8,7 +8,7 @@ require 'sy'
 
 Cytoplasm_volume = 5.0e-11.l         # of an average cell
 # How many molecules are there in the average cell per micromolar.
-Pieces_per_µM = SY::Nᴀ * Cytoplasm_volume.in( :litre ) / 1.µM.in( :molar )
+Pieces_per_µM = ( 1.µM * Cytoplasm_volume ).in( :unit )
 
 # === Simulation settings
 

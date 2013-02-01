@@ -632,271 +632,220 @@ describe ::YPetri::Simulation do
   it "exposes Petri net places" do
     @s.places.must_equal [ @p1, @p2, @p3, @p4, @p5 ]
     @s.pp.must_equal [ :P1, :P2, :P3, :P4, :P5 ]
-    @s.places_( :pp ).must_equal( { @p1 => :P1, @p2 => :P2, @p3 => :P3,
-                                    @p4 => :P4, @p5 => :P5 } )
-    @s.pp_( :pp ).must_equal( { P1: :P1, P2: :P2, P3: :P3, P4: :P4, P5: :P5 } )
+    @s.places( :pp ).must_equal( { @p1 => :P1, @p2 => :P2, @p3 => :P3,
+                                   @p4 => :P4, @p5 => :P5 } )
+    @s.pp( :pp ).must_equal( { P1: :P1, P2: :P2, P3: :P3, P4: :P4, P5: :P5 } )
   end
 
   it "exposes Petri net transitions" do
     @s.transitions.must_equal [ @t1, @t2, @t3 ]
     @s.tt.must_equal [ :T1, :T2, :T3 ]
-    @s.transitions_( :tt ).must_equal( { @t1 => :T1, @t2 => :T2, @t3 => :T3 } )
-    @s.tt_( :tt ).must_equal( { T1: :T1, T2: :T2, T3: :T3 } )
+    @s.transitions( :tt ).must_equal( { @t1 => :T1, @t2 => :T2, @t3 => :T3 } )
+    @s.tt( :tt ).must_equal( { T1: :T1, T2: :T2, T3: :T3 } )
   end
 
   it "exposes place clamps" do
-    @s.place_clamps.must_equal( { @p1 => 2, @p5 => 2 } )
-    @s.p_clamps.must_equal( { P1: 2, P5: 2 } )
+    @s.clamped_places( :place_clamps ).must_equal( { @p1 => 2, @p5 => 2 } )
+    @s.clamped_pp( :place_clamps ).must_equal( { P1: 2, P5: 2 } )
   end
 
   it "presents free places" do
     @s.free_places.must_equal [ @p2, @p3, @p4 ]
     @s.free_pp.must_equal [ :P2, :P3, :P4 ]
-    @s.free_places_( :free_pp )
+    @s.free_places( :free_pp )
       .must_equal( { @p2 => :P2, @p3 => :P3, @p4 => :P4 } )
-    @s.free_pp_( :free_pp )
+    @s.free_pp( :free_pp )
       .must_equal( { P2: :P2, P3: :P3, P4: :P4 } )
   end
 
   it "presents clamped places" do
     @s.clamped_places.must_equal [ @p1, @p5 ]
     @s.clamped_pp.must_equal [ :P1, :P5 ]
-    @s.clamped_places_( :clamped_pp ).must_equal( { @p1 => :P1, @p5 => :P5 } )
-    @s.clamped_pp_( :clamped_pp ).must_equal( { P1: :P1, P5: :P5 } )
-    @s.clamped_pp_( :clamped_pp ).must_equal( { P1: :P1, P5: :P5 } )
+    @s.clamped_places( :clamped_pp ).must_equal( { @p1 => :P1, @p5 => :P5 } )
+    @s.clamped_pp( :clamped_pp ).must_equal( { P1: :P1, P5: :P5 } )
   end
 
   it "exposes initial marking" do
-    @s.initial_marking.must_equal( { @p2 => 2, @p3 => 3, @p4 => 4 } )
-    @s.im.must_equal( { P2: 2, P3: 3, P4: 4 } )
-    @s.initial_marking_array.must_equal [ 2, 3, 4 ]
-    @s.initial_marking_vector.must_equal Matrix[[2], [3], [4]]
-    @s.initial_marking_vector.must_equal @s.iᴍ
+    @s.free_places( :im ).must_equal( { @p2 => 2, @p3 => 3, @p4 => 4 } )
+    @s.free_pp( :im ).must_equal( { P2: 2, P3: 3, P4: 4 } )
+    @s.im.must_equal [ 2, 3, 4 ]
+    @s.im_vector.must_equal Matrix[[2], [3], [4]]
+    @s.im_vector.must_equal @s.iᴍ
   end
 
   it "exposes marking (simulation state)" do
-    @s.marking_array.must_equal [2, 3, 4] # (we're after reset)
-    @s.marking_array_of_free_places.must_equal @s.marking_array
-    @s.marking.must_equal( { @p2 => 2, @p3 => 3, @p4 => 4 } )
-    @s.m.must_equal( { P2: 2, P3: 3, P4: 4 } )
-    @s.m_free.must_equal @s.m
-    @s.marking_vector.must_equal Matrix[[2], [3], [4]]
-    [ @s.ᴍ, @s.marking_vector_of_free_places, @s.ᴍ_free ]
-      .each &[:must_equal, @s.marking_vector]
+    @s.m.must_equal [2, 3, 4] # (we're after reset)
+    @s.free_places( :m ).must_equal( { @p2 => 2, @p3 => 3, @p4 => 4 } )
+    @s.free_pp( :m ).must_equal( { P2: 2, P3: 3, P4: 4 } )
+    @s.ᴍ.must_equal Matrix[[2], [3], [4]]
   end
 
   it "separately exposes marking of clamped places" do
-    @s.marking_array_of_clamped_places.must_equal [ 2, 2 ]
-    @s.marking_of_clamped_places.must_equal( { @p1 => 2, @p5 => 2 } )
-    @s.m_clamped.must_equal( { P1: 2, P5: 2 } )
-    @s.marking_vector_of_clamped_places.must_equal Matrix[[2], [2]]
-    @s.ᴍ_clamped.must_equal @s.marking_vector_of_clamped_places
+    @s.m_clamped.must_equal [ 2, 2 ]
+    @s.clamped_places( :m_clamped ).must_equal( { @p1 => 2, @p5 => 2 } )
+    @s.clamped_pp( :m_clamped ).must_equal( { P1: 2, P5: 2 } )
+    @s.ᴍ_clamped.must_equal Matrix[[2], [2]]
   end
 
   it "exposes marking of all places (with capitalized M)" do
-    @s.marking_array_of_all_places.must_equal [ 2, 2, 3, 4, 2 ]
-    @s.marking_array!.must_equal @s.marking_array_of_all_places
-    @s.marking_of_all_places.must_equal( { @p1 => 2, @p2 => 2, @p3 => 3, @p4 => 4, @p5 => 2 } )
-    @s.marking!.must_equal @s.marking_of_all_places
-    @s.m_all.must_equal( { P1: 2, P2: 2, P3: 3, P4: 4, P5: 2 } )
-    @s.m!.must_equal @s.m_all
-    @s.marking_vector_of_all_places.must_equal Matrix[[2], [2], [3], [4], [2]]
-    @s.marking_vector!.must_equal @s.marking_vector_of_all_places
-    @s.ᴍ_all.must_equal @s.marking_vector!
-    @s.ᴍ!.must_equal @s.marking_vector!
+    @s.marking.must_equal [ 2, 2, 3, 4, 2 ]
+    @s.places( :marking )
+      .must_equal( { @p1 => 2, @p2 => 2, @p3 => 3, @p4 => 4, @p5 => 2 } )
+    @s.pp( :marking ).must_equal( { P1: 2, P2: 2, P3: 3, P4: 4, P5: 2 } )
+    @s.marking_vector.must_equal Matrix[[2], [2], [3], [4], [2]]
   end
 
-  it "has #create_stoichiometry_matrix_for" do
-    assert_equal Matrix.empty(3, 0), @s.create_stoichiometry_matrix_for( [] )
-    assert_equal Matrix[[-1], [0], [1]], @s.create_stoichiometry_matrix_for( [@t1] )
+  it "has #S_for / #stoichiometry_matrix_for" do
+    assert_equal Matrix.empty(3, 0), @s.S_for( [] )
+    assert_equal Matrix[[-1], [0], [1]], @s.S_for( [@t1] )
     x = Matrix[[-1, -1], [0, 0], [1, 1]]
-    x.must_equal @s.create_stoichiometry_matrix_for( [@t1, @t3] )
-    x.must_equal( @s.create_S_for( [@t1, @t3] ) )
-    @s.S_for!( [] ).must_equal Matrix.empty( 5, 0 )
+    x.must_equal @s.S_for( [@t1, @t3] )
+    x.must_equal( @s.S_for( [@t1, @t3] ) )
+    @s.stoichiometry_matrix_for( [] ).must_equal Matrix.empty( 5, 0 )
   end
 
-  it "has stoichiometry matrix for 3. timeless stoichiometric transitions" do
-    @s.stoichiometry_matrix_for_tS_transitions.must_equal Matrix.empty( 3, 0 )
-    @s.S_for_tS_transitions.must_equal Matrix.empty( 3, 0 )
+  it "has stoichiometry matrix for 3. tS transitions" do
+    @s.S_for_tS.must_equal Matrix.empty( 3, 0 )
   end
 
-  it "has stoichiometry matrix for 4. timed rateless stoichiometric transitions" do
-    @s.stoichiometry_matrix_for_TSr_transitions.must_equal Matrix.empty( 3, 0 )
-    @s.S_for_TSr_transitions.must_equal Matrix.empty( 3, 0 )
+  it "has stoichiometry matrix for 4. Sr transitions" do
+    @s.S_for_TSr.must_equal Matrix.empty( 3, 0 )
   end
 
-  it "has stoichiometry matrix for 6. stoichiometric transitions with rate " do
-    @s.stoichiometry_matrix_for_SR_transitions
-      .must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
-    @s.S_for_SR_transitions.must_equal @s.stoichiometry_matrix_for_SR_transitions
-    @s.S!.must_equal @s.S_for_SR_transitions
+  it "has stoichiometry matrix for 6. SR transitions" do
+    @s.S_for_SR.must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
+    @s.S.must_equal @s.S_for_SR
   end
 
-  it "presents 1. timeless nonstoichiometric (ts) transitions" do
-    assert_equal [], @s.timeless_nonstoichiometric_transitions
+  it "presents 1. ts" do
     assert_equal [], @s.ts_transitions
-    assert_equal( {}, @s.ts_transitions_( :ts_transitions_ ) )
-    assert_equal [], @s.timeless_nonstoichiometric_tt
+    assert_equal( {}, @s.ts_transitions( :ts_transitions ) )
     assert_equal [], @s.ts_tt
-    assert_equal( {}, @s.ts_tt_( :ts_tt_ ) )
+    assert_equal( {}, @s.ts_tt( :ts_tt ) )
   end
 
-  it "presents 2. timeless stoichiometric (tS) transitions" do
-    assert_equal [], @s.timeless_stoichiometric_transitions
+  it "presents 2. tS transitions" do
     assert_equal [], @s.tS_transitions
-    assert_equal( {}, @s.tS_transitions_( :tS_transitions ) )
-    assert_equal [], @s.timeless_stoichiometric_tt
+    assert_equal( {}, @s.tS_transitions( :tS_transitions ) )
     assert_equal [], @s.tS_tt
-    assert_equal( {}, @s.tS_tt_( :tS_tt_ ) )
+    assert_equal( {}, @s.tS_tt( :tS_tt ) )
   end
 
-  it "presents 3. timed rateless nonstoichiometric (Tsr) transitions" do
-    assert_equal [], @s.timed_nonstoichiometric_transitions_without_rate
-    assert_equal [], @s.timed_rateless_nonstoichiometric_transitions
+  it "presents 3. Tsr transitions" do
     assert_equal [], @s.Tsr_transitions
-    assert_equal( {}, @s.Tsr_transitions_( :Tsr_transitions ) )
-    assert_equal [], @s.timed_nonstoichiometric_tt_without_rate
-    assert_equal [], @s.timed_rateless_nonstoichiometric_tt
+    assert_equal( {}, @s.Tsr_transitions( :Tsr_transitions ) )
     assert_equal [], @s.Tsr_tt
-    assert_equal( {}, @s.Tsr_tt_( :Tsr_tt ) )
+    assert_equal( {}, @s.Tsr_tt( :Tsr_tt ) )
   end
 
-  it "presents 4. timed rateless stoichiometric (TSr) transitions" do
-    assert_equal [], @s.timed_stoichiometric_transitions_without_rate
-    assert_equal [], @s.timed_rateless_stoichiometric_transitions
+  it "presents 4. TSr transitions" do
     assert_equal [], @s.TSr_transitions
-    assert_equal( {}, @s.TSr_transitions_( :TSr_tt ) )
-    assert_equal [], @s.timed_stoichiometric_tt_without_rate
-    assert_equal [], @s.timed_rateless_stoichiometric_tt
+    assert_equal( {}, @s.TSr_transitions( :TSr_tt ) )
     assert_equal [], @s.TSr_tt
-    assert_equal( {}, @s.TSr_tt_( :TSr_tt ) )
+    assert_equal( {}, @s.TSr_tt( :TSr_tt ) )
   end
 
-  it "presents 5. nonstoichiometric transitions with rate" do
-    assert_equal [], @s.nonstoichiometric_transitions_with_rate
+  it "presents 5. sR transitions" do
     assert_equal [], @s.sR_transitions
-    assert_equal( {}, @s.sR_transitions_( :sR_transitions ) )
-    assert_equal [], @s.nonstoichiometric_tt_with_rate
+    assert_equal( {}, @s.sR_transitions( :sR_transitions ) )
     assert_equal [], @s.sR_tt
-    assert_equal( {}, @s.sR_tt_( :sR_tt ) )
+    assert_equal( {}, @s.sR_tt( :sR_tt ) )
   end
 
-  it "presents 6. stoichiometric transitions with rate" do
-    assert_equal [@t1, @t2, @t3], @s.stoichiometric_transitions_with_rate
-    assert_equal @s.stoichiometric_transitions_with_rate, @s.SR_transitions
+  it "presents SR transitions" do
+    assert_equal [@t1, @t2, @t3], @s.SR_transitions
     assert_equal( { @t1 => :T1, @t2 => :T2, @t3 => :T3 },
-                  @s.SR_transitions_( :SR_tt ) )
-    assert_equal [:T1, :T2, :T3], @s.stoichiometric_tt_with_rate
-    assert_equal @s.stoichiometric_tt_with_rate, @s.SR_tt
-    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.SR_tt_( :SR_tt ) )
+                  @s.SR_transitions( :SR_tt ) )
+    assert_equal [:T1, :T2, :T3], @s.SR_tt
+    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.SR_tt( :SR_tt ) )
   end
 
-  it "presents transitions with explicit assignment action (A transitions)" do
-    assert_equal [], @s.transitions_with_explicit_assignment_action
-    assert_equal [], @s.assignment_transitions
-    assert_equal( {}, @s.assignment_transitions_( :assignment_tt ) )
-    assert_equal [], @s.tt_with_explicit_assignment_action
-    assert_equal [], @s.assignment_tt
-    assert_equal( {}, @s.assignment_tt_( :assignment_tt ) )
+  it "presents A transitions" do
+    assert_equal [], @s.A_transitions
+    assert_equal( {}, @s.A_transitions( :A_tt ) )
+    assert_equal [], @s.A_tt
+    assert_equal( {}, @s.A_tt( :A_tt ) )
   end
 
-  it "presents stoichiometric transitions of any kind (S transitions)" do
-    assert_equal [@t1, @t2, @t3], @s.stoichiometric_transitions
-    assert_equal [:T1, :T2, :T3], @s.stoichiometric_tt
-    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.S_tt_( :S_tt ) )
+  it "presents S transitions" do
+    assert_equal [@t1, @t2, @t3], @s.S_transitions
+    assert_equal [:T1, :T2, :T3], @s.S_tt
+    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.S_tt( :S_tt ) )
   end
 
-  it "presents nonstoichiometric transitions of any kind (s transitions)" do
-    assert_equal [], @s.nonstoichiometric_transitions
-    assert_equal [], @s.nonstoichiometric_tt
-    assert_equal( {}, @s.s_tt_( :s_tt ) )
+  it "presents s transitions" do
+    assert_equal [], @s.s_transitions
+    assert_equal [], @s.s_tt
+    assert_equal( {}, @s.s_tt( :s_tt ) )
   end
 
-  it "presents transitions with rate (R transitions), of any kind" do
-    assert_equal [@t1, @t2, @t3], @s.transitions_with_rate
-    assert_equal [:T1, :T2, :T3], @s.tt_with_rate
-    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.R_tt_( :R_tt ) )
+  it "presents R transitions" do
+    assert_equal [@t1, @t2, @t3], @s.R_transitions
+    assert_equal [:T1, :T2, :T3], @s.R_tt
+    assert_equal( { T1: :T1, T2: :T2, T3: :T3 }, @s.R_tt( :R_tt ) )
   end
 
-  it "presents transitions without rate (r transitions), of any kind" do
-    assert_equal [], @s.transitions_without_rate
-    @s.rateless_transitions.must_equal @s.transitions_without_rate
-    assert_equal [], @s.tt_without_rate
-    @s.rateless_tt.must_equal @s.tt_without_rate
+  it "presents r transitions" do
+    assert_equal [], @s.r_transitions
+    assert_equal [], @s.r_tt
   end
 
-  it "1. handles timeless nonstoichiometric transitions" do
-    @s.Δ_closures_for_ts_transitions.must_equal []
-    @s.Δ_if_ts_transitions_fire_once
-      .must_equal Matrix.zero( @s.free_places.size, 1 )
+  it "1. handles ts transitions" do
+    @s.Δ_closures_for_ts.must_equal []
+    @s.Δ_if_ts_fire_once.must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
-  it "2. handles timed rateless nonstoichiometric transitions" do
-    @s.Δ_closures_for_Tsr_transitions.must_equal []
-    @s.Δ_for_Tsr_transitions( 1.0 )
-      .must_equal Matrix.zero( @s.free_places.size, 1 )
+  it "2. handles Tsr transitions" do
+    @s.Δ_closures_for_Tsr.must_equal []
+    @s.Δ_for_Tsr( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
-  it "3. handles timeless stoichiometric transitions" do
-    @s.action_closures_for_tS_transitions.must_equal []
-    @s.action_vector_for_tS_transitions.must_equal Matrix.column_vector( [] )
-    @s.α_for_t_transitions!.must_equal Matrix.column_vector( [] )
-    @s.Δ_if_tS_transitions_fire_once
-      .must_equal Matrix.zero( @s.free_places.size, 1 )
+  it "3. handles tS transitions" do
+    @s.action_closures_for_tS.must_equal []
+    @s.action_vector_for_tS.must_equal Matrix.column_vector( [] )
+    @s.α_for_t.must_equal Matrix.column_vector( [] )
+    @s.Δ_if_tS_fire_once.must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
-  it "4. handles timed rateless stoichiometric transitions" do
-    @s.action_closures_for_TSr_transitions.must_equal []
-    @s.action_closures_for_Tr_transitions!.must_equal []
-    @s.action_vector_for_TSr_transitions( 1.0 )
-      .must_equal Matrix.column_vector( [] )
-    @s.action_vector_for_Tr_transitions!( 1.0 )
-      .must_equal Matrix.column_vector( [] )
-    @s.Δ_for_TSr_transitions( 1.0 )
-      .must_equal Matrix.zero( @s.free_places.size, 1 )
+  it "4. handles TSr transitions" do
+    @s.action_closures_for_TSr.must_equal []
+    @s.action_closures_for_Tr.must_equal []
+    @s.action_vector_for_TSr( 1.0 ).must_equal Matrix.column_vector( [] )
+    @s.action_vector_for_Tr( 1.0 ).must_equal Matrix.column_vector( [] )
+    @s.Δ_for_TSr( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
-  it "5. handles nonstoichiometric transitions with rate" do
-    assert_equal [], @s.rate_closures_for_sR_transitions
-    assert_equal [], @s.rate_closures_for_s_transitions!
-    @s.state_differential_for_sR_transitions
-      .must_equal Matrix.zero( @s.free_places.size, 1 )
-    @s.Δ_Euler_for_sR_transitions( 1.0 )
-      .must_equal Matrix.zero( @s.free_places.size, 1 )
+  it "5. handles sR transitions" do
+    assert_equal [], @s.rate_closures_for_sR
+    assert_equal [], @s.rate_closures_for_s
+    @s.gradient_for_sR.must_equal Matrix.zero( @s.free_pp.size, 1 )
+    @s.Δ_Euler_for_sR( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
   it "6. handles stoichiometric transitions with rate" do
-    @s.rate_closures_for_SR_transitions.size.must_equal 3
-    @s.rate_closures_for_S_transitions!.size.must_equal 3
-    @s.rate_closures!.size.must_equal 3
-    @s.flux_vector_for_SR_transitions
-      .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.φ_for_SR_transitions
-      .must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.flux_vector!.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.φ!.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
-    @s.flux_for_SR_tt.must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
-    @s.f!.must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
-    @s.Euler_action_vector_for_SR_transitions( 1 )
+    @s.rate_closures_for_SR.size.must_equal 3
+    @s.rate_closures_for_S.size.must_equal 3
+    @s.rate_closures.size.must_equal 3
+    @s.flux_vector_for_SR.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
+    @s.φ_for_SR.must_equal @s.flux_vector
+    @s.SR_tt( :φ_for_SR ).must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
+    @s.Euler_action_vector_for_SR( 1 )
       .must_equal Matrix.column_vector [ 0.4, 1.0, 1.5 ]
-    @s.Euler_action_for_SR_tt( 1 ).must_equal( T1: 0.4, T2: 1.0, T3: 1.5 )
-    @s.Δ_Euler_for_SR_transitions( 1 ).must_equal Matrix[[-1.9], [1.0], [1.9]]
-    @s.Δ_Euler_for_SR_tt( 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
-    @s.Δ_euler_for_SR_tt( 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
+    @s.SR_tt( :Euler_action_for_SR, 1 ).must_equal( T1: 0.4, T2: 1.0, T3: 1.5 )
+    @s.Δ_Euler_for_SR( 1 ).must_equal Matrix[[-1.9], [1.0], [1.9]]
+    @s.free_pp( :Δ_Euler_for_SR, 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
   end
 
   it "presents sparse stoichiometry vectors for its transitions" do
-    @s.sparse_stoichiometry_vector( @t1 ).must_equal Matrix.cv( [-1, 0, 1] )
     @s.sparse_σ( @t1 ).must_equal Matrix.cv( [-1, 0, 1] )
-    @s.sparse_stoichiometry_vector!( @t1 )
+    @s.sparse_stoichiometry_vector( @t1 )
       .must_equal Matrix.cv( [-1, -1, 0, 1, 0] )
-    @s.sparse_σ!( @t1 ).must_equal Matrix.cv( [-1, -1, 0, 1, 0] )
   end
 
   it "presents correspondence matrices free, clamped => all places" do
-    @s.f2p_matrix.must_equal Matrix[[0, 0, 0], [1, 0, 0], [0, 1, 0],
+    @s.F2A.must_equal Matrix[[0, 0, 0], [1, 0, 0], [0, 1, 0],
                                     [0, 0, 1], [0, 0, 0]]
-    @s.c2p_matrix.must_equal Matrix[[1, 0], [0, 0], [0, 0], [0, 0], [0, 1]]
+    @s.C2A.must_equal Matrix[[1, 0], [0, 0], [0, 0], [0, 0], [0, 1]]
   end
 end
 
@@ -930,7 +879,7 @@ describe ::YPetri::TimedSimulation do
       end
 
       it "should #step! with expected results" do
-        m = @sim.step!.marking_array!
+        m = @sim.step!.marking
         assert_in_delta 0.8, m[ 0 ], 1e-9
         assert_in_delta 1.8, m[ 1 ], 1e-9
         assert_in_delta 3.2, m[ 2 ], 1e-9
@@ -938,7 +887,7 @@ describe ::YPetri::TimedSimulation do
 
       it "should behave" do
         assert_in_delta 0, ( Matrix.column_vector( [-0.02, -0.02, 0.02] ) -
-                             @sim.Δ_Euler_free( 0.1 ) ).column( 0 ).norm, 1e-9
+                             @sim.ΔE( 0.1 ) ).column( 0 ).norm, 1e-9
         @sim.step! 0.1
         assert_in_delta 0, ( Matrix.column_vector( [0.98, 1.98, 3.02] ) -
                              @sim.marking_vector ).column( 0 ).norm, 1e-9
@@ -956,7 +905,7 @@ describe ::YPetri::TimedSimulation do
       end
 
       it "should behave" do
-        m = @sim.step!.marking_array!
+        m = @sim.step!.marking
         assert_equal 10, @sim.sampling_period
         assert_in_delta 0.98, m[ 0 ], 1e-9
         assert_in_delta 1.98, m[ 1 ], 1e-9
@@ -1001,8 +950,8 @@ describe ::YPetri::TimedSimulation do
       end
 
       it "should have expected stoichiometry matrix" do
-        @sim.stoichiometry_matrix!.must_equal Matrix[ [-1, 0, 1] ].t
-        m = @sim.step!.marking_array!
+        @sim.S.must_equal Matrix[ [-1, 0, 1] ].t
+        m = @sim.step!.marking
         m[ 0 ].must_be_within_epsilon( 0.5, 1e-6 )
         m[ 1 ].must_equal 2
         m[ 2 ].must_be_within_delta( 3.5, 1e-9 )
@@ -1024,17 +973,17 @@ describe ::YPetri::TimedSimulation do
     end
 
     it "should exhibit correct behavior of #step" do
-      @sim.marking_array!.must_equal [1.0, 0.6, 3.0]
+      @sim.marking.must_equal [1.0, 0.6, 3.0]
       @t3.stoichiometric?.must_equal true
       @t3.timed?.must_equal true
       @t3.has_rate?.must_equal true
-      @sim.gradient!.must_equal Matrix.cv [-0.3, 0.0, 0.3]
-      @sim.Δ_Euler_all.must_equal Matrix.cv [-0.3, 0.0, 0.3]
+      @sim.gradient.must_equal Matrix.cv [-0.3, 0.0, 0.3]
+      @sim.Δ_Euler.must_equal Matrix.cv [-0.3, 0.0, 0.3]
       @sim.step!
-      @sim.marking_vector!.must_equal Matrix.cv [0.7, 0.6, 3.3]
+      @sim.marking_vector.must_equal Matrix.cv [0.7, 0.6, 3.3]
       @sim.euler_step!
       @sim.run!
-      @sim.marking_vector!.map( &[:round, 5] )
+      @sim.marking_vector.map( &[:round, 5] )
         .must_equal Matrix.cv [0.4, 0.6, 3.6]
     end
   end
@@ -1096,7 +1045,7 @@ describe ::YPetri::Workspace do
     assert_equal 2, @w.simulation.SR_transitions.size
     @tt[0].domain.must_equal [ @pp[0], @pp[1] ]
     @tt[1].domain.must_equal []
-    assert_equal [0.2, 0.1], @w.simulation.φ!.column_to_a
+    assert_equal [0.2, 0.1], @w.simulation.φ.column_to_a
     @w.simulation.step!
     @w.simulation.run!
     rec_string = @w.simulation.recording_csv_string
@@ -1199,10 +1148,13 @@ describe ::YPetri::Manipulator do
       @m.simulation.places.must_equal [ @p, @q ]
       @m.simulation.transitions.must_equal [ @decay_t, @constant_flux_t ]
       @m.simulation.SR_tt.must_equal [ :Tp, :Tq ]
-      @m.simulation.sparse_stoichiometry_vector!( :Tp ).must_equal Matrix.column_vector( [-1, 0] )
-      @m.simulation.stoichiometry_matrix!.column_size.must_equal 2
-      @m.simulation.stoichiometry_matrix!.row_size.must_equal 2
-      @m.simulation.flux_vector!.row_size.must_equal 2
+      @m.simulation.sparse_stoichiometry_vector( :Tp )
+        .must_equal Matrix.column_vector( [-1, 0] )
+      @m.simulation.stoichiometry_matrix_for( @m.transitions ).column_size
+        .must_equal 2
+      @m.simulation.stoichiometry_matrix_for( @m.transitions ).row_size
+        .must_equal 2
+      @m.simulation.flux_vector.row_size.must_equal 2
       # @m.plot_recording
     end
   end
