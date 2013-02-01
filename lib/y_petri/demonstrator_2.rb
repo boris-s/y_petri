@@ -153,6 +153,17 @@ TMPK_DeoxyTMP_DeoxyTDP = Transition s: { DeoxyTMP: -1, TMPK: 0, DeoxyT23P: 1 },
                   ci1 => 250.0.µM, ci2 => 30.0.µM, ci3 => 750.µM, ci4 => 117.µM )
           }
 
+# TMPK_DeoxyTMP_DeoxyTDP = SR_transition DeoxyTMP: -1, TMPK: 0, DeoxyT23P: 1 do
+#   MMi.( DeoxyTMP, TMPK_a, TMPK_m, TMPK, TMPK_DeoxyTMP_Km,
+#         ADP => 250.0.µM,
+#         ( DeoxyT23P * ADP / ( ADP + ATP ) ) => 30.0.µM,
+#         ( DeoxyT23P * ATP / ( ADP + ATP ) ) => 750.µM,
+#         DeoxyGMP => 117.µM )
+# end
+
+# RubyVM::InstructionSequence.disassemble( block )
+# # and then process it to reconstruct the domain and construct the real closure
+
 
 # === Simulation execution
 

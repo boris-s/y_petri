@@ -19,7 +19,7 @@ ATP = Place m!: 3152.0
 Deoxycytidine = Place( m!: 0.5 )
 DeoxyCTP = Place( m!: 1.0 )
 DeoxyGMP = Place( m!: 1.0 )
-UMP_UDP_pool = Place( m!: 2737.0 )
+U12P = Place( m!: 2737.0 )
 DeoxyUMP_DeoxyUDP_pool = Place( m!: 0.0 )
 DeoxyTMP = Place( m!: 3.3 )
 DeoxyTDP_DeoxyTTP_pool = Place( m!: 5.0 )
@@ -45,7 +45,7 @@ TMPK_a = 0.83
 clamp AMP: 8695.0, ADP: 6521.0, ATP: 3152.0
 clamp Deoxycytidine: 0.5, DeoxyCTP: 1.0, DeoxyGMP: 1.0
 clamp Thymidine: 0.5
-clamp UMP_UDP_pool: 2737.0
+clamp U12P: 2737.0
 
 # functions
 Vmax_per_minute_per_enzyme_molecule =
@@ -126,12 +126,12 @@ Transition name: :TYMS_DeoxyUMP_DeoxyTMP,
                         MMi.( rc, TYMS_a, TYMS_kDa, e, TYMS_DeoxyUMP_Km )
                       }
 Transition name: :RNR_UDP_DeoxyUDP,
-           domain: [ UMP_UDP_pool,
+           domain: [ U12P,
                      RNR, DeoxyUMP_DeoxyUDP_pool,
                      AMP,
                      ADP,
                      ATP ],
-              stoichiometry: { UMP_UDP_pool: -1,
+              stoichiometry: { U12P: -1,
                                DeoxyUMP_DeoxyUDP_pool: 1 },
               rate: proc { |pool, e, master1, master2, master3|
                            rc = pool * master2 / ( master1 + master2 )

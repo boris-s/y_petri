@@ -1168,7 +1168,8 @@ module YPetri
     # 
     def reset!
       puts "Starting #reset! method" if DEBUG
-      zero_vector = Matrix.column_vector( places.map { SY::ZERO rescue 0 } ) # Float zeros
+      # zero_vector = Matrix.column_vector( places.map { SY::ZERO rescue 0 } ) # Float zeros
+      zero_vector = Matrix.column_vector( places.map { 0 } ) # Float zeros
       puts "zero vector prepared" if DEBUG
       mv_clamped = compute_marking_vector_of_clamped_places
       puts "#reset! obtained marking vector of clamped places" if DEBUG
