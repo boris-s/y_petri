@@ -32,7 +32,7 @@ require_relative 'y_petri/manipulator'
 # Float (continuous) - the decision should be on the simulator.
 # 
 module YPetri
-  DEBUG = false
+  DEBUG = true
 
   DEFAULT_SIMULATION_SETTINGS = lambda do
     { step_size: 0.1,

@@ -220,7 +220,7 @@ module YPetri
 end # module YPetri
 
 # Speaking about the simulation method, in general, each element of a net
-# can, in general, be simulated using a different method. From the pragmatic
+# can, in general, be simulated using a different method. From the pragmaticp
 # point of view, however, many good simulation methods have been developed
 # for the ordinary differential equations of the form:
 #
