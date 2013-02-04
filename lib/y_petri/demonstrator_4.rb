@@ -21,25 +21,88 @@ set_sampling 120.s.in( :s )
 
 # === Places (all in µM)
 
-AMP = Place m!: 8695.0
-ADP = Place m!: 6521.0
-ATP = Place m!: 3152.0
-DeoxyCytidine = Place m!: 0.5
-DeoxyCTP = Place m!: 1.0
-DeoxyGMP = Place m!: 1.0
-U12P = Place m!: 2737.0
-DeoxyU12P = Place m!: 0.0
-DeoxyTMP = Place m!: 3.3
-DeoxyT23P = Place m!: 5.0
-Thymidine = Place m!: 0.5
-TK1 = Place m!: 100_000 / Pieces_per_µM
-TYMS = Place m!: 100_000 / Pieces_per_µM
-RNR = Place m!: 100_000 / Pieces_per_µM
-TMPK = Place m!: 100_000 / Pieces_per_µM
+AMP = Place m!: 82.0                     # traut1994pcp
+ADP = Place m!: 137.0                    # traut1994pcp
+ATP = Place m!: 2102.0                   # traut1994pcp
+UTP = Place m!: 253.0                    # traut1994pcp
+UDP = Place m!: ADP.m / ATP.m * UTP.m
+UMP = Place m!: AMP.m / ATP.m * UTP.m
+GMP = Place m!: 32.0                     # traut1994pcp
 
-# === Molecular masses
+DeoxyATP = Place m!: 2.4                 # traut1994pcp
+DeoxyADP = Place m!: ADP.m / ATP.m * DeoxyATP.m
+DeoxyAMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
 
+DeoxyCytidine = Place m!: 0.7            # traut1994pcp
+DeoxyCMP = Place m!: 1.9                 # traut1994pcp
+DeoxyCDP = Place m!: 0.1                 # traut1994pcp
+DeoxyCTP = Place m!: 4.5                 # traut1994pcp
+
+DeoxyGTP = Place m!: 2.7                 # traut1994pcp
+DeoxyGMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
+
+DeoxyUridine = Place m!: 0.6             # traut1994pcp
+DeoxyUMP = Place m!: 2.70                # traut1994pcp
+DeoxyUDP = Place m!: 0.5                 # traut1994pcp
+DeoxyUTP = Place m!: 0.7                 # traut1994pcp
+
+DeoxyThymidine = Place m!: 0.5           # traut1994pcp
+DeoxyTMP = Place m!: 0.0                 # in situ
+DeoxyTDP = Place m!: 2.4                 # traut1994pcp
+DeoxyTTP = Place m!: 17.0                # traut1994pcp
+
+# === Empirical places (in arbitrary units)
+
+A_phase = Place m!: 1                    # in situ
+S_phase = Place m!: 1                    # in situ
+Cdc20A = Place m!: 0.0                   # in situ
+
+# === Enzymes
+
+# ==== Thymidine kinase, cytoplasmic (TK1)
+
+# Molecular weight:
 TK1_m = 24.8.kDa
+TK1_a = 9500.mol.min⁻¹.mg⁻¹
+
+TK1 = Place m!: 0                        # in situ; total unphosphorylated TK1
+TK1_4mer_Kd = 0.03                       # in situ
+TK1di = Place m!: 0                      # TK1 in the dimer form, unphosphorylated
+TK1di_P = Place m!: 0                    # in situ; TK1 in the dimer form, phosphorylated
+TK1tetra = Place m!: 0                   # TK1 in the tetramer form (phosphorylation prevents 4merization)
+
+# Assignment transition keeping TK1_di level based on total TK1 monomer
+Transition name: :TK1_di_ϝ,
+           assignment: true,
+           domain: TK1,
+           codomain: TK1di,
+           action: lambda { |monomer|    # solution of a quadratic equation for dimer / tetramer balance
+                     TK1_4mer_Kd / 4 * ( ( 1 + 4 / TK1_4mer_Kd * monomer ) ** 0.5 - 1 )
+                   }
+
+# Assignment transition keeping TK1_tetra level based on total TK1 tetramer
+Transition name: :TK1_tetra_ϝ,
+           assignment: true,
+           domain: [ TK1, TK1di ],
+           codomain: TK1tetra,
+           action: lambda { |monomer, dimer| monomer / 4 - dimer / 2 } # subtraction
+
+# Dissociation constants [µM]
+
+TK1di_Kd_ATP = 4.7                       # barroso2003tbd
+TK1di_Kd_dT = 15.0                       # eriksson2002sfc
+
+# FIXME - THIS IS HOW FAR I CAME
+
+# Inhibition constant of dTTP
+TK1di_Kd_dTTP
+# Hill coefficient of TK1 dimer
+TK1di_hill
+# k_cat of TK1 dimer
+TK1_k_cat = ( TK1_a * TK1_m ).( SY::Amount / SY::Time ).in :s⁻¹
+TK1_k_cat = 3.80                        # 
+
+
 TYMS_m = 66.0.kDa
 RNR_m = 140.0.kDa
 TMPK_m = 50.0.kDa
