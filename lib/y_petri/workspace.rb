@@ -270,11 +270,11 @@ class YPetri::Workspace
     msg = "Missing clamp and/or initial marking for %s!"
     case missing.size
     when 0 then im_hash = im_hash.merge im_complement # everything's OK
-    when 1 then raise TE, msg % missing.keys[0]
-    when 2 then raise TE, msg % "#{missing.keys[0]} and #{missing.keys[1]}"
-    when 3 then raise TE, msg %
+    when 1 then raise TErr, msg % missing.keys[0]
+    when 2 then raise TErr, msg % "#{missing.keys[0]} and #{missing.keys[1]}"
+    when 3 then raise TErr, msg %
         "#{missing.keys[0]}, #{missing.keys[1]} and #{missing.keys[2]}"
-    else raise TE, msg % ( "#{missing.keys[0]}, #{missing.keys[1]} " +
+    else raise TErr, msg % ( "#{missing.keys[0]}, #{missing.keys[1]} " +
                            "and #{missing.size - 2} other places" )
     end
     @simulations[ key ] =
