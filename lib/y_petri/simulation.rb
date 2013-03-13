@@ -1083,7 +1083,7 @@ class YPetri::Simulation
       c2f = Matrix.correspondence_matrix( t.codomain, free_places )
       zero_vector = Matrix.column_vector( places.map { 0 } )
       probe = Matrix.column_vector( t.codomain.size.times.map { |a| a + 1 } )
-      result = ( F2A() * c2f * probe ).map { |n| n == 0 ? nil : n }
+      result = ( F2A() * c2f * probe ).column_to_a.map { |n| n == 0 ? nil : n }
       assignment_addresses = probe.column_to_a.map { |i| result.index i }
       lambda do
         puts "result is #{result}"
