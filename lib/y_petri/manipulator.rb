@@ -486,7 +486,7 @@ class YPetri::Manipulator
     # Time axis
     ᴛ = simulation.target_time
     # Gnuplot call
-    gnuplot( ᴛ, feature_labels, feature_time_series )
+    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
   end
 
   private
