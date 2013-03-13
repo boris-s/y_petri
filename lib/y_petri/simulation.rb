@@ -160,8 +160,8 @@ class YPetri::Simulation
     oo = args.extract_options!
     # TODO: acceptable options: :m, :ᴍ
     m = oo[:m]
-    duplicate_sim = self.dup
-    duplicate_sim.instance_variable_set :@marking, Matrix.column_vector( m )
+    duplicate = self.dup
+    duplicate.instance_variable_set :@marking, Matrix.column_vector( m )
     return duplicate
   end
 
