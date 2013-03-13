@@ -491,6 +491,10 @@ class YPetri::Manipulator
     gnuplot( ᴛ, feature_labels, feature_time_series ) # call gnuplot
   end
 
+  private
+
+  # Gnuplots things.
+  # 
   def gnuplot( time, labels, time_series )
     labels = labels.dup
     time_series = time_series.dup
@@ -512,7 +516,6 @@ class YPetri::Manipulator
     end
   end
 
-  private
 
   # Helper method allowing more flexible access to the simulations stored in
   # the current workspace. A single, non-hash ordered argument is considered

@@ -118,6 +118,9 @@ module YPetri
             :new_timed_simulation,
             :run!,
             :print_recording,
+            :plot,
             :plot_recording,
+            :plot_flux,
+            :plot_all,
             to: :y_petri_manipulator )
 end
