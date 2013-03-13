@@ -161,10 +161,9 @@ class YPetri::Simulation
     # TODO: acceptable options: :m, :ᴍ
     m = oo[:m]
     duplicate_sim = self.dup
-    duplicate.instance_variable_set :@marking, Matrix.column_vector( m )
+    duplicate_sim.instance_variable_set :@marking, Matrix.column_vector( m )
     return duplicate
   end
-
 
   # Exposing @net.
   # 
