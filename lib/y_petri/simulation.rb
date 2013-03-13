@@ -575,6 +575,8 @@ class YPetri::Simulation
   # === Methods presenting other simulation assets
 
   # ==== Regarding ts transitions
+  # 
+  # (Their closures supply directly Δ codomain.)
 
   # Exposing Δ state closures for ts transitions.
   # 
@@ -589,6 +591,7 @@ class YPetri::Simulation
   end
 
   # ==== Regarding Tsr transitions
+  # 
   # (Their closures do take Δt as argument, but do not expose their ∂,
   # and they might not even have one.)
 
@@ -603,6 +606,7 @@ class YPetri::Simulation
   end
 
   # ==== Regarding tS transitions
+  # 
   # (These transitions are timeless, but stoichiometric. It means that their
   # closures do not output Δ state contribution directly, but instead they
   # output a single number, which is a transition action, and Δ state is then
@@ -641,6 +645,7 @@ class YPetri::Simulation
   end
 
   # ==== Regarding TSr transitions
+  # 
   # (Same as Tsr, but stoichiometric. That is, their closures do not return
   # Δ contribution, but transition's action, which is to be multiplied by
   # the its stoichiometry to obtain Δ contribution.)
@@ -683,6 +688,7 @@ class YPetri::Simulation
   end
 
   # ==== Regarding sR transitions
+  # 
   # (Whether nonstoichiometric or stoichiometric, transitions with rate
   # explicitly provide their contribution to the the state differential,
   # rather than just contribution to the Δ state.)
@@ -717,7 +723,8 @@ class YPetri::Simulation
   end
   alias Δ_euler_for_sR Δ_Euler_for_sR
 
-  # ==== Stoichiometric transitions with rate (SR_transitions)
+  # ==== Regarding SR_transitions
+  # 
   # (Whether nonstoichiometric or stoichiometric, transitions with rate
   # explicitly provide their contribution to the the state differential,
   # rather than just contribution to the Δ state.)
@@ -819,6 +826,16 @@ class YPetri::Simulation
     Δ_Euler_for_SR( Δt ).column( 0 ).to_a
   end
   alias Δ_euler_array_for_SR Δ_Euler_array_for_SR
+
+
+  # ==== Regarding A transitions
+  # 
+  # (Assignment transitions directly replace the values in their codomain
+  # places with their results.)
+
+  # Exposing assignment closures for A transitions.
+  #
+  attr_reader :assignment_closures_for_A
 
   # ==== Sparse stoichiometry vectors for transitions
 
