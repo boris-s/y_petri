@@ -441,6 +441,8 @@ class YPetri::Manipulator
     new_timed_simulation.run!
   end
 
+  # Write the recorded samples in a file (csv).
+  # 
   def print_recording( filename = nil )
     if filename.nil? then
       puts simulation.recording_csv_string
@@ -451,32 +453,56 @@ class YPetri::Manipulator
     end
   end
 
-  def plot_recording
-    # Get current simulation
-    return nil unless sim = @workspace.simulations.values[-1]
-    # Simulation time
-    ᴛ = simulation.target_time
-    # Decide about features to plot
-    feature_labels = sim.pp
-    feature_time_series = feature_labels
-      .map.with_index { |flabel, i|
-      sim.recording.map{ |key, val| [ key, val[i] ] }.transpose
-    }
-    gnuplot_recording( ᴛ, feature_labels, feature_time_series )
+  # Plot the recorded samples.
+  # 
+  def plot args
+    oo = args.extract_options!
+    case args.size
+    when 0 then plot_recording oo
+    when 1 then
+      plot_what = args[0]
+      case plot_what
+      when :recording then plot_recording oo
+      when :flux then plot_flux oo
+      when :all then plot_all oo
+      else raise "Unknown y_petri plot type: #{plot_what} !!!" end
+    else raise "Too many ordered arguments!" end
   end
 
-  def gnuplot_recording( target_time, feature_labels, feature_time_series )
-    time_series_labels = feature_labels.dup
-    time_series = feature_time_series.dup
+  # Plot the recorded samples (system state history).
+  # 
+  def plot_recording( options )
+    options.may_have :except
+    return nil unless sim = @workspace.simulations.values[-1] # sim. at point
+    # Decide about the features to plot.
+    if options.has? :except then
+      excluded_places = Array( options[:except] ).map &method( :place )
+      features = sim.places - excluded_places
+    else                             # all the simulation places
+      features = sim.places
+    end
+    # Decide about the feature labels.
+    feature_labels = features.map &:name
+    # Select a time series for each feature.
+    feature_time_series = feature_labels.map.with_index { |flabel, i|
+      sim.recording.map{ |key, val| [ key, val[i] ] }.transpose
+    }
+    ᴛ = simulation.target_time                        # plot time
+    gnuplot( ᴛ, feature_labels, feature_time_series ) # call gnuplot
+  end
+
+  def gnuplot( time, labels, time_series )
+    labels = labels.dup
+    time_series = time_series.dup
 
     Gnuplot.open do |gp|
       Gnuplot::Plot.new( gp ) do |plot|
-        plot.xrange "[-0:#{SY::Time.magnitude( target_time ).amount rescue target_time}]"
+        plot.xrange "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
         plot.title "Recording Plot"
         plot.ylabel "marking"
         plot.xlabel "time [s]"
 
-        time_series_labels.zip( time_series ).each { |label, series|
+        labels.zip( time_series ).each { |label, series|
           plot.data << Gnuplot::DataSet.new( series ) do |data_series|
             data_series.with = "linespoints"
             data_series.title = label

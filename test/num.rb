@@ -22,8 +22,8 @@ Pieces_per_µM = ( 1.µM * Cytoplasm_volume ).in( :unit )
 # ==========================================================================
 
 set_step 60.s.in( :s )
-set_target_time 20.min.in( :s )      # up to 5 days is interesting
-set_sampling 120.s.in( :s )
+set_target_time 24.h.in( :s )      # up to 5 days is interesting
+set_sampling 10.min.in( :s )
 set_simulation_method :Euler_with_timeless_transitions_firing_after_each_step
 
 # ==========================================================================
@@ -64,9 +64,57 @@ set_simulation_method :Euler_with_timeless_transitions_firing_after_each_step
 # === Empirical places (in arbitrary units)
 # ==========================================================================
 
-A_phase = Place m!: 1                    # in situ
-S_phase = Place m!: 1                    # in situ
-Cdc20A = Place m!: 0.0                   # in situ
+Timer = Place m!: 0
+Transition name: :Clock,
+           s: { Timer: 1 },
+           rate: 1e-6
+
+A_phase = Place m!: 0                    # in situ
+S_phase = Place m!: 0                    # in situ
+Cdc20A = Place m!: 1                   # in situ
+
+# ==========================================================================
+# === Empirical transitions
+# ==========================================================================
+
+S_phase_duration = 12.h.in :s
+
+A_phase_start = 3.h.in :s
+S_phase_start = 5.h.in :s
+S_phase_end = S_phase_start + S_phase_duration
+A_phase_end = S_phase_end
+Cdc20A_start = 23.h.in :s
+Cdc20A_end = 15.min.in :s
+
+Transition name: :A_phase_control,
+           assignment: true,
+           domain: Timer,
+           codomain: A_phase,
+           action: lambda { |t| t = t * 1e6
+                     if t > A_phase_end then 0
+                     elsif t > A_phase_start then 1
+                     else 0 end
+                   }
+
+Transition name: :S_phase_control,
+           assignment: true,
+           domain: Timer,
+           codomain: S_phase,
+           action: lambda { |t| t = t * 1e6
+                     if t > S_phase_end then 0
+                     elsif t > S_phase_start then 1
+                     else 0 end
+                   }
+
+Transition name: :Cdc20A,
+           assignment: true,
+           domain: Timer,
+           codomain: Cdc20A,
+           action: lambda { |t| t = t * 1e6
+                     if t > Cdc20A_start then 1
+                     elsif t > Cdc20A_end then 0
+                     else 1 end
+                   }
 
 # ==========================================================================
 # === Enzymes
@@ -116,12 +164,41 @@ Transition name: :TK1_di_ϝ,
                    }
 
 # Rate constant of TK1 synthesis:
-TK1_k_synth = 0.4.µM.h⁻¹.in "µM.s⁻¹"
+TK1_k_synth = 1.µM.h⁻¹.in "µM.s⁻¹"
 
 # TK1 synthesis:
 Transition name: :TK1_synthesis,
-           stoichiometry: { A_phase: 0, TK1: 1 },
-           rate: TK1_k_synth
+           domain: [ A_phase, S_phase ],
+           s: { TK1: 1 },
+           rate: lambda { |a_phase, s_phase|
+                   TK1_k_synth * [ a_phase - s_phase, 0 ].max
+                 }
+
+# Rate constant of TK1 phosphorylation:
+TK1_k_phosphoryl = ( 100.nM / 5.min / 500.nM ).in "s⁻¹"
+
+# TK1 phosphorylation:
+Transition name: :TK1_phosphorylation,
+           domain: [ A_phase, TK1di ],
+           stoichiometry: { TK1di: -1, TK1di_P: 1 },
+           rate: lambda { |a_phase, reactant|
+                   if a_phase then 0 else reactant * TK1_k_phosphoryl end
+                 }
+
+# Rate constant of TK1 degradation:
+TK1_k_degrad_base = ( 10.nM.h⁻¹ / 1.µM ).in "s⁻¹"
+TK1_k_degrad_Cdc20A = ( 100.nM / 10.min / 1.µM / 1 ).in "s⁻¹"
+
+TK1_degrad_closure = lambda { |cdc, tk1| 
+  ( TK1_k_degrad_base + cdc * TK1_k_degrad_Cdc20A ) * tk1
+}
+
+TK1_degradation = Transition domain: [ Cdc20A, TK1 ],
+                             s: { TK1: -1 },
+                             rate: TK1_degrad_closure
+TK1di_P_degradation = Transition domain: [ Cdc20A, TK1di_P ],
+                                 s: { TK1di_P: -1 },
+                                 rate: TK1_degrad_closure
 
 # Reactants - dissociation (Michaelis) constants [µM].
 TK1di_Kd_ATP = 4.7                       # Barroso2003tbd
@@ -137,6 +214,8 @@ TK1di_Kd_dT = 15.0                       # Eriksson2002sfc
 
 # dATP - strong feedback inhibition
 TK1di_Ki_dTTP = 0.5
+
+=begin
 
 # Hill coefficient of TK1 dimer
 TK1di_hill
@@ -205,7 +284,6 @@ TMPK_DeoxyTMP_Km = 12.0
 
 # === DNA synthesis speed
 
-S_phase_duration = 12.h
 Genome_size = 3_000_000_000          # of bases
 DNA_creation_speed = Genome_size / S_phase_duration.in( :s ) # in base.s⁻¹
 
@@ -250,6 +328,8 @@ Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
              MMi.( reactant, TMPK_DeoxyTMP_Km, enzyme, TMPK_k_cat )
            }
 
-# # execution
+=end
+
+# # # execution
 run!
-plot_recording
+plot except: :Timer

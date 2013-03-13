@@ -13,7 +13,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
   DEFAULT_SIMULATION_METHOD = :Euler
 
   # ==== Exposing time-related global simulation settings
-  
+
   # Simulation parameter: :initial_time.
   # 
   attr_reader :initial_time
