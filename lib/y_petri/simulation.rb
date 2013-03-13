@@ -1093,7 +1093,7 @@ class YPetri::Simulation
         puts "nils are #{nils}"
         assign = assignment_addresses.zip( act )
         puts "assign is #{assign}"
-        assign = assign.each_with_object nils.dup do |α, pair| α[pair[0]] = pair[1] end
+        assign = assign.each_with_object nils.dup do |pair, o| o[pair[0]] = pair[1] end
         puts "assign is #{assign}"
         @marking_vector.map { |marking|
           order = assign.shift
