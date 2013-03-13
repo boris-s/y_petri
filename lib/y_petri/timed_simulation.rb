@@ -98,7 +98,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
   def at *args
     oo = args.extract_options!
     duplicate = super *args, oo
-    duplicate.instance_variable_set :@time, oo[:t]
+    duplicate.set_time oo[:t]
     return duplicate
   end
 
@@ -240,6 +240,10 @@ class YPetri::TimedSimulation < YPetri::Simulation
 
   def update_time! Δt=step_size
     @time += Δt
+  end
+
+  def set_time t
+    @time = t
   end
 end # class YPetri::TimedSimulation
 

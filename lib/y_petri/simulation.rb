@@ -166,8 +166,8 @@ class YPetri::Simulation
                         place_clamps: @place_clamps,
                         initial_marking: @initial_marking
                       }.update( simulation_settings ) )
-    duplicate.instance_variable_set :@recording, recording
-    duplicate.instance_variable_set :@marking, Matrix.column_vector( m )
+    duplicate.set_recording recording
+    duplicate.set_marking m
     return duplicate
   end
 
@@ -1121,6 +1121,18 @@ class YPetri::Simulation
         }
       end
     } # map
+  end
+
+  # Private method for resetting marking.
+  # 
+  def set_marking m_array
+    @marking = Matrix.column_vector( m_array )
+  end
+
+  # Private method for resetting recording.
+  # 
+  def set_recording rec
+    @recording = Hash rec
   end
 
   # Place, Transition, Net class
