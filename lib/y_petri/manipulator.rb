@@ -475,16 +475,11 @@ class YPetri::Manipulator
     options.may_have :except
     return nil unless sim = @workspace.simulations.values[-1] # sim. at point
     # Decide about the features to plot.
-    if options.has? :except then
-      excluded_places = Array( options[:except] ).map &method( :place )
-      features = sim.places - excluded_places
-    else                             # all the simulation places
-      features = sim.places
-    end
-    # Decide about the feature labels.
-    feature_labels = features.map &:name
+    feature_labels = if options.has? :except then 
+                       sim.pp - Array( options[:except] ).map { |x| sim.p x }
+                     else sim.pp end # all places
     # Select a time series for each feature.
-    feature_time_series = feature_labels.map.with_index { |flabel, i|
+    feature_time_series = feature_labels.map.with_index { |ɴ, i|
       sim.recording.map{ |key, val| [ key, val[i] ] }.transpose
     }
     ᴛ = simulation.target_time                        # plot time
@@ -515,7 +510,6 @@ class YPetri::Manipulator
       end
     end
   end
-
 
   # Helper method allowing more flexible access to the simulations stored in
   # the current workspace. A single, non-hash ordered argument is considered

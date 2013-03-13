@@ -67,7 +67,7 @@ set_simulation_method :Euler_with_timeless_transitions_firing_after_each_step
 Timer = Place m!: 0
 Transition name: :Clock,
            s: { Timer: 1 },
-           rate: 1e-6
+           rate: 1
 
 A_phase = Place m!: 0                    # in situ
 S_phase = Place m!: 0                    # in situ
@@ -90,7 +90,7 @@ Transition name: :A_phase_control,
            assignment: true,
            domain: Timer,
            codomain: A_phase,
-           action: lambda { |t| t = t * 1e6
+           action: lambda { |t|
                      if t > A_phase_end then 0
                      elsif t > A_phase_start then 1
                      else 0 end
@@ -100,7 +100,7 @@ Transition name: :S_phase_control,
            assignment: true,
            domain: Timer,
            codomain: S_phase,
-           action: lambda { |t| t = t * 1e6
+           action: lambda { |t|
                      if t > S_phase_end then 0
                      elsif t > S_phase_start then 1
                      else 0 end
@@ -110,7 +110,7 @@ Transition name: :Cdc20A,
            assignment: true,
            domain: Timer,
            codomain: Cdc20A,
-           action: lambda { |t| t = t * 1e6
+           action: lambda { |t|
                      if t > Cdc20A_start then 1
                      elsif t > Cdc20A_end then 0
                      else 1 end
