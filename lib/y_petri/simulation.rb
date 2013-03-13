@@ -1087,6 +1087,8 @@ class YPetri::Simulation
       assignment_addresses = probe.map { |i| result.index i }
       lambda do
         act = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
+        puts "assignment addresses are #{assignment_addresses}"
+        puts "act is #{act}"
         assign = assignment_addresses.zip( act ).reduce nils do |α, pair|
           address, action = pair
           α[address] = action
