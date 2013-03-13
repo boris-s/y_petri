@@ -472,18 +472,21 @@ class YPetri::Manipulator
   # Plot the recorded samples (system state history).
   # 
   def plot_recording( options )
-    options.may_have :except
-    return nil unless sim = @workspace.simulations.values[-1] # sim. at point
+    excluded = Array options[:except]
+    return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide about the features to plot.
-    feature_labels = if options.has? :except then 
-                       sim.pp - Array( options[:except] ).map { |x| sim.p x }
-                     else sim.pp end # all places
+    features = excluded.each_with_object sim.places.dup do |x, α|
+      i = α.index x
+      if i then α[i] = nil end
+    end
     # Select a time series for each feature.
-    feature_time_series = feature_labels.map.with_index { |ɴ, i|
-      sim.recording.map{ |key, val| [ key, val[i] ] }.transpose
+    time_series = features.map.with_index { |feature, i|
+      feature and sim.recording.map{ |key, val| [ key, val[i] ] }.transpose
     }
-    ᴛ = simulation.target_time                        # plot time
-    gnuplot( ᴛ, feature_labels, feature_time_series ) # call gnuplot
+    # Time axis
+    ᴛ = simulation.target_time
+    # Gnuplot call
+    gnuplot( ᴛ, feature_labels, feature_time_series )
   end
 
   private
