@@ -137,10 +137,12 @@ class YPetri::TimedSimulation < YPetri::Simulation
   end
   alias euler_step! Euler_step!
 
-  # Fires timeless transitions once. Time and timed transitions are not affected.
+  # Fires timeless transitions once. Time and timed transitions are not
+  # affected.
   # 
   def timeless_transitions_all_fire!
     update_marking! Δ_if_tS_fire_once + Δ_if_ts_fire_once
+    assignment_transitions_all_fire!
   end
   alias t_all_fire! timeless_transitions_all_fire!
 

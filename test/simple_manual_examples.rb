@@ -16,7 +16,13 @@ C = Place m!: 0
 
 Transition name: :B_disappearing,
            s: { B: -1 },
-           action: lambda { |m| 1 if m >= 1 }
+           action: lambda { |m|  m >= 1 ? 1 : 0 }
+
+Transition name: :C_held_at_half_B,
+           assignment: true,
+           domain: :B,
+           codomain: :C,
+           action: lambda { |x| x / 2 }
 
 run!
 plot_recording

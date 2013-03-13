@@ -139,6 +139,8 @@ class YPetri::Simulation
     @rate_closures_for_sR = create_rate_closures_for_sR
     @rate_closures_for_SR = create_rate_closures_for_SR
 
+    @assignment_closures_for_A = create_action_closures_for_A
+
     @zero_ᴍ = Matrix.zero( free_places.size, 1 )
 
     puts "other assets set up, about to reset" if YPetri::DEBUG
@@ -637,7 +639,6 @@ class YPetri::Simulation
   def Δ_if_tS_fire_once
     S_for_tS() * action_vector_for_tS
   end
-  alias Δ_if_tS_fire_once Δ_if_tS_fire_once
 
   # ==== Regarding TSr transitions
   # (Same as Tsr, but stoichiometric. That is, their closures do not return
@@ -998,6 +999,15 @@ class YPetri::Simulation
     @marking_vector += F2A() * Δ_free_places
   end
 
+  # Fires all assignment transitions once.
+  # 
+  def assignment_transitions_all_fire!
+    assignment_closures_for_A.each do |closure|
+      @marking_vector = closure.call # TODO: This offers better algorithm.
+    end
+  end
+  alias A_all_fire! assignment_transitions_all_fire!
+
   # ----------------------------------------------------------------------
   # Methods to create other instance assets upon initialization.
   # These instance assets are created at the beginning, so the work
@@ -1047,6 +1057,29 @@ class YPetri::Simulation
       puts "Marking is #{pp :marking rescue nil}" if YPetri::DEBUG
       λ { t.rate_closure.( *( p2d * marking_vector ).column_to_a ) }
     }
+  end
+
+  def create_asignment_closures_for_A
+    nils = places.map { nil }
+    A_transitions().map { |t|
+      p2d = Matrix.correspondence_matrix( places, t.domain )
+      c2f = Matrix.correspondence_matrix( t.codomain, free_places )
+      zero_vector = Matrix.column_vector( places.map { 0 } )
+      probe = Matrix.column_vector( t.codomain.size.times.map { |a| a + 1 } )
+      result = ( F2A() * c2f * probe ).map { |n| n == 0 ? nil : n }
+      assignment_addresses = probe.map { |i| result.index i }
+      lambda do
+        act = t.action_closure.( *( p2d * marking_vector ).column_to_a )
+        assign = assignment_addresses.zip( act ).reduce nils do |α, pair|
+          address, action = pair
+          α[address] = action
+        end
+        @marking_vector.map { |n|
+          order = assign.shift
+          order ? n : order
+        }
+      end
+    } # map
   end
 
   # Place, Transition, Net class
