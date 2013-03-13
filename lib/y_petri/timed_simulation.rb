@@ -98,7 +98,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
   def at *args
     oo = args.extract_options!
     duplicate = super *args, oo
-    duplicate.set_time oo[:t]
+    duplicate.send :set_time, oo[:t]
     return duplicate
   end
 

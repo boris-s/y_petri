@@ -166,8 +166,8 @@ class YPetri::Simulation
                         place_clamps: @place_clamps,
                         initial_marking: @initial_marking
                       }.update( simulation_settings ) )
-    duplicate.set_recording recording
-    duplicate.set_marking m
+    duplicate.send :set_recording, recording
+    duplicate.seng :set_marking, m
     return duplicate
   end
 
