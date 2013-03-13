@@ -455,7 +455,7 @@ class YPetri::Manipulator
 
   # Plot the recorded samples.
   # 
-  def plot args
+  def plot *args
     oo = args.extract_options!
     case args.size
     when 0 then plot_recording oo
