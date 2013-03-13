@@ -167,7 +167,7 @@ class YPetri::Simulation
                         initial_marking: @initial_marking
                       }.update( simulation_settings ) )
     duplicate.send :set_recording, recording
-    duplicate.seng :set_marking, m
+    duplicate.send :set_marking, m
     return duplicate
   end
 
