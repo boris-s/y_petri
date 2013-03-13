@@ -14,8 +14,16 @@ class YPetri::Simulation
   SAMPLING_DECIMAL_PLACES = 5
   SIMULATION_METHODS =
     [
-      [:Euler]
+      [:pseudo_Euler] # pseudo-timed simulation (like in Cell Illustrator)
     ]
+  DEFAULT_SIMULATION_METHOD = :pseudo_Euler
+
+  # Default simulation method (accesses the constant DEFAULT_SIMULATION_METHOD
+  # in the receiver's class).
+  # 
+  def default_simulation_method
+    self.class.const_get :DEFAULT_SIMULATION_METHOD
+  end
 
   # Exposing @recording
   # 
@@ -52,11 +60,11 @@ class YPetri::Simulation
     args.may_have :initial_marking, syn!: :initial_marking_vector
 
     # ==== Simulation method
-
-    @method = args[:method]
+    # 
+    @method = args[:method] || default_simulation_method()
 
     # ==== Net
-
+    # 
     @net = args[:net].dup # @immutable within the instance
     @places = @net.places.dup
     @transitions = @net.transitions.dup
@@ -71,7 +79,7 @@ class YPetri::Simulation
     puts "setup of :net mental image complete" if YPetri::DEBUG
 
     # ==== Simulation parameters
-
+    # 
     # A simulation distinguishes between free and clamped places.  For free
     # places, initial value has to be specified. For clamped places, clamps
     # have to be specified. Both initial values and clamps are expected as

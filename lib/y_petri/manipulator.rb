@@ -422,7 +422,6 @@ class YPetri::Manipulator
   # settings collection).
   # 
   def set_simulation_method m
-    puts 'hello'
     ssc.update method: m
   end
 

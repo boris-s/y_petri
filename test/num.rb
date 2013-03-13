@@ -96,22 +96,23 @@ TK1di_P = Place m!: 0
 # TK1 tetramer.
 TK1tetra = Place m!: 0
 
-# Assignment transition that computes TK1_di from total TK1 monomer.
-Transition name: :TK1_di_ϝ,
-           assignment: true,
-           domain: TK1,              # total TK1 monomer
-           codomain: TK1di,          # TK1 unphosphorylated dimer
-           action: lambda { |monomer|    # quadratic equation for dimer / tetramer balance
-                     TK1_4mer_Kd / 4 * ( ( 1 + 4 / TK1_4mer_Kd * monomer ) ** 0.5 - 1 )
-                   }
-
 # Assignment transition that computes TK1_tetra.
 Transition name: :TK1_tetra_ϝ,
            assignment: true,
-           domain: [ TK1, TK1di ],   # total monomer, unphosphorylated dimer
+           domain: TK1,              # total monomer, unphosphorylated dimer
            codomain: TK1tetra,       # tetramer
-           action: lambda { |monomer, dimer|        # simple subtraction
-                     monomer / 4 - dimer / 2
+           action: lambda { |monomer| # from quad. eq. 2mer / 4mer balance
+                     r = monomer / TK1_4mer_Kd
+                     TK1_4mer_Kd / 4 * ( r + 0.5 - ( r + 0.25 ) ** 0.5 )
+                   }
+
+# Assignment transition that computes TK1_di from total TK1 monomer.
+Transition name: :TK1_di_ϝ,
+           assignment: true,
+           domain: [ TK1, TK1tetra ],              # total TK1 monomer
+           codomain: TK1di,          # TK1 unphosphorylated dimer
+           action: lambda { |monomer, tetramer|
+                     monomer / 2 - tetramer * 2
                    }
 
 # Rate constant of TK1 synthesis:
