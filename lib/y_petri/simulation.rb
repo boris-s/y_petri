@@ -1086,6 +1086,7 @@ class YPetri::Simulation
       result = ( F2A() * c2f * probe ).map { |n| n == 0 ? nil : n }
       assignment_addresses = probe.column_to_a.map { |i| result.index i }
       lambda do
+        puts "result is #{result}"
         act = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
         puts "assignment addresses are #{assignment_addresses}"
         puts "act is #{act}"
