@@ -16,7 +16,6 @@ include Pyper if require 'pyper'
 describe ::YPetri::Place do
   before do
     skip "to speed up testing"
-      lambda do
     @pç = pç = Class.new ::YPetri::Place
     @p = pç.new! default_marking: 3.2,
                  marking: 1.1,
