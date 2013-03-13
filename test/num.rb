@@ -83,7 +83,7 @@ A_phase_start = 3.h.in :s
 S_phase_start = 5.h.in :s
 S_phase_end = S_phase_start + S_phase_duration
 A_phase_end = S_phase_end
-Cdc20A_start = 23.h.in :s
+Cdc20A_start = 22.h.in :s
 Cdc20A_end = 15.min.in :s
 
 Transition name: :A_phase_control,
@@ -133,7 +133,7 @@ TK1_a = 9500.mol.min⁻¹.mg⁻¹
 TK1 = Place m!: 0
 
 # Dissociation constant dimer >> tetramer assembly.
-TK1_4mer_Kd = 0.03
+TK1_4mer_Kd = 0.1
 
 # TK1 dimer, unphosphorylated. Can tetramerize.
 TK1di = Place m!: 0
@@ -180,9 +180,9 @@ TK1_k_phosphoryl = ( 100.nM / 5.min / 500.nM ).in "s⁻¹"
 # TK1 phosphorylation:
 Transition name: :TK1_phosphorylation,
            domain: [ A_phase, TK1di ],
-           stoichiometry: { TK1di: -1, TK1di_P: 1 },
-           rate: lambda { |a_phase, reactant|
-                   if a_phase then 0 else reactant * TK1_k_phosphoryl end
+           stoichiometry: { TK1: -1, TK1di_P: 1 },
+           rate: lambda { |a_phase, tk1di|
+                   if a_phase > 0.5 then 0 else tk1di * TK1_k_phosphoryl end
                  }
 
 # Rate constant of TK1 degradation:

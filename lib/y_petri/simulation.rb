@@ -151,6 +151,21 @@ class YPetri::Simulation
     puts "reset complete" if YPetri::DEBUG
   end
 
+  # Allows to explore the system at different state / time, while leaving
+  # everything else as it was before. Accepts argument(s) telling it the
+  # system state of interest, and returns a simulation instance with the
+  # same parameters and settings as self, except for the different state.
+  # 
+  def at *args
+    oo = args.extract_options!
+    # TODO: acceptable options: :m, :ᴍ
+    m = oo[:m]
+    duplicate_sim = self.dup
+    duplicate.instance_variable_set :@marking, Matrix.column_vector( m )
+    return duplicate
+  end
+
+
   # Exposing @net.
   # 
   attr_reader :net
