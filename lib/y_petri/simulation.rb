@@ -32,7 +32,7 @@ class YPetri::Simulation
 
   # Simulation settings.
   # 
-  def settings; nil end
+  def settings; {} end
   alias :simulation_settings :settings
 
   def recording_csv_string
@@ -160,7 +160,13 @@ class YPetri::Simulation
     oo = args.extract_options!
     # TODO: acceptable options: :m, :ᴍ
     m = oo[:m]
-    duplicate = self.dup
+    duplicate =
+      self.class.new( { method: @method,
+                        net: @net,
+                        place_clamps: @place_clamps,
+                        initial_marking: @initial_marking
+                      }.update( simulation_settings ) )
+    duplicate.instance_variable_set :@recording, recording
     duplicate.instance_variable_set :@marking, Matrix.column_vector( m )
     return duplicate
   end
