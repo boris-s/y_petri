@@ -1084,7 +1084,7 @@ class YPetri::Simulation
       zero_vector = Matrix.column_vector( places.map { 0 } )
       probe = Matrix.column_vector( t.codomain.size.times.map { |a| a + 1 } )
       result = ( F2A() * c2f * probe ).map { |n| n == 0 ? nil : n }
-      assignment_addresses = probe.map { |i| result.index i }
+      assignment_addresses = probe.column_to_a.map { |i| result.index i }
       lambda do
         act = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
         puts "assignment addresses are #{assignment_addresses}"
