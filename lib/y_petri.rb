@@ -35,8 +35,8 @@ module YPetri
   DEBUG = false
 
   DEFAULT_SIMULATION_SETTINGS = lambda do
-    { step_size: 0.1,
-      sampling_period: 5,
+    { step_size: 0.02,
+      sampling_period: 2,
       target_time: 60 }
   end
 
@@ -114,6 +114,7 @@ module YPetri
             :set_step, :set_step_size,
             :set_time, :set_target_time,
             :set_sampling,
+            :set_simulation_method,
             :new_timed_simulation,
             :run!,
             :print_recording,

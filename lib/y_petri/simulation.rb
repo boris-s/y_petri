@@ -12,7 +12,11 @@
 #
 class YPetri::Simulation
   SAMPLING_DECIMAL_PLACES = 5
-    
+  SIMULATION_METHODS =
+    [
+      [:Euler]
+    ]
+
   # Exposing @recording
   # 
   attr_reader :recording
@@ -30,26 +34,30 @@ class YPetri::Simulation
     end        
   end
 
-  # Currently, a simlation is largely immutable. It means that the net,
-  # initial marking, clamps and simulation settings have to be supplied upon
-  # initialization, whereupon the simulation forms their "mental image",
-  # which does not change anymore, regardless of what happens to the
-  # original net and other objects. Required constructor parameters are
-  # :net, :place_clamps (alias :marking_clamps) and :initial_marking (alias
-  # :initial_marking_vector). (Simulation subclasses may require other
+  # Currently, a simulation instance is largely immutable. It means that
+  # the net, initial marking, clamps and simulation settings have to be
+  # supplied upon initialization, whereupon the simulation forms their
+  # "mental image", which does not change anymore, regardless of what happens
+  # to the original net and other objects. Required constructor parameters
+  # are :net, :place_clamps (alias :marking_clamps) and :initial_marking
+  # (alias :initial_marking_vector). (Simulation subclasses may require other
   # arguments in addition to the ones just named.)
   # 
-  def initialize *args
-    oo = args.extract_options!
+  def initialize args={}
     puts "starting to set up Simulation" if YPetri::DEBUG
 
-    oo.must_have :net do |o| o.class_complies? ::YPetri::Net end
-    oo.may_have :place_clamps, syn!: :marking_clamps
-    oo.may_have :initial_marking, syn!: :initial_marking_vector
+    args.may_have :method, syn!: :simulation_method
+    args.must_have :net do |o| o.class_complies? ::YPetri::Net end
+    args.may_have :place_clamps, syn!: :marking_clamps
+    args.may_have :initial_marking, syn!: :initial_marking_vector
+
+    # ==== Simulation method
+
+    @method = args[:method]
 
     # ==== Net
-    
-    @net = oo[:net].dup # @immutable within the instance
+
+    @net = args[:net].dup # @immutable within the instance
     @places = @net.places.dup
     @transitions = @net.transitions.dup
 
@@ -63,13 +71,13 @@ class YPetri::Simulation
     puts "setup of :net mental image complete" if YPetri::DEBUG
 
     # ==== Simulation parameters
-    
+
     # A simulation distinguishes between free and clamped places.  For free
     # places, initial value has to be specified. For clamped places, clamps
     # have to be specified. Both initial values and clamps are expected as
     # hash-type named parameters:
-    @place_clamps = ( oo[:place_clamps] || {} ).with_keys { |k| place k }
-    @initial_marking = ( oo[:initial_marking] || {} ).with_keys { |k| place k }
+    @place_clamps = ( args[:place_clamps] || {} ).with_keys { |k| place k }
+    @initial_marking = ( args[:initial_marking] || {} ).with_keys { |k| place k }
 
     # Enforce that keys in the hashes must be unique:
     @place_clamps.keys.aT_equal @place_clamps.keys.uniq

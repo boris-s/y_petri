@@ -2,109 +2,146 @@
 
 require 'y_petri'
 include YPetri
+
 require 'sy'
 require 'mathn'
 
+# ==========================================================================
 # === General assumptions
+# ==========================================================================
 
 Cell_diameter = 10.µm
-Cytoplasm_volume = ( 4 / 3 * Math::PI * ( Cell_diameter / 2 ) ** 3 ).( SY::LitreVolume )
+Cytoplasm_volume =
+  ( 4 / 3 * Math::PI * ( Cell_diameter / 2 ) ** 3 ).( SY::LitreVolume )
 
-# How many molecules per micromolar are there in an average cell.
+# Molecules per micromolar in average cell.
 Pieces_per_µM = ( 1.µM * Cytoplasm_volume ).in( :unit )
 
+# ==========================================================================
 # === Simulation settings
+# ==========================================================================
 
 set_step 60.s.in( :s )
 set_target_time 20.min.in( :s )      # up to 5 days is interesting
 set_sampling 120.s.in( :s )
+set_simulation_method :Euler_with_timeless_transitions_firing_after_each_step
 
+# ==========================================================================
 # === Places (all in µM)
+# ==========================================================================
 
-AMP = Place m!: 82.0                     # Traut1994pcp
-ADP = Place m!: 137.0                    # Traut1994pcp
-ATP = Place m!: 2102.0                   # Traut1994pcp
-UTP = Place m!: 253.0                    # Traut1994pcp
-UDP = Place m!: ADP.m / ATP.m * UTP.m
-UMP = Place m!: AMP.m / ATP.m * UTP.m
-GMP = Place m!: 32.0                     # Traut1994pcp
+# AMP = Place m!: 82.0                     # Traut1994pcp
+# ADP = Place m!: 137.0                    # Traut1994pcp
+# ATP = Place m!: 2102.0                   # Traut1994pcp
+# UTP = Place m!: 253.0                    # Traut1994pcp
+# UDP = Place m!: ADP.m / ATP.m * UTP.m
+# UMP = Place m!: AMP.m / ATP.m * UTP.m
+# GMP = Place m!: 32.0                     # Traut1994pcp
 
-DeoxyATP = Place m!: 2.4                 # Traut1994pcp
-DeoxyADP = Place m!: ADP.m / ATP.m * DeoxyATP.m
-DeoxyAMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
+# DeoxyATP = Place m!: 2.4                 # Traut1994pcp
+# DeoxyADP = Place m!: ADP.m / ATP.m * DeoxyATP.m
+# DeoxyAMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
 
-DeoxyCytidine = Place m!: 0.7            # Traut1994pcp
-DeoxyCMP = Place m!: 1.9                 # Traut1994pcp
-DeoxyCDP = Place m!: 0.1                 # Traut1994pcp
-DeoxyCTP = Place m!: 4.5                 # Traut1994pcp
+# DeoxyCytidine = Place m!: 0.7            # Traut1994pcp
+# DeoxyCMP = Place m!: 1.9                 # Traut1994pcp
+# DeoxyCDP = Place m!: 0.1                 # Traut1994pcp
+# DeoxyCTP = Place m!: 4.5                 # Traut1994pcp
 
-DeoxyGTP = Place m!: 2.7                 # Traut1994pcp
-DeoxyGMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
+# DeoxyGTP = Place m!: 2.7                 # Traut1994pcp
+# DeoxyGMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
 
-DeoxyUridine = Place m!: 0.6             # Traut1994pcp
-DeoxyUMP = Place m!: 2.70                # Traut1994pcp
-DeoxyUDP = Place m!: 0.5                 # Traut1994pcp
-DeoxyUTP = Place m!: 0.7                 # Traut1994pcp
+# DeoxyUridine = Place m!: 0.6             # Traut1994pcp
+# DeoxyUMP = Place m!: 2.70                # Traut1994pcp
+# DeoxyUDP = Place m!: 0.5                 # Traut1994pcp
+# DeoxyUTP = Place m!: 0.7                 # Traut1994pcp
 
-DeoxyThymidine = Place m!: 0.5           # Traut1994pcp
-DeoxyTMP = Place m!: 0.0                 # in situ
-DeoxyTDP = Place m!: 2.4                 # Traut1994pcp
-DeoxyTTP = Place m!: 17.0                # Traut1994pcp
+# DeoxyThymidine = Place m!: 0.5           # Traut1994pcp
+# DeoxyTMP = Place m!: 0.0                 # in situ
+# DeoxyTDP = Place m!: 2.4                 # Traut1994pcp
+# DeoxyTTP = Place m!: 17.0                # Traut1994pcp
 
+# ==========================================================================
 # === Empirical places (in arbitrary units)
+# ==========================================================================
 
 A_phase = Place m!: 1                    # in situ
 S_phase = Place m!: 1                    # in situ
 Cdc20A = Place m!: 0.0                   # in situ
 
+# ==========================================================================
 # === Enzymes
+# ==========================================================================
 
+# --------------------------------------------------------------------------
 # ==== Thymidine kinase, cytoplasmic (TK1)
 
-# Molecular weight:
+# Molecular weight
 TK1_m = 24.8.kDa
+
+# Specific activity
 TK1_a = 9500.mol.min⁻¹.mg⁻¹
 
-# Total unphosphorylated TK1 expressed in <em>monomer molarity</em>.
-TK1 = Place m!: 0                        # in situ
+# Total unphosphorylated TK1 as monomer molarity.
+TK1 = Place m!: 0
 
-TK1_4mer_Kd = 0.03                       # in situ
-TK1di = Place m!: 0                      # TK1 in the dimer form, unphosphorylated
-TK1di_P = Place m!: 0                    # in situ; TK1 in the dimer form, phosphorylated
-TK1tetra = Place m!: 0                   # TK1 in the tetramer form (phosphorylation prevents 4merization)
+# Dissociation constant dimer >> tetramer assembly.
+TK1_4mer_Kd = 0.03
 
-# Assignment transition keeping TK1_di level based on total TK1 monomer
+# TK1 dimer, unphosphorylated. Can tetramerize.
+TK1di = Place m!: 0
+
+# TK1 dimer, phosphorylated. Phosphorylation prevents tetramerization.
+TK1di_P = Place m!: 0
+
+# TK1 tetramer.
+TK1tetra = Place m!: 0
+
+# Assignment transition that computes TK1_di from total TK1 monomer.
 Transition name: :TK1_di_ϝ,
            assignment: true,
-           domain: TK1,
-           codomain: TK1di,
-           action: lambda { |monomer|    # solution of a quadratic equation for dimer / tetramer balance
+           domain: TK1,              # total TK1 monomer
+           codomain: TK1di,          # TK1 unphosphorylated dimer
+           action: lambda { |monomer|    # quadratic equation for dimer / tetramer balance
                      TK1_4mer_Kd / 4 * ( ( 1 + 4 / TK1_4mer_Kd * monomer ) ** 0.5 - 1 )
                    }
 
-# Assignment transition keeping TK1_tetra level based on total TK1 tetramer
+# Assignment transition that computes TK1_tetra.
 Transition name: :TK1_tetra_ϝ,
            assignment: true,
-           domain: [ TK1, TK1di ],
-           codomain: TK1tetra,
-           action: lambda { |monomer, dimer| # based on equation monomer = dimer * 2 + tetramer * 4
-             monomer / 4 - dimer / 2
-}
+           domain: [ TK1, TK1di ],   # total monomer, unphosphorylated dimer
+           codomain: TK1tetra,       # tetramer
+           action: lambda { |monomer, dimer|        # simple subtraction
+                     monomer / 4 - dimer / 2
+                   }
 
-# Dissociation constants [µM]
+# Rate constant of TK1 synthesis:
+TK1_k_synth = 0.4.µM.h⁻¹.in "µM.s⁻¹"
 
+# TK1 synthesis:
+Transition name: :TK1_synthesis,
+           stoichiometry: { A_phase: 0, TK1: 1 },
+           rate: TK1_k_synth
+
+# Reactants - dissociation (Michaelis) constants [µM].
 TK1di_Kd_ATP = 4.7                       # Barroso2003tbd
 TK1di_Kd_dT = 15.0                       # Eriksson2002sfc
 
-# FIXME - THIS IS HOW FAR I CAME
+# Competitive inhibitors - dissociation (inhibition) constants [µM].
+# * dCTP is an inhibitor. (Cheng1978tkf)
+# * dTTP, dCTP are both inhibitors of TK2. (Barroso2005kal)
+# * The most authoritative original publication on kinetic properties of TK1
+#   seems to be Lee1976hdk, if it is not the only one.
 
-# Inhibition constant of dTTP
-TK1di_Kd_dTTP
+# It is known that mitochondrial enzyme is inhibited by 
+
+# dATP - strong feedback inhibition
+TK1di_Ki_dTTP = 0.5
+
 # Hill coefficient of TK1 dimer
 TK1di_hill
 # k_cat of TK1 dimer
 TK1_k_cat = ( TK1_a * TK1_m ).( SY::Amount / SY::Time ).in :s⁻¹
-TK1_k_cat = 3.80                        # 
+TK1_k_cat = 3.80
 
 
 TYMS_m = 66.0.kDa
@@ -212,6 +249,6 @@ Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
              MMi.( reactant, TMPK_DeoxyTMP_Km, enzyme, TMPK_k_cat )
            }
 
-# execution
+# # execution
 run!
 plot_recording

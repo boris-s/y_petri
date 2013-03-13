@@ -220,30 +220,32 @@ class YPetri::Workspace
     @simulations[ key ]
   end
 
-  # Makes a new timed simulation. Named arguments are same as for
-  # TimedSimulation.new, but in addition, :name named argument can be
-  # supplied to serve a name for the simulation in this workspace.
+  # Makes a new timed simulation. Named arguments for this method are the same
+  # as for TimedSimulation#new, but in addition, :name can be supplied.
   # 
-  # To create a simulation, one must specify which clamp collection, initial
-  # marking collection, and which collection of simulation settings to use.
-  # A <em>clamp</em>, more specifically, <em>place clamp</em> or <em>marking
-  # clamp</em>, means a fixed value, at which the marking of a particular
-  # place is held. Similarly, <em>initial marking</em> of a place is the
-  # marking held by the place when the simulation starts. For example, having
-  # places named "P1".."P5", places "P1" and "P2" could be clamped to marking
-  # 4 and 5, written as follows:
+  # To create a simulation, simulation settings collection, initial marking
+  # collection, and clamp collection have to be specified. A <em>place clamp</em>,
+  # is a fixed value, at which the marking is held. Similarly, <em>initial
+  # marking</em> is the marking, which a free place receives at the beginning.
+  # Free places are those, that are not clamped. After initialization, marking
+  # of free places is allowed to change as the transition fire.
+  # 
+  # For example, having places :P1..:P5, clamped :P1, :P2 can be written as eg.:
   # 
   # * clamps = { P1: 4, P2: 5 }
   #
-  # Places "P3", "P4", "P5" are thus <em>free</em>, which means that their
-  # initial marking has to be specified (let's say, 1, 2 and 3):
+  # Places :P3, :P4, :P5 are <em>free</em>. Their initial marking has to be
+  # specified, which can be written as eg.:
   #
   # * initial_markings = { P3: 1, P4: 2, P5: 3 }
   #
-  # As for simulation settings, the 3 common parameters (at least for
-  # <tt>YPetri::TimedSimulation</tt> class) are <em>step_size</em>,
-  # <em>sampling_period</em>, <em>target_time</em>. For example, default
-  # simulation settings are:
+  # As for simulation settings, their exact nature depends on the simulation
+  # method. For default Euler method, there are 3 important parameters:
+  #   - <em>step_size</em>,
+  #   - <em>sampling_period</em>,
+  #   - <em>target_time</em>
+  #   
+  # For example, default simulation settings are:
   #
   # * default_ss = { step_size: 0.1, sampling_period: 5, target_time: 60 }
   # 

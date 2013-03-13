@@ -4,6 +4,13 @@
 # 
 class YPetri::TimedSimulation < YPetri::Simulation
   SAMPLING_TIME_DECIMAL_PLACES = SAMPLING_DECIMAL_PLACES
+  SIMULATION_METHODS =
+    [
+      [ :Euler ],
+      [ :Euler_with_timeless_transitions_firing_after_each_time_tick, :quasi_Euler ],
+      [ :Euler_with_timeless_transitions_firing_after_each_step, :pseudo_Euler ]
+    ]
+  DEFAULT_SIMULATION_METHOD = :Euler
 
   # ==== Exposing time-related global simulation settings
   
@@ -23,11 +30,11 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # 
   attr_accessor :target_time
   
-  # Reads sampling rate.
+  # Reads the sampling rate.
   # 
   def sampling_rate; 1 / sampling_period end
   
-  # Reads time range of the simulation.
+  # Reads the time range (initial_time..target_time) of the simulation.
   # 
   def time_range; initial_time..target_time end
   
@@ -39,14 +46,14 @@ class YPetri::TimedSimulation < YPetri::Simulation
       sampling_period: sampling_period,
       time_range: time_range }
   end
-  
+
   # Exposing time.
   # 
   attr_reader :time
 
   # def stop; end # LATER
   # def continue; end # LATER
-    
+
   # # Makes one Gillespie step
   # def gillespie_step
   #   t, dt = gillespie_select( @net.transitions )
@@ -69,44 +76,33 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # (alias :step), :sampling_period (alias :sampling), and :target_time
   # named arguments.
   # 
-  def initialize *aa
-    oo = aa.extract_options!
-    puts "starting TimedSimulation init" if YPetri::DEBUG
-    # LATER: possibility of transition clamps
-    # @simulation_method = :implicit_euler # hard-wired so far
-    # simulation step size
-    oo.must_have :step_size, syn!: :step
-    @step_size = oo.delete :step_size
-    oo.must_have :sampling_period, syn!: :sampling
-    @sampling_period = oo.delete :sampling_period
-    oo.may_have :target_time
-    @target_time = oo.delete :target_time
-    @initial_time = oo.delete( :initial_time ) || @target_time * 0 rescue 0
-    puts "about to call super" if YPetri::DEBUG
-    super *aa, oo
-    puts "successfuly set up a TimedSimulation" if YPetri::DEBUG
+  def initialize args={}
+    args.must_have :step_size, syn!: :step
+    args.must_have :sampling_period, syn!: :sampling
+    args.may_have :target_time
+    args.may_have :initial_time
+    @step_size = args.delete :step_size
+    @sampling_period = args.delete :sampling_period
+    @target_time = args.delete :target_time
+    @initial_time = args.delete( :initial_time ) ||
+      @target_time.nil? ? nil : @target_time.class.zero
+    super args
+  end
+  # LATER: transition clamps
+
+  # At the moment, near alias for #run_to_arget_time!
+  # 
+  def run! until_time=target_time
+    run_until_target_time! until_time
+    return self
   end
 
-    # At the moment, near alias for #run_to_arget_time!
-    # 
-    def run! target=target_time; run_until_target_time! target; return self end
-
-    # Scalar field gradient for free places.
-    # 
-    def gradient_for_free_places
-      puts "about to compute gradient for free places" if YPetri::DEBUG
-      fv = flux_vector_for_SR
-      puts "flux vector for SR transitions is \n#{Hash[tt.zip( fv.map &:to_s )]}" if YPetri::DEBUG
-      puts "List of free places is #{free_pp}" if YPetri::DEBUG
-      sm = S_for_SR()
-      puts "stoichiometry matrix for SR transitions is \n#{sm}" if YPetri::DEBUG
-      ∂ = sm * fv
-      puts "about to add the contribution of sR transitions" if YPetri::DEBUG
-      rslt = ∂ + ∂_sR
-      puts "returning #{rslt}" if YPetri::DEBUG
-      rslt
-    end
-    alias ∂ gradient_for_free_places
+  # Scalar field gradient for free places.
+  # 
+  def gradient_for_free_places
+    S_for_SR() * flux_vector_for_SR + ∂_sR # SR gradient + sR gradient
+  end
+  alias ∂ gradient_for_free_places
 
   # Scalar field gradient for all places.
   # 
@@ -115,20 +111,16 @@ class YPetri::TimedSimulation < YPetri::Simulation
   end
   alias gradient gradient_for_all_places
 
-  # Δ state for free places that would happen by a single Euler step Δt.
+  # Δ state of free places that would happen by a single Euler step Δt.
   # 
   def Δ_Euler_for_free_places( Δt=step_size )
-    puts "∂ for free places is #{∂}" if YPetri::DEBUG
+    # Here, ∂ represents all R transitions, to which TSr and Tsr are added:
     ∂ * Δt + Δ_for_TSr( Δt ) + Δ_for_Tsr( Δt )
-    # Here, ∂ already includes transitions with rate. The remaining 2 terms
-    # represent Tr transitions. As for the t transitions, it is imaginable
-    # that they would fire eg. once per time unit (as in CI), but that would
-    # already not be Euler, but another method.
   end
   alias Δ_euler_for_free_places Δ_Euler_for_free_places
   alias ΔE Δ_Euler_for_free_places
 
-  # Δ state for all places that would happen by a single Euler step Δt.
+  # Δ state of all places that would happen by a single Euler step Δt.
   # 
   def Δ_Euler_for_all_places( Δt=step_size )
     F2A() * ΔE( Δt )
@@ -136,22 +128,43 @@ class YPetri::TimedSimulation < YPetri::Simulation
   alias Δ_euler_for_all_places Δ_Euler_for_all_places
   alias Δ_Euler Δ_Euler_for_all_places
 
-  # Steps once, using implicit Euler on whole system (ie. no mysode). Custom
-  # step length will be used, if given as an argument to the function.
+  # Makes one Euler step with T transitions. Timeless transitions are not
+  # affected.
   # 
   def Euler_step!( Δt=@step_size ) # implicit Euler method
     update_marking! Δ_Euler_for_free_places( Δt )
     update_time! Δt
-    note_state_change!
   end
   alias euler_step! Euler_step!
-  alias E! Euler_step!
+
+  # Fires timeless transitions once. Time and timed transitions are not affected.
+  # 
+  def timeless_transitions_all_fire!
+    update_marking! Δ_if_tS_fire_once + Δ_if_ts_fire_once
+  end
+  alias t_all_fire! timeless_transitions_all_fire!
 
   # At the moment, near alias of #euler_step!
   # 
   def step! Δt=step_size
-    # LATER: Use mysode on "interior"
-    Euler_step!( Δt )
+    case @method
+    when :Euler then
+      Euler_step! Δt
+      note_state_change!
+    when :Euler_with_timeless_transitions_firing_after_each_step,
+      :pseudo_Euler then
+      Euler_step!
+      timeless_transitions_all_fire!
+      note_state_change!
+    when :Euler_with_timeless_transitions_firing_after_each_time_tick,
+      :quasi_Euler then
+      raise                          # FIXME: quasi_Euler doesn't work yet
+      Euler_step!
+      # if time tick has elapsed, call #timeless_transitions_all_fire!
+      note_state_change!
+    else
+      raise "Unrecognized simulation method: #@method !!!"
+    end
     return self
   end
 
@@ -166,16 +179,16 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # exact:           simulation stops exactly on the prescribed time,
   #                  to make this possible last step is shortened if necessary
   #
-  def run_until_target_time!( target, stepping_opt=:exact )
+  def run_until_target_time!( t=target_time, stepping_opt=:exact )
     case stepping_opt
-    when :just_before then # step until on or just before the target
-      step! while @time + @step_size <= target
-    when :exact then # simulate to exact time
-      step! while @time + @step_size < target
-      step!( target - @time )      # make a short last step as required
-      @time = target               # to get exactly on the prescribed time
-    when :just_after then # step until on or after target
-      step! while @time < target
+    when :just_before then    # step until on or just before the target
+      step! while @time + @step_size <= t
+    when :exact then          # simulate to exact time
+      step! while @time + @step_size < t
+      step!( t - @time )      # make a short last step as required
+      @time = t               # to get exactly on the prescribed time
+    when :just_after then     # step until on or after target
+      step! while @time < t
     else raise "Invalid stepping option: #{stepping_opt}" end
   end
 
@@ -194,7 +207,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
   private
 
   def reset!
-    @time = initial_time
+    @time = initial_time || 0
     @next_sampling_time = @time
     super # otherwise same as for timeless cases
   end

@@ -388,8 +388,7 @@ module YPetri
     # table.
     # 
     def new_timed_simulation *args, &block
-      instance = workspace
-        .new_timed_simulation *args, &block
+      instance = workspace.new_timed_simulation( *args, &block )
       # Set the point to this simulation
       simulation_point_to( simulations.rassoc( instance )[0] )
       return instance
