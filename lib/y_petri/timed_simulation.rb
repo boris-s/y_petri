@@ -46,6 +46,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
       sampling_period: sampling_period,
       time_range: time_range }
   end
+  alias simulation_settings settings
 
   # Exposing time.
   # 
