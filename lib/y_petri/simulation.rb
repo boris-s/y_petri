@@ -1132,7 +1132,7 @@ class YPetri::Simulation
   # Private method for resetting recording.
   # 
   def set_recording rec
-    @recording = Hash rec
+    @recording = Hash[ rec ]
   end
 
   # Place, Transition, Net class
