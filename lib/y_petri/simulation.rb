@@ -1095,9 +1095,9 @@ class YPetri::Simulation
         puts "assign is #{assign}"
         assign = assign.each_with_object nils.dup do |pair, o| o[pair[0]] = pair[1] end
         puts "assign is #{assign}"
-        @marking_vector.map { |marking|
-          order = assign.shift
-          order ? n : order
+        @marking_vector.map { |original_marking|
+          assignment_order = assign.shift
+          assignment_order ? assignment_order : original_marking
         }
       end
     } # map
