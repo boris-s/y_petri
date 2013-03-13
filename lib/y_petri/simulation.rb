@@ -1059,7 +1059,7 @@ class YPetri::Simulation
     }
   end
 
-  def create_asignment_closures_for_A
+  def create_assignment_closures_for_A
     nils = places.map { nil }
     A_transitions().map { |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
