@@ -91,6 +91,16 @@ class YPetri::TimedSimulation < YPetri::Simulation
   end
   # LATER: transition clamps
 
+  # Allows to explore the system at different state / time. Creates a double,
+  # which is set to the required state / time. In addition to the parent class,
+  # this version alseo sets time.
+  # 
+  def at *args
+    oo = args.extract_options!
+    duplicate = super *args, oo
+    duplicate.instance_variable_set :@time, oo[:t]
+  end
+
   # At the moment, near alias for #run_to_arget_time!
   # 
   def run! until_time=target_time
