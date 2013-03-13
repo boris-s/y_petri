@@ -1086,15 +1086,15 @@ class YPetri::Simulation
       result = ( F2A() * c2f * probe ).column_to_a.map { |n| n == 0 ? nil : n }
       assignment_addresses = probe.column_to_a.map { |i| result.index i }
       lambda do
-        puts "result is #{result}"
+        # puts "result is #{result}"
         act = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
-        puts "assignment addresses are #{assignment_addresses}"
-        puts "act is #{act}"
-        puts "nils are #{nils}"
+        # puts "assignment addresses are #{assignment_addresses}"
+        # puts "act is #{act}"
+        # puts "nils are #{nils}"
         assign = assignment_addresses.zip( act )
-        puts "assign is #{assign}"
+        # puts "assign is #{assign}"
         assign = assign.each_with_object nils.dup do |pair, o| o[pair[0]] = pair[1] end
-        puts "assign is #{assign}"
+        # puts "assign is #{assign}"
         @marking_vector.map { |original_marking|
           assignment_order = assign.shift
           assignment_order ? assignment_order : original_marking
