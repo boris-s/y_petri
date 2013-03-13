@@ -139,7 +139,7 @@ class YPetri::Simulation
     @rate_closures_for_sR = create_rate_closures_for_sR
     @rate_closures_for_SR = create_rate_closures_for_SR
 
-    @assignment_closures_for_A = create_action_closures_for_A
+    @assignment_closures_for_A = create_assignment_closures_for_A
 
     @zero_ᴍ = Matrix.zero( free_places.size, 1 )
 
