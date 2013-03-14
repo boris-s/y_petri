@@ -60,6 +60,8 @@ DeoxyTMP = Place m!: 0.0                 # in situ
 DeoxyTDP = Place m!: 2.4                 # Traut1994pcp
 DeoxyTTP = Place m!: 17.0                # Traut1994pcp
 
+DeotyT23P = Place m!: DeoxyTDP.initial_marking + DeoxyTTP.initial_marking
+
 # ==========================================================================
 # === Empirical places (in arbitrary units)
 # ==========================================================================
@@ -69,7 +71,7 @@ Clock = Transition s: { Timer: 1 }, rate: 1
 
 A_phase = Place m!: 0                    # in situ
 S_phase = Place m!: 0                    # in situ
-Cdc20A = Place m!: 1                   # in situ
+Cdc20A = Place m!: 1                     # in situ
 
 # ==========================================================================
 # === Empirical transitions
@@ -122,10 +124,7 @@ Transition name: :Cdc20A,
 # ==== Thymidine kinase, cytoplasmic (TK1)
 
 # Molecular weight
-TK1_m = 24.8.kDa
-
-# Specific activity
-TK1_a = 9500.mol.min⁻¹.mg⁻¹
+TK1_m = 24.8.kDa                     # Munchpetersen1995htk
 
 # Total unphosphorylated TK1 as monomer molarity.
 TK1 = Place m!: 0
@@ -183,7 +182,7 @@ Transition name: :TK1_phosphorylation,
                    if a_phase > 0.5 then 0 else tk1di * TK1_k_phosphoryl end
                  }
 
-# Rate constant of TK1 degradation:
+# Rate of TK1 degradation:
 TK1_k_degrad_base = ( 10.nM.h⁻¹ / 1.µM ).in "s⁻¹"
 TK1_k_degrad_Cdc20A = ( 100.nM / 10.min / 1.µM / 1 ).in "s⁻¹"
 
@@ -191,16 +190,29 @@ TK1_degrad_closure = lambda { |cdc, tk1|
   ( TK1_k_degrad_base + cdc * TK1_k_degrad_Cdc20A ) * tk1
 }
 
+# TK1 degradation
 TK1_degradation = Transition domain: [ Cdc20A, TK1 ],
                              s: { TK1: -1 },
                              rate: TK1_degrad_closure
+
+# Phosphorylated TK1 degradation
 TK1di_P_degradation = Transition domain: [ Cdc20A, TK1di_P ],
                                  s: { TK1di_P: -1 },
                                  rate: TK1_degrad_closure
 
+# Specific activity
+# TK1_a = 5.40.µmol.min⁻¹.mg⁻¹       # Sherley1988hct
+TK1_a = 9500.nmol.min⁻¹.mg⁻¹         # Munchpetersen1991dss
+
+# Turnover number of TK1 (dimer and tetramer have the same)
+TK1_k_cat = ( TK1_a * TK1_m ).( SY::Amount / SY::Time ).in :s⁻¹ # 3.93
+
 # Reactants - dissociation (Michaelis) constants [µM].
 TK1di_Kd_ATP = 4.7                       # Barroso2003tbd
-TK1di_Kd_dT = 15.0                       # Eriksson2002sfc
+TK1di_Kd_dT =  = 15.0                    # Eriksson2002sfc
+TK1tetra_Kd_dT = TK1tetra_Kd_dTMP = 0.5  # Munchpetersen1995htk
+TK1di_Kd_dTMP = TK1di_Kd_dT              # in situ
+TK1tetra_Kd_dTMP = TK1di_Kd_dT           # in situ
 
 # Competitive inhibitors - dissociation (inhibition) constants [µM].
 # * dCTP is an inhibitor. (Cheng1978tkf)
@@ -210,48 +222,102 @@ TK1di_Kd_dT = 15.0                       # Eriksson2002sfc
 
 # It is known that mitochondrial enzyme is inhibited by 
 
-# dATP - strong feedback inhibition
-TK1di_Ki_dTTP = 0.5
-
-=begin
+# dTTP - strong feedback inhibition
+TK1di_Ki_dTTP = 0.666                    # in situ
 
 # Hill coefficient of TK1 dimer
-TK1di_hill
-# k_cat of TK1 dimer
-TK1_k_cat = ( TK1_a * TK1_m ).( SY::Amount / SY::Time ).in :s⁻¹
-TK1_k_cat = 3.80
+TK1di_hill = 0.7                         # Eriksson2002sfc, Munchpetersen1995htk
 
+# Hill coefficient of TK1 tetramer
+TK1tetra_hill = 1                        # Eriksson2002sfc
 
+# --------------------------------------------------------------------------
+# ==== Thymidylate synthase (TYMS)
+
+# Molecular mass
 TYMS_m = 66.0.kDa
+
+# Specific activity
+TYMS_a = 3.80.µmol.min⁻¹.mg⁻¹
+
+# Turnover number
+TYMS_k_cat = ( TYMS_a * TYMS_m ).( SY::Amount / SY::Time ).in :s⁻¹
+
+
+
+
+
+
+TYMS_DeoxyUMP_Km = 2.0
+
+
+# --------------------------------------------------------------------------
+# ==== Ribonucleotide reductase (RNR)
+
+# Molecular mass
 RNR_m = 140.0.kDa
+
+# Specific activity
+RNR_a = 1.00.µmol.min⁻¹.mg⁻¹
+
+# Turnover number
+RNR_k_cat = ( RNR_a * RNR_m ).( SY::Amount / SY::Time ).in :s⁻¹
+
+
+
+
+
+
+
+RNR_UDP_Km = 1.0
+
+
+# --------------------------------------------------------------------------
+# ==== Thymidine monophosphate kinase (TMPK)
+
+# Enzyme molecular masses
 TMPK_m = 50.0.kDa
 
-# === Enzyme specific activities
-
-TK1_a = 5.40.µmol.min⁻¹.mg⁻¹
-TYMS_a = 3.80.µmol.min⁻¹.mg⁻¹
-RNR_a = 1.00.µmol.min⁻¹.mg⁻¹
+# Specific activity
 TMPK_a = 0.83.µmol.min⁻¹.mg⁻¹
 
-# === Enzyme kcat
-
-TK1_k_cat = ( TK1_a * TK1_m ).( SY::Amount / SY::Time ).in :s⁻¹
-TYMS_k_cat = ( TYMS_a * TYMS_m ).( SY::Amount / SY::Time ).in :s⁻¹
-RNR_k_cat = ( RNR_a * RNR_m ).( SY::Amount / SY::Time ).in :s⁻¹
 TMPK_k_cat = ( TMPK_a * TMPK_m ).( SY::Amount / SY::Time ).in :s⁻¹
 
+
+
+
+
+
+TMPK_DeoxyTMP_Km = 12.0
+
+
+# --------------------------------------------------------------------------
+# === DNA polymeration
+
+Genome_size = 3_000_000_000          # of bases
+DNA_creation_speed = Genome_size / S_phase_duration.in( :s ) # in base.s⁻¹
+
+
+
+# ==========================================================================
 # === Clamps (all in µM)
+# ==========================================================================
 
 clamp AMP: 8695.0, ADP: 6521.0, ATP: 3152.0
 clamp DeoxyCytidine: 0.5, DeoxyCTP: 1.0, DeoxyGMP: 1.0
 clamp Thymidine: 0.5
 clamp U12P: 2737.0
 
-# === Function closures
 
-# Vmax of an enzyme.
+
+
+# ==========================================================================
+# === Function closures
+# ==========================================================================
+
+# Enzyme Vmax closure.
 # 
-Vmax = -> enzyme_µM, k_cat do enzyme_µM * k_cat end
+Vmax = lambda { |enzyme_µM, k_cat| enzyme_µM * k_cat }
 
 # Michaelis constant reduced for competitive inhibitors.
 # 
@@ -261,77 +327,144 @@ Km_reduced = -> reactant_Km, hash_Ki=Hash.new do
   }.reduce( 1, :+ ) * reactant_Km
 end
 
-# Occupancy fraction of the Michaelis-Menten equation.
+# Occupancy fraction of the Michaelis-Menten-Hill equation.
 # 
-Occupancy = -> reactant_µM, reactant_Km, hash_Ki=Hash.new do
-  reactant_µM / ( reactant_µM + Km_reduced.( reactant_Km, hash_Ki ) )
+Occupancy = -> reactant_µM, reactant_Km, k_hill, hash_Ki=Hash.new do
+  reactant_µM ** k_hill /
+    ( reactant_µM ** k_hill + Km_reduced.( reactant_Km, hash_Ki ) ** k_hill )
 end
 
-# Michaelis-Menten equation with competitive inhibitors.
+# Michaelis-Menten-Hill equation with competitive inhibitors.
 # 
-MMi = -> reactant_µM, reactant_Km, enzyme_µM, k_cat, hash_Ki=Hash.new do
-  Vmax.( enzyme_µM, k_cat ) * Occupancy.( reactant_µM, reactant_Km, hash_Ki )
+MMi = -> reactant_µM, reactant_Km, k_hill, enzyme_µM, k_cat, hash_Ki=Hash.new do
+  Vmax.( enzyme_µM, k_cat ) *
+    Occupancy.( reactant_µM, reactant_Km, k_hill, hash_Ki )
 end
 
-# === Michaelis constants (all in µM)
 
-TK1_Thymidine_Km = 5.0
-TYMS_DeoxyUMP_Km = 2.0
-RNR_UDP_Km = 1.0
-TMPK_DeoxyTMP_Km = 12.0
 
-# === DNA synthesis speed
+# ==========================================================================
+# === Pools
+# ==========================================================================
 
-Genome_size = 3_000_000_000          # of bases
-DNA_creation_speed = Genome_size / S_phase_duration.in( :s ) # in base.s⁻¹
+DeoxyTDP_maintenance = Transition assignment_action: true,
+                                  domain: [ DeoxyT23P, ADP, ATP ]
+                                  action: lambda { |pool, adp, atp|
+                                            pool * adp / ( adp + atp )
+                                          }
 
-# === Transitions
+DeoxyTTP_maintenance = Transition assignment_action: true,
+                                  domain: [ DeoxyT23P, ADP, ATP ],
+                                  action: lambda { |pool, adp, atp|
+                                            pool * atp / ( adp + atp )
+                                          }
 
-Transition name: :TK1_Thymidine_DeoxyTMP,
-           domain: [ Thymidine, TK1, DeoxyT23P, DeoxyCTP, DeoxyCytidine, AMP, ADP, ATP ],
+# ==========================================================================
+# === Enzyme reactions
+# ==========================================================================
+
+Transition name: :TK1di_Thymidine_DeoxyTMP,
+           domain: [ Thymidine, TK1di, DeoxyTTP, ADP, ATP ],
            stoichiometry: { Thymidine: -1, DeoxyTMP: 1 },
-           rate: proc { |reactant, enzyme, pool, inhibitor_2, inhibitor_3, mono, di, tri|
-             inhibitor_1 = pool * tri / ( di + tri ) # conc. of DeoxyTTP
-             MMi.( reactant, TK1_Thymidine_Km, enzyme, TK1_k_cat,
-                   inhibitor_1 => 13.5, inhibitor_2 => 0.8, inhibitor_3 => 40.0 )
+           rate: proc { |reactant, enzyme, inhibitor, di, tri|
+             tri / ( di + tri ) * MMi.( reactant, TK1di_Kd_dT, TK1di_hill,
+                                        enzyme, TK1_k_cat,
+                                        inhibitor => TK1di_Ki_dTTP )
            }
 
-Transition name: :TYMS_DeoxyUMP_DeoxyTMP,
-           domain: [ DeoxyU12P, TYMS, AMP, ADP, ATP ],
-           stoichiometry: { DeoxyU12P: -1, DeoxyTMP: 1 },
-           rate: proc { |pool, enzyme, mono, di, tri|
-             reactant = pool * di / ( mono + di ) # conc. of DeoxyUMP
-             MMi.( reactant, TYMS_DeoxyUMP_Km, enzyme, TYMS_k_cat )
+Transition name: :TK1di_DeoxyTMP_Thymidine,
+           domain: [ DeoxyTMP, TK1di, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { DeoxyTMP: -1, Thymidine: 1 },
+           rate: proc { |reactant, enzyme, inhibitor, di, tri|
+             di / ( di + tri ) * MMi.( reactant, TK1di_Kd_dTMP, TK1di_hill,
+                                       enzyme, TK1_k_cat,
+                                       inhibitor => TK1di_Ki_dTTP )
            }
 
-Transition name: :RNR_UDP_DeoxyUDP,
-           domain: [ U12P, RNR, DeoxyU12P, AMP, ADP, ATP ],
-           stoichiometry: { U12P: -1, DeoxyU12P: 1 },
-           rate: proc { |pool, enzyme, mono, di, tri|
-             reactant = pool * di / ( mono + di )
-             MMi.( reactant, RNR_UDP_Km, enzyme, RNR_k_cat )
+Transition name: :TK1di_P_Thymidine_DeoxyTMP,
+           domain: [ Thymidine, TK1di_P, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { Thymidine: -1, DeoxyTMP: 1 },
+           rate: proc { |reactant, enzyme, inhibitor, di, tri|
+             tri / ( di + tri ) * MMi.( reactant, TK1di_Kd_dT, TK1di_hill,
+                                        enzyme, TK1_k_cat,
+                                        inhibitor => TK1di_Ki_dTTP )
            }
+
+Transition name: :TK1di_P_DeoxyTMP_Thymidine,
+           domain: [ DeoxyTMP, TK1di, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { DeoxyTMP: -1, Thymidine: 1 },
+           rate: proc { |reactant, enzyme, inhibitor, di, tri|
+             di / ( di + tri ) * MMi.( reactant, TK1di_Kd_dTMP, TK1di_hill,
+                                       enzyme, TK1_k_cat,
+                                       inhibitor => TK1di_Ki_dTTP )
+           }
+
+Transition name: :TK1tetra_Thymidine_DeoxyTMP,
+           domain: [ Thymidine, TK1di, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { Thymidine: -1, DeoxyTMP: 1 },
+           rate: proc { |reactant, enzyme, inhibitor, di, tri|
+             tri / ( di + tri ) * MMi.( reactant, TK1tetra_Kd_dT, TK1di_hill,
+                                        enzyme, TK1_k_cat,
+                                        inhibitor => TK1di_Ki_dTTP )
+           }
+
+Transition name: :TK1di_DeoxyTMP_Thymidine,
+           domain: [ DeoxyTMP, TK1di, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { DeoxyTMP: -1, Thymidine: 1 },
+           rate: proc { |reactant, enzyme, inhibitor, di, tri|
+             di / ( di + tri ) * MMi.( reactant, TK1tetra_Kd_dTMP, TK1di_hill,
+                                       enzyme, TK1_k_cat,
+                                       inhibitor => TK1di_Ki_dTTP )
+           }
+
+# Transition name: :TYMS_DeoxyUMP_DeoxyTMP,
+#            domain: [ DeoxyU12P, TYMS, AMP, ADP, ATP ],
+#            stoichiometry: { DeoxyU12P: -1, DeoxyTMP: 1 },
+#            rate: proc { |pool, enzyme, mono, di, tri|
+#              reactant = pool * di / ( mono + di ) # conc. of DeoxyUMP
+#              MMi.( reactant, TYMS_DeoxyUMP_Km, enzyme, TYMS_k_cat )
+#            }
+
+# Transition name: :RNR_UDP_DeoxyUDP,
+#            domain: [ U12P, RNR, DeoxyU12P, AMP, ADP, ATP ],
+#            stoichiometry: { U12P: -1, DeoxyU12P: 1 },
+#            rate: proc { |pool, enzyme, mono, di, tri|
+#              reactant = pool * di / ( mono + di )
+#              MMi.( reactant, RNR_UDP_Km, enzyme, RNR_k_cat )
+#            }
+
+Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
+           domain: [ DeoxyTMP, TMPK, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { DeoxyTMP: -1, DeoxyT23P: 1 },
+           rate: proc { |reactant, enzyme, pool, inhibitor, di, tri|
+             tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
+                                        enzyme, TMPK_k_cat,
+                                        inhibitor => TMPK_Ki_dTTP )
+           }
+
+Transition name: :TMPK_DeoxyTDP_DeoxyTMP,
+           domain: [ DeoxyTDP, TMPK, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { DeoxyT23P: -1, DeoxyTMP: 1 },
+           rate: proc { |reactant, enzyme, pool, inhibitor, di, tri|
+             tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
+                                        enzyme, TMPK_k_cat,
+                                        inhibitor => TMPK_Ki_dTTP )
+           }
+
 
 Transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
            stoichiometry: { DeoxyT23P: -1 },
            rate: proc { DNA_creation_speed / 4 }
 
-Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
-           domain: [ DeoxyTMP, TMPK, DeoxyT23P, DeoxyGMP, AMP, ADP, ATP ],
-           stoichiometry: { DeoxyTMP: -1, DeoxyT23P: 1 },
-           rate: proc { |reactant, enzyme, pool, inhibitor_4, mono, di, tri|
-             inhibitor_1 = di
-             inhibitor_2 = pool * di / ( di + tri ) # conc. of DeoxyTDP
-             inhibitor_3 = pool * tri / ( di + tri ) # conc. of DeoxyTTP
-             MMi.( reactant, TMPK_DeoxyTMP_Km, enzyme, TMPK_k_cat )
-           }
+# ==========================================================================
+# === Model execution
+# ==========================================================================
 
-=end
-
-# # # execution
 run!
+
 # plot except: Timer
-# plot_flux except: Clock
 plot except: [ Timer, AMP, ADP, ATP, UTP, UDP, UMP, GMP, DeoxyATP, DeoxyADP, DeoxyAMP,
                DeoxyCytidine, DeoxyCMP, DeoxyCDP, DeoxyCTP, DeoxyGTP, DeoxyGMP,
-               DeoxyUridine, DeoxyUMP, DeoxyUDP, DeoxyUTP ]
+               DeoxyUridine, DeoxyUMP, DeoxyUDP, DeoxyUTP, DeoxyT23P ]
+
+plot_flux except: Clock
