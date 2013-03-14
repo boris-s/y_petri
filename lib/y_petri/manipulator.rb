@@ -494,7 +494,7 @@ class YPetri::Manipulator
   # 
   def plot_flux( *args )
     oo = args.extract_options!
-    excluded = Array options[:except]
+    excluded = Array oo[:except]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide about the features to plot.
     features = excluded.each_with_object sim.transitions.dup do |x, α|
