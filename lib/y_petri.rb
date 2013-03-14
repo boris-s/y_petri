@@ -119,7 +119,8 @@ module YPetri
             :run!,
             :print_recording,
             :plot,
-            :plot_recording,
+            :plot_selected,
+            :plot_state,
             :plot_flux,
             :plot_all,
             to: :y_petri_manipulator )

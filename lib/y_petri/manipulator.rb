@@ -462,8 +462,7 @@ class YPetri::Manipulator
     when 1 then
       plot_what = args[0]
       case plot_what
-      when Array then 
-      when :recording then plot_recording oo
+      when :state then plot_recording oo
       when :flux then plot_flux oo
       when :all then plot_all oo
       else plot_selected *args end
@@ -495,7 +494,7 @@ class YPetri::Manipulator
 
   # Plot the recorded samples (system state history).
   # 
-  def plot_recording( *args )
+  def plot_state( *args )
     oo = args.extract_options!
     excluded = Array oo[:except]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
