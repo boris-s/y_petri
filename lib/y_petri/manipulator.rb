@@ -471,8 +471,9 @@ class YPetri::Manipulator
 
   # Plot the recorded samples (system state history).
   # 
-  def plot_recording( options )
-    excluded = Array options[:except]
+  def plot_recording( *args )
+    oo = args.extract_options!
+    excluded = Array oo[:except]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide about the features to plot.
     features = excluded.each_with_object sim.places.dup do |x, α|
@@ -491,7 +492,8 @@ class YPetri::Manipulator
 
   # Plot the recorded flux (computed flux history at the sampling points).
   # 
-  def plot_flux( options )
+  def plot_flux( *args )
+    oo = args.extract_options!
     excluded = Array options[:except]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide about the features to plot.
@@ -502,7 +504,7 @@ class YPetri::Manipulator
     # Select a time series for each feature.
     time_series = features.map do |feature, i|
       feature and sim.recording.map { |ᴛ, ᴍ|
-          [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( features ) ]
+          [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( *features ) ]
       }.transpose
     end
     # Time axis
