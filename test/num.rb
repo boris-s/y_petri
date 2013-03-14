@@ -30,35 +30,35 @@ set_simulation_method :Euler_with_timeless_transitions_firing_after_each_step
 # === Places (all in µM)
 # ==========================================================================
 
-# AMP = Place m!: 82.0                     # Traut1994pcp
-# ADP = Place m!: 137.0                    # Traut1994pcp
-# ATP = Place m!: 2102.0                   # Traut1994pcp
-# UTP = Place m!: 253.0                    # Traut1994pcp
-# UDP = Place m!: ADP.m / ATP.m * UTP.m
-# UMP = Place m!: AMP.m / ATP.m * UTP.m
-# GMP = Place m!: 32.0                     # Traut1994pcp
+AMP = Place m!: 82.0                     # Traut1994pcp
+ADP = Place m!: 137.0                    # Traut1994pcp
+ATP = Place m!: 2102.0                   # Traut1994pcp
+UTP = Place m!: 253.0                    # Traut1994pcp
+UDP = Place m!: ADP.m / ATP.m * UTP.m
+UMP = Place m!: AMP.m / ATP.m * UTP.m
+GMP = Place m!: 32.0                     # Traut1994pcp
 
-# DeoxyATP = Place m!: 2.4                 # Traut1994pcp
-# DeoxyADP = Place m!: ADP.m / ATP.m * DeoxyATP.m
-# DeoxyAMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
+DeoxyATP = Place m!: 2.4                 # Traut1994pcp
+DeoxyADP = Place m!: ADP.m / ATP.m * DeoxyATP.m
+DeoxyAMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
 
-# DeoxyCytidine = Place m!: 0.7            # Traut1994pcp
-# DeoxyCMP = Place m!: 1.9                 # Traut1994pcp
-# DeoxyCDP = Place m!: 0.1                 # Traut1994pcp
-# DeoxyCTP = Place m!: 4.5                 # Traut1994pcp
+DeoxyCytidine = Place m!: 0.7            # Traut1994pcp
+DeoxyCMP = Place m!: 1.9                 # Traut1994pcp
+DeoxyCDP = Place m!: 0.1                 # Traut1994pcp
+DeoxyCTP = Place m!: 4.5                 # Traut1994pcp
 
-# DeoxyGTP = Place m!: 2.7                 # Traut1994pcp
-# DeoxyGMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
+DeoxyGTP = Place m!: 2.7                 # Traut1994pcp
+DeoxyGMP = Place m!: AMP.m / ATP.m * DeoxyATP.m
 
-# DeoxyUridine = Place m!: 0.6             # Traut1994pcp
-# DeoxyUMP = Place m!: 2.70                # Traut1994pcp
-# DeoxyUDP = Place m!: 0.5                 # Traut1994pcp
-# DeoxyUTP = Place m!: 0.7                 # Traut1994pcp
+DeoxyUridine = Place m!: 0.6             # Traut1994pcp
+DeoxyUMP = Place m!: 2.70                # Traut1994pcp
+DeoxyUDP = Place m!: 0.5                 # Traut1994pcp
+DeoxyUTP = Place m!: 0.7                 # Traut1994pcp
 
-# DeoxyThymidine = Place m!: 0.5           # Traut1994pcp
-# DeoxyTMP = Place m!: 0.0                 # in situ
-# DeoxyTDP = Place m!: 2.4                 # Traut1994pcp
-# DeoxyTTP = Place m!: 17.0                # Traut1994pcp
+DeoxyThymidine = Place m!: 0.5           # Traut1994pcp
+DeoxyTMP = Place m!: 0.0                 # in situ
+DeoxyTDP = Place m!: 2.4                 # Traut1994pcp
+DeoxyTTP = Place m!: 17.0                # Traut1994pcp
 
 # ==========================================================================
 # === Empirical places (in arbitrary units)
@@ -331,4 +331,7 @@ Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
 # # # execution
 run!
 # plot except: Timer
-plot_flux except: Clock
+# plot_flux except: Clock
+plot except: [ Timer, AMP, ADP, ATP, UTP, UDP, UMP, GMP, DeoxyATP, DeoxyADP, DeoxyAMP,
+               DeoxyCytidine, DeoxyCMP, DeoxyCDP, DeoxyCTP, DeoxyGTP, DeoxyGMP,
+               DeoxyUridine, DeoxyUMP, DeoxyUDP, DeoxyUTP ]
