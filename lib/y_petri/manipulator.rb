@@ -503,14 +503,17 @@ class YPetri::Manipulator
       i = α.index x
       if i then α[i] = nil end
     end.compact
+    puts 'before danger'
     # Get flux recording.
     flux_rec = Hash[ sim.recording.map { |ᴛ, ᴍ|
                        [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( *features ) ]
                      } ]
+    puts 'so far so good'
     # Select a time series for each feature.
     time_series = features.map.with_index do |feature, i|
       feature and flux_rec.map { |ᴛ, flux| [ ᴛ, flux[i] ] }.transpose
     end
+    puts 'about to plot'
     # Time axis
     ᴛ = simulation.target_time
     # Gnuplot call
