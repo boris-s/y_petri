@@ -487,7 +487,7 @@ class YPetri::Manipulator
       feature and rec.map { |key, val| [ key, val[i] ] }.transpose
     end
     # Time axis
-    ᴛ = simulation.target_time
+    ᴛ = sim.target_time
     # Gnuplot call
     gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
   end
@@ -499,25 +499,26 @@ class YPetri::Manipulator
     excluded = Array oo[:except]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide about the features to plot.
-    features = excluded.each_with_object sim.SR_transitions.dup do |x, α|
+    all = sim.SR_transitions
+    features = excluded.each_with_object all.dup do |x, α|
       i = α.index x
       if i then α[i] = nil end
-    end.compact
+    end
     puts 'before danger'
+    # Get recording.
+    rec = sim.recording
     # Get flux recording.
-    flux_rec = Hash[ sim.recording.map { |ᴛ, ᴍ|
-                       [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( *features ) ]
-                     } ]
+    flux = rec.modify { |ᴛ, ᴍ| [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( *all ) ] }
     puts 'so far so good'
     # Select a time series for each feature.
     time_series = features.map.with_index do |feature, i|
-      feature and flux_rec.map { |ᴛ, flux| [ ᴛ, flux[i] ] }.transpose
+      feature and flux.map { |ᴛ, flux| [ ᴛ, flux[i] ] }.transpose
     end
     puts 'about to plot'
     # Time axis
-    ᴛ = simulation.target_time
+    ᴛ = sim.target_time
     # Gnuplot call
-    gnuplot( ᴛ, features.map( &:name ), time_series )
+    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
   end
 
   private
