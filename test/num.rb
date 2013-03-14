@@ -472,10 +472,11 @@ run!
 
 # plot :all, except: Timer
 
-plot S_phase
-
-plot :state, except: [ Timer, AMP, ADP, ATP, UTP, UDP, UMP, GMP, DeoxyATP, DeoxyADP, DeoxyAMP,
-                       DeoxyCytidine, DeoxyCMP, DeoxyCDP, DeoxyCTP, DeoxyGTP, DeoxyGMP,
-                       DeoxyUridine, DeoxyUMP, DeoxyUDP, DeoxyUTP, DeoxyT23P ]
+plot [ S_phase, TK1di, TK1tetra, TK1di_P, TYMS, TMPK ]
+plot [ S_phase, Thymidine, DeoxyTMP, DeoxyTDP, DeoxyTTP ]
 
 plot :flux, except: Clock
+
+# plot :state, except: [ Timer, AMP, ADP, ATP, UTP, UDP, UMP, GMP, DeoxyATP, DeoxyADP, DeoxyAMP,
+#                        DeoxyCytidine, DeoxyCMP, DeoxyCDP, DeoxyCTP, DeoxyGTP, DeoxyGMP,
+#                        DeoxyUridine, DeoxyUMP, DeoxyUDP, DeoxyUTP, DeoxyT23P ]
