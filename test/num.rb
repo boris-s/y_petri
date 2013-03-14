@@ -237,6 +237,9 @@ TK1tetra_hill = 1                        # Eriksson2002sfc
 # Molecular mass
 TYMS_m = 66.0.kDa
 
+# TYMS
+TYMS = Place m!: 0.4
+
 # Specific activity
 TYMS_a = 3.80.µmol.min⁻¹.mg⁻¹
 
@@ -249,7 +252,6 @@ TYMS_k_cat = ( TYMS_a * TYMS_m ).( SY::Amount / SY::Time ).in :s⁻¹
 
 
 TYMS_DeoxyUMP_Km = 2.0
-
 
 # --------------------------------------------------------------------------
 # ==== Ribonucleotide reductase (RNR)
@@ -271,16 +273,19 @@ RNR_k_cat = ( RNR_a * RNR_m ).( SY::Amount / SY::Time ).in :s⁻¹
 
 RNR_UDP_Km = 1.0
 
-
 # --------------------------------------------------------------------------
 # ==== Thymidine monophosphate kinase (TMPK)
 
 # Enzyme molecular masses
 TMPK_m = 50.0.kDa
 
+# TMPK
+TMPK = Place m!: 0.4
+
 # Specific activity
 TMPK_a = 0.83.µmol.min⁻¹.mg⁻¹
 
+# Turnover number
 TMPK_k_cat = ( TMPK_a * TMPK_m ).( SY::Amount / SY::Time ).in :s⁻¹
 
 
@@ -289,7 +294,6 @@ TMPK_k_cat = ( TMPK_a * TMPK_m ).( SY::Amount / SY::Time ).in :s⁻¹
 
 
 TMPK_DeoxyTMP_Km = 12.0
-
 
 # --------------------------------------------------------------------------
 # === DNA polymeration
