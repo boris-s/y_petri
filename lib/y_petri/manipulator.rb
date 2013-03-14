@@ -476,7 +476,7 @@ class YPetri::Manipulator
     collection = Array args[0]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide abnout the features
-    features = sim.places.map { |p|
+    features = sim.places.dup.map { |p|
       collection.include?( p ) ? p : nil
     }
     # Get recording
@@ -527,17 +527,14 @@ class YPetri::Manipulator
       i = α.index x
       if i then α[i] = nil end
     end
-    puts 'before danger'
     # Get recording.
     rec = sim.recording
     # Get flux recording.
     flux = rec.modify { |ᴛ, ᴍ| [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( *all ) ] }
-    puts 'so far so good'
     # Select a time series for each feature.
     time_series = features.map.with_index do |feature, i|
       feature and flux.map { |ᴛ, flux| [ ᴛ, flux[i] ] }.transpose
     end
-    puts 'about to plot'
     # Time axis
     ᴛ = sim.target_time
     # Gnuplot call

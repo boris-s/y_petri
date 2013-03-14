@@ -280,7 +280,7 @@ RNR_UDP_Km = 1.0                         #
 TMPK_m = 50.0.kDa
 
 # TMPK
-TMPK = Place m!: 0.4
+TMPK = Place m!: 0.4 / 1_000_000
 
 # Specific activity
 TMPK_a = 0.83.µmol.min⁻¹.mg⁻¹
@@ -301,7 +301,7 @@ TMPK_Ki_dTTP = 75                    # in situ
 
 Genome_size = 3_000_000_000                             # base pairs
 DNA_creation_speed = 2 * Genome_size / S_phase_duration # 125.kbase.s⁻¹
-
+DNA_creation_speed = DNA_creation_speed / 1_000_000
 
 
 # ==========================================================================
@@ -440,28 +440,33 @@ Transition name: :TK1tetra_DeoxyTMP_Thymidine,
 #            }
 
 
-# Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
-#            domain: [ DeoxyTMP, TMPK, DeoxyTTP, ADP, ATP ],
-#            stoichiometry: { DeoxyTMP: -1, DeoxyT23P: 1 },
-#            rate: proc { |reactant, enzyme, inhibitor, di, tri|
-#              tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
-#                                         enzyme, TMPK_k_cat, 1,
-#                                         inhibitor => TMPK_Ki_dTTP )
-#            }
+Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
+           domain: [ DeoxyTMP, TMPK, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { DeoxyTMP: -1, DeoxyT23P: 1 },
+           rate: proc { |reactant, enzyme, inhibitor, di, tri|
+             tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
+                                        enzyme, TMPK_k_cat, 1,
+                                        inhibitor => TMPK_Ki_dTTP )
+             0.0000001
+           }
 
-# Transition name: :TMPK_DeoxyTDP_DeoxyTMP,
-#            domain: [ DeoxyTDP, TMPK, DeoxyTTP, ADP, ATP ],
-#            stoichiometry: { DeoxyT23P: -1, DeoxyTMP: 1 },
-#            rate: proc { |reactant, enzyme, inhibitor, di, tri|
-#              tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
-#                                         enzyme, TMPK_k_cat, 1,
-#                                         inhibitor => TMPK_Ki_dTTP )
-#            }
+Transition name: :TMPK_DeoxyTDP_DeoxyTMP,
+           domain: [ DeoxyTDP, TMPK, DeoxyTTP, ADP, ATP ],
+           stoichiometry: { DeoxyT23P: -1, DeoxyTMP: 1 },
+           rate: proc { |reactant, enzyme, inhibitor, di, tri|
+             tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
+                                        enzyme, TMPK_k_cat, 1,
+                                        inhibitor => TMPK_Ki_dTTP )
+             0.0000001
+           }
 
-
-# Transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
-#            stoichiometry: { DeoxyT23P: -1 },
-#            rate: proc { DNA_creation_speed / 4 }
+DNA_dTTP_use = Transition domain: [ S_phase, DeoxyTTP ],
+                          stoichiometry: { DeoxyT23P: -1 },
+                          rate: lambda { |s_phase, ttp|
+                                  return 0 if ttp < 10
+                                  s_phase > 0.5 ? DNA_creation_speed / 4 : 0
+                                  0.000001
+                                }
 
 
 # ==========================================================================
@@ -473,9 +478,10 @@ run!
 # plot :all, except: Timer
 
 plot [ S_phase, TK1di, TK1tetra, TK1di_P, TYMS, TMPK ]
-plot [ S_phase, Thymidine, DeoxyTMP, DeoxyTDP, DeoxyTTP ]
 
 plot :flux, except: Clock
+
+plot [ S_phase, Thymidine, DeoxyTMP, DeoxyTDP, DeoxyTTP ]
 
 # plot :state, except: [ Timer, AMP, ADP, ATP, UTP, UDP, UMP, GMP, DeoxyATP, DeoxyADP, DeoxyAMP,
 #                        DeoxyCytidine, DeoxyCMP, DeoxyCDP, DeoxyCTP, DeoxyGTP, DeoxyGMP,
