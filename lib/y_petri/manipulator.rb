@@ -478,7 +478,7 @@ class YPetri::Manipulator
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Deciide abnout the features
     features = collection.each_with_object sim.places.dup do |x, α|
-      i = α.index[x]
+      i = α.index x
       α[i] = nil unless i
     end
     # Get recording

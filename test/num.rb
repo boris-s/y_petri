@@ -210,7 +210,7 @@ TK1_k_cat = ( TK1_a * TK1_m ).( SY::Amount / SY::Time ).in :s⁻¹ # 3.93
 # Reactants - dissociation (Michaelis) constants [µM].
 TK1di_Kd_ATP = 4.7                       # Barroso2003tbd
 TK1di_Kd_dT = 15.0                    # Eriksson2002sfc
-TK1tetra_Kd_dT = TK1tetra_Kd_dTMP = 0.5  # Munchpetersen1995htk
+TK1tetra_Kd_dT = 0.5  # Munchpetersen1995htk
 TK1di_Kd_dTMP = TK1di_Kd_dT              # in situ
 TK1tetra_Kd_dTMP = TK1di_Kd_dT           # in situ
 
@@ -244,14 +244,14 @@ TYMS = Place m!: 0.4
 TYMS_a = 3.80.µmol.min⁻¹.mg⁻¹
 
 # Turnover number
-TYMS_k_cat = ( TYMS_a * TYMS_m ).( SY::Amount / SY::Time ).in :s⁻¹
+TYMS_k_cat = ( TYMS_a * TYMS_m ).( SY::Amount / SY::Time ).in :s⁻¹ # 4.18
 
 
 
 
 
 
-TYMS_DeoxyUMP_Km = 2.0
+TYMS_DeoxyUMP_Km = 2.0                   # Kawate2002dmh
 
 # --------------------------------------------------------------------------
 # ==== Ribonucleotide reductase (RNR)
@@ -271,7 +271,7 @@ RNR_k_cat = ( RNR_a * RNR_m ).( SY::Amount / SY::Time ).in :s⁻¹
 
 
 
-RNR_UDP_Km = 1.0
+RNR_UDP_Km = 1.0                         # 
 
 # --------------------------------------------------------------------------
 # ==== Thymidine monophosphate kinase (TMPK)
@@ -286,20 +286,21 @@ TMPK = Place m!: 0.4
 TMPK_a = 0.83.µmol.min⁻¹.mg⁻¹
 
 # Turnover number
-TMPK_k_cat = ( TMPK_a * TMPK_m ).( SY::Amount / SY::Time ).in :s⁻¹
+TMPK_k_cat = ( TMPK_a * TMPK_m ).( SY::Amount / SY::Time ).in :s⁻¹ # 0.69
 
+# Michaelis constant (µM)
+TMPK_Kd_dTMP = 40                    # Lee1977htk
+TMPK_Kd_dTDP = TMPK_Kd_dTMP          # in situ
 
+# Competitive inhibitors - dissociation (inhibition) constants [µM].
+TMPK_Ki_dTTP = 75                    # in situ
 
-
-
-
-TMPK_DeoxyTMP_Km = 12.0
 
 # --------------------------------------------------------------------------
 # === DNA polymeration
 
-Genome_size = 3_000_000_000          # of bases
-DNA_creation_speed = Genome_size / S_phase_duration # in base.s⁻¹
+Genome_size = 3_000_000_000                             # base pairs
+DNA_creation_speed = 2 * Genome_size / S_phase_duration # 125.kbase.s⁻¹
 
 
 
@@ -438,28 +439,30 @@ Transition name: :TK1tetra_DeoxyTMP_Thymidine,
 #              MMi.( reactant, RNR_UDP_Km, enzyme, RNR_k_cat )
 #            }
 
-Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
-           domain: [ DeoxyTMP, TMPK, DeoxyTTP, ADP, ATP ],
-           stoichiometry: { DeoxyTMP: -1, DeoxyT23P: 1 },
-           rate: proc { |reactant, enzyme, pool, inhibitor, di, tri|
-             tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
-                                        enzyme, TMPK_k_cat,
-                                        inhibitor => TMPK_Ki_dTTP )
-           }
 
-Transition name: :TMPK_DeoxyTDP_DeoxyTMP,
-           domain: [ DeoxyTDP, TMPK, DeoxyTTP, ADP, ATP ],
-           stoichiometry: { DeoxyT23P: -1, DeoxyTMP: 1 },
-           rate: proc { |reactant, enzyme, pool, inhibitor, di, tri|
-             tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
-                                        enzyme, TMPK_k_cat,
-                                        inhibitor => TMPK_Ki_dTTP )
-           }
+# Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
+#            domain: [ DeoxyTMP, TMPK, DeoxyTTP, ADP, ATP ],
+#            stoichiometry: { DeoxyTMP: -1, DeoxyT23P: 1 },
+#            rate: proc { |reactant, enzyme, inhibitor, di, tri|
+#              tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
+#                                         enzyme, TMPK_k_cat, 1,
+#                                         inhibitor => TMPK_Ki_dTTP )
+#            }
+
+# Transition name: :TMPK_DeoxyTDP_DeoxyTMP,
+#            domain: [ DeoxyTDP, TMPK, DeoxyTTP, ADP, ATP ],
+#            stoichiometry: { DeoxyT23P: -1, DeoxyTMP: 1 },
+#            rate: proc { |reactant, enzyme, inhibitor, di, tri|
+#              tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
+#                                         enzyme, TMPK_k_cat, 1,
+#                                         inhibitor => TMPK_Ki_dTTP )
+#            }
 
 
-Transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
-           stoichiometry: { DeoxyT23P: -1 },
-           rate: proc { DNA_creation_speed / 4 }
+# Transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
+#            stoichiometry: { DeoxyT23P: -1 },
+#            rate: proc { DNA_creation_speed / 4 }
+
 
 # ==========================================================================
 # === Model execution
