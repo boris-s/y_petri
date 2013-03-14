@@ -1126,7 +1126,7 @@ class YPetri::Simulation
   # Private method for resetting marking.
   # 
   def set_marking m_array
-    @marking = Matrix.column_vector( m_array )
+    @marking_vector = Matrix.column_vector( m_array )
   end
 
   # Private method for resetting recording.
