@@ -27,7 +27,7 @@ TMPK_Kd_TDP = TMPK_Kd_TMP
 # Dissociation constants of the inhibitors (aka. inhibition constants).
 
 # Inhibitors
-TMPK_Ki_TTP = 10                     # product inhibition
+TMPK_Ki_TTP = 10                    # product inhibition
 
 # ===========================================================================
 # REACTIONS

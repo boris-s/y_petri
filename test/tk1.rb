@@ -82,7 +82,7 @@ TK1tetra_Kd_TMP = TK1di_Kd_T
 
 # Dissociation constants of the inhibitors (aka. inhibition constants).
 
-TK1di_Ki_TTP = 0.666                 # product inhibition
+TK1di_Ki_TTP = 5                    # product inhibition
 
 # Hill coefficient.
 
@@ -95,7 +95,7 @@ TK1tetra_hill = 1                        # tetramer, Eriksson2002sf
 
 # Dimer Thymidine -> TMP
 
-TMP_up_TK1di = Transition domain: [ Thymidine, TK1di, TTP, ADP, ATP ],
+T_up_TK1di = Transition domain: [ Thymidine, TK1di, TTP, ADP, ATP ],
                           stoichiometry: { Thymidine: -1, TMP: 1 },
                           rate: λ { |reactant, enz, inh, di, tri|
                                   MMi.( reactant, TK1di_Kd_T, TK1di_hill,

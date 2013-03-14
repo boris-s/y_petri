@@ -28,7 +28,7 @@ TTP_use = Transition domain: [ S_phase, TTP ], s: { T23P: -1 },
                      rate: λ { |s, ttp|
                              # First, an absolute stop to the polymerase
                              # activity when the TTP pool falls near 0.
-                             return 0 if ttp < 2.5
+                             return 0 if ttp < 3
                              # Then, if there is enough TTP, and S_phase
                              # is on (marking 1 instead of 0), consume.
                              s > 0.5 ? TTP_use_rate : 0

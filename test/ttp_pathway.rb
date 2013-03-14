@@ -10,7 +10,6 @@ require 'sy'
 require 'mathn'
 
 
-
 # ==========================================================================
 # Model setup
 # ==========================================================================
@@ -18,12 +17,14 @@ require 'mathn'
 require './general_assumptions.rb'
 require './michaelis_menten.rb'
 
+
 # === Simulation settings
 
-set_step 10.s.in( :s )
-set_target_time 24.h.in( :s )      # up to 5 days is interesting
-set_sampling 10.min.in( :s )
+set_step 5                           # seconds
+set_target_time 24.h.in( :s )        # up to 5 days is interesting
+set_sampling 5.min.in( :s )
 set_simulation_method :Euler_with_timeless_transitions_firing_after_each_step
+
 
 # === Clock
 
@@ -62,6 +63,18 @@ require './tmpk'
 require './dna_polymerase'
 
 
+# Futile cycles.
+
+Phosphatase = Transition s: { T23P: -1, TMP: 1 },
+                         rate: 0.05
+
+Phosphatase_II = Transition s: { TMP: -1, Thymidine: 1 },
+                            rate: 0.05
+
+# Modification to increase Vmax of TMPK.
+
+TMPK_kcat = TMPK_kcat * 3
+
 
 # ==========================================================================
 # Model execution
@@ -69,7 +82,7 @@ require './dna_polymerase'
 
 # === Clamps (all in µM)
 
-clamp ADP: 6521.0, ATP: 3152.0, Thymidine: 0.5
+clamp Thymidine: 5
 
 
 # === Make a new simulation and execute it.
@@ -87,8 +100,7 @@ run!
 plot [ S_phase, Thymidine, TMP, TDP, TTP, T23P ]
 
 plot :flux, except: Clock
-
-plot :flux, except: Clock
+# plot :flux, except: [ Clock, T23P_flux_clamp, TMP_flux_clamp, Thymidine_flux_clamp ]
 
 # plot :state, except: [ Timer, AMP, ADP, ATP, UTP, UDP, UMP, GMP, DeoxyATP, DeoxyADP, DeoxyAMP,
 #                        DeoxyCytidine, DeoxyCMP, DeoxyCDP, DeoxyCTP, DeoxyGTP, DeoxyGMP,
