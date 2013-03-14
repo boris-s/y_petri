@@ -480,10 +480,12 @@ class YPetri::Manipulator
       i = α.index x
       if i then α[i] = nil end
     end
+    # Get recording
+    rec = sim.recording
     # Select a time series for each feature.
-    time_series = features.map.with_index { |feature, i|
-      feature and sim.recording.map { |key, val| [ key, val[i] ] }.transpose
-    }
+    time_series = features.map.with_index do |feature, i|
+      feature and rec.map { |key, val| [ key, val[i] ] }.transpose
+    end
     # Time axis
     ᴛ = simulation.target_time
     # Gnuplot call
@@ -497,15 +499,17 @@ class YPetri::Manipulator
     excluded = Array oo[:except]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide about the features to plot.
-    features = excluded.each_with_object sim.transitions.dup do |x, α|
+    features = excluded.each_with_object sim.SR.dup do |x, α|
       i = α.index x
       if i then α[i] = nil end
     end.compact
+    # Get flux recording.
+    flux_rec = Hash[ sim.recording.map { |ᴛ, ᴍ|
+                       [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( *features ) ]
+                     } ]
     # Select a time series for each feature.
-    time_series = features.map do |feature, i|
-      feature and sim.recording.map { |ᴛ, ᴍ|
-          [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( *features ) ]
-      }.transpose
+    time_series = features.map.with_index do |feature, i|
+      feature and flux_rec.map { |ᴛ, flux| [ ᴛ, flux[i] ] }.transpose
     end
     # Time axis
     ᴛ = simulation.target_time
