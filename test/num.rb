@@ -65,9 +65,7 @@ set_simulation_method :Euler_with_timeless_transitions_firing_after_each_step
 # ==========================================================================
 
 Timer = Place m!: 0
-Transition name: :Clock,
-           s: { Timer: 1 },
-           rate: 1
+Clock = Transition s: { Timer: 1 }, rate: 1
 
 A_phase = Place m!: 0                    # in situ
 S_phase = Place m!: 0                    # in situ
@@ -333,4 +331,4 @@ Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
 # # # execution
 run!
 # plot except: Timer
-plot_flux
+plot_flux except: Clock
