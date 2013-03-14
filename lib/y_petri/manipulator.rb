@@ -476,11 +476,10 @@ class YPetri::Manipulator
     oo = args.extract_options!
     collection = Array args[0]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
-    # Deciide abnout the features
-    features = collection.each_with_object sim.places.dup do |x, α|
-      i = α.index x
-      α[i] = nil unless i
-    end
+    # Decide abnout the features
+    features = sim.places.map { |p|
+      collection.include?( p ) ? p : nil
+    }
     # Get recording
     rec = sim.recording
     # Select a time series for each feature.
