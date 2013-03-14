@@ -499,7 +499,7 @@ class YPetri::Manipulator
     excluded = Array oo[:except]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide about the features to plot.
-    features = excluded.each_with_object sim.SR.dup do |x, α|
+    features = excluded.each_with_object sim.SR_transitions.dup do |x, α|
       i = α.index x
       if i then α[i] = nil end
     end.compact
