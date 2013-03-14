@@ -498,15 +498,17 @@ class YPetri::Manipulator
     features = excluded.each_with_object sim.transitions.dup do |x, α|
       i = α.index x
       if i then α[i] = nil end
-    end
+    end.compact
     # Select a time series for each feature.
-    time_series = features.map.with_index { |feature, i|
-      feature and sim.recording
-        .map { |key, val| sim.at( t: key, m: val[i] ).flux_for_SR
+    time_series = features.map do |feature, i|
+      feature and sim.recording.map { |ᴛ, ᴍ|
+          [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( features ) ]
+      }.transpose
+    end
     # Time axis
     ᴛ = simulation.target_time
     # Gnuplot call
-    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
+    gnuplot( ᴛ, features.map( &:name ), time_series )
   end
 
   private
