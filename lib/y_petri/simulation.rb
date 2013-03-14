@@ -292,11 +292,25 @@ class YPetri::Simulation
     m_vector.column_to_a
   end
 
+  # Marking hash of free places { name: marking }.
+  # 
+  def pm
+    free_pp :m
+  end
+  alias p_m pm
+
   # Marking array of all places.
   # 
   def marking
     marking_vector ? marking_vector.column_to_a : nil
   end
+
+  # Marking hash of all places { name: marking }.
+  # 
+  def pmarking
+    pp :marking
+  end
+  alias p_marking pmarking
 
   # Marking of free places as a column vector.
   # 
@@ -800,6 +814,12 @@ class YPetri::Simulation
     flux_vector_for_SR.column( 0 ).to_a
   end
 
+  # Flux of SR transitions as a hash { name: flux }.
+  # 
+  def f_SR
+    SR_tt :flux_for_SR
+  end
+
   # Same as #flux_for_SR, but with caller asserting that there are none but
   # SR transitions in the simulation (or error).
   # 
@@ -807,12 +827,24 @@ class YPetri::Simulation
     flux_vector.column( 0 ).to_a
   end
 
+  # Same as #f_SR, but with caller asserting that there are none but SR
+  # transitions in the simulation (or error).
+  # 
+  def f
+    SR_tt :flux
+  end
+
   # State differential for SR transitions.
   # 
   def gradient_for_SR
     S_for_SR() * flux_vector_for_SR
   end
-  alias ∂_SR gradient_for_SR
+
+  # State differential for SR transitions as a hash { place_name: ∂ / ∂ᴛ }.
+  # 
+  def ∂_SR
+    free_pp :gradient_for_SR
+  end
 
   # Action vector for SR transitions under an assumption of making an Euler
   # step, whose size is given by the Δt argument.
@@ -856,6 +888,40 @@ class YPetri::Simulation
   # Exposing assignment closures for A transitions.
   #
   attr_reader :assignment_closures_for_A
+
+  # Returns the array of places to which the assignment transitions assign.
+  # 
+  def A_target_places
+    # TODO
+  end
+
+  # Like #A_target_places, but returns place names.
+  # 
+  def A_target_pp
+    # TODO
+  end
+
+  # Returns the assignments as they would if all A transitions fired now,
+  # as a hash { place => assignment }.
+  # 
+  def assignments
+    # TODO
+  end
+
+  # Like #assignments, but place names are used instead { name: assignment }.
+  # 
+  def a
+    # TODO
+  end
+
+  # Returns the assignments as a column vector.
+  # 
+  def A_action
+    Matrix.column_vector( assignments.reduce free_places { nil } do |α, p|
+                            α[p] = marking
+                          end )
+    # TODO: Assignment action to a clamped place should result in a warning.
+  end
 
   # ==== Sparse stoichiometry vectors for transitions
 
@@ -915,7 +981,7 @@ class YPetri::Simulation
   # to additionally modify the second collection.
   # 
   def zip_to_hash collection, *args, &block
-    sz = *args.size
+    sz = args.size
     values = if sz == 0 then collection
              elsif sz == 1 && args[0].respond_to?( :each ) then args[0]
              else send *args end

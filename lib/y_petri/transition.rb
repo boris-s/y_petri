@@ -294,6 +294,13 @@ module YPetri
       else stoichiometric? ? "tS" : "ts" end
     end
 
+    # Reports transition's type (basic type + whether it's an assignment
+    # transition).
+    # 
+    def type
+      assignment_action? ? "A(ts)" : basic_type
+    end
+
     # Is it an assignment transition?
     # 
     # A transition can be specified to have 'assignment action', in which case

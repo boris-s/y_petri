@@ -51,6 +51,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # Exposing time.
   # 
   attr_reader :time
+  alias ᴛ time
 
   # def stop; end # LATER
   # def continue; end # LATER
