@@ -21,9 +21,9 @@ Pieces_per_µM = ( 1.µM * Cytoplasm_volume ).in( :unit )
 # === Simulation settings
 # ==========================================================================
 
-set_step 60.s.in( :s )
-set_target_time 24.h.in( :s )      # up to 5 days is interesting
-set_sampling 10.min.in( :s )
+set_step 0.01.s.in( :s )
+set_target_time 5.min.in( :s )      # up to 5 days is interesting
+set_sampling 1.min.in( :s )
 set_simulation_method :Euler_with_timeless_transitions_firing_after_each_step
 
 # ==========================================================================
@@ -77,44 +77,47 @@ Cdc20A = Place m!: 1                     # in situ
 # === Empirical transitions
 # ==========================================================================
 
-S_phase_duration = 12.h.in :s
-
-A_phase_start = 3.h.in :s
-S_phase_start = 5.h.in :s
+S_phase_duration = 12.h
+S_phase_start = 5.h
 S_phase_end = S_phase_start + S_phase_duration
+
+A_phase_start = 3.h
 A_phase_end = S_phase_end
-Cdc20A_start = 22.h.in :s
-Cdc20A_end = 15.min.in :s
 
-Transition name: :A_phase_control,
-           assignment: true,
-           domain: Timer,
-           codomain: A_phase,
-           action: lambda { |t|
-                     if t > A_phase_end then 0
-                     elsif t > A_phase_start then 1
-                     else 0 end
-                   }
+Cdc20A_start = 22.h
+Cdc20A_end = 1.h
 
-Transition name: :S_phase_control,
-           assignment: true,
-           domain: Timer,
-           codomain: S_phase,
-           action: lambda { |t|
-                     if t > S_phase_end then 0
-                     elsif t > S_phase_start then 1
-                     else 0 end
-                   }
+# Figure them out as numbers in seconds.
+Sα, Sω, Aα, Aω, Cdc20Aα, Cdc20Aω = [ S_phase_start, S_phase_end,
+                                     A_phase_start, A_phase_end,
+                                     Cdc20A_start, Cdc20A_end ].map &[ :in, :s ]
 
-Transition name: :Cdc20A,
-           assignment: true,
-           domain: Timer,
-           codomain: Cdc20A,
-           action: lambda { |t|
-                     if t > Cdc20A_start then 1
-                     elsif t > Cdc20A_end then 0
-                     else 1 end
-                   }
+A_phase_control = Transition assignment: true,
+                             domain: Timer,
+                             codomain: A_phase,
+                             action: lambda { |t|
+                                       if t > Aω then 0
+                                       elsif t > Aα then 1
+                                       else 0 end
+                                     }
+
+S_phase_control = Transition assignment: true,
+                             domain: Timer,
+                             codomain: S_phase,
+                             action: lambda { |t|
+                                       if t > Sω then 0
+                                       elsif t > Sα then 1
+                                       else 0 end
+                                     }
+
+Cdc20A_control = Transition assignment: true,
+                            domain: Timer,
+                            codomain: Cdc20A,
+                            action: lambda { |t|
+                                      if t > Cdc20Aα then 1
+                                      elsif t > Cdc20Aω then 0
+                                      else 1 end
+                                    }
 
 # ==========================================================================
 # === Enzymes
@@ -280,7 +283,7 @@ RNR_UDP_Km = 1.0                         #
 TMPK_m = 50.0.kDa
 
 # TMPK
-TMPK = Place m!: 0.4 / 1_000_000
+TMPK = Place m!: 0.4 / 100
 
 # Specific activity
 TMPK_a = 0.83.µmol.min⁻¹.mg⁻¹
@@ -299,9 +302,9 @@ TMPK_Ki_dTTP = 75                    # in situ
 # --------------------------------------------------------------------------
 # === DNA polymeration
 
-Genome_size = 3_000_000_000                             # base pairs
-DNA_creation_speed = 2 * Genome_size / S_phase_duration # 125.kbase.s⁻¹
-DNA_creation_speed = DNA_creation_speed / 1_000_000
+Genome_size = 3.gigaunit                                       # base pairs
+DNA_creation_speed = ( 2.0 * Genome_size / S_phase_duration ).in "unit.s⁻¹"
+Consumption_rate_of_dTTP = DNA_creation_speed / Pieces_per_µM
 
 
 # ==========================================================================
@@ -447,25 +450,22 @@ Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
              tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
                                         enzyme, TMPK_k_cat, 1,
                                         inhibitor => TMPK_Ki_dTTP )
-             0.0000001
            }
 
 Transition name: :TMPK_DeoxyTDP_DeoxyTMP,
            domain: [ DeoxyTDP, TMPK, DeoxyTTP, ADP, ATP ],
            stoichiometry: { DeoxyT23P: -1, DeoxyTMP: 1 },
            rate: proc { |reactant, enzyme, inhibitor, di, tri|
-             tri / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
-                                        enzyme, TMPK_k_cat, 1,
-                                        inhibitor => TMPK_Ki_dTTP )
-             0.0000001
+             di / ( di + tri ) * MMi.( reactant, TMPK_Kd_dTMP,
+                                       enzyme, TMPK_k_cat, 1,
+                                       inhibitor => TMPK_Ki_dTTP )
            }
 
 DNA_dTTP_use = Transition domain: [ S_phase, DeoxyTTP ],
                           stoichiometry: { DeoxyT23P: -1 },
                           rate: lambda { |s_phase, ttp|
-                                  return 0 if ttp < 10
-                                  s_phase > 0.5 ? DNA_creation_speed / 4 : 0
-                                  0.000001
+                                  return 0 if ttp < 5
+                                  s_phase > 0.5 ? Consumption_rate_of_dTTP : 0
                                 }
 
 
