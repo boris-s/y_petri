@@ -917,7 +917,7 @@ class YPetri::Simulation
   # Returns the assignments as a column vector.
   # 
   def A_action
-    Matrix.column_vector( assignments.reduce free_places { nil } do |α, p|
+    Matrix.column_vector( assignments.reduce( free_places { nil } ) do |α, p|
                             α[p] = marking
                           end )
     # TODO: Assignment action to a clamped place should result in a warning.
