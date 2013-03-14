@@ -55,12 +55,12 @@ DeoxyUMP = Place m!: 2.70                # Traut1994pcp
 DeoxyUDP = Place m!: 0.5                 # Traut1994pcp
 DeoxyUTP = Place m!: 0.7                 # Traut1994pcp
 
-DeoxyThymidine = Place m!: 0.5           # Traut1994pcp
+Thymidine = Place m!: 0.5 # Traut1994pcp
 DeoxyTMP = Place m!: 0.0                 # in situ
 DeoxyTDP = Place m!: 2.4                 # Traut1994pcp
 DeoxyTTP = Place m!: 17.0                # Traut1994pcp
 
-DeotyT23P = Place m!: DeoxyTDP.initial_marking + DeoxyTTP.initial_marking
+DeoxyT23P = Place m!: DeoxyTDP.default_marking + DeoxyTTP.default_marking
 
 # ==========================================================================
 # === Empirical places (in arbitrary units)
@@ -209,7 +209,7 @@ TK1_k_cat = ( TK1_a * TK1_m ).( SY::Amount / SY::Time ).in :s⁻¹ # 3.93
 
 # Reactants - dissociation (Michaelis) constants [µM].
 TK1di_Kd_ATP = 4.7                       # Barroso2003tbd
-TK1di_Kd_dT =  = 15.0                    # Eriksson2002sfc
+TK1di_Kd_dT = 15.0                    # Eriksson2002sfc
 TK1tetra_Kd_dT = TK1tetra_Kd_dTMP = 0.5  # Munchpetersen1995htk
 TK1di_Kd_dTMP = TK1di_Kd_dT              # in situ
 TK1tetra_Kd_dTMP = TK1di_Kd_dT           # in situ
@@ -295,7 +295,7 @@ TMPK_DeoxyTMP_Km = 12.0
 # === DNA polymeration
 
 Genome_size = 3_000_000_000          # of bases
-DNA_creation_speed = Genome_size / S_phase_duration.in( :s ) # in base.s⁻¹
+DNA_creation_speed = Genome_size / S_phase_duration # in base.s⁻¹
 
 
 
@@ -306,7 +306,6 @@ DNA_creation_speed = Genome_size / S_phase_duration.in( :s ) # in base.s⁻¹
 clamp AMP: 8695.0, ADP: 6521.0, ATP: 3152.0
 clamp DeoxyCytidine: 0.5, DeoxyCTP: 1.0, DeoxyGMP: 1.0
 clamp Thymidine: 0.5
-clamp U12P: 2737.0
 
 
 
@@ -348,13 +347,15 @@ end
 # ==========================================================================
 
 DeoxyTDP_maintenance = Transition assignment_action: true,
-                                  domain: [ DeoxyT23P, ADP, ATP ]
+                                  domain: [ DeoxyT23P, ADP, ATP ],
+                                  codomain: DeoxyTDP,
                                   action: lambda { |pool, adp, atp|
                                             pool * adp / ( adp + atp )
                                           }
 
 DeoxyTTP_maintenance = Transition assignment_action: true,
                                   domain: [ DeoxyT23P, ADP, ATP ],
+                                  codomain: DeoxyTTP,
                                   action: lambda { |pool, adp, atp|
                                             pool * atp / ( adp + atp )
                                           }
@@ -408,7 +409,7 @@ Transition name: :TK1tetra_Thymidine_DeoxyTMP,
                                         inhibitor => TK1di_Ki_dTTP )
            }
 
-Transition name: :TK1di_DeoxyTMP_Thymidine,
+Transition name: :TK1tetra_DeoxyTMP_Thymidine,
            domain: [ DeoxyTMP, TK1di, DeoxyTTP, ADP, ATP ],
            stoichiometry: { DeoxyTMP: -1, Thymidine: 1 },
            rate: proc { |reactant, enzyme, inhibitor, di, tri|
@@ -462,9 +463,12 @@ Transition name: :DNA_polymerase_consumption_of_DeoxyTTP,
 
 run!
 
-# plot except: Timer
-plot except: [ Timer, AMP, ADP, ATP, UTP, UDP, UMP, GMP, DeoxyATP, DeoxyADP, DeoxyAMP,
-               DeoxyCytidine, DeoxyCMP, DeoxyCDP, DeoxyCTP, DeoxyGTP, DeoxyGMP,
-               DeoxyUridine, DeoxyUMP, DeoxyUDP, DeoxyUTP, DeoxyT23P ]
+# plot :all, except: Timer
 
-plot_flux except: Clock
+plot S_phase
+
+plot :state, except: [ Timer, AMP, ADP, ATP, UTP, UDP, UMP, GMP, DeoxyATP, DeoxyADP, DeoxyAMP,
+                       DeoxyCytidine, DeoxyCMP, DeoxyCDP, DeoxyCTP, DeoxyGTP, DeoxyGMP,
+                       DeoxyUridine, DeoxyUMP, DeoxyUDP, DeoxyUTP, DeoxyT23P ]
+
+plot :flux, except: Clock

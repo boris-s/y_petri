@@ -462,12 +462,37 @@ class YPetri::Manipulator
     when 1 then
       plot_what = args[0]
       case plot_what
+      when Array then 
       when :recording then plot_recording oo
       when :flux then plot_flux oo
       when :all then plot_all oo
-      else raise "Unknown y_petri plot type: #{plot_what} !!!" end
+      else plot_selected *args end
     else raise "Too many ordered arguments!" end
   end
+
+  # Plot the selected features.
+  # 
+  def plot_selected *args
+    oo = args.extract_options!
+    collection = Array args[0]
+    return nil unless sim = @workspace.simulations.values[-1] # sim@point
+    # Deciide abnout the features
+    features = collection.each_with_object sim.places.dup do |x, α|
+      i = α.index[x]
+      α[i] = nil unless i
+    end
+    # Get recording
+    rec = sim.recording
+    # Select a time series for each feature.
+    time_series = features.map.with_index do |feature, i|
+      feature and rec.map { |key, val| [ key, val[i] ] }.transpose
+    end
+    # Time axis
+    ᴛ = sim.target_time
+    # Gnuplot call
+    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
+  end
+    
 
   # Plot the recorded samples (system state history).
   # 
@@ -478,7 +503,7 @@ class YPetri::Manipulator
     # Decide about the features to plot.
     features = excluded.each_with_object sim.places.dup do |x, α|
       i = α.index x
-      if i then α[i] = nil end
+      α[i] = nil if i
     end
     # Get recording
     rec = sim.recording
