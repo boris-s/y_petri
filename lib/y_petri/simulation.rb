@@ -167,7 +167,7 @@ class YPetri::Simulation
                         initial_marking: @initial_marking
                       }.update( simulation_settings ) )
     duplicate.send :set_recording, recording
-    duplicate.send :set_marking, Matrix.column_vector( m )
+    duplicate.send :set_marking, m
     return duplicate
   end
 
