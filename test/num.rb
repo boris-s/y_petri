@@ -1,4 +1,4 @@
- #encoding: utf-8
+#encoding: utf-8
 
 require 'y_petri'
 include YPetri

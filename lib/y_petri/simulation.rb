@@ -797,6 +797,13 @@ class YPetri::Simulation
   end
   alias φ_for_SR flux_vector_for_SR
 
+  # Flux vector for a selected collection of SR transitions.
+  # 
+  def flux_vector_for *transitions
+    # TODO
+  end
+  alias φ_for flux_vector_for
+
   # Flux vector for SR transitions. Same as the previous method, but the
   # caller asserts that there are only SR transitions in the simulation
   # (or error).
@@ -814,10 +821,14 @@ class YPetri::Simulation
     flux_vector_for_SR.column( 0 ).to_a
   end
 
-  # Flux of SR transitions as a hash { name: flux }.
+  # Flux for a selected collection of SR transitions.
   # 
-  def f_SR
-    SR_tt :flux_for_SR
+  def flux_for *transitions
+    transitions
+      .map { |t| transition t }
+      .map.with_object SR_transitions( :flux_for_SR ) do |e, α|
+      α[e]
+    end
   end
 
   # Same as #flux_for_SR, but with caller asserting that there are none but
@@ -825,6 +836,18 @@ class YPetri::Simulation
   # 
   def flux
     flux_vector.column( 0 ).to_a
+  end
+
+  # Flux of SR transitions as a hash { name: flux }.
+  # 
+  def f_SR
+    SR_tt :flux_for_SR
+  end
+
+  # Flux for a selected collection of SR transition as hash { key => flux }.
+  # 
+  def f_for *transitions
+    Hash[ transitions.zip( flux_for *transitions ) ]
   end
 
   # Same as #f_SR, but with caller asserting that there are none but SR

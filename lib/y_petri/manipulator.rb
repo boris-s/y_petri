@@ -481,8 +481,28 @@ class YPetri::Manipulator
     end
     # Select a time series for each feature.
     time_series = features.map.with_index { |feature, i|
-      feature and sim.recording.map{ |key, val| [ key, val[i] ] }.transpose
+      feature and sim.recording.map { |key, val| [ key, val[i] ] }.transpose
     }
+    # Time axis
+    ᴛ = simulation.target_time
+    # Gnuplot call
+    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
+  end
+
+  # Plot the recorded flux (computed flux history at the sampling points).
+  # 
+  def plot_flux( options )
+    excluded = Array options[:except]
+    return nil unless sim = @workspace.simulations.values[-1] # sim@point
+    # Decide about the features to plot.
+    features = excluded.each_with_object sim.transitions.dup do |x, α|
+      i = α.index x
+      if i then α[i] = nil end
+    end
+    # Select a time series for each feature.
+    time_series = features.map.with_index { |feature, i|
+      feature and sim.recording
+        .map { |key, val| sim.at( t: key, m: val[i] ).flux_for_SR
     # Time axis
     ᴛ = simulation.target_time
     # Gnuplot call
