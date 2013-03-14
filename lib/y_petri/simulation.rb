@@ -825,7 +825,7 @@ class YPetri::Simulation
   # 
   def flux_for *transitions
     all = SR_transitions :flux_for_SR
-    transitions.map { |t| transition t }.map { |e, α| α[e] }
+    transitions.map { |t| transition t }.map { |e| all[e] }
   end
 
   # Same as #flux_for_SR, but with caller asserting that there are none but
