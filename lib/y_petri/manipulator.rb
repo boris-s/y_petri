@@ -488,7 +488,8 @@ class YPetri::Manipulator
     # Time axis
     ᴛ = sim.target_time
     # Gnuplot call
-    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
+    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
+             title: "Selected features plot", ylabel: "Marking" )
   end
     
 
@@ -512,7 +513,8 @@ class YPetri::Manipulator
     # Time axis
     ᴛ = sim.target_time
     # Gnuplot call
-    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
+    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
+             title: "State plot", ylabel: "Marking" )
   end
 
   # Plot the recorded flux (computed flux history at the sampling points).
@@ -538,23 +540,25 @@ class YPetri::Manipulator
     # Time axis
     ᴛ = sim.target_time
     # Gnuplot call
-    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact )
+    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
+             title: "Flux plot", ylabel: "Flux [µMⁿ.s⁻¹]" )
   end
 
   private
 
   # Gnuplots things.
   # 
-  def gnuplot( time, labels, time_series )
+  def gnuplot( time, labels, time_series, *args )
     labels = labels.dup
     time_series = time_series.dup
+    oo = args.extract_options!
 
     Gnuplot.open do |gp|
       Gnuplot::Plot.new( gp ) do |plot|
         plot.xrange "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
-        plot.title "Recording Plot"
-        plot.ylabel "marking"
-        plot.xlabel "time [s]"
+        plot.title oo[:title] || "Simulation plot"
+        plot.ylabel oo[:ylabel] || "Values"
+        plot.xlabel oo[:xlabel] || "Time [s]"
 
         labels.zip( time_series ).each { |label, series|
           plot.data << Gnuplot::DataSet.new( series ) do |data_series|
