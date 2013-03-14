@@ -1235,7 +1235,7 @@ end
 
 describe "Basic use of TimedSimulation" do
   before do
-    require './num.rb'
+    require './ttp_metabolism.rb'
   end
 
   it "should work" do

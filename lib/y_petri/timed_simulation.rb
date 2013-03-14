@@ -180,7 +180,6 @@ class YPetri::TimedSimulation < YPetri::Simulation
     else
       raise "Unrecognized simulation method: #@method !!!"
     end
-    puts ᴛ
     return self
   end
 
@@ -230,6 +229,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
 
   # Records a sample, now.
   def sample!
+    print '.'
     super time.round( SAMPLING_TIME_DECIMAL_PLACES )
   end
 
