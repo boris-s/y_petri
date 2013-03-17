@@ -892,7 +892,7 @@ class YPetri::Simulation
   # Euler step with Δt given as argument.
   # 
   def Δ_Euler_for_SR( Δt )
-    ∂_SR * Δt
+    gradient_for_SR * Δt
   end
   alias Δ_euler_for_SR Δ_Euler_for_SR
 
