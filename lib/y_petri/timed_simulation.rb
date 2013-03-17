@@ -113,14 +113,19 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # Scalar field gradient for free places.
   # 
   def gradient_for_free_places
-    S_for_SR() * flux_vector_for_SR + ∂_sR # SR gradient + sR gradient
+    S_for_SR() * flux_vector_for_SR + gradient_for_sR
   end
-  alias ∂ gradient_for_free_places
+
+  # Gradient for free places as a hash { place_name: ∂ / ∂ᴛ }.
+  #
+  def ∂
+    free_places :gradient_for_free_places
+  end
 
   # Scalar field gradient for all places.
   # 
   def gradient_for_all_places
-    F2A() * ∂
+    F2A() * gradient_for_free_places
   end
   alias gradient gradient_for_all_places
 
@@ -128,7 +133,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # 
   def Δ_Euler_for_free_places( Δt=step_size )
     # Here, ∂ represents all R transitions, to which TSr and Tsr are added:
-    ∂ * Δt + Δ_for_TSr( Δt ) + Δ_for_Tsr( Δt )
+    gradient_for_free_places * Δt + Δ_for_TSr( Δt ) + Δ_for_Tsr( Δt )
   end
   alias Δ_euler_for_free_places Δ_Euler_for_free_places
   alias ΔE Δ_Euler_for_free_places
@@ -249,27 +254,18 @@ class YPetri::TimedSimulation < YPetri::Simulation
   end
 end # class YPetri::TimedSimulation
 
-# Speaking about the simulation method, in general, each element of a net
-# can, in general, be simulated using a different method. From the pragmaticp
-# point of view, however, many good simulation methods have been developed
-# for the ordinary differential equations of the form:
+# In general, it is not required that all net elements are simulated with the
+# same method. Practically, ODE systems have many good simulation methods
+# available.
 #
-# (1) State(t) = Integral ( f(state, t), dt ), where f(state, t) is known
-# function. Now, it's better to know its Jacobian, too, but not necessary -
-# can be computed)
+# (1) ᴍ(t) = ϝ f(ᴍ, t).dt, where f(ᴍ, t) is a known function.
 #
-# #FIXME: Look up proper notation in Advanced Engineering Mathematics
+# Many of these methods depend on the Jacobian, but that may not be available
+# for some places. Therefore, the places, whose marking defines the system
+# state, are divided into two categories: "A" (accelerated), for which as
+# common Jacobian can be found, and "E" places, where "E" can stand either for
+# "External" or "Euler".
 #
-# Now, many of these methods depend on Jacobian, but that cannot be computed
-# for all of the places. Therefore, the places, whose marking defines the
-# system state, are divided into two categories: "A" (accelerated) places,
-# for which as a group Jacobian can be found, and "E" places, where "E" can
-# stand either for "External" or "Euler".
-#
-# While Simulation class is not a chemical factor in any sense, the
-# definition of "causal orientation" of border transition can be applied to
-# it. Then, it can be said that among border transitions between "A" and "E"
-# places, only the transitions causally oriented towards "A" places are
-# allowed for compliance with the equation (1).
-#
-# Clamping is a problem of its own.
+# If we apply the definition of "causal orientation" on A and E places, then it
+# can be said, that only the transitions causally oriented towards "A" places
+# are allowed for compliance with the equation (1).

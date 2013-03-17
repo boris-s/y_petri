@@ -82,7 +82,7 @@ TK1tetra_Kd_TMP = TK1di_Kd_T
 
 # Dissociation constants of the inhibitors (aka. inhibition constants).
 
-TK1di_Ki_TTP = 5                    # product inhibition
+TK1di_Ki_TTP = 5                     # product inhibition
 
 # Hill coefficient.
 

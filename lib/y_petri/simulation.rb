@@ -746,14 +746,19 @@ class YPetri::Simulation
   def gradient_for_sR
     rate_closures_for_sR.map( &:call ).reduce( @zero_ᴍ, :+ )
   end
-  alias ∂_sR gradient_for_sR
+
+  # State differential for sR transitions as a hash { place_name: ∂ / ∂ᴛ }.
+  # 
+  def ∂_sR
+    free_pp :gradient_for_sR
+  end
 
   # While for sR transitions, state differential is what matters the most,
   # as a conveniece, this method for multiplying the differential by provided
   # Δt is added.
   # 
   def Δ_Euler_for_sR( Δt )
-    ∂_sR * Δt
+    gradient_for_sR * Δt
   end
   alias Δ_euler_for_sR Δ_Euler_for_sR
 

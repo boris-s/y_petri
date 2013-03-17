@@ -15,7 +15,7 @@ include Pyper if require 'pyper'
 #
 describe ::YPetri::Place do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @pç = pç = Class.new ::YPetri::Place
     @p = pç.new! default_marking: 3.2,
                  marking: 1.1,
@@ -53,7 +53,7 @@ describe ::YPetri::Place do
       # #test_arcs & aliases
       assert_equal [], @p.downstream_arcs
       assert_equal [], @p.downstream_transitions
-      # #arcs & aliases
+      # #arcs & aliasesnn
       assert_equal [], @p.arcs
       assert_equal [], @p.connectivity
       # #precedents & aliases
@@ -79,7 +79,7 @@ end
 #
 describe ::YPetri::Transition do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @ç = ç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     [ ç, pç ].each { |ç|
@@ -342,7 +342,7 @@ end
 #
 describe "upstream and downstream reference mτs of places and transitions" do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @tç = tç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     [ tç, pç ].each { |ç|
@@ -406,7 +406,7 @@ end
 #
 describe ::YPetri::Net do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @tç = tç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     @nç = nç = Class.new ::YPetri::Net
@@ -579,7 +579,7 @@ end
 #
 describe ::YPetri::Simulation do
   before do
-    skip "to make the testing faster"
+    # skip "to make the testing faster"
     @pç = pç = Class.new( ::YPetri::Place )
     @tç = tç = Class.new( ::YPetri::Transition )
     @nç = nç = Class.new( ::YPetri::Net )
@@ -856,7 +856,7 @@ end
 #
 describe ::YPetri::TimedSimulation do  
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @a = ::YPetri::Place.new default_marking: 1.0
     @b = ::YPetri::Place.new default_marking: 2.0
     @c = ::YPetri::Place.new default_marking: 3.0
@@ -996,7 +996,7 @@ end
 #
 describe ::YPetri::Workspace do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
     @w = ::YPetri::Workspace.new
     a = @w.Place.new!( default_marking: 1.0, name: "AA" )
     b = @w.Place.new!( default_marking: 2.0, name: "BB" )
@@ -1063,7 +1063,7 @@ end
 #
 describe ::YPetri::Manipulator do
   before do
-    skip "for now"
+    # skip "for now"
     @m = ::YPetri::Manipulator.new
   end
   
@@ -1167,7 +1167,7 @@ end
 #
 describe ::YPetri do
   before do
-    skip "to speed up testing"
+    # skip "to speed up testing"
   end
 
   it "should have basic classes" do
@@ -1232,20 +1232,6 @@ end
 #     sleep 3
 #   end
 # end
-
-describe "Basic use of TimedSimulation" do
-  before do
-    require './ttp_metabolism.rb'
-  end
-
-  it "should work" do
-    # @m.net.must_be_kind_of ::YPetri::Net
-    # @m.run!
-    # @m.simulation.must_be_kind_of ::YPetri::TimedSimulation
-    # @m.plot_recording
-    sleep 3
-  end
-end
 
 # describe "Simplified dTTP pathway used for demo with Dr. Chang" do
 #   before do

@@ -39,8 +39,8 @@ Cdc20A = Place m!: 1                     # in situ
 # **************************************************************************
 #
 require './cell_cycle.rb'
-# run!
-# plot [ S_phase, A_phase, Cdc20A ]
+run!
+plot [ S_phase, A_phase, Cdc20A ]
 
 
 # === Chemical places (all in µM)
@@ -59,8 +59,8 @@ TTP = Place m!: 17.0                     # Traut1994pcp
 # **************************************************************************
 #
 require './pools'
-# run!
-# plot [ TMP, TDP, TTP, T23P ]
+run!
+plot [ TMP, TDP, TTP, T23P ]
 
 
 
@@ -70,18 +70,18 @@ require './pools'
 #
 require './dna_polymerase'
 set_sampling 30
-# run!
-# plot [ TMP, TDP, TTP, T23P ]
-# plot_flux except: Clock
+run!
+plot [ TMP, TDP, TTP, T23P ]
+plot_flux except: Clock
 
 # Mocking
 influx_T23P = 0.1
 T23P_flux_clamp = Transition stoichiometry: { T23P: 1 },
                              rate: λ { influx_T23P }
 
-# run!
-# plot [ TMP, TDP, TTP, T23P ]
-# plot_flux except: Clock
+run!
+plot [ TMP, TDP, TTP, T23P ]
+plot_flux except: Clock
 
 
 # **************************************************************************
@@ -92,8 +92,8 @@ require './tmpk'
 
 influx_T23P = 0
 
-# run!
-# plot [ TMP, TDP, TTP, T23P ]
+run!
+plot [ TMP, TDP, TTP, T23P ]
 
 # Another mocking.
 
@@ -101,9 +101,9 @@ influx_TMP = 0.2
 TMP_flux_clamp = Transition stoichiometry: { TMP: 1 },
                             rate: λ { influx_TMP }
 
-# run!
-# plot [ TMP, TDP, TTP, T23P ]
-# plot :flux, except: [ Clock, T23P_flux_clamp ]
+run!
+plot [ TMP, TDP, TTP, T23P ]
+plot :flux, except: [ Clock, T23P_flux_clamp ]
 
 
 
@@ -121,9 +121,9 @@ influx_Thymidine = 0.25
 Thymidine_flux_clamp = Transition stoichiometry: { Thymidine: 1 },
                                   rate: λ { influx_Thymidine }
 
-# run!
-# plot [ Thymidine, TMP, TDP, TTP, T23P ]
-# plot :flux, except: [ Clock, T23P_flux_clamp, TMP_flux_clamp ]
+run!
+plot [ Thymidine, TMP, TDP, TTP, T23P ]
+plot :flux, except: [ Clock, T23P_flux_clamp, TMP_flux_clamp ]
 
 # This barely fulfills the need
 
@@ -133,9 +133,9 @@ TK1_kcat = TK1_kcat * 3
 clamp Thymidine: 0.5
 set_step 0.1
 
-# run!
-# plot [ Thymidine, TMP, TDP, TTP, T23P ]
-# plot :flux, except: [ Clock, T23P_flux_clamp, TMP_flux_clamp, Thymidine_flux_clamp ]
+run!
+plot [ Thymidine, TMP, TDP, TTP, T23P ]
+plot :flux, except: [ Clock, T23P_flux_clamp, TMP_flux_clamp, Thymidine_flux_clamp ]
 
 #  But let' back out from it
 
