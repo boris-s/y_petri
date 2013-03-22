@@ -299,6 +299,12 @@ class YPetri::Simulation
   end
   alias p_m pm
 
+  # Marking hash of free places { place: marking }.
+  # 
+  def place_m
+    free_places :m
+  end
+
   # Marking array of all places.
   # 
   def marking
@@ -311,6 +317,24 @@ class YPetri::Simulation
     pp :marking
   end
   alias p_marking pmarking
+
+  # Marking hash of all places { place: marking }.
+  # 
+  def place_marking
+    free_places :marking
+  end
+
+  # Marking of a specified place(s)
+  # 
+  def marking_of place_or_collection_of_places
+    ppp = place_or_collection_of_places
+    raise AE, "Argument missing!" if ppp.size == 0
+    if ppp.respond_to? :each then
+      ppp.map { |pl| place_marking[ place( pl ) ] }
+    else
+      place_marking[ place( ppp ) ]
+    end
+  end
 
   # Marking of free places as a column vector.
   # 

@@ -211,6 +211,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
       step! while @time < t
     else raise "Invalid stepping option: #{stepping_opt}" end
   end
+  alias run_until! run_until_target_time!
 
   # Produces the inspect string for this timed simulation.
   # 
