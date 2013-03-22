@@ -343,6 +343,7 @@ class YPetri::Simulation
       place_marking[ place( place_or_collection_of_places ) ]
     end
   end
+  alias m_of marking_of
 
   # Marking of free places as a column vector.
   # 
