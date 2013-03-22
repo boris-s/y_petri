@@ -99,7 +99,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
   def at *args
     oo = args.extract_options!
     duplicate = super *args, oo
-    duplicate.send :set_time, oo[:t]
+    t = oo.may_have( :t, syn!: :ᴛ ) and duplicate.send :set_time, t
     return duplicate
   end
 
@@ -252,6 +252,15 @@ class YPetri::TimedSimulation < YPetri::Simulation
 
   def set_time t
     @time = t
+  end
+
+  # Duplicate creation. TODO: Like with Simulation#duplicate, this should
+  # be thought over, whether this should actually be #dup or #clone method.
+  # 
+  def duplicate
+    instance = super
+    instance.send :set_time, time
+    return instance
   end
 end # class YPetri::TimedSimulation
 

@@ -151,24 +151,34 @@ class YPetri::Simulation
     puts "reset complete" if YPetri::DEBUG
   end
 
-  # Allows to explore the system at different state / time, while leaving
-  # everything else as it was before. Accepts argument(s) telling it the
-  # system state of interest, and returns a simulation instance with the
-  # same parameters and settings as self, except for the different state.
+  # Returns a new instance of the system at a different state, while leaving
+  # all other simulation settings unchanged. This desired stater can be
+  # specified either as marking vector (:ᴍ), marking array of free places (:m),
+  # marking array of all places (:marking), or marking hash (:pm). In case of
+  # marking hash, it does not have to be given for each place, missing places
+  # will be left unchanged.
   # 
   def at *args
     oo = args.extract_options!
-    # TODO: acceptable options: :m, :ᴍ
-    m = oo[:m]
-    duplicate =
-      self.class.new( { method: @method,
-                        net: @net,
-                        place_clamps: @place_clamps,
-                        initial_marking: @initial_marking
-                      }.update( simulation_settings ) )
-    duplicate.send :set_recording, recording
-    duplicate.send :set_marking, m
-    return duplicate
+    oo.may_have :m                   # marking of free places
+    oo.may_have :marking             # marking of all places
+    oo.may_have :ᴍ, syn!: :m_vector  # marking vector of free places
+    oo.may_have :marking_vector      # marking vector of all places
+    oo.may_have :pm, syn!: [ :p_m, :pmarking, :p_marking, # marking hash
+                             :place_m, :place_marking ]
+    if oo.has? :marking_vector then
+      duplicate.send :set_marking_vector, oo.delete( :marking_vector )
+    elsif oo.has? :marking then
+      duplicate.send :set_marking, oo.delete( :marking )
+    elsif oo.has? :m then
+      duplicate.send :set_m, oo.delete( :m )
+    elsif oo.has? :ᴍ then
+      duplicate.send :set_ᴍ, oo.delete( :ᴍ )
+    elsif oo.has? :pm then
+      duplicate.send :set_pm, oo.delete( :pm )
+    else
+      duplicate.send :set_pm, oo
+    end
   end
 
   # Exposing @net.
@@ -271,7 +281,7 @@ class YPetri::Simulation
     kk = @place_clamps.keys
     places.select { |p| kk.include? p }
   end
-  
+
   # Behaves like #clamped_places, except that it uses place names instead of
   # instances whenever possible.
   # 
@@ -1236,16 +1246,56 @@ class YPetri::Simulation
     } # map
   end
 
-  # Private method for resetting marking.
+  # Set the marking vector.
   # 
-  def set_marking m_array
-    @marking_vector = Matrix.column_vector( m_array )
+  def set_marking_vector marking_vect
+    @marking_vector = marking_vect
+    return self
+  end
+
+  # Set the marking vector (array argument).
+  # 
+  def set_marking marking_array
+    set_marking_vector Matrix.column_vector( marking_array )
+  end
+
+  # Set the marking vector (hash argument).
+  # 
+  def set_pm marking_hash
+    to_set = p_marking.merge( marking_hash.with_keys do |k| place k end )
+    set_marking( places.map { |pl| to_set[pl] } )
+  end
+
+  # Set the marking vector (array argument, free places).
+  # 
+  def set_m marking_array_for_free_places
+    set_pm( free_places( marking_array_for_free_places ) )
+  end
+
+  # Set the marking vector (free places).
+  # 
+  def set_ᴍ marking_vector_for_free_places
+    set_m( marking_vector_for_free_places.column_to_a )
   end
 
   # Private method for resetting recording.
   # 
   def set_recording rec
     @recording = Hash[ rec ]
+    return self
+  end
+
+  # Duplicate creation. TODO: Perhaps this should be a #dup / #clone method?
+  # 
+  def duplicate
+    instance = self.class.new( { method: @method,
+                                 net: @net,
+                                 place_clamps: @place_clamps,
+                                 initial_marking: @initial_marking
+                               }.update( simulation_settings ) )
+    instance.send :set_recording, recording
+    instance.send :set_marking_vector, @marking_vector
+    return instance
   end
 
   # Place, Transition, Net class
