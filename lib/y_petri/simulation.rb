@@ -327,12 +327,10 @@ class YPetri::Simulation
   # Marking of a specified place(s)
   # 
   def marking_of place_or_collection_of_places
-    ppp = place_or_collection_of_places
-    raise AE, "Argument missing!" if ppp.size == 0
-    if ppp.respond_to? :each then
-      ppp.map { |pl| place_marking[ place( pl ) ] }
+    if place_or_collection_of_places.respond_to? :each then
+      place_or_collection_of_places.map { |pl| place_marking[ place( pl ) ] }
     else
-      place_marking[ place( ppp ) ]
+      place_marking[ place( place_or_collection_of_places ) ]
     end
   end
 
