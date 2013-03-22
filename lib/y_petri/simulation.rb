@@ -152,7 +152,7 @@ class YPetri::Simulation
   end
 
   # Returns a new instance of the system at a different state, while leaving
-  # all other simulation settings unchanged. This desired stater can be
+  # all other simulation settings unchanged. This desired state can be
   # specified either as marking vector (:ᴍ), marking array of free places (:m),
   # marking array of all places (:marking), or marking hash (:pm). In case of
   # marking hash, it does not have to be given for each place, missing places
@@ -331,7 +331,7 @@ class YPetri::Simulation
   # Marking hash of all places { place: marking }.
   # 
   def place_marking
-    free_places :marking
+    places :marking
   end
 
   # Marking of a specified place(s)
@@ -1262,8 +1262,8 @@ class YPetri::Simulation
   # Set the marking vector (hash argument).
   # 
   def set_pm marking_hash
-    to_set = p_marking.merge( marking_hash.with_keys do |k| place k end )
-    set_marking( places.map { |pl| to_set[pl] } )
+    to_set = place_marking.merge( marking_hash.with_keys do |k| place k end )
+    set_marking( places.map { |pl| to_set[ pl ] } )
   end
 
   # Set the marking vector (array argument, free places).
