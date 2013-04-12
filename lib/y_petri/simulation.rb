@@ -1102,7 +1102,7 @@ class YPetri::Simulation
   # Performs sampling. A snapshot of the current simulation state is recorded
   # into @recording hash as a pair { sampling_event => simulation state }.
   # 
-  def sample! key=ℒ(:sample!)
+  def sample! key=L!(:sample!)
     @sample_number = @sample_number + 1 rescue 0
     @recording[ key.ℓ?(:sample!) ? @sample_number : key ] =
       marking.map { |n| n.round SAMPLING_DECIMAL_PLACES }

@@ -453,7 +453,7 @@ describe ::YPetri::Net do
       assert @net.include?( @p1 ) && !@net.include?( nil )
     end
 
-    it "should 'standard equipment' methods" do
+    it "should have 'standard equipment' methods" do
       assert @net == @net.dup
       assert @net.inspect.start_with? "#<Net:"
       assert @net.include?( @p1 )

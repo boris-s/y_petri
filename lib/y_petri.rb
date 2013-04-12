@@ -2,7 +2,22 @@
 
 require 'gnuplot'
 require 'csv'
-require 'y_support/all'
+require 'graphviz'
+
+require 'y_support/local_object'
+require 'y_support/respond_to'
+require 'y_support/name_magic'
+require 'y_support/unicode'
+require 'y_support/typing'
+require 'y_support/core_ext/hash'
+require 'y_support/core_ext/array'
+require 'y_support/stdlib_ext/matrix'
+
+require 'sy/abstract_algebra'
+
+require 'active_support/core_ext/module/delegation'
+require 'active_support/core_ext/array/extract_options'
+
 require_relative 'y_petri/version'
 require_relative 'y_petri/place'
 require_relative 'y_petri/transition'

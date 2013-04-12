@@ -340,7 +340,64 @@ module YPetri
           end % "#{places.size} pp, #{transitions.size} tt" )
     end
 
+    def plot_graph_with_graphviz( place_collection )
+      # Create a new graph.
+      gr = GraphViz.new :G, type: :digraph
+      
+      # # set global node options
+      # g.node[:color] = "#ddaa66"
+      # g.node[:style] = "filled"
+      # g.node[:shape] = "box"
+      # g.node[:penwidth] = "1"
+      # g.node[:fontname] = "Trebuchet MS"
+      # g.node[:fontsize] = "8"
+      # g.node[:fillcolor] = "#ffeecc"
+      # g.node[:fontcolor] = "#775500"
+      # g.node[:margin] = "0.0"
+
+      # # set global edge options
+      # g.edge[:color] = "#999999"
+      # g.edge[:weight] = "1"
+      # g.edge[:fontsize] = "6"
+      # g.edge[:fontcolor] = "#444444"
+      # g.edge[:fontname] = "Verdana"
+      # g.edge[:dir] = "forward"
+      # g.edge[:arrowsize] = "0.5"
+
+        # make nodes
+      nodes = Hash[ place_collection.map { |place_name, place_label|
+                      [ place_name, gr.add_nodes( label ) ]
+                    } ]
+
+      # add edges
+      place_collection.each { |place_name, place_label|
+        place_instance = place( place_name )
+        place_instance.upstream_places.each { |upstream_place|
+          node = nodes[ place_name ]
+          next unless set_of_places.map { |ɴ, _| ɴ }.include?( upstream_place.name )
+          next if upstream_place == place_instance
+          upstream_node = nodes[ upstream_place.name ]
+          node << upstream_node
+        }
+      }
+
+      # Generate output image
+      gr.output png: "y_petri_graph.png"
+      show_file_with_kioclient "y_petri_graph.png"
+    end
+
+    # Inspect string of the instance.
+    # 
+    def inspect; to_s end
+
     private
+
+    # Display a file with kioclient (KDE).
+    # 
+    def show_file_with_kioclient( file_name )
+      system "sleep 0.2; kioclient exec 'file:%s'" %
+        File.expand_path( '.', file_name )
+    end
 
     # Place, Transition, Net class
     # 
