@@ -341,8 +341,28 @@ module YPetri
     end
 
     def visualize
-      γ = GraphViz.new :G, type: :digraph      # creating a new graph
+      require 'graphviz'
+      γ = GraphViz.new :G     # creating a new graph
       
+      # main        = γ.add_nodes( "main", shape: "box" )
+      # parse       = γ.add_nodes( "parse", fillcolor: "yellow", style: "rounded,filled", shape: "diamond" )
+      # execute     = γ.add_nodes( "execute", shape: "record", label: "{ a | b | c }", style: "rounded" )
+      # init        = γ.add_nodes( "init", fillcolor: "yellow", style: "filled" )
+      # cleanup     = γ.add_nodes( "cleanup" )
+      # make_string = γ.add_nodes( "make_string" )
+      # printf      = γ.add_nodes( "printf" )
+      # compare     = γ.add_nodes( "compare" )
+
+      # γ.add_edges( main, parse )
+      # γ.add_edges( parse, execute )
+      # γ.add_edges( main, init )
+      # γ.add_edges( main, cleanup )
+      # γ.add_edges( execute, make_string )
+      # γ.add_edges( execute, printf ); nil
+      # γ.add_edges( init, make_string ); nil
+      # γ.add_edges( main, printf ); nil
+      # γ.add_edges( execute, compare ); nil
+
       # # set global node options
       # g.node[:color] = "#ddaa66"
       # g.node[:style] = "filled"
@@ -364,27 +384,51 @@ module YPetri
       # g.edge[:arrowsize] = "0.5"
 
       # add place nodes
-      places.each { |p|
-        γ.add_nodes p.name
-      }
+      place_nodes =
+        Hash[ places.zip places.map { |p|
+                γ.add_nodes p.name.to_s, fillcolor: 'lightgrey', color: 'grey', style: 'filled'
+              } ]
 
       # add transition nodes
-      transitions.each { |t|
-        γ.add_nodes t.name
-                    shape: 'box',
-                    fillcolor: if t.assignment? then 'yellow'
-                               elsif t.basic_type == :SR then 'lightcyan'
-                               else 'ghostwhite' end
-      }
+      transition_nodes =
+        Hash[ transitions.zip transitions.map { |t|
+                γ.add_nodes( t.name.to_s,
+                             shape: 'box',
+                             fillcolor: if t.assignment? then 'yellow'
+                                        elsif t.basic_type == :SR then 'lightcyan'
+                                        else 'ghostwhite' end,
+                             color: if t.assignment? then 'goldenrod'
+                                    elsif t.basic_type == :SR then 'cyan'
+                                    else 'grey' end,
+                             style: 'filled'
+                             )
+                             
+              } ]
       
       # add edges
-      transitions.each { |t|
+      transition_nodes.each { |t, t_node|
         if t.assignment? then
-          t.codomain.each { |p| γ.add_nodes p.name, t.name, color: 'yellow' }
+          t.codomain.each { |p|
+            γ.add_edges t_node, place_nodes[p], color: 'goldenrod'
+          }
+          ( t.domain - t.codomain ).each { |p|
+            γ.add_edges t_node, place_nodes[p], color: 'grey', arrowhead: 'none'
+          }
+        elsif t.basic_type == :SR then
+          t.codomain.each { |p|
+            if t.stoichio[p] > 0 then # producing arc
+              γ.add_edges t_node, place_nodes[p], color: 'cyan'
+            elsif t.stoichio[p] < 0 then # consuming arc
+              γ.add_edges place_nodes[p], t_node, color: 'cyan'
+            else
+              γ.add_edges place_nodes[p], t_node, color: 'grey', arrowhead: 'none'
+            end
+          }
+          ( t.domain - t.codomain ).each { |p|
+            γ.add_edges t_node, place_nodes[p], color: 'grey', arrowhead: 'none'
+          }
         end
       }
-
-
 
       # place_collection.each { |place_name, place_label|
       #   place_instance = place( place_name )
@@ -398,7 +442,7 @@ module YPetri
       # }
 
       # Generate output image
-      gr.output png: "y_petri_graph.png"
+      γ.output png: "y_petri_graph.png"
       show_file_with_kioclient "y_petri_graph.png"
     end
 

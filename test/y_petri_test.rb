@@ -3,11 +3,12 @@
 
 require 'minitest/spec'
 require 'minitest/autorun'
-# require_relative '../lib/y_petri'     # tested component itself
-# require 'sy'
-require 'y_petri'
+require_relative '../lib/y_petri'     # tested component itself
+# require 'y_petri'
 
-include Pyper if require 'pyper'
+# require 'sy'
+
+# include Pyper if require 'pyper'
 
 # **************************************************************************
 # Test of Place class, part I.
