@@ -15,7 +15,7 @@ include Pyper if require 'pyper'
 #
 describe ::YPetri::Place do
   before do
-    # skip "to speed up testing"
+    skip "to speed up testing"
     @pç = pç = Class.new ::YPetri::Place
     @p = pç.new! default_marking: 3.2,
                  marking: 1.1,
@@ -79,7 +79,7 @@ end
 #
 describe ::YPetri::Transition do
   before do
-    # skip "to speed up testing"
+    skip "to speed up testing"
     @ç = ç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     [ ç, pç ].each { |ç|
@@ -342,7 +342,7 @@ end
 #
 describe "upstream and downstream reference mτs of places and transitions" do
   before do
-    # skip "to speed up testing"
+    skip "to speed up testing"
     @tç = tç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     [ tç, pç ].each { |ç|
@@ -406,7 +406,7 @@ end
 #
 describe ::YPetri::Net do
   before do
-    # skip "to speed up testing"
+    skip "to speed up testing"
     @tç = tç = Class.new ::YPetri::Transition
     @pç = pç = Class.new ::YPetri::Place
     @nç = nç = Class.new ::YPetri::Net
@@ -579,7 +579,7 @@ end
 #
 describe ::YPetri::Simulation do
   before do
-    # skip "to make the testing faster"
+    skip "to make the testing faster"
     @pç = pç = Class.new( ::YPetri::Place )
     @tç = tç = Class.new( ::YPetri::Transition )
     @nç = nç = Class.new( ::YPetri::Net )
@@ -856,7 +856,7 @@ end
 #
 describe ::YPetri::TimedSimulation do  
   before do
-    # skip "to speed up testing"
+    skip "to speed up testing"
     @a = ::YPetri::Place.new default_marking: 1.0
     @b = ::YPetri::Place.new default_marking: 2.0
     @c = ::YPetri::Place.new default_marking: 3.0
@@ -996,7 +996,7 @@ end
 #
 describe ::YPetri::Workspace do
   before do
-    # skip "to speed up testing"
+    skip "to speed up testing"
     @w = ::YPetri::Workspace.new
     a = @w.Place.new!( default_marking: 1.0, name: "AA" )
     b = @w.Place.new!( default_marking: 2.0, name: "BB" )
@@ -1063,7 +1063,7 @@ end
 #
 describe ::YPetri::Manipulator do
   before do
-    # skip "for now"
+    skip "for now"
     @m = ::YPetri::Manipulator.new
   end
   
@@ -1167,7 +1167,7 @@ end
 #
 describe ::YPetri do
   before do
-    # skip "to speed up testing"
+    skip "to speed up testing"
   end
 
   it "should have basic classes" do
@@ -1232,6 +1232,23 @@ end
 #     sleep 3
 #   end
 # end
+
+describe "Graphviz visualization" do
+  before do
+    @m = YPetri::Manipulator.new
+    @m.Place name: :A, m!: 1
+    @m.Place name: :B, m!: 1.5
+    @m.Place name: :C, m!: 2
+    @m.Place name: :D, m!: 2.5
+    @m.Transition name: :A_pump, s: { A: -1 }, rate: proc { 0.005 }
+    @m.Transition name: :B_decay, s: { B: -1 }, rate: 0.05
+    @m.Transition name: :C_guard, assignment: true, codomain: :C, action: λ { 2 }
+  end
+
+  it "should work" do
+    @m.net.visualize
+  end
+end
 
 # describe "Simplified dTTP pathway used for demo with Dr. Chang" do
 #   before do

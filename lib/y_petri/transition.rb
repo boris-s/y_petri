@@ -289,9 +289,9 @@ module YPetri
     # 6. SR ..... stoichiometric with rate
     # 
     def basic_type
-      if has_rate? then stoichiometric? ? "SR" : "sR"
-      elsif timed? then stoichiometric? ? "TSr" : "Tsr"
-      else stoichiometric? ? "tS" : "ts" end
+      if has_rate? then stoichiometric? ? :SR : :sR
+      elsif timed? then stoichiometric? ? :TSr : :Tsr
+      else stoichiometric? ? :tS : :ts end
     end
 
     # Reports transition's type (basic type + whether it's an assignment

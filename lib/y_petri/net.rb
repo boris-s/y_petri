@@ -340,9 +340,8 @@ module YPetri
           end % "#{places.size} pp, #{transitions.size} tt" )
     end
 
-    def plot_graph_with_graphviz( place_collection )
-      # Create a new graph.
-      gr = GraphViz.new :G, type: :digraph
+    def visualize
+      γ = GraphViz.new :G, type: :digraph      # creating a new graph
       
       # # set global node options
       # g.node[:color] = "#ddaa66"
@@ -364,26 +363,48 @@ module YPetri
       # g.edge[:dir] = "forward"
       # g.edge[:arrowsize] = "0.5"
 
-        # make nodes
-      nodes = Hash[ place_collection.map { |place_name, place_label|
-                      [ place_name, gr.add_nodes( label ) ]
-                    } ]
-
-      # add edges
-      place_collection.each { |place_name, place_label|
-        place_instance = place( place_name )
-        place_instance.upstream_places.each { |upstream_place|
-          node = nodes[ place_name ]
-          next unless set_of_places.map { |ɴ, _| ɴ }.include?( upstream_place.name )
-          next if upstream_place == place_instance
-          upstream_node = nodes[ upstream_place.name ]
-          node << upstream_node
-        }
+      # add place nodes
+      places.each { |p|
+        γ.add_nodes p.name
       }
+
+      # add transition nodes
+      transitions.each { |t|
+        γ.add_nodes t.name
+                    shape: 'box',
+                    fillcolor: if t.assignment? then 'yellow'
+                               elsif t.basic_type == :SR then 'lightcyan'
+                               else 'ghostwhite' end
+      }
+      
+      # add edges
+      transitions.each { |t|
+        if t.assignment? then
+          t.codomain.each { |p| γ.add_nodes p.name, t.name, color: 'yellow' }
+        end
+      }
+
+
+
+      # place_collection.each { |place_name, place_label|
+      #   place_instance = place( place_name )
+      #   place_instance.upstream_places.each { |upstream_place|
+      #     node = nodes[ place_name ]
+      #     next unless set_of_places.map { |ɴ, _| ɴ }.include?( upstream_place.name )
+      #     next if upstream_place == place_instance
+      #     upstream_node = nodes[ upstream_place.name ]
+      #     node << upstream_node
+      #   }
+      # }
 
       # Generate output image
       gr.output png: "y_petri_graph.png"
       show_file_with_kioclient "y_petri_graph.png"
+    end
+
+    # display it with kioclient
+    def show_file_with_kioclient( fɴ )
+      system "sleep 0.2; kioclient exec 'file:%s'" % File.expand_path( '.', fɴ )
     end
 
     # Inspect string of the instance.
@@ -399,7 +420,7 @@ module YPetri
         File.expand_path( '.', file_name )
     end
 
-    # Place, Transition, Net class
+    # Place, Transition, Net classes.
     # 
     def Place; ::YPetri::Place end
     def Transition; ::YPetri::Transition end
