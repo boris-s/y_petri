@@ -26,10 +26,8 @@ class YPetri::Manipulator
     imc_selection_clear
   end
 
-  delegate :place, :transition,
-           :p, :t,
-           :places, :transitions, :nets,
-           :simulations,
+  delegate :place, :transition, :p, :t,
+           :places, :transitions, :nets, :simulations,
            :pp, :tt, :nn,
            :clamp_collections,
            :initial_marking_collections,

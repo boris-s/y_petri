@@ -138,12 +138,12 @@ module YPetri
     include NameMagic
 
     BASIC_TRANSITION_TYPES = {
-      "ts" => "timeless nonstoichiometric transition",
-      "tS" => "timeless stoichiometric transition",
-      "Tsr" => "timed rateless nonstoichiometric transition",
-      "TSr" => "timed rateless stoichiometric transition",
-      "sR" => "nonstoichiometric transition with rate",
-      "SR" => "stoichiometric transition with rate"
+      ts: "timeless nonstoichiometric transition",
+      tS: "timeless stoichiometric transition",
+      Tsr: "timed rateless nonstoichiometric transition",
+      TSr: "timed rateless stoichiometric transition",
+      sR: "nonstoichiometric transition with rate",
+      SR: "stoichiometric transition with rate"
     }
 
     # Domain, or 'upstream arcs', is a collection of places, whose marking
@@ -418,7 +418,7 @@ module YPetri
 
     # Result of the transition's "function", regardless of the #enabled? status.
     # 
-    def action( Δt=nil )
+    def action Δt=nil
       raise AErr, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
       # the code here looks awkward, because I was trying to speed it up

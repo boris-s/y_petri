@@ -1,479 +1,458 @@
 #encoding: utf-8
 
-module YPetri
+# Represents a <em>Petri net</em>: A collection of places and
+# transitions. The connector arrows – called <em>arcs</em> in
+# classical Petri net terminology – are considered a property
+# of transitions. In <tt>YPetri</tt>, 'arcs' is a synonym for
+# places / transitions connected to a given transition / place.
+# 
+class YPetri::Net
+  include NameMagic
+  
+  def initialize *args; oo = args.extract_options!
+    @places, @transitions = [], [] # empty arrays
+    # LATER: let the places/transitions be specified upon init
+  end
 
-  # Represents a <em>Petri net</em>: A collection of places and
-  # transitions. The connector arrows – called <em>arcs</em> in
-  # classical Petri net terminology – are considered a property
-  # of transitions. In <tt>YPetri</tt>, 'arcs' is a synonym for
-  # places / transitions connected to a given transition / place.
+  attr_reader :places, :transitions
+
+  # Names of places in the net.
   # 
-  class Net
-    include NameMagic
+  def pp; places.map &:name end
 
-    def initialize *args; oo = args.extract_options!
-      @places, @transitions = [], [] # empty arrays
-      # LATER: let the places/transitions be specified upon init
-    end
-
-    attr_reader :places, :transitions
-
-    # Names of places in the net.
-    # 
-    def pp; places.map &:name end
-
-    # Names of transitions in the net.
-    # 
-    def tt; transitions.map &:name end
+  # Names of transitions in the net.
+  # 
+  def tt; transitions.map &:name end
     
-    # Includes a place in the net. Returns <em>true</em> if successful,
-    # <em>false</em> if the place is already included in the net.
-    # 
-    def include_place! place
-      p = place( place )
-      return false if @places.include? p
-      @places << p
-      return true
-    end
+  # Includes a place in the net. Returns <em>true</em> if successful,
+  # <em>false</em> if the place is already included in the net.
+  # 
+  def include_place! place
+    p = place( place )
+    return false if @places.include? p
+    @places << p
+    return true
+  end
 
-    # Includes a transition in the net. Returns <em>true</em> if successful,
-    # <em>false</em> if the transition is already included in the net. The
-    # arcs of the transition being included may only connect to the places
-    # already in the net.
-    # 
-    def include_transition! transition;
-      t = transition( transition )
-      return false if @transitions.include? t
-      raise TypeError, "Unable to include the transition #{t} in #{self}: " +
-        "It connects to one or more places outside the net." unless
-        t.arcs.all? { |p| include? p }
-      @transitions << t
-      return true
-    end
+  # Includes a transition in the net. Returns <em>true</em> if successful,
+  # <em>false</em> if the transition is already included in the net. The
+  # arcs of the transition being included may only connect to the places
+  # already in the net.
+  # 
+  def include_transition! transition;
+    t = transition( transition )
+    return false if @transitions.include? t
+    raise TypeError, "Unable to include the transition #{t} in #{self}: " +
+      "It connects to one or more places outside the net." unless
+      t.arcs.all? { |p| include? p }
+    @transitions << t
+    return true
+  end
 
-    # Excludes a place from the net. Returns <em>true<em> if successful,
-    # <em>false</em> if the place was not found in the net. A place may
-    # not be excluded from the net so long as any transitions in the
-    # net connect to it.
-    # 
-    def exclude_place! place
-      p = place( place )
-      raise "Unable to exclude #{p} from #{self}: One or more transitions" +
-        "depend on it" if transitions.any? { |t| t.arcs.include? p }
-      return true if @places.delete p
-      return false
-    end
+  # Excludes a place from the net. Returns <em>true<em> if successful,
+  # <em>false</em> if the place was not found in the net. A place may
+  # not be excluded from the net so long as any transitions in the
+  # net connect to it.
+  # 
+  def exclude_place! place
+    p = place( place )
+    raise "Unable to exclude #{p} from #{self}: One or more transitions" +
+      "depend on it" if transitions.any? { |t| t.arcs.include? p }
+    return true if @places.delete p
+    return false
+  end
 
-    # Excludes a transition from the net. Returns <em>true</em> if successful,
-    # <em>false</em> if the transition was not found in the net.
-    # 
-    def exclude_transition! transition
-      t = transition( transition )
-      return true if @transitions.delete t
-      return false
-    end
+  # Excludes a transition from the net. Returns <em>true</em> if successful,
+  # <em>false</em> if the transition was not found in the net.
+  # 
+  def exclude_transition! transition
+    t = transition( transition )
+    return true if @transitions.delete t
+    return false
+  end
 
-    # Includes an object (either place or transition) in the net. Acts by
-    # calling #include_place! or #include_transition!, as needed, the
-    # difference being, that errors from bad arguments are swallowed.
-    # 
-    def << place_or_transition
+  # Includes an object (either place or transition) in the net. Acts by
+  # calling #include_place! or #include_transition!, as needed, the
+  # difference being, that errors from bad arguments are swallowed.
+  # 
+  def << place_or_transition
+    begin
+      include_place! place_or_transition
+    rescue NameError
       begin
-        include_place!( place_or_transition )
+        include_transition! place_or_transition
       rescue NameError
-        begin
-          include_transition!( place_or_transition )
-        rescue NameError
-          raise NameError,
-                "Unrecognized place or transition: #{place_or_transition}"
-        end
+        raise NameError,
+        "Unrecognized place or transition: #{place_or_transition}"
       end
-      return self
     end
+    return self
+  end
 
-    # Inquirer whether the net includes a place / transition.
-    # 
-    def include? place_or_transition
-      p = begin
-            place( place_or_transition )
-          rescue NameError
-            nil
-          end
-      if p then return places.include? p end
-      t = begin
-            transition( place_or_transition )
-          rescue NameError
-            nil
-          end
-      if t then return transitions.include? t end
-      return false
-    end
-
-    # ----------------------------------------------------------------------
-    # Methods exposing transition collections acc. to their properties:
-
-    # Array of <em>ts</em> transitions in the net.
-    # 
-    def timeless_nonstoichiometric_transitions
-      transitions.select{ |t| t.timeless? and t.nonstoichiometric? }
-    end
-    alias :ts_transitions :timeless_nonstoichiometric_transitions
-    
-    # Names of <em>ts</em> transitions in the net.
-    # 
-    def timeless_nonstoichiometric_tt
-      timeless_nonstoichiometric_transitions.map &:name
-    end
-    alias :ts_tt :timeless_nonstoichiometric_tt
-
-    # Array of <em>tS</em> transitions in the net.
-    # 
-    def timeless_stoichiometric_transitions
-      transitions.select{ |t| t.timeless? and t.stoichiometric? }
-    end
-    alias :tS_transitions :timeless_stoichiometric_transitions
-
-    # Names of <em>tS</em> transitions in the net.
-    # 
-    def timeless_stoichiometric_tt
-      timeless_stoichiometric_transitions.map &:name
-    end
-    alias :tS_tt :timeless_stoichiometric_tt
-
-    # Array of <em>Tsr</em> transitions in the net.
-    # 
-    def timed_nonstoichiometric_transitions_without_rate
-      transitions.select{ |t| t.timed? and t.nonstoichiometric? and t.rateless? }
-    end
-    alias :timed_rateless_nonstoichiometric_transitions \
-          :timed_nonstoichiometric_transitions_without_rate
-    alias :Tsr_transitions :timed_nonstoichiometric_transitions_without_rate
-
-    # Names of <em>Tsr</em> transitions in the net.
-    # 
-    def timed_nonstoichiometric_tt_without_rate
-      timed_nonstoichiometric_transitions_without_rate.map &:name
-    end
-    alias :timed_rateless_nonstoichiometric_tt \
-          :timed_nonstoichiometric_tt_without_rate
-    alias :Tsr_tt :timed_nonstoichiometric_tt_without_rate
-
-    # Array of <em>TSr</em> transitions in the net.
-    # 
-    def timed_stoichiometric_transitions_without_rate
-      transitions.select { |t| t.timed? and t.stoichiometric? and t.rateless? }
-    end
-    alias :timed_rateless_stoichiometric_transitions \
-          :timed_stoichiometric_transitions_without_rate
-    alias :TSr_transitions :timed_stoichiometric_transitions_without_rate
-
-    # Names of <em>TSr</em> transitions in the net.
-    # 
-    def timed_stoichiometric_tt_without_rate
-      timed_stoichiometric_transitions_without_rate.map &:name
-    end
-    alias :timed_rateless_stoichiometric_tt :timed_stoichiometric_tt_without_rate
-    alias :Tsr_tt :timed_stoichiometric_tt_without_rate
-
-    # Array of <em>sR</em> transitions in the net.
-    # 
-    def nonstoichiometric_transitions_with_rate
-      transitions.select { |t| t.has_rate? and t.nonstoichiometric? }
-    end
-    alias :sR_transitions :nonstoichiometric_transitions_with_rate
-
-    # Names of <em>sR</em> transitions in the net.
-    # 
-    def nonstoichiometric_tt_with_rate
-      nonstoichiometric_transitions_with_rate.map &:name
-    end
-    alias :sR_tt :nonstoichiometric_tt_with_rate
-
-    # Array of <em>SR</em> transitions in the net.
-    # 
-    def stoichiometric_transitions_with_rate
-      transitions.select { |t| t.has_rate? and t.stoichiometric? }
-    end
-    alias :SR_transitions :stoichiometric_transitions_with_rate
-
-    # Names of <em>SR</em> transitions in the net.
-    # 
-    def stoichiometric_tt_with_rate
-      stoichiometric_transitions_with_rate.map &:name
-    end
-    alias :SR_tt :stoichiometric_tt_with_rate
-
-    # Array of transitions with <em>explicit assignment action</em>
-    # (<em>A</em> transitions) in the net.
-    # 
-    def transitions_with_explicit_assignment_action
-      transitions.select { |t| t.assignment_action? }
-    end
-    alias :transitions_with_assignment_action \
-          :transitions_with_explicit_assignment_action
-    alias :assignment_transitions :transitions_with_explicit_assignment_action
-    alias :A_transitions :transitions_with_explicit_assignment_action
-
-    # Names of transitions with <em>explicit assignment action</em>
-    # (<em>A</em> transitions) in the net.
-    # 
-    def tt_with_explicit_assignment_action
-      transitions_with_explicit_assignment_action.map &:name
-    end
-    alias :tt_with_assignment_action :tt_with_explicit_assignment_action
-    alias :assignment_tt :tt_with_assignment_action
-    alias :A_tt :tt_with_assignment_action
-
-    # Array of <em>stoichiometric</em> transitions in the net.
-    # 
-    def stoichiometric_transitions
-      transitions.select &:stoichiometric?
-    end
-    alias :S_transitions :stoichiometric_transitions
-
-    # Names of <em>stoichiometric</em> transitions in the net.
-    # 
-    def stoichiometric_tt
-      stoichiometric_transitions.map &:name
-    end
-    alias :S_tt :stoichiometric_tt
-
-    # Array of <em>nonstoichiometric</em> transitions in the net.
-    # 
-    def nonstoichiometric_transitions
-      transitions.select &:nonstoichiometric?
-    end
-    alias :s_transitions :nonstoichiometric_transitions
-
-    # Names of <em>nonstoichimetric</em> transitions in the net.
-    # 
-    def nonstoichiometric_tt
-      nonstoichiometric_transitions.map &:name
-    end
-    alias :s_tt :nonstoichiometric_tt
-
-    # Array of <em>timed</em> transitions in the net.
-    #
-    def timed_transitions; transitions.select &:timed? end
-    alias :T_transitions :timed_transitions
-
-    # Names of <em>timed</em> transitions in the net.
-    # 
-    def timed_tt; timed_transitions.map &:name end
-    alias :T_tt :timed_tt
-
-    # Array of <em>timeless</em> transitions in the net.
-    # 
-    def timeless_transitions; transitions.select &:timeless? end
-    alias :t_transitions :timeless_transitions
-
-    # Names of <em>timeless</em> transitions in the net.
-    # 
-    def timeless_tt; timeless_transitions.map &:name end
-    alias :t_tt :timeless_tt
-
-    # Array of <em>transitions with rate</em> in the net.
-    # 
-    def transitions_with_rate; transitions.select &:has_rate? end
-    alias :R_transitions :transitions_with_rate
-
-    # Names of <em>transitions with rate</em> in the net.
-    # 
-    def tt_with_rate; transitions_with_rate.map &:name end
-    alias :R_tt :tt_with_rate
-
-    # Array of <em>rateless</em> transitions in the net.
-    # 
-    def rateless_transitions; transitions.select &:rateless? end
-    alias :transitions_without_rate :rateless_transitions
-    alias :r_transitions :rateless_transitions
-
-    # Names of <em>rateless</em> transitions in the net.
-    # 
-    def rateless_tt; rateless_transitions.map &:name end
-    alias :tt_without_rate :rateless_tt
-    alias :r_tt :rateless_tt
-
-    # ==== Inquirer methods about net qualities
-
-    # Is the net <em>functional</em>?
-    # 
-    def functional?; transitions.all? { |t| t.functional? } end
-    
-    # Is the net <em>timed</em>?
-    # 
-    def timed?; transitions.all? { |t| t.timed? } end
-
-    # ==== Simulation constructors
-
-    # Creates a new simulation from the net.
-    # 
-    def new_simulation *args
-      oo = args.extract_options!
-      YPetri::Simulation.new *args, oo.merge( net: self )
-    end
-
-    # Creates a new timed simulation from the net.
-    # 
-    def new_timed_simulation *args
-      oo = args.extract_options!
-      YPetri::TimedSimulation.new oo.merge( net: self )
-    end
-
-    # ==== Sundry methods
-
-    # Networks are equal when their places and transitions are equal.
-    # 
-    def == other
-      return false unless other.class_complies?( ç )
-      places == other.places && transitions == other.transitions
-    end
-
-    # Returns a string briefly describing the net.
-    # 
-    def to_s
-      "#<Net: %s >" %
-        ( if name.nil? then
-            "%s"
-          else
-            "name: #{name}, %s"
-          end % "#{places.size} pp, #{transitions.size} tt" )
-    end
-
-    def visualize
-      require 'graphviz'
-      γ = GraphViz.new :G     # creating a new graph
-      
-      # main        = γ.add_nodes( "main", shape: "box" )
-      # parse       = γ.add_nodes( "parse", fillcolor: "yellow", style: "rounded,filled", shape: "diamond" )
-      # execute     = γ.add_nodes( "execute", shape: "record", label: "{ a | b | c }", style: "rounded" )
-      # init        = γ.add_nodes( "init", fillcolor: "yellow", style: "filled" )
-      # cleanup     = γ.add_nodes( "cleanup" )
-      # make_string = γ.add_nodes( "make_string" )
-      # printf      = γ.add_nodes( "printf" )
-      # compare     = γ.add_nodes( "compare" )
-
-      # γ.add_edges( main, parse )
-      # γ.add_edges( parse, execute )
-      # γ.add_edges( main, init )
-      # γ.add_edges( main, cleanup )
-      # γ.add_edges( execute, make_string )
-      # γ.add_edges( execute, printf ); nil
-      # γ.add_edges( init, make_string ); nil
-      # γ.add_edges( main, printf ); nil
-      # γ.add_edges( execute, compare ); nil
-
-      # # set global node options
-      # g.node[:color] = "#ddaa66"
-      # g.node[:style] = "filled"
-      # g.node[:shape] = "box"
-      # g.node[:penwidth] = "1"
-      # g.node[:fontname] = "Trebuchet MS"
-      # g.node[:fontsize] = "8"
-      # g.node[:fillcolor] = "#ffeecc"
-      # g.node[:fontcolor] = "#775500"
-      # g.node[:margin] = "0.0"
-
-      # # set global edge options
-      # g.edge[:color] = "#999999"
-      # g.edge[:weight] = "1"
-      # g.edge[:fontsize] = "6"
-      # g.edge[:fontcolor] = "#444444"
-      # g.edge[:fontname] = "Verdana"
-      # g.edge[:dir] = "forward"
-      # g.edge[:arrowsize] = "0.5"
-
-      # add place nodes
-      place_nodes =
-        Hash[ places.zip places.map { |p|
-                γ.add_nodes p.name.to_s, fillcolor: 'lightgrey', color: 'grey', style: 'filled'
-              } ]
-
-      # add transition nodes
-      transition_nodes =
-        Hash[ transitions.zip transitions.map { |t|
-                γ.add_nodes( t.name.to_s,
-                             shape: 'box',
-                             fillcolor: if t.assignment? then 'yellow'
-                                        elsif t.basic_type == :SR then 'lightcyan'
-                                        else 'ghostwhite' end,
-                             color: if t.assignment? then 'goldenrod'
-                                    elsif t.basic_type == :SR then 'cyan'
-                                    else 'grey' end,
-                             style: 'filled'
-                             )
-                             
-              } ]
-      
-      # add edges
-      transition_nodes.each { |t, t_node|
-        if t.assignment? then
-          t.codomain.each { |p|
-            γ.add_edges t_node, place_nodes[p], color: 'goldenrod'
-          }
-          ( t.domain - t.codomain ).each { |p|
-            γ.add_edges t_node, place_nodes[p], color: 'grey', arrowhead: 'none'
-          }
-        elsif t.basic_type == :SR then
-          t.codomain.each { |p|
-            if t.stoichio[p] > 0 then # producing arc
-              γ.add_edges t_node, place_nodes[p], color: 'cyan'
-            elsif t.stoichio[p] < 0 then # consuming arc
-              γ.add_edges place_nodes[p], t_node, color: 'cyan'
-            else
-              γ.add_edges place_nodes[p], t_node, color: 'grey', arrowhead: 'none'
-            end
-          }
-          ( t.domain - t.codomain ).each { |p|
-            γ.add_edges t_node, place_nodes[p], color: 'grey', arrowhead: 'none'
-          }
+  # Inquirer whether the net includes a place / transition.
+  # 
+  def include? place_or_transition
+    p = begin
+          place( place_or_transition )
+        rescue NameError
+          nil
         end
-      }
+    return places.include? p if p
+    t = begin
+          transition( place_or_transition )
+        rescue NameError
+          nil
+        end
+    return transitions.include? t if t
+    return false
+  end
 
-      # place_collection.each { |place_name, place_label|
-      #   place_instance = place( place_name )
-      #   place_instance.upstream_places.each { |upstream_place|
-      #     node = nodes[ place_name ]
-      #     next unless set_of_places.map { |ɴ, _| ɴ }.include?( upstream_place.name )
-      #     next if upstream_place == place_instance
-      #     upstream_node = nodes[ upstream_place.name ]
-      #     node << upstream_node
-      #   }
-      # }
+  # ----------------------------------------------------------------------
+  # Methods exposing transition collections acc. to their properties:
 
-      # Generate output image
-      γ.output png: "y_petri_graph.png"
-      show_file_with_kioclient "y_petri_graph.png"
-    end
+  # Array of <em>ts</em> transitions in the net.
+  # 
+  def timeless_nonstoichiometric_transitions
+    transitions.select{ |t| t.timeless? and t.nonstoichiometric? }
+  end
+  alias ts_transitions timeless_nonstoichiometric_transitions
 
-    # display it with kioclient
-    def show_file_with_kioclient( fɴ )
-      system "sleep 0.2; kioclient exec 'file:%s'" % File.expand_path( '.', fɴ )
-    end
+  # Names of <em>ts</em> transitions in the net.
+  # 
+  def timeless_nonstoichiometric_tt
+    timeless_nonstoichiometric_transitions.map &:name
+  end
+  alias ts_tt timeless_nonstoichiometric_tt
 
-    # Inspect string of the instance.
-    # 
-    def inspect; to_s end
+  # Array of <em>tS</em> transitions in the net.
+  # 
+  def timeless_stoichiometric_transitions
+    transitions.select{ |t| t.timeless? and t.stoichiometric? }
+  end
+  alias tS_transitions timeless_stoichiometric_transitions
 
-    private
+  # Names of <em>tS</em> transitions in the net.
+  # 
+  def timeless_stoichiometric_tt
+    timeless_stoichiometric_transitions.map &:name
+  end
+  alias tS_tt timeless_stoichiometric_tt
 
-    # Display a file with kioclient (KDE).
-    # 
-    def show_file_with_kioclient( file_name )
-      system "sleep 0.2; kioclient exec 'file:%s'" %
-        File.expand_path( '.', file_name )
-    end
+  # Array of <em>Tsr</em> transitions in the net.
+  # 
+  def timed_nonstoichiometric_transitions_without_rate
+    transitions.select{ |t| t.timed? and t.nonstoichiometric? and t.rateless? }
+  end
+  alias timed_rateless_nonstoichiometric_transitions \
+        timed_nonstoichiometric_transitions_without_rate
+  alias Tsr_transitions timed_nonstoichiometric_transitions_without_rate
 
-    # Place, Transition, Net classes.
-    # 
-    def Place; ::YPetri::Place end
-    def Transition; ::YPetri::Transition end
-    def Net; ::YPetri::Net end
+  # Names of <em>Tsr</em> transitions in the net.
+  # 
+  def timed_nonstoichiometric_tt_without_rate
+    timed_nonstoichiometric_transitions_without_rate.map &:name
+  end
+  alias timed_rateless_nonstoichiometric_tt \
+        timed_nonstoichiometric_tt_without_rate
+  alias Tsr_tt timed_nonstoichiometric_tt_without_rate
 
-    # Instance identification methods.
-    # 
-    def place( which ); Place().instance( which ) end
-    def transition( which ); Transition().instance( which ) end
-    def net( which ); Net().instance( which ) end
-  end # class Net
-end # module YPetri
+  # Array of <em>TSr</em> transitions in the net.
+  # 
+  def timed_stoichiometric_transitions_without_rate
+    transitions.select { |t| t.timed? and t.stoichiometric? and t.rateless? }
+  end
+  alias timed_rateless_stoichiometric_transitions \
+        timed_stoichiometric_transitions_without_rate
+  alias TSr_transitions timed_stoichiometric_transitions_without_rate
+
+  # Names of <em>TSr</em> transitions in the net.
+  # 
+  def timed_stoichiometric_tt_without_rate
+    timed_stoichiometric_transitions_without_rate.map &:name
+  end
+  alias timed_rateless_stoichiometric_tt timed_stoichiometric_tt_without_rate
+  alias Tsr_tt timed_stoichiometric_tt_without_rate
+
+  # Array of <em>sR</em> transitions in the net.
+  # 
+  def nonstoichiometric_transitions_with_rate
+    transitions.select { |t| t.has_rate? and t.nonstoichiometric? }
+  end
+  alias sR_transitions nonstoichiometric_transitions_with_rate
+
+  # Names of <em>sR</em> transitions in the net.
+  # 
+  def nonstoichiometric_tt_with_rate
+    nonstoichiometric_transitions_with_rate.map &:name
+  end
+  alias sR_tt nonstoichiometric_tt_with_rate
+
+  # Array of <em>SR</em> transitions in the net.
+  # 
+  def stoichiometric_transitions_with_rate
+    transitions.select { |t| t.has_rate? and t.stoichiometric? }
+  end
+  alias SR_transitions stoichiometric_transitions_with_rate
+
+  # Names of <em>SR</em> transitions in the net.
+  # 
+  def stoichiometric_tt_with_rate
+    stoichiometric_transitions_with_rate.map &:name
+  end
+  alias SR_tt stoichiometric_tt_with_rate
+
+  # Array of transitions with <em>explicit assignment action</em>
+  # (<em>A</em> transitions) in the net.
+  # 
+  def transitions_with_explicit_assignment_action
+    transitions.select { |t| t.assignment_action? }
+  end
+  alias transitions_with_assignment_action \
+        transitions_with_explicit_assignment_action
+  alias assignment_transitions transitions_with_explicit_assignment_action
+  alias A_transitions transitions_with_explicit_assignment_action
+
+  # Names of transitions with <em>explicit assignment action</em>
+  # (<em>A</em> transitions) in the net.
+  # 
+  def tt_with_explicit_assignment_action
+    transitions_with_explicit_assignment_action.map &:name
+  end
+  alias tt_with_assignment_action tt_with_explicit_assignment_action
+  alias assignment_tt tt_with_assignment_action
+  alias A_tt tt_with_assignment_action
+
+  # Array of <em>stoichiometric</em> transitions in the net.
+  # 
+  def stoichiometric_transitions
+    transitions.select &:stoichiometric?
+  end
+  alias S_transitions stoichiometric_transitions
+
+  # Names of <em>stoichiometric</em> transitions in the net.
+  # 
+  def stoichiometric_tt
+    stoichiometric_transitions.map &:name
+  end
+  alias S_tt stoichiometric_tt
+
+  # Array of <em>nonstoichiometric</em> transitions in the net.
+  # 
+  def nonstoichiometric_transitions
+    transitions.select &:nonstoichiometric?
+  end
+  alias s_transitions nonstoichiometric_transitions
+
+  # Names of <em>nonstoichimetric</em> transitions in the net.
+  # 
+  def nonstoichiometric_tt
+    nonstoichiometric_transitions.map &:name
+  end
+  alias s_tt nonstoichiometric_tt
+
+  # Array of <em>timed</em> transitions in the net.
+  #
+  def timed_transitions; transitions.select &:timed? end
+  alias T_transitions timed_transitions
+
+  # Names of <em>timed</em> transitions in the net.
+  # 
+  def timed_tt; timed_transitions.map &:name end
+  alias T_tt timed_tt
+
+  # Array of <em>timeless</em> transitions in the net.
+  # 
+  def timeless_transitions; transitions.select &:timeless? end
+  alias t_transitions timeless_transitions
+
+  # Names of <em>timeless</em> transitions in the net.
+  # 
+  def timeless_tt; timeless_transitions.map &:name end
+  alias t_tt timeless_tt
+
+  # Array of <em>transitions with rate</em> in the net.
+  # 
+  def transitions_with_rate; transitions.select &:has_rate? end
+  alias R_transitions transitions_with_rate
+
+  # Names of <em>transitions with rate</em> in the net.
+  # 
+  def tt_with_rate; transitions_with_rate.map &:name end
+  alias R_tt tt_with_rate
+
+  # Array of <em>rateless</em> transitions in the net.
+  # 
+  def rateless_transitions; transitions.select &:rateless? end
+  alias transitions_without_rate rateless_transitions
+  alias r_transitions rateless_transitions
+
+  # Names of <em>rateless</em> transitions in the net.
+  # 
+  def rateless_tt; rateless_transitions.map &:name end
+  alias tt_without_rate rateless_tt
+  alias r_tt rateless_tt
+
+  # ==== Inquirer methods about net qualities
+
+  # Is the net <em>functional</em>?
+  # 
+  def functional?; transitions.all? { |t| t.functional? } end
+    
+  # Is the net <em>timed</em>?
+  # 
+  def timed?; transitions.all? { |t| t.timed? } end
+
+  # ==== Simulation constructors
+
+  # Creates a new simulation from the net.
+  # 
+  def new_simulation *args
+    oo = args.extract_options!
+    YPetri::Simulation.new *args, oo.merge( net: self )
+  end
+
+  # Creates a new timed simulation from the net.
+  # 
+  def new_timed_simulation *args
+    oo = args.extract_options!
+    YPetri::TimedSimulation.new oo.merge( net: self )
+  end
+
+  # ==== Sundry methods
+
+  # Networks are equal when their places and transitions are equal.
+  # 
+  def == other
+    return false unless other.class_complies?( ç )
+    places == other.places && transitions == other.transitions
+  end
+
+  # Returns a string briefly describing the net.
+  # 
+  def to_s
+    "#<Net: " + ( name.nil? ? "%s" : "name: #{name}, %s" ) %
+      "#{places.size} places, #{transitions.size} transitions" + " >"
+  end
+
+  def visualize
+    require 'graphviz'
+    γ = GraphViz.new :G     # creating a new graph
+      
+    # main        = γ.add_nodes( "main", shape: "box" )
+    # parse       = γ.add_nodes( "parse", fillcolor: "yellow", style: "rounded,filled", shape: "diamond" )
+    # execute     = γ.add_nodes( "execute", shape: "record", label: "{ a | b | c }", style: "rounded" )
+    # init        = γ.add_nodes( "init", fillcolor: "yellow", style: "filled" )
+
+    # # set global node options
+    # g.node[:color] = "#ddaa66"
+    # g.node[:style] = "filled"
+    # g.node[:shape] = "box"
+    # g.node[:penwidth] = "1"
+    # g.node[:fontname] = "Trebuchet MS"
+    # g.node[:fontsize] = "8"
+    # g.node[:fillcolor] = "#ffeecc"
+    # g.node[:fontcolor] = "#775500"
+    # g.node[:margin] = "0.0"
+
+    # # set global edge options
+    # g.edge[:color] = "#999999"
+    # g.edge[:weight] = "1"
+    # g.edge[:fontsize] = "6"
+    # g.edge[:fontcolor] = "#444444"
+    # g.edge[:fontname] = "Verdana"
+    # g.edge[:dir] = "forward"
+    # g.edge[:arrowsize] = "0.5"
+
+    # add place nodes
+    place_nodes =
+      Hash[ places.zip places.map { |p|
+              γ.add_nodes p.name.to_s, fillcolor: 'lightgrey', color: 'grey', style: 'filled'
+            } ]
+
+    # add transition nodes
+    transition_nodes =
+      Hash[ transitions.zip transitions.map { |t|
+              γ.add_nodes( t.name.to_s,
+                           shape: 'box',
+                           fillcolor: if t.assignment? then 'yellow'
+                                      elsif t.basic_type == :SR then 'lightcyan'
+                                      else 'ghostwhite' end,
+                           color: if t.assignment? then 'goldenrod'
+                                  elsif t.basic_type == :SR then 'cyan'
+                                  else 'grey' end,
+                           style: 'filled'
+                           )
+              
+            } ]
+
+    # add edges
+    transition_nodes.each { |t, t_node|
+      if t.assignment? then
+        t.codomain.each { |p|
+          γ.add_edges t_node, place_nodes[p], color: 'goldenrod'
+        }
+        ( t.domain - t.codomain ).each { |p|
+          γ.add_edges t_node, place_nodes[p], color: 'grey', arrowhead: 'none'
+        }
+      elsif t.basic_type == :SR then
+        t.codomain.each { |p|
+          if t.stoichio[p] > 0 then # producing arc
+            γ.add_edges t_node, place_nodes[p], color: 'cyan'
+          elsif t.stoichio[p] < 0 then # consuming arc
+            γ.add_edges place_nodes[p], t_node, color: 'cyan'
+          else
+            γ.add_edges place_nodes[p], t_node, color: 'grey', arrowhead: 'none'
+          end
+        }
+        ( t.domain - t.codomain ).each { |p|
+          γ.add_edges t_node, place_nodes[p], color: 'grey', arrowhead: 'none'
+        }
+      end
+    }
+
+    # place_collection.each { |place_name, place_label|
+    #   place_instance = place( place_name )
+    #   place_instance.upstream_places.each { |upstream_place|
+    #     node = nodes[ place_name ]
+    #     next unless set_of_places.map { |ɴ, _| ɴ }.include?( upstream_place.name )
+    #     next if upstream_place == place_instance
+    #     upstream_node = nodes[ upstream_place.name ]
+    #     node << upstream_node
+    #   }
+    # }
+
+    # Generate output image
+    γ.output png: "y_petri_graph.png"
+    show_file_with_kioclient "y_petri_graph.png"
+  end
+
+  # display it with kioclient
+  def show_file_with_kioclient( fɴ )
+    system "sleep 0.2; kioclient exec 'file:%s'" % File.expand_path( '.', fɴ )
+  end
+
+  # Inspect string of the instance.
+  # 
+  def inspect; to_s end
+
+  private
+
+  # Display a file with kioclient (KDE).
+  # 
+  def show_file_with_kioclient( file_name )
+    system "sleep 0.2; kioclient exec 'file:%s'" %
+      File.expand_path( '.', file_name )
+  end
+
+  # Place, Transition, Net classes.
+  # 
+  def Place; ::YPetri::Place end
+  def Transition; ::YPetri::Transition end
+  def Net; ::YPetri::Net end
+
+  # Instance identification methods.
+  # 
+  def place( which ); Place().instance( which ) end
+  def transition( which ); Transition().instance( which ) end
+  def net( which ); Net().instance( which ) end
+end # class YPetri::Net

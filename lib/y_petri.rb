@@ -27,7 +27,6 @@ require_relative 'y_petri/timed_simulation'
 require_relative 'y_petri/workspace'
 require_relative 'y_petri/manipulator'
 
-
 # YPetri represents Petri net (PN) formalism.
 #
 # A PN consists of places and transitions. There are also arcs, that is,
@@ -55,13 +54,13 @@ module YPetri
       target_time: 60 }
   end
 
-  def self.included( receiver )      # :nodoc:
+  def self.included( receiver )
     # receiver.instance_variable_set :@YPetriManipulator, Manipulator.new
     # puts "included in #{receiver}"
     receiver.module_exec {
       define_method :y_petri_manipulator do
         singleton_class.instance_variable_get :@YPetriManipulator or
-          ( # puts "defining Manipulator for #{self} singleton class #{singleton_class}";
+          ( puts "defining Manipulator for #{self} singleton class" if YPetri::DEBUG
             singleton_class.instance_variable_set :@YPetriManipulator, Manipulator.new )
       end
     }
