@@ -194,16 +194,10 @@ module YPetri
     # Returns the union of action arcs and test arcs.
     # 
     def arcs; domain | codomain end
-    alias :connectivity :arcs
 
-    # Returns connectivity as names.
+    # Returns names of the (places connected to) arcs.
     # 
-    def cc; connectivity.map &:name end
-
-    # Returns connectivity as name symbols.
-    # 
-    def cc_sym; cc.map &:to_sym end
-    alias :ccß :cc_sym
+    def aa; arcs.map &:name end
 
     # Is the transition stoichiometric?
     # 

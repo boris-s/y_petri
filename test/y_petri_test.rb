@@ -56,7 +56,6 @@ describe ::YPetri::Place do
       assert_equal [], @p.downstream_transitions
       # #arcs & aliasesnn
       assert_equal [], @p.arcs
-      assert_equal [], @p.connectivity
       # #precedents & aliases
       assert_equal [], @p.precedents
       assert_equal [], @p.upstream_places

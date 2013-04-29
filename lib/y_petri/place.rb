@@ -63,7 +63,6 @@ class YPetri::Place
   def arcs
     upstream_arcs | downstream_arcs
   end
-  alias :connectivity :arcs
 
   # Returns the union of domains of the transitions associated
   # with the upstream arcs of this place.
