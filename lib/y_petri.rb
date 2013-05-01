@@ -13,7 +13,7 @@ require 'y_support/core_ext/hash'
 require 'y_support/core_ext/array'
 require 'y_support/stdlib_ext/matrix'
 
-require 'sy/abstract_algebra'
+require 'y_support/abstract_algebra'
 
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/array/extract_options'
