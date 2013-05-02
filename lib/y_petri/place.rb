@@ -1,5 +1,4 @@
-#encoding: utf-8
-
+# -*- coding: utf-8 -*-
 # This class represents Petri net places.
 # 
 class YPetri::Place

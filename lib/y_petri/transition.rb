@@ -161,15 +161,8 @@ module YPetri
     def domain_pp; domain.map &:name end
     alias :upstream_pp :domain_pp
 
-    # Names of upstream places as symbols.
-    # 
-    def domain_pp_sym; domain_pp.map &:to_sym end
-    alias :upstream_pp_sym :domain_pp_sym
-    alias :domain_ppß :domain_pp_sym
-    alias :ustream_ppß :domain_pp_sym
-
-    # Codomain, 'downstream arcs', or 'action arcs' is a collection of places,
-    # whose marking is directly changed by firing the trinsition.
+    # Codomain, 'downstream arcs', or 'action arcs', is a collection of places,
+    # whose marking is directly changed by this transition's firing.
     # 
     attr_reader :codomain
     alias :codomain_arcs :codomain
@@ -184,18 +177,11 @@ module YPetri
     def codomain_pp; codomain.map &:name end
     alias :downstream_pp :codomain_pp
 
-    # Names of downstream places as symbols.
-    # 
-    def codomain_pp_sym; codomain_pp.map &:to_sym end
-    alias :downstream_pp_sym :codomain_pp_sym
-    alias :codomain_ppß :codomain_pp_sym
-    alias :downstream_ppß :codomain_pp_sym
-
-    # Returns the union of action arcs and test arcs.
+    # Union of action arcs and test arcs.
     # 
     def arcs; domain | codomain end
 
-    # Returns names of the (places connected to) arcs.
+    # Returns names of the (places connected to) the transition's arcs.
     # 
     def aa; arcs.map &:name end
 
@@ -391,11 +377,10 @@ module YPetri
     def initialize *args
       # do the big work of checking in the arguments
       check_in_arguments *args
-      # Inform the relevant places that they have been connected:
-      upstream.each{ |place| place.send :register_downstream_transition, self }
-      downstream.each{ |place| place.send :register_upstream_transition, self }
-      # transitions initialize uncocked:
-      @cocked = false
+      # Inform upstream and downstream places they have been connected:
+      inform_upstream_places
+      inform_downstream_places
+      @cocked = false    # transitions initialize uncocked
     end
 
     # Marking of the domain places.
@@ -413,28 +398,28 @@ module YPetri
     # Result of the transition's "function", regardless of the #enabled? status.
     # 
     def action Δt=nil
-      raise AErr, "Δtime argument required for timed transitions!" if
+      raise ArgumentError, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
       # the code here looks awkward, because I was trying to speed it up
       if has_rate? then
         if stoichiometric? then
           rate = rate_closure.( *domain_marking )
-          stoichiometry.map{ |coeff| rate * coeff * Δt }
+          stoichiometry.map { |coeff| rate * coeff * Δt }
         else # assuming correct return value arity from the rate closure:
-          rate_closure.( *domain_marking ).map{ |e| component * Δt }
+          rate_closure.( *domain_marking ).map { |e| component * Δt }
         end
       else # rateless
         if timed? then
           if stoichiometric? then
             rslt = action_closure.( Δt, *domain_marking )
-            stoichiometry.map{ |coeff| rslt * coeff }
+            stoichiometry.map { |coeff| rslt * coeff }
           else
             action_closure.( Δt, *domain_marking ) # caveat result arity!
           end
         else # timeless
           if stoichiometric? then
             rslt = action_closure.( *domain_marking )
-            stoichiometry.map{ |coeff| rslt * coeff }
+            stoichiometry.map { |coeff| rslt * coeff }
           else
             action_closure.( *domain_marking ) # caveat result arity!
           end
@@ -460,7 +445,7 @@ module YPetri
       # check if the marking after the action would still be positive
       enabled = codomain
         .zip( act )
-        .all?{ |place, change| place.marking.to_f >= -change.to_f }
+        .all? { |place, change| place.marking.to_f >= -change.to_f }
       if enabled then act else
         raise "firing of #{self}#{ Δt ? ' with Δtime %s' % Δt : '' } " +
           "would result in negative marking"
@@ -493,7 +478,7 @@ module YPetri
       return true
     end
 
-    # #fire! (with bang) fires the transition regardless of cocked status.
+    # Fires the transition regardless of cocked/uncocked status.
     # 
     def fire!( Δt=nil )
       raise AErr, "Δtime required for timed transitions!" if timed? && Δt.nil?
@@ -620,14 +605,11 @@ module YPetri
                                  :propensity,
                                  :rate_closure,
                                  :flux_closure,
-                                 :propensity_closure,
-                                 :Φ,
-                                 :φ ]
+                                 :propensity_closure ]
       oo.may_have :action, syn!: :action_closure
       oo.may_have :timed
 
-      # was the rate was given?
-      @has_rate = oo.has? :rate
+      @has_rate = oo.has? :rate      # was the rate was given?
 
       # is the transition stoichiometric (S) or nonstoichiometric (s)?
       @stoichiometric = oo.has? :stoichiometry
@@ -664,7 +646,7 @@ module YPetri
         begin
           place( pl_id )
         rescue NameError
-          raise TErr, "#{c} member #{pl_id} does not specify a valid place!"
+          raise TypeError, "#{c} member #{pl_id} does not specify a valid place!"
         end
       end.aT what_is_collection, "not contain duplicate places" do |collection|
         collection == collection.uniq
@@ -747,8 +729,7 @@ module YPetri
         if oo.has? :timed then
           _timed = oo[:timed]
           # Time to worry about the domain_missing
-          if domain == :missing then
-            # figure user's intent from closure arity
+          if domain == :missing then # figure user's intent from closure arity
             _domain = if action_λ.arity == ( _timed ? 1 : 0 ) then
                         [] # user meant empty domain
                       else
@@ -872,7 +853,19 @@ module YPetri
         false
       end
     end
-      
+
+    # Informs upstream places that they are connected to this transition.
+    # 
+    def inform_upstream_places
+      upstream_places.each { |p| p.send :register_downstream_transition, self }
+    end
+
+    # Informs downstream places that they are connected to this transition.
+    # 
+    def inform_downstream_places
+      downstream_places.each { |p| p.send :register_upstream_transition, self }
+    end
+
     # Place class pertinent herein. Provided for the purpose of parametrized
     # subclassing; expected to be overriden in the subclasses.
     # 
