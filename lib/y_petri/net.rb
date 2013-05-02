@@ -423,12 +423,7 @@ class YPetri::Net
 
     # Generate output image
     γ.output png: "y_petri_graph.png"
-    show_file_with_kioclient "y_petri_graph.png"
-  end
-
-  # display it with kioclient
-  def show_file_with_kioclient( fɴ )
-    system "sleep 0.2; kioclient exec 'file:%s'" % File.expand_path( '.', fɴ )
+    YSupport::KDE.show_file_with_kioclient File.expand_path( '.', "y_petri_graph.png" )
   end
 
   # Inspect string of the instance.
