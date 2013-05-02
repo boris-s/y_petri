@@ -29,7 +29,7 @@
 # II. For timeless transitions, action is time-independent. Timeless
 # transitions are necessarily also rateless. Arity of the action closure
 # is expected to match the domain size.
-nnnn# 
+# 
 # Conclusion: Transitions with rate are always timed. In rateless
 # transitions, timedness distinguishes the need to supply time step
 # duration as the first argument to the action closure.
