@@ -28,9 +28,9 @@ class YPetri::Net
   # <em>false</em> if the place is already included in the net.
   # 
   def include_place! place
-    p = place( place )
-    return false if @places.include? p
-    @places << p
+    pl = place( place )
+    return false if @places.include? pl
+    @places << pl
     return true
   end
 
@@ -40,12 +40,12 @@ class YPetri::Net
   # already in the net.
   # 
   def include_transition! transition;
-    t = transition( transition )
-    return false if @transitions.include? t
-    raise TypeError, "Unable to include the transition #{t} in #{self}: " +
+    tr = transition( transition )
+    return false if @transitions.include? tr
+    raise TypeError, "Unable to include the transition #{tr} in #{self}: " +
       "It connects to one or more places outside the net." unless
-      t.arcs.all? { |p| include? p }
-    @transitions << t
+      tr.arcs.all? { |pl| include? pl }
+    @transitions << tr
     return true
   end
 
@@ -55,10 +55,10 @@ class YPetri::Net
   # net connect to it.
   # 
   def exclude_place! place
-    p = place( place )
-    raise "Unable to exclude #{p} from #{self}: One or more transitions" +
-      "depend on it" if transitions.any? { |t| t.arcs.include? p }
-    return true if @places.delete p
+    pl = place( place )
+    raise "Unable to exclude #{pl} from #{self}: One or more transitions" +
+      "depend on it" if transitions.any? { |tr| tr.arcs.include? pl }
+    return true if @places.delete pl
     return false
   end
 
@@ -66,8 +66,8 @@ class YPetri::Net
   # <em>false</em> if the transition was not found in the net.
   # 
   def exclude_transition! transition
-    t = transition( transition )
-    return true if @transitions.delete t
+    tr = transition( transition )
+    return true if @transitions.delete tr
     return false
   end
 
@@ -92,18 +92,18 @@ class YPetri::Net
   # Inquirer whether the net includes a place / transition.
   # 
   def include? place_or_transition
-    p = begin
-          place( place_or_transition )
-        rescue NameError
-          nil
-        end
-    return places.include? p if p
-    t = begin
-          transition( place_or_transition )
-        rescue NameError
-          nil
-        end
-    return transitions.include? t if t
+    pl = begin
+           place( place_or_transition )
+         rescue NameError
+           nil
+         end
+    return places.include? pl if pl
+    tr = begin
+           transition( place_or_transition )
+         rescue NameError
+           nil
+         end
+    return transitions.include? tr if tr
     return false
   end
 
@@ -336,94 +336,53 @@ class YPetri::Net
 
   def visualize
     require 'graphviz'
-    γ = GraphViz.new :G     # creating a new graph
-      
-    # main        = γ.add_nodes( "main", shape: "box" )
-    # parse       = γ.add_nodes( "parse", fillcolor: "yellow", style: "rounded,filled", shape: "diamond" )
-    # execute     = γ.add_nodes( "execute", shape: "record", label: "{ a | b | c }", style: "rounded" )
-    # init        = γ.add_nodes( "init", fillcolor: "yellow", style: "filled" )
-
-    # # set global node options
-    # g.node[:color] = "#ddaa66"
-    # g.node[:style] = "filled"
-    # g.node[:shape] = "box"
-    # g.node[:penwidth] = "1"
-    # g.node[:fontname] = "Trebuchet MS"
-    # g.node[:fontsize] = "8"
-    # g.node[:fillcolor] = "#ffeecc"
-    # g.node[:fontcolor] = "#775500"
-    # g.node[:margin] = "0.0"
-
-    # # set global edge options
-    # g.edge[:color] = "#999999"
-    # g.edge[:weight] = "1"
-    # g.edge[:fontsize] = "6"
-    # g.edge[:fontcolor] = "#444444"
-    # g.edge[:fontname] = "Verdana"
-    # g.edge[:dir] = "forward"
-    # g.edge[:arrowsize] = "0.5"
-
-    # add place nodes
-    place_nodes =
-      Hash[ places.zip places.map { |p|
-              γ.add_nodes p.name.to_s, fillcolor: 'lightgrey', color: 'grey', style: 'filled'
-            } ]
-
-    # add transition nodes
-    transition_nodes =
-      Hash[ transitions.zip transitions.map { |t|
-              γ.add_nodes( t.name.to_s,
-                           shape: 'box',
-                           fillcolor: if t.assignment? then 'yellow'
-                                      elsif t.basic_type == :SR then 'lightcyan'
-                                      else 'ghostwhite' end,
-                           color: if t.assignment? then 'goldenrod'
-                                  elsif t.basic_type == :SR then 'cyan'
-                                  else 'grey' end,
-                           style: 'filled'
-                           )
-              
-            } ]
-
-    # add edges
-    transition_nodes.each { |t, t_node|
-      if t.assignment? then
-        t.codomain.each { |p|
-          γ.add_edges t_node, place_nodes[p], color: 'goldenrod'
+    γ = GraphViz.new :G
+    # Add places and transitions.
+    place_nodes = places.map.with_object Hash.new do |pl, ꜧ|
+      ꜧ[pl] = γ.add_nodes pl.name.to_s,
+                          fillcolor: 'lightgrey',
+                          color: 'grey',
+                          style: 'filled'
+    end
+    transition_nodes = transitions.map.with_object Hash.new do |tr, ꜧ|
+      ꜧ[tr] = γ.add_nodes tr.name.to_s,
+                          shape: 'box',
+                          fillcolor: if tr.assignment? then 'yellow'
+                                     elsif tr.basic_type == :SR then 'lightcyan'
+                                     else 'ghostwhite' end,
+                          color: if tr.assignment? then 'goldenrod'
+                                 elsif tr.basic_type == :SR then 'cyan'
+                                 else 'grey' end,
+                          style: 'filled'
+    end
+    # Add Petri net arcs.
+    transition_nodes.each { |tr, tr_node|
+      if tr.assignment? then
+        tr.codomain.each { |pl|
+          γ.add_edges tr_node, place_nodes[pl], color: 'goldenrod'
         }
-        ( t.domain - t.codomain ).each { |p|
-          γ.add_edges t_node, place_nodes[p], color: 'grey', arrowhead: 'none'
+        ( tr.domain - tr.codomain ).each { |pl|
+          γ.add_edges tr_node, place_nodes[pl], color: 'grey', arrowhead: 'none'
         }
-      elsif t.basic_type == :SR then
-        t.codomain.each { |p|
-          if t.stoichio[p] > 0 then # producing arc
-            γ.add_edges t_node, place_nodes[p], color: 'cyan'
-          elsif t.stoichio[p] < 0 then # consuming arc
-            γ.add_edges place_nodes[p], t_node, color: 'cyan'
+      elsif tr.basic_type == :SR then
+        tr.codomain.each { |pl|
+          if tr.stoichio[pl] > 0 then # producing arc
+            γ.add_edges tr_node, place_nodes[pl], color: 'cyan'
+          elsif tr.stoichio[pl] < 0 then # consuming arc
+            γ.add_edges place_nodes[pl], tr_node, color: 'cyan'
           else
-            γ.add_edges place_nodes[p], t_node, color: 'grey', arrowhead: 'none'
+            γ.add_edges place_nodes[pl], tr_node, color: 'grey', arrowhead: 'none'
           end
         }
-        ( t.domain - t.codomain ).each { |p|
-          γ.add_edges t_node, place_nodes[p], color: 'grey', arrowhead: 'none'
+        ( tr.domain - tr.codomain ).each { |pl|
+          γ.add_edges tr_node, place_nodes[pl], color: 'grey', arrowhead: 'none'
         }
       end
     }
-
-    # place_collection.each { |place_name, place_label|
-    #   place_instance = place( place_name )
-    #   place_instance.upstream_places.each { |upstream_place|
-    #     node = nodes[ place_name ]
-    #     next unless set_of_places.map { |ɴ, _| ɴ }.include?( upstream_place.name )
-    #     next if upstream_place == place_instance
-    #     upstream_node = nodes[ upstream_place.name ]
-    #     node << upstream_node
-    #   }
-    # }
-
-    # Generate output image
-    γ.output png: "y_petri_graph.png"
-    YSupport::KDE.show_file_with_kioclient File.expand_path( '.', "y_petri_graph.png" )
+    # Generate output image.
+    γ.output png: File.expand_path( '~', "y_petri_graph.png" )
+    require 'y_support/kde'
+    ::YSupport::KDE.show_file_with_kioclient File.expand_path( '~', "y_petri_graph.png" )
   end
 
   # Inspect string of the instance.
