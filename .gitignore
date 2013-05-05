@@ -17,4 +17,5 @@ rdoc
 spec/reports
 test/tmp
 test/version_tmp
+test/*.png
 tmp
