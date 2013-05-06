@@ -601,10 +601,8 @@ module YPetri
                                    :upstream,
                                    :upstream_arcs,
                                    :upstream_places ]
-      oo.may_have :rate, syn!: [ :flux,
+      oo.may_have :rate, syn!: [ :rate_closure,
                                  :propensity,
-                                 :rate_closure,
-                                 :flux_closure,
                                  :propensity_closure ]
       oo.may_have :action, syn!: :action_closure
       oo.may_have :timed

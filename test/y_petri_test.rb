@@ -302,11 +302,11 @@ describe ::YPetri::Transition do
   describe "6. stoichiometric transitions with rate (SR transitions)" do
     before do
       # now this should give standard mass action by magic:
-      @SR1 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, flux: 0.1
-      # while this has custom flux closure
-      @SR2 = @ç.new s: { @p1 => -1, @p3 => 1 }, flux: λ { |a| a * 0.5 }
+      @SR1 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, rate: 0.1
+      # while this has custom rate closure
+      @SR2 = @ç.new s: { @p1 => -1, @p3 => 1 }, rate: λ { |a| a * 0.5 }
       # while this one even has domain specified:
-      @SR3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, upstream_arcs: @p3, flux: λ { |a| a * 0.5 }
+      @SR3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, upstream_arcs: @p3, rate: λ { |a| a * 0.5 }
     end
 
     it "should init and work" do
@@ -598,13 +598,14 @@ describe ::YPetri::Simulation do
     @p5 = @pç.new name: "P5", default_marking: 5
     @t1 = @tç.new name: "T1",
                   s: { @p1 => -1, @p2 => -1, @p4 => 1 },
-                  flux: 0.1
+                  rate: 0.1
     @t2 = @tç.new name: "T2",
                   s: { @p1 => -1, @p3 => 1 },
-                  flux: λ { |a| a * 0.5 }
+                  rate: λ { |a| a * 0.5 }
     @t3 = @tç.new name: "T3",
                   s: { @p1 => -1, @p2 => -1, @p4 => 1 },
-                  domain: @p3, flux: λ { |a| a * 0.5 }
+                  domain: @p3,
+                  rate: λ { |a| a * 0.5 }
     @net = @nç.new << @p1 << @p2 << @p3 << @p4 << @p5
     @net.include_transition! @t1
     @net.include_transition! @t2
@@ -934,7 +935,7 @@ describe ::YPetri::TimedSimulation do
     end
   end
 
-  describe "timed 'isomerization' with flux given as λ" do
+  describe "timed 'isomerization' with rate given as λ" do
     before do
       @t2 = ::YPetri::Transition.new s: { @a => -1, @c => 1 },
                                      rate_closure: λ { |a| a * 0.5 }
