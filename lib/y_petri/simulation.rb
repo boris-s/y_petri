@@ -751,9 +751,6 @@ class YPetri::Simulation
   # Computes delta state for TSr transitions, given a Δt.
   # 
   def Δ_for_TSr( Δt )
-    puts S_for_TSr()
-    puts action_vector_for_TSr( Δt )
-    puts S_for_TSr() * action_vector_for_TSr( Δt )
     S_for_TSr() * action_vector_for_TSr( Δt )
   end
 
