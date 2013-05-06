@@ -382,7 +382,7 @@ class YPetri::Net
     # Generate output image.
     γ.output png: "/home/boris/y_petri_graph.png"
     require 'y_support/kde'
-    ::YSupport::KDE.show_file_with_kioclient File.expand_path( '/home/boris', "y_petri_graph.png" )
+    ::YSupport::KDE.show_file_with_kioclient '/home/boris/y_petri_graph.png'
   end
 
   # Inspect string of the instance.
