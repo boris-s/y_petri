@@ -141,12 +141,12 @@ class YPetri::Simulation
 
     @assignment_closures_for_A = create_assignment_closures_for_A
 
-    @zero_ᴍ = Matrix.zero( free_places.size, 1 )
-
     puts "other assets set up, about to reset" if YPetri::DEBUG
 
     # ----------- Reset -------------
     reset!
+
+    @zero_ᴍ = compute_initial_marking_vector_of_free_places.map { |e| e * 0 }
 
     puts "reset complete" if YPetri::DEBUG
   end
@@ -751,6 +751,9 @@ class YPetri::Simulation
   # Computes delta state for TSr transitions, given a Δt.
   # 
   def Δ_for_TSr( Δt )
+    puts S_for_TSr()
+    puts action_vector_for_TSr( Δt )
+    puts S_for_TSr() * action_vector_for_TSr( Δt )
     S_for_TSr() * action_vector_for_TSr( Δt )
   end
 
@@ -777,7 +780,7 @@ class YPetri::Simulation
   # State differential for sR transitions.
   # 
   def gradient_for_sR
-    rate_closures_for_sR.map( &:call ).reduce( @zero_ᴍ, :+ )
+    rate_closures_for_sR.map( &:call ).reduce :+
   end
 
   # State differential for sR transitions as a hash { place_name: ∂ / ∂ᴛ }.
@@ -1059,25 +1062,34 @@ class YPetri::Simulation
   # 
   def reset!
     puts "Starting #reset! method" if YPetri::DEBUG
-    # zero_vector = Matrix.column_vector( places.map { SY::ZERO rescue 0 } ) # Float zeros
-    zero_vector = Matrix.column_vector( places.map { 0 } ) # Float zeros
-    puts "zero vector prepared" if YPetri::DEBUG
+
     mv_clamped = compute_marking_vector_of_clamped_places
     puts "#reset! obtained marking vector of clamped places" if YPetri::DEBUG
     clamped_component = C2A() * mv_clamped
     puts "clamped component of marking vector prepared:\n#{clamped_component}" if YPetri::DEBUG
+
     mv_free = compute_initial_marking_vector_of_free_places
     puts "#reset! obtained initial marking vector of free places" if YPetri::DEBUG
     free_component = F2A() * mv_free
     puts "free component of marking vector prepared:\n#{free_component}" if YPetri::DEBUG
+    
+    # zero_vector = Matrix.column_vector( places.map { SY::ZERO rescue 0 } ) # Float zeros
+    zero_vector = Matrix.column_vector( places.map { 0 } ) # Float zeros
+    puts "zero vector prepared: #{zero_vector}" if YPetri::DEBUG
+
     free_component.aT { |v|
       qnt = v.first.quantity rescue :no_quantity
       unless qnt == :no_quantity
         v.all? { |e| e.quantity == qnt }
       else true end
-    }
-    puts "free component of marking vector prepared:\n#{free_component}" if YPetri::DEBUG
-    @marking_vector = zero_vector + clamped_component + free_component
+    } if YPetri::DEBUG
+    puts "free component of marking vector checked" if YPetri::DEBUG
+
+    @marking_vector = Matrix
+      .column_vector( places.map.with_index do |_, i|
+                        clamped_component[i, 0] || free_component[i, 0]
+                      end )
+
     puts "marking vector assembled\n#{m}\n, about to reset recording" if YPetri::DEBUG
     reset_recording!
     puts "reset recording done, about to initiate sampling process" if YPetri::DEBUG

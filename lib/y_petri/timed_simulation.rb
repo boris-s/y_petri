@@ -87,7 +87,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
     @sampling_period = args.delete :sampling_period
     @target_time = args.delete :target_time
     @initial_time = args.delete( :initial_time ) ||
-      @target_time.nil? ? nil : @target_time.class.zero
+      @target_time.nil? ? nil : @sampling_period * 0 # @target_time.class.zero
     super args
   end
   # LATER: transition clamps
@@ -113,7 +113,12 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # Scalar field gradient for free places.
   # 
   def gradient_for_free_places
-    S_for_SR() * flux_vector_for_SR + gradient_for_sR
+    g_sR = gradient_for_sR
+    if g_sR then
+      S_for_SR() * flux_vector_for_SR + g_sR
+    else
+      S_for_SR() * flux_vector_for_SR
+    end
   end
 
   # Gradient for free places as a hash { place_name: ∂ / ∂ᴛ }.
@@ -133,7 +138,8 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # 
   def Δ_Euler_for_free_places( Δt=step_size )
     # Here, ∂ represents all R transitions, to which TSr and Tsr are added:
-    gradient_for_free_places * Δt + Δ_for_TSr( Δt ) + Δ_for_Tsr( Δt )
+    g_free = gradient_for_free_places * Δt
+    g_free + Δ_for_TSr( Δt ) + Δ_for_Tsr( Δt )
   end
   alias Δ_euler_for_free_places Δ_Euler_for_free_places
   alias ΔE Δ_Euler_for_free_places

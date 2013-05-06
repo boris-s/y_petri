@@ -375,25 +375,19 @@ module YPetri
     #                 rate: λ { |a| a * 0.5 } )
     #       
     def initialize *args
-      # do the big work of checking in the arguments
-      check_in_arguments *args
-      # Inform upstream and downstream places they have been connected:
-      inform_upstream_places
-      inform_downstream_places
-      @cocked = false    # transitions initialize uncocked
+      check_in_arguments *args       # the big work of checking in args
+      inform_upstream_places         # that they have been connected
+      inform_downstream_places       # that they have been connected
+      @cocked = false                # transitions initialize uncocked
     end
 
     # Marking of the domain places.
     # 
-    def domain_marking
-      domain.map &:marking
-    end
+    def domain_marking; domain.map &:marking end
 
     # Marking of the codomain places.
     # 
-    def codomain_marking
-      codomain.map &:marking
-    end
+    def codomain_marking; codomain.map &:marking end
 
     # Result of the transition's "function", regardless of the #enabled? status.
     # 
@@ -588,22 +582,15 @@ module YPetri
     # 
     def check_in_arguments *args
       oo = args.extract_options!
-      oo.may_have :stoichiometry, syn!: [ :stoichio,
-                                          :s ]
-      oo.may_have :codomain, syn!: [ :codomain_arcs,
-                                     :codomain_places,
+      oo.may_have :stoichiometry, syn!: [ :stoichio, :s ]
+      oo.may_have :codomain, syn!: [ :codomain_arcs, :codomain_places,
                                      :downstream,
-                                     :downstream_arcs,
-                                     :downstream_places,
+                                     :downstream_arcs, :downstream_places,
                                      :action_arcs ]
-      oo.may_have :domain, syn!: [ :domain_arcs,
-                                   :domain_places,
-                                   :upstream,
-                                   :upstream_arcs,
-                                   :upstream_places ]
+      oo.may_have :domain, syn!: [ :domain_arcs, :domain_places,
+                                   :upstream, :upstream_arcs, :upstream_places ]
       oo.may_have :rate, syn!: [ :rate_closure,
-                                 :propensity,
-                                 :propensity_closure ]
+                                 :propensity, :propensity_closure ]
       oo.may_have :action, syn!: :action_closure
       oo.may_have :timed
 
