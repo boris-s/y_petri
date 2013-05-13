@@ -30,6 +30,14 @@ class YPetri::Simulation
   attr_reader :recording
   alias :r :recording
 
+  # Zero marking vector.
+  # 
+  attr_reader :zero_ᴍ
+
+  # Zero gradient.
+  # 
+  attr_reader :zero_gradient
+
   # Simulation settings.
   # 
   def settings; {} end
@@ -147,6 +155,7 @@ class YPetri::Simulation
     reset!
 
     @zero_ᴍ = compute_initial_marking_vector_of_free_places.map { |e| e * 0 }
+    @zero_gradient = @zero_ᴍ.dup
 
     puts "reset complete" if YPetri::DEBUG
   end
@@ -777,7 +786,7 @@ class YPetri::Simulation
   # State differential for sR transitions.
   # 
   def gradient_for_sR
-    rate_closures_for_sR.map( &:call ).reduce :+
+    rate_closures_for_sR.map( &:call ).reduce( @zero_gradient, :+ )
   end
 
   # State differential for sR transitions as a hash { place_name: ∂ / ∂ᴛ }.
@@ -1082,10 +1091,11 @@ class YPetri::Simulation
     } if YPetri::DEBUG
     puts "free component of marking vector checked" if YPetri::DEBUG
 
-    @marking_vector = Matrix
-      .column_vector( places.map.with_index do |_, i|
-                        clamped_component[i, 0] || free_component[i, 0]
-                      end )
+    @marking_vector = free_component + clamped_component
+    # Matrix
+    #   .column_vector( places.map.with_index do |_, i|
+    #                     clamped_component[i, 0] || free_component[i, 0]
+    #                   end )
 
     puts "marking vector assembled\n#{m}\n, about to reset recording" if YPetri::DEBUG
     reset_recording!

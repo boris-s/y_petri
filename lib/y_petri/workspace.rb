@@ -6,9 +6,11 @@
 class YPetri::Workspace
   include NameMagic
 
-  require_relative 'workspace/instance_methods'
+  require_relative 'workspace/petri_net_related_methods'
   require_relative 'workspace/parametrized_subclassing'
+  require_relative 'workspace/simulation_related_methods'
 
-  include self::InstanceMethods
+  include self::PetriNetRelatedMethods
   prepend self::ParametrizedSubclassing
+  include self::SimulationRelatedMethods
 end

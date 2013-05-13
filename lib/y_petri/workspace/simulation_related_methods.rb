@@ -1,21 +1,9 @@
 # -*- coding: utf-8 -*-
-
-module YPetri::Workspace::InstanceMethods
-  # Readers for @Place, @Transition, @Net instance variables, which should
-  # contain said classes, or their instance-specific subclasses.
-
-  # Place class or parametrized subclass.
-  # 
-  attr_reader :Place
-
-  # Transition class or parametrized subclass.
-  # 
-  attr_reader :Transition
-
-  # Net class or parametrized subclass.
-  # 
-  attr_reader :Net
-
+# Workspace instance methods related to simulation (initial marking
+# collections, clamp collections, inital marking collections, management
+# of simulations...)
+# 
+module YPetri::Workspace::SimulationRelatedMethods
   # Collections of clamps, initial marking vectors, and simulation settings.
   # 
   attr_reader :clamp_collections,
@@ -25,66 +13,17 @@ module YPetri::Workspace::InstanceMethods
   # Instance initialization.
   # 
   def initialize
-    set_up_Top_net # Sets up :Top net encompassing all places and transitions.
-
     @simulations = {} # { simulation => its settings }
     @clamp_collections = { Base: {} } # { collection name => clamp hash }
     @initial_marking_collections = { Base: {} } # { collection name => im hash }
     @simulation_settings_collections = # { collection name => ss hash }
       { Base: YPetri::DEFAULT_SIMULATION_SETTINGS.call }
+    super
   end
-
-  # Returns a place instance identified by the argument.
-  # 
-  def place which; Place().instance which end
-
-  # Returns a transition instance identified by the argument.
-  # 
-  def transition which; Transition().instance which end
-
-  # Returns a net instance identified by the argument.
-  # 
-  def net which; Net().instance which end
-
-  # Returns the name of a place identified by the argument.
-  # 
-  def p which; place( which ).name end
-
-  # Returns the name of a transition identified by the argument.
-  # 
-  def t which; transition( which ).name end
-
-  # Returns the name of a net identified by the argument.
-  # 
-  def n which; net( which ).name end
-
-  # Place instances.
-  # 
-  def places; Place().instances end
-
-  # Transition instances.
-  # 
-  def transitions; Transition().instances end
-
-  # Net instances.
-  # 
-  def nets; Net().instances end
 
   # Hash of simulation instances and their settings.
   # 
   def simulations; @simulations end
-
-  # Place names.
-  # 
-  def pp; places.map &:name end
-
-  # Transition names.
-  # 
-  def tt; transitions.map &:name end
-
-  # Net names.
-  # 
-  def nn; nets.map &:name end
 
   # Clamp collection names.
   # 
@@ -239,16 +178,4 @@ module YPetri::Workspace::InstanceMethods
                                     .merge( initial_marking: im_hash,
                                             place_clamps: clamp_hash ) )
   end # def new_timed_simulation
-
-  private
-
-  # Creates all-encompassing Net instance named :Top.
-  # 
-  def set_up_Top_net
-    Net().new name: :Top # all-encompassing :Top net
-    # Hook new places to add themselves magically to the :Top net.
-    Place().new_instance_closure { |new_inst| net( :Top ) << new_inst }
-    # Hook new transitions to add themselves magically to the :Top net.
-    Transition().new_instance_closure { |new_inst| net( :Top ) << new_inst }    
-  end
-end # module YPetri::Workspace::InstanceMethods
+end # module YPetri::Workspace::SimulationRelatedMethods

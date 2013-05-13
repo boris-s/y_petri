@@ -89,6 +89,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
     @initial_time = args.delete( :initial_time ) ||
       @target_time.nil? ? nil : @sampling_period * 0 # @target_time.class.zero
     super args
+    @zero_gradient = @zero_ᴍ.map { |e| step_size.to_f / step_size * e }
   end
   # LATER: transition clamps
 
