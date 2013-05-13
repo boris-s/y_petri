@@ -99,7 +99,9 @@ module YPetri
             :simulation_settings_collection, :ssc,
             :clamp,
             :initial_marking,
-            :set_step, :set_time, :set_sampling,
+            :set_step, :set_step_size
+            :set_time, :set_target_time,
+            :set_sampling,
             :set_simulation_method,
             :new_timed_simulation,
             :run!,
