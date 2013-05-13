@@ -64,7 +64,7 @@ module YPetri
 
   delegate( :workspace, to: :y_petri_manipulator )
 
-  # Petri net-related methods.
+  # Petri net aspect.
   delegate( :Place, :Transition, :Net,
             :place, :transition, :pl, :tr,
             :places, :transitions, :nets,
@@ -76,7 +76,7 @@ module YPetri
             :net_point_set,
             to: :y_petri_manipulator )
 
-  # Simulation-related methods.
+  # Simulation aspect.
   delegate( :simulation_point, :ssc_point, :cc_point, :imc_point,
             :simulation_selection, :ssc_selection,
             :cc_selection, :imc_selection,
@@ -99,7 +99,7 @@ module YPetri
             :simulation_settings_collection, :ssc,
             :clamp,
             :initial_marking,
-            :set_step, :set_step_size
+            :set_step, :set_step_size,
             :set_time, :set_target_time,
             :set_sampling,
             :set_simulation_method,
