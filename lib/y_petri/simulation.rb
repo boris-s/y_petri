@@ -1317,11 +1317,11 @@ class YPetri::Simulation
     instance.send :set_marking_vector, @marking_vector
     return instance
   end
-
-  # Place, Transition, Net class
-  # 
-  def Place; YPetri::Place end
-  def Transition; YPetri::Transition end
+  
+  # # Place, Transition, Net class
+  # # 
+  # def Place; YPetri::Place end
+  # def Transition; YPetri::Transition end
 
   # Instance identification methods.
   # 
