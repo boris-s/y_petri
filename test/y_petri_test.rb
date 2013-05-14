@@ -540,11 +540,7 @@ describe ::YPetri::Net do
           assert_equal [], @net.nonstoichiometric_tt_with_rate
           assert_equal [@t1], @net.stoichiometric_transitions_with_rate
           assert_equal [:T1], @net.stoichiometric_tt_with_rate
-          assert_equal [], @net.transitions_with_explicit_assignment_action
-          assert_equal [], @net.transitions_with_assignment_action
           assert_equal [], @net.assignment_transitions
-          assert_equal [], @net.tt_with_explicit_assignment_action
-          assert_equal [], @net.tt_with_assignment_action
           assert_equal [], @net.assignment_tt
           assert_equal [@t1, @t2], @net.stoichiometric_transitions
           assert_equal [:T1, nil], @net.stoichiometric_tt
@@ -792,8 +788,8 @@ describe ::YPetri::Simulation do
   end
 
   it "1. handles ts transitions" do
-    @s.Δ_closures_for_ts.must_equal []
-    @s.Δ_if_ts_fire_once.must_equal Matrix.zero( @s.free_pp.size, 1 )
+    @s.Δ_closures_for_tsa.must_equal []
+    @s.Δ_if_tsa_fire_once.must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
   it "2. handles Tsr transitions" do

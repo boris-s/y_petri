@@ -113,7 +113,7 @@ class YPetri::Net
   # Array of <em>ts</em> transitions in the net.
   # 
   def timeless_nonstoichiometric_transitions
-    transitions.select{ |t| t.timeless? and t.nonstoichiometric? }
+    transitions.select { |t| t.timeless? && t.nonstoichiometric? }
   end
   alias ts_transitions timeless_nonstoichiometric_transitions
 
@@ -124,10 +124,26 @@ class YPetri::Net
   end
   alias ts_tt timeless_nonstoichiometric_tt
 
+  # Array of <em>tsa</em> transitions in the net.
+  # 
+  def timeless_nonstoichiometric_nonassignment_transitions
+    transitions.select { |t|
+      t.timeless? && t.nonstoichiometric? && ! t.assignment_action?
+    }
+  end
+  alias tsa_transitions timeless_nonstoichiometric_nonassignment_transitions
+
+  # Names of <em>tsa</em> transitions in the net.
+  # 
+  def timeless_nonstoichiometric_nonassignment_tt
+    timeless_nonstoichiometric_nonassignment_transitions.map &:name
+  end
+  alias tsa_tt timeless_nonstoichiometric_nonassignment_tt
+
   # Array of <em>tS</em> transitions in the net.
   # 
   def timeless_stoichiometric_transitions
-    transitions.select{ |t| t.timeless? and t.stoichiometric? }
+    transitions.select { |t| t.timeless? && t.stoichiometric? }
   end
   alias tS_transitions timeless_stoichiometric_transitions
 
@@ -141,7 +157,7 @@ class YPetri::Net
   # Array of <em>Tsr</em> transitions in the net.
   # 
   def timed_nonstoichiometric_transitions_without_rate
-    transitions.select{ |t| t.timed? and t.nonstoichiometric? and t.rateless? }
+    transitions.select { |t| t.timed? && t.nonstoichiometric? && t.rateless? }
   end
   alias timed_rateless_nonstoichiometric_transitions \
         timed_nonstoichiometric_transitions_without_rate
@@ -159,7 +175,7 @@ class YPetri::Net
   # Array of <em>TSr</em> transitions in the net.
   # 
   def timed_stoichiometric_transitions_without_rate
-    transitions.select { |t| t.timed? and t.stoichiometric? and t.rateless? }
+    transitions.select { |t| t.timed? && t.stoichiometric? && t.rateless? }
   end
   alias timed_rateless_stoichiometric_transitions \
         timed_stoichiometric_transitions_without_rate
@@ -176,7 +192,7 @@ class YPetri::Net
   # Array of <em>sR</em> transitions in the net.
   # 
   def nonstoichiometric_transitions_with_rate
-    transitions.select { |t| t.has_rate? and t.nonstoichiometric? }
+    transitions.select { |t| t.has_rate? && t.nonstoichiometric? }
   end
   alias sR_transitions nonstoichiometric_transitions_with_rate
 
@@ -204,23 +220,18 @@ class YPetri::Net
   # Array of transitions with <em>explicit assignment action</em>
   # (<em>A</em> transitions) in the net.
   # 
-  def transitions_with_explicit_assignment_action
+  def assignment_transitions
     transitions.select { |t| t.assignment_action? }
   end
-  alias transitions_with_assignment_action \
-        transitions_with_explicit_assignment_action
-  alias assignment_transitions transitions_with_explicit_assignment_action
-  alias A_transitions transitions_with_explicit_assignment_action
+  alias A_transitions assignment_transitions
 
   # Names of transitions with <em>explicit assignment action</em>
   # (<em>A</em> transitions) in the net.
   # 
-  def tt_with_explicit_assignment_action
-    transitions_with_explicit_assignment_action.map &:name
+  def assignment_tt
+    assignment_transitions.map &:name
   end
-  alias tt_with_assignment_action tt_with_explicit_assignment_action
-  alias assignment_tt tt_with_assignment_action
-  alias A_tt tt_with_assignment_action
+  alias A_tt assignment_tt
 
   # Array of <em>stoichiometric</em> transitions in the net.
   # 

@@ -1,5 +1,4 @@
-#encoding: utf-8
-
+# -*- coding: utf-8 -*-
 # A descendant class of YPetri::Simulation that introduces timekeeping.
 # 
 class YPetri::TimedSimulation < YPetri::Simulation
@@ -166,7 +165,7 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # affected.
   # 
   def timeless_transitions_all_fire!
-    update_marking! Δ_if_tS_fire_once + Δ_if_ts_fire_once
+    update_marking! Δ_if_tS_fire_once + Δ_if_tsa_fire_once
     assignment_transitions_all_fire!
   end
   alias t_all_fire! timeless_transitions_all_fire!

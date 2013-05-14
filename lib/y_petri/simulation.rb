@@ -140,7 +140,7 @@ class YPetri::Simulation
     puts "stoichiometry matrices set up" if YPetri::DEBUG
 
     # ----- Create other assets -----
-    @Δ_closures_for_ts = create_Δ_closures_for_ts
+    @Δ_closures_for_tsa = create_Δ_closures_for_tsa
     @Δ_closures_for_Tsr = create_Δ_closures_for_Tsr
     @action_closures_for_tS = create_action_closures_for_tS
     @action_closures_for_TSr = create_action_closures_for_TSr
@@ -438,6 +438,26 @@ class YPetri::Simulation
     ts_transitions.map { |t| t.name || t }
   end
 
+  # Assignment transitions (A transition) can be regarded as a special kind
+  # of ts transition (subtracting away the current marking of their domain
+  # and replacing it with the result of their function). But it may often
+  # be useful to exclude A transitions from among the ts transitions, and
+  # such set is called tsa transitions (timeless nonstoichiometric
+  # nonassignment transitions).
+  # 
+  def tsa_transitions *aa, &b
+    return zip_to_hash tsa_transitions, *aa, &b unless aa.empty? && b.nil?
+    sift_from_net :tsa_transitions
+  end
+
+  # Like #tsa_transitions, except that transition names are used instead of
+  # instance, whenever possible.
+  # 
+  def tsa_tt *aa, &b
+    return zip_to_hash tsa_tt, *aa, &b unless aa.empty? && b.nil?
+    tsa_transitions.map { |t| t.name || t }
+  end
+
   # ==== 2. Exposing tS transitions
 
   # Without arguments or block, it returns simply a list of timeless
@@ -555,6 +575,7 @@ class YPetri::Simulation
     return zip_to_hash A_transitions(), *aa, &b unless aa.empty? && b.nil?
     sift_from_net :A_transitions
   end
+  alias assignment_transitions A_transitions
 
   # Like #A_transitions, except that transition names are used instead of
   # instances, whenever possible.
@@ -563,6 +584,7 @@ class YPetri::Simulation
     return zip_to_hash A_tt(), *aa, &b unless aa.empty? && b.nil?
     A_transitions().map { |t| t.name || t }
   end
+  alias assignment_tt A_tt
 
   # ==== Stoichiometric transitions of any kind (S transitions)
 
@@ -656,14 +678,18 @@ class YPetri::Simulation
 
   # Exposing Δ state closures for ts transitions.
   # 
-  attr_reader :Δ_closures_for_ts
+  attr_reader :Δ_closures_for_tsa
 
-  # Delta state contribution if ts transitions fire once. The closures
-  # are called in their order, but the state update is not performed
-  # between the calls (ie. they fire "simultaneously").
+  # Delta state contribution if timed nonstoichiometric non-assignment (tsa)
+  # transitions fire once. The closures are called in their order, but the state
+  # update is not performed between the calls (they fire simultaneously).
+  #
+  # Note: 'a' in 'tsa' is needed because A (assignment) transitions can also be
+  # regarded as a special kind of ts transitions, while they obviously do not
+  # act through Δ state, but rather directly enforce marking of their codomain.
   # 
-  def Δ_if_ts_fire_once
-    Δ_closures_for_ts.map( &:call ).reduce( @zero_ᴍ, :+ )
+  def Δ_if_tsa_fire_once
+    Δ_closures_for_tsa.map( &:call ).reduce( @zero_ᴍ, :+ )
   end
 
   # ==== Regarding Tsr transitions
@@ -1193,8 +1219,8 @@ class YPetri::Simulation
   # These instance assets are created at the beginning, so the work
   # needs to be performed only once in the instance lifetime.
 
-  def create_Δ_closures_for_ts
-    ts_transitions.map { |t|
+  def create_Δ_closures_for_tsa
+    tsa_transitions.map { |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
       c2f = Matrix.correspondence_matrix( t.codomain, free_places )
       λ { c2f * t.action_closure.( *( p2d * marking_vector ).column_to_a ) }
