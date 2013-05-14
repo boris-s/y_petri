@@ -1202,6 +1202,7 @@ class YPetri::Simulation
   # change on the marking vector for all places.
   # 
   def update_marking! Δ_free_places
+    # this i
     @marking_vector += F2A() * Δ_free_places
   end
 
