@@ -317,16 +317,14 @@ class YPetri::Net
 
   # Creates a new simulation from the net.
   # 
-  def new_simulation *args
-    oo = args.extract_options!
-    YPetri::Simulation.new *args, oo.merge( net: self )
+  def new_simulation( **named_args )
+    YPetri::Simulation.new **named_args.merge( net: self )
   end
 
   # Creates a new timed simulation from the net.
   # 
-  def new_timed_simulation *args
-    oo = args.extract_options!
-    YPetri::TimedSimulation.new oo.merge( net: self )
+  def new_timed_simulation( **named_args )
+    YPetri::TimedSimulation.new **named_args.merge( net: self )
   end
 
   # ==== Sundry methods

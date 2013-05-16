@@ -158,7 +158,7 @@ module YPetri
 
     # Names of upstream places.
     # 
-    def domain_pp; domain.map &:name end
+    def domain_pp; domain.map { |p| p.name || p.object_id } end
     alias :upstream_pp :domain_pp
 
     # Codomain, 'downstream arcs', or 'action arcs', is a collection of places,
@@ -174,7 +174,7 @@ module YPetri
 
     # Names of downstream places.
     # 
-    def codomain_pp; codomain.map &:name end
+    def codomain_pp; codomain.map { |p| p.name || p.object_id } end
     alias :downstream_pp :codomain_pp
 
     # Union of action arcs and test arcs.
@@ -183,7 +183,7 @@ module YPetri
 
     # Returns names of the (places connected to) the transition's arcs.
     # 
-    def aa; arcs.map &:name end
+    def aa; arcs.map { |p| p.name || p.object_id } end
 
     # Is the transition stoichiometric?
     # 
@@ -206,7 +206,7 @@ module YPetri
     # Stoichiometry as a hash of pairs:
     # { codomain_place_name_symbol => stoichiometric_coefficient }
     # 
-    def s; stoichio.with_keys { |k| k.name.to_sym } end
+    def s; stoichio.with_keys { |k| k.name || k.object_id } end
 
     # Does the transition have rate?
     # 
@@ -580,8 +580,7 @@ module YPetri
     # else then defining the duck type of the input argument collection.
     # TypeError is therefore raised if invalid collection has been supplied.
     # 
-    def check_in_arguments *args
-      oo = args.extract_options!
+    def check_in_arguments *args, **oo
       oo.may_have :stoichiometry, syn!: [ :stoichio, :s ]
       oo.may_have :codomain, syn!: [ :codomain_arcs, :codomain_places,
                                      :downstream,
@@ -593,6 +592,8 @@ module YPetri
                                  :propensity, :propensity_closure ]
       oo.may_have :action, syn!: :action_closure
       oo.may_have :timed
+      oo.may_have :domain_guard
+      oo.may_have :codomain_guard
 
       @has_rate = oo.has? :rate      # was the rate was given?
 
@@ -620,6 +621,9 @@ module YPetri
 
       # optional assignment action:
       @assignment_action = check_in_assignment_action( oo )
+
+      # optional type guards for domain / codomain:
+      @domain_guard, @codomain_guard = check_in_guards( oo )
     end # def check_in_arguments
     
     # Makes sure that supplied collection consists only of appropriate places.
@@ -836,6 +840,41 @@ module YPetri
         end
       else # if assignment action is not specified, false is 
         false
+      end
+    end
+
+    # Private method, part of #initialize argument checking-in
+    # 
+    def check_in_guards( oo )
+      if oo.has? :domain_guard then
+        oo[:domain_guard].tap { |guard|
+          msg = "Domain guard must be a closure!"
+          raise TypeError, msg unless guard.is_a? Proc
+        }
+      else
+        place_guards = domain_places.map &:guard
+        lambda { |marking| # constructing the default domain guard
+          fails = [domain, marking, place_guards].transpose.map { |p, m, guard|
+            [ p, m, begin
+                      guard.( p, m )
+                      true
+                    rescue YPetri::GuardError
+                      false
+                    end ]
+          }.reduce [] do |memo, triple| memo << triple unless triple[2] end
+          # TODO: Watch "Exceptional Ruby" video by Avdi Grimm.
+          unless fails.size == 0
+            err = "Domain guard of #{self} rejects marking " +
+              if fails.size == 1 then
+                p, m, _ = fails[0]
+                "#{m} of place #{p.name || p.object_id}!"
+              else
+                "of the following places: %s!" %
+                  Hash[ fails.map { |p, m, _| [p.name || p.object_id, m] } ]
+              end
+            raise YPetri::GuardError, err
+          end
+        }
       end
     end
 

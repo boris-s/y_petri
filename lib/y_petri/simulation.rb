@@ -50,149 +50,109 @@ class YPetri::Simulation
     end        
   end
 
-  # Currently, a simulation instance is largely immutable. It means that
-  # the net, initial marking, clamps and simulation settings have to be
-  # supplied upon initialization, whereupon the simulation forms their
-  # "mental image", which does not change anymore, regardless of what happens
-  # to the original net and other objects. Required constructor parameters
-  # are :net, :place_clamps (alias :marking_clamps) and :initial_marking
-  # (alias :initial_marking_vector). (Simulation subclasses may require other
-  # arguments in addition to the ones just named.)
+  # Currently, simulation is largely immutable. Net, initial marking, clamps
+  # and simulation settings are set upon initialization, whereupon the instance
+  # forms their "mental image", which remains immune to any subsequent changes
+  # to the original objects. Required parameters are :net, :marking_clamps, and
+  # :initial_marking. Optional is :method (simulation method), and :guarded
+  # (true/false, whether the simulation guards the transition function results).
+  # Guard conditions can be either implicit (guarding against negative values
+  # and against type changes in by transition action), or explicitly associated
+  # with either places, or transition function results.
   # 
-  def initialize args={}
+  def initialize( method: default_simulation_method,
+                  guarded: false,
+                  net: raise( ArgumentError, "Net argument absent!" ),
+                  marking_clamps: {},
+                  initial_marking: {} )
     puts "starting to set up Simulation" if YPetri::DEBUG
-
-    args.may_have :method, syn!: :simulation_method
-    args.must_have :net do |o| o.class_complies? ::YPetri::Net end
-    args.may_have :place_clamps, syn!: :marking_clamps
-    args.may_have :initial_marking, syn!: :initial_marking_vector
-
-    # ==== Simulation method
-    # 
-    @method = args[:method] || default_simulation_method()
-
-    # ==== Net
-    # 
-    @net = args[:net].dup # @immutable within the instance
-    @places = @net.places.dup
-    @transitions = @net.transitions.dup
-
+    @method, @guarded, @net = method, guarded, net
+    @places, @transitions = @net.places.dup, @net.transitions.dup
     self.singleton_class.class_exec {
       define_method :Place do net.send :Place end
       define_method :Transition do net.send :Transition end
       define_method :Net do net.send :Net end
       private :Place, :Transition, :Net
-    }
+    }; puts "setup of :net mental image complete" if YPetri::DEBUG
 
-    puts "setup of :net mental image complete" if YPetri::DEBUG
-
-    # ==== Simulation parameters
-    # 
-    # A simulation distinguishes between free and clamped places.  For free
-    # places, initial value has to be specified. For clamped places, clamps
-    # have to be specified. Both initial values and clamps are expected as
-    # hash-type named parameters:
-    @place_clamps = ( args[:place_clamps] || {} ).with_keys { |k| place k }
-    @initial_marking = ( args[:initial_marking] || {} ).with_keys { |k| place k }
-
+    # A simulation distinguishes between free and clamped places. For free
+    # places, initial marking has to be specified. For clamped places, marking
+    # clamps have to be specified. Both come as hashes:
+    @marking_clamps = marking_clamps.with_keys { |k| place k }
+    @initial_marking = initial_marking.with_keys { |k| place k }
     # Enforce that keys in the hashes must be unique:
-    @place_clamps.keys.aT_equal @place_clamps.keys.uniq
+    @marking_clamps.keys.aT_equal @marking_clamps.keys.uniq
     @initial_marking.keys.aT_equal @initial_marking.keys.uniq
-
     puts "setup of clamps and initial marking done" if YPetri::DEBUG
 
-    # === Consistency check
-    # 
-    # # Clamped places must not have explicit initial marking specified:
-    # @place_clamps.keys.each { |place|
-    #   place.aT_not "clamped place #{place}",
-    #                "have explicitly specified initial marking" do |place|
-    #     @initial_marking.keys.include? place
-    #   end
-    # }
-
-    # Each place must be treated: either clamped, or have initial marking
-    places.each { |p|
-      p.aT "place #{p}", "have either clamp or initial marking" do |p|
-        @place_clamps.keys.include?( p ) || @initial_marking.keys.include?( p )
+    # Each place must have either clamp, or initial marking:
+    places.each { |pl|
+      pl.aT "place #{pl}", "have either clamp or initial marking" do |pl|
+        ( @marking_clamps.keys + @initial_marking.keys ).include? pl
       end
-    }
+    }; puts "clamp || initial marking test passed" if YPetri::DEBUG
 
-    puts "consistency check for clamps and initial marking passed" if YPetri::DEBUG
-
-    # === Correspondence matrices.
-
-    # Multiplying this matrix by marking vector for free places (ᴍ) gives
-    # ᴍ mapped for all places.
+    # @F2A * ᴍ (marking vector of free places) maps ᴍ to all places.
     @F2A = Matrix.correspondence_matrix( free_places, places )
-
-    # Multiplying this matrix by marking vector for clamped places maps that
-    # vector to all places.
+    # @C2A * marking_vector_of_clamped_places maps it to all places.
     @C2A = Matrix.correspondence_matrix( clamped_places, places )
-
     puts "correspondence matrices set up" if YPetri::DEBUG
 
-    # --- Stoichiometry matrices ----
+    # Stoichiometry matrices:
     @S_for_tS = S_for tS_transitions()
     @S_for_SR = S_for SR_transitions()
     @S_for_TSr = S_for TSr_transitions()
-
     puts "stoichiometry matrices set up" if YPetri::DEBUG
 
-    # ----- Create other assets -----
+    # Other assets:
     @Δ_closures_for_tsa = create_Δ_closures_for_tsa
     @Δ_closures_for_Tsr = create_Δ_closures_for_Tsr
     @action_closures_for_tS = create_action_closures_for_tS
     @action_closures_for_TSr = create_action_closures_for_TSr
     @rate_closures_for_sR = create_rate_closures_for_sR
     @rate_closures_for_SR = create_rate_closures_for_SR
-
     @assignment_closures_for_A = create_assignment_closures_for_A
-
-    puts "other assets set up, about to reset" if YPetri::DEBUG
-
-    # ----------- Reset -------------
-    reset!
-
     @zero_ᴍ = compute_initial_marking_vector_of_free_places.map { |e| e * 0 }
     @zero_gradient = @zero_ᴍ.dup
+    puts "other assets set up, about to reset" if YPetri::DEBUG
 
-    puts "reset complete" if YPetri::DEBUG
+    reset!; puts "reset complete" if YPetri::DEBUG
   end
 
-  # Returns a new instance of the system at a different state, while leaving
-  # all other simulation settings unchanged. This desired state can be
-  # specified either as marking vector (:ᴍ), marking array of free places (:m),
-  # marking array of all places (:marking), or marking hash (:pm). In case of
-  # marking hash, it does not have to be given for each place, missing places
-  # will be left unchanged.
+  # Returns a new instance of the system simulation at a specified state, with
+  # same simulation settings. This state (:marking argument) can be specified
+  # either as marking vector for free or all places, marking array for free or
+  # all places, or marking hash. If vector or array is given, its size must
+  # correspond to the number of either free, or all places. If hash is given,
+  # it is not necessary to specify marking of every place – marking of those
+  # left out will be left same as in the current state.
   # 
-  def at *args
-    oo = args.extract_options!
-    oo.may_have :m                   # marking of free places
-    oo.may_have :marking             # marking of all places
-    oo.may_have :ᴍ, syn!: :m_vector  # marking vector of free places
-    oo.may_have :marking_vector      # marking vector of all places
-    oo.may_have :pm, syn!: [ :p_m, :pmarking, :p_marking, # marking hash
-                             :place_m, :place_marking ]
-    if oo.has? :marking_vector then
-      duplicate.send :set_marking_vector, oo.delete( :marking_vector )
-    elsif oo.has? :marking then
-      duplicate.send :set_marking, oo.delete( :marking )
-    elsif oo.has? :m then
-      duplicate.send :set_m, oo.delete( :m )
-    elsif oo.has? :ᴍ then
-      duplicate.send :set_ᴍ, oo.delete( :ᴍ )
-    elsif oo.has? :pm then
-      duplicate.send :set_pm, oo.delete( :pm )
-    else
-      duplicate.send :set_pm, oo
-    end
+  def at( marking: marking, **oo )
+    err_msg = "Size of supplied marking must match either the number of " +
+      "free places, or the number of all places!"
+    update_method = case marking
+                    when Hash then :update_marking_from_a_hash
+                    when Matrix then
+                      case marking.column_to_a.size
+                      when places.size then :set_marking_vector
+                      when free_places.size then :set_ᴍ
+                      else raise TypeError, err_msg end
+                    else # marking assumed to be an array
+                      case marking.size
+                      when places.size then :set_marking
+                      when free_places.size then :set_m
+                      else raise TypeError, err_msg end
+                    end
+    return duplicate( **oo ).send( update_method, marking )
   end
 
   # Exposing @net.
   # 
   attr_reader :net
+
+  # Is the simulation guarded?
+  # 
+  def guarded?; @guarded end
 
   # Without arguments or block, it returns simply a list of places. Otherwise,
   # it returns a has whose keys are the places, and whose values are governed
@@ -287,7 +247,7 @@ class YPetri::Simulation
   # 
   def clamped_places *aa, &b
     return zip_to_hash clamped_places, *aa, &b unless aa.empty? && b.nil?
-    kk = @place_clamps.keys
+    kk = @marking_clamps.keys
     places.select { |p| kk.include? p }
   end
 
@@ -301,9 +261,10 @@ class YPetri::Simulation
 
   # Place clamp definitions for clamped places (array)
   # 
-  def place_clamps
-    clamped_places.map { |p| @place_clamps[p] }
+  def marking_clamps
+    clamped_places.map { |p| @marking_clamps[p] }
   end
+  alias place_clamps marking_clamps
 
   # Marking array of free places.
   # 
@@ -1180,7 +1141,7 @@ class YPetri::Simulation
   def compute_marking_vector_of_clamped_places
     puts "computing the marking vector of clamped places" if YPetri::DEBUG
     results = clamped_places.map { |p|
-      clamp = @place_clamps[ p ]
+      clamp = @marking_clamps[ p ]
       puts "doing clamped place #{p} with clamp #{clamp}" if YPetri::DEBUG
       # unwrap places / cells
       clamp = case clamp
@@ -1224,8 +1185,43 @@ class YPetri::Simulation
     tsa_transitions.map { |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
       c2f = Matrix.correspondence_matrix( t.codomain, free_places )
-      λ { c2f * t.action_closure.( *( p2d * marking_vector ).column_to_a ) }
+      if guarded? then
+        λ {
+          domain_marking = ( p2d * marking_vector ).column_to_a
+          # I. TODO: t.domain_guard.( domain_marking )
+          codomain_change = Array t.action_closure.( *domain_marking )
+          # II. TODO: t.action_guard.( codomain_change )
+          c2f * codomain_change
+        }
+      else
+        λ { c2f * t.action_closure.( *( p2d * marking_vector ).column_to_a ) }
+      end
     }
+  end
+
+  def blame_tsa( marking_vect )
+    # If, in spite of passing domain guard and action guard, marking guard
+    # indicates an exception, the method here serves to find the candidate
+    # transitions to blame for the exception, given certain place marking.
+    msg = "Action closure of transition #%{t} with domain #%{dm} and " +
+      "codomain #%{cdm} returns #%{retval} which, when added to place " +
+      "#{p}, gives marking that would flunk place's marking guard."
+    tsa_transitions.each { |t|
+      p2d = Matrix.correspondence_matrix( places, t.domain )
+      rslt = Array t.action_closure( *( p2d * marking_vect ).column_to_a )
+      t.codomain.zip( rslt ).each { |place, Δ|
+        fields = {
+          t: t.name || t.object_id, p: place,
+          dm: Hash[ t.domain_pp.zip domain_marking ],
+          cdm: Hash[ t.codomain_pp.zip( t.codomain.map { |p| ꜧ[p] } ) ],
+          retval: Hash[ t.codomain_pp.zip( codomain_change ) ]
+        }
+        rslt = ꜧ[place] + Δ
+        raise TypeError, msg % fields unless place.marking_guard.( rslt )
+      }
+    }
+    # TODO: Here, #blame_tsa simply raises. It would be however more correct
+    # to gather all blame candidates and present them to the user all.
   end
 
   def create_Δ_closures_for_Tsr
@@ -1275,51 +1271,42 @@ class YPetri::Simulation
       probe = Matrix.column_vector( t.codomain.size.times.map { |a| a + 1 } )
       result = ( F2A() * c2f * probe ).column_to_a.map { |n| n == 0 ? nil : n }
       assignment_addresses = probe.column_to_a.map { |i| result.index i }
-      lambda do
-        # puts "result is #{result}"
-        act = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
-        # puts "assignment addresses are #{assignment_addresses}"
-        # puts "act is #{act}"
-        # puts "nils are #{nils}"
-        assign = assignment_addresses.zip( act )
-        # puts "assign is #{assign}"
-        assign = assign.each_with_object nils.dup do |pair, o| o[pair[0]] = pair[1] end
-        # puts "assign is #{assign}"
-        @marking_vector.map { |original_marking|
-          assignment_order = assign.shift
-          assignment_order ? assignment_order : original_marking
-        }
-      end
+      λ {
+        action = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
+        assign = assignment_addresses.zip( action )
+          .each_with_object nils.dup do |pair, o| o[pair[0]] = pair[1] end
+        marking_vector.map { |orig_val| assign.shift || orig_val }
+      }
     } # map
-  end
+end
 
-  # Set the marking vector.
+  # Set marking vector (for all places).
   # 
-  def set_marking_vector marking_vect
-    @marking_vector = marking_vect
+  def set_marking_vector marking_vector
+    @marking_vector = marking_vector
     return self
   end
 
-  # Set the marking vector (array argument).
+  # Set marking vector, based on marking array of all places.
   # 
   def set_marking marking_array
     set_marking_vector Matrix.column_vector( marking_array )
   end
 
-  # Set the marking vector (hash argument).
+  # Update marking vector, based on { place => marking } hash argument.
   # 
-  def set_pm marking_hash
+  def update_marking_from_a_hash marking_hash
     to_set = place_marking.merge( marking_hash.with_keys do |k| place k end )
     set_marking( places.map { |pl| to_set[ pl ] } )
   end
 
-  # Set the marking vector (array argument, free places).
+  # Set marking vector based on marking array of free places.
   # 
   def set_m marking_array_for_free_places
-    set_pm( free_places( marking_array_for_free_places ) )
+    set_marking_from_a_hash( free_places( marking_array_for_free_places ) )
   end
 
-  # Set the marking vector (free places).
+  # Set marking vector based on marking vector of free places.
   # 
   def set_ᴍ marking_vector_for_free_places
     set_m( marking_vector_for_free_places.column_to_a )
@@ -1332,28 +1319,23 @@ class YPetri::Simulation
     return self
   end
 
-  # Duplicate creation. TODO: Perhaps this should be a #dup / #clone method?
+  # Duplicate creation.
   # 
-  def duplicate
-    instance = self.class.new( { method: @method,
-                                 net: @net,
-                                 place_clamps: @place_clamps,
-                                 initial_marking: @initial_marking
-                               }.update( simulation_settings ) )
-    instance.send :set_recording, recording
-    instance.send :set_marking_vector, @marking_vector
-    return instance
+  def dup( **oo )
+    self.class.new( oo.reverse_merge!( { method: @method,
+                                         guarded: @guarded,
+                                         net: @net,
+                                         marking_clamps: @marking_clamps,
+                                         initial_marking: @initial_marking
+                                       }.update( simulation_settings ) ) )
+      .tap { |instance|
+        instance.send :set_recording, recording
+        instance.send :set_marking_vector, @marking_vector
+      }
   end
-  
-  # # Place, Transition, Net class
-  # # 
-  # def Place; YPetri::Place end
-  # def Transition; YPetri::Transition end
 
   # Instance identification methods.
   # 
   def place( which ); Place().instance( which ) end
   def transition( which ); Transition().instance( which ) end
-
-  # LATER: Mathods for timeless simulation.
 end # class YPetri::Simulation

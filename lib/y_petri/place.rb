@@ -6,6 +6,7 @@ class YPetri::Place
   include NameMagic
 
   attr_reader :quantum
+  attr_reader :guard
   attr_accessor :default_marking
   attr_accessor :marking           # instance-attached marking
   alias :value :marking
@@ -48,13 +49,38 @@ class YPetri::Place
   # not supported yet, but in future, it should enable smooth transition
   # between continuous and stochastic modes of simulation.
   # 
-  def initialize *aa; oo = aa.extract_options!
-    # set domain and codomain of the place empty
-    @upstream_arcs = []
-    @downstream_arcs = []
-    @quantum = oo.may_have( :quantum, syn!: :q ) || 1
-    @default_marking = oo.may_have( :default_marking, syn!: [ :dflt_m, :m! ] )
-    @marking = oo.may_have( :marking, syn!: :m ) || @default_marking
+  def initialize( quantum: 1, **oo )
+    @upstream_arcs, @downstream_arcs = [], [] # set domain, codomain to empty
+    @default_marking = oo.may_have :default_marking, syn!: :m!
+    marking = oo.may_have( :marking, syn!: :m ) || @default_marking
+    @quantum, @marking = quantum, marking
+    guard = oo.may_have :guard # type guard
+
+    # Establish type guard
+    if guard then
+      msg = "Marking %s fails guard of place #{ɴ_}!"
+      @guard = -> ( m ) { guard.( m ) or raise YPetri::GuardError, msg % m }
+      # Here, it can be remarked that if GuardError is raised from the user
+      # supplied closure itself, everything also works OK.
+    elsif m then
+      msg = "Marking %s (class %s) of place #{ɴ_} is not of the same type " +
+        "as its referential marking #{marking} (class #{marking.class})!"
+      if m.is_a?( Numeric ) && ! m.is_a?( Complex ) then
+        @guard = -> ( m ) {
+          m.is_a?( Numeric ) && ! m.is_a?( Complex ) or # against wrong class
+            raise YPetri::GuardError, msg % [ m, m.class ]
+          m < 0 and # against negative value
+            raise YPetri::GuardError, "Negative marking #{m} for place #{ɴ_}!"
+        }
+      else
+        @guard = -> ( m ) {
+          m.class == marking.class or # against wrong class
+            raise YPetri::GuardError, msg % [ m, m.class ]
+        }
+      end
+    else
+      @guard = -> (m) {true}
+    end
   end
 
   # Returns an array of all the transitions connected to the place.

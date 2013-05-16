@@ -173,9 +173,8 @@ module YPetri::Workspace::SimulationRelatedMethods
     else err.( [0, 1], " and #{missing.size-2} more places" ) end
 
     # Finally, create and return the simulation
-    @simulations[ key ] =
-      net_ɪ.new_timed_simulation( simulation_settings
-                                    .merge( initial_marking: im_hash,
-                                            place_clamps: clamp_hash ) )
+    named_args = simulation_settings.merge( initial_marking: im_hash,
+                                            marking_clamps: clamp_hash )
+    @simulations[ key ] = net_ɪ.new_timed_simulation **named_args
   end # def new_timed_simulation
 end # module YPetri::Workspace::SimulationRelatedMethods

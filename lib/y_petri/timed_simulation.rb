@@ -77,17 +77,17 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # (alias :step), :sampling_period (alias :sampling), and :target_time
   # named arguments.
   # 
-  def initialize args={}
-    args.must_have :step_size, syn!: :step
-    args.must_have :sampling_period, syn!: :sampling
-    args.may_have :target_time
-    args.may_have :initial_time
-    @step_size = args.delete :step_size
-    @sampling_period = args.delete :sampling_period
-    @target_time = args.delete :target_time
-    @initial_time = args.delete( :initial_time ) ||
+  def initialize( **named_args )
+    named_args.must_have :step_size, syn!: :step
+    named_args.must_have :sampling_period, syn!: :sampling
+    named_args.may_have :target_time
+    named_args.may_have :initial_time
+    @step_size = named_args.delete :step_size
+    @sampling_period = named_args.delete :sampling_period
+    @target_time = named_args.delete :target_time
+    @initial_time = named_args.delete( :initial_time ) ||
       @target_time.nil? ? nil : @sampling_period * 0 # @target_time.class.zero
-    super args
+    super( **named_args )
     @zero_gradient = @zero_ᴍ.map { |e| step_size.to_f / step_size * e }
   end
   # LATER: transition clamps

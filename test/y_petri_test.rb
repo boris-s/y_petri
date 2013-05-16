@@ -607,7 +607,7 @@ describe ::YPetri::Simulation do
     @net.include_transition! @t2
     @net << @t3
     @s = YPetri::Simulation.new net: @net,
-                                place_clamps: { @p1 => 2.0, @p5 => 2.0 },
+                                marking_clamps: { @p1 => 2.0, @p5 => 2.0 },
                                 initial_marking: { @p2 => @p2.default_marking,
                                                    @p3 => @p3.default_marking,
                                                    @p4 => @p4.default_marking }
