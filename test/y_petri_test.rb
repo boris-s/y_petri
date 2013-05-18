@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+               -> ( m ) { Array( guard ).( m ) or fail YPetri::GuardError, msg % m }
 #! /usr/bin/ruby
 #encoding: utf-8
 
@@ -229,7 +231,14 @@ describe ::YPetri::Transition do
         # #codomain_marking
         assert @tt.all?{ |t| t.codomain_marking == [ @p1.marking ] }
         # #enabled?
-        assert @tt.all?{ |t| t.enabled? == true }
+        assert_equal 1, @p1.marking
+        assert_equal true, @p1.guard.( 1 )
+        assert_equal true, @ftS1.enabled?
+        assert_equal true, @ftS2.enabled?
+        assert_equal true, @ftS3.enabled?
+        assert_equal true, @ftS4.enabled?
+        assert_equal true, @ftS5.enabled?
+        assert_equal true, @ftS6.enabled?
       end
     end
 
@@ -352,9 +361,9 @@ describe "upstream and downstream reference mτs of places and transitions" do
         private :Place, :Transition
       }
     }
-    @a = @pç.new( dflt_m: 1.0 )
-    @b = @pç.new( dflt_m: 2.0 )
-    @c = @pç.new( dflt_m: 3.0 )
+    @a = @pç.new( default_marking: 1.0 )
+    @b = @pç.new( default_marking: 2.0 )
+    @c = @pç.new( default_marking: 3.0 )
   end
 
   describe "Place" do
@@ -423,7 +432,7 @@ describe ::YPetri::Net do
     @p3 = pç.new ɴ: "C", quantum: 0.1, marking: 3.3
     @net = nç.new
     [ @p1, @p2, @p3 ].each { |p| @net.include_place! p }
-    @p_not_included = pç.new ɴ: "X", m: 0
+    @p_not_included = pç.new ɴ: "X", marking: 0
   end
 
   describe "net of 3 places and no transitions" do

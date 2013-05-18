@@ -50,6 +50,8 @@ module YPetri
       target_time: 60 }
   end
 
+  GuardError = Class.new TypeError
+
   def self.included( receiver )
     # receiver.instance_variable_set :@YPetriManipulator, Manipulator.new
     # puts "included in #{receiver}"

@@ -495,11 +495,15 @@ module YPetri
     # place without getting places into forbidden state (negative marking).
     # 
     def enabled?( Δt=nil )
-      raise AErr, "Δtime argument required for timed transitions!" if
-        timed? and Δt.nil?
-      codomain
-        .zip( action Δt )
-        .all? { |place, change| place.marking.to_f >= -change.to_f }
+      fail ArgumentError, "Δtime argument compulsory for timed transitions!" if
+        timed? && Δt.nil?
+      codomain.zip( action Δt ).all? do |place, change|
+        begin
+          place.guard.( place.marking + change )
+        rescue YPetri::GuardError
+          false
+        end
+      end
     end
 
     # Recursive firing of the upstream net portion (honors #cocked?).
@@ -580,7 +584,7 @@ module YPetri
     # else then defining the duck type of the input argument collection.
     # TypeError is therefore raised if invalid collection has been supplied.
     # 
-    def check_in_arguments *args, **oo
+    def check_in_arguments *aa, **oo, &block
       oo.may_have :stoichiometry, syn!: [ :stoichio, :s ]
       oo.may_have :codomain, syn!: [ :codomain_arcs, :codomain_places,
                                      :downstream,
@@ -588,8 +592,8 @@ module YPetri
                                      :action_arcs ]
       oo.may_have :domain, syn!: [ :domain_arcs, :domain_places,
                                    :upstream, :upstream_arcs, :upstream_places ]
-      oo.may_have :rate, syn!: [ :rate_closure,
-                                 :propensity, :propensity_closure ]
+      oo.may_have :rate, syn!: [ :rate_closure, :propensity,
+                                 :propensity_closure ]
       oo.may_have :action, syn!: :action_closure
       oo.may_have :timed
       oo.may_have :domain_guard
@@ -613,10 +617,10 @@ module YPetri
       # upstream description arguments; also takes care of :missing domain
         if has_rate? then
           @domain, @rate_closure, @timed, @functional =
-            check_in_upstream_description_for_R( oo )
+            check_in_upstream_description_for_R( oo, &block )
         else
           @domain, @action_closure, @timed, @functional =
-            check_in_upstream_description_for_r( oo )
+            check_in_upstream_description_for_r( oo, &block )
         end
 
       # optional assignment action:
@@ -662,11 +666,12 @@ module YPetri
       end
     end
 
-    def check_in_upstream_description_for_R( oo )
+    def check_in_upstream_description_for_R( oo, &block )
       _domain = domain               # this method may modify domain
-      # check against colliding :action argument
-      raise TErr, "Rate & action are mutually exclusive!" if oo.has? :action
-      # lets figure the rate closure
+      fail ArgumentError, "Rate (propensity) and action may not be both given!" if
+        oo.has? :action # check against colliding :action argument
+      fail ArgumentError, "If block is given, rate must not be given!" if block
+      # Let's figure the rate closure now. (Block is never used.)
       rate_λ = case rate_arg = oo[:rate]
                when Proc then # We received the closure directly,
                  # but we've to be concerned about missing domain.
@@ -709,11 +714,12 @@ module YPetri
       return _domain, rate_λ, _timed, _functional
     end
 
-    def check_in_upstream_description_for_r( oo )
+    def check_in_upstream_description_for_r( oo, &block )
       _domain = domain               # this method may modify domain
       _functional = true
       # was action closure was given explicitly?
       if oo.has? :action then
+        fail ArgumentError, "If block is given, rate must not be given!" if block
         action_λ = oo[:action].aT_is_a Proc, "supplied action named argument"
         if oo.has? :timed then
           _timed = oo[:timed]
@@ -725,7 +731,7 @@ module YPetri
                         codomain # user meant domain same as codomain
                       end
           else # domain not missing
-            raise TErr, "Rate closure arity (#{rate_arg.arity}) > domain " +
+            fail TypeError, "Rate closure arity (#{rate_arg.arity}) > domain " +
               "size (#{domain.size})!" if action_λ.arity.abs > domain.size
           end
         else # :timed argument not supplied
@@ -737,8 +743,8 @@ module YPetri
                         _timed = false
                         [] # empty domain is implied
                       else # no deduction of user intent possible
-                        raise AErr, "Too much ambiguity: Neither domain nor " +
-                          "timedness of the rateless transition was specified."
+                        fail ArgumentError, "Too much ambiguity: Rateless " +
+                          "transition with neither domain nor timedness given."
                       end
           else # domain not missing
             # Even if the user did not bother to inform us explicitly about
@@ -750,23 +756,26 @@ module YPetri
                      when domain.size then false
                      when domain.size + 1 then true
                      else # no deduction of user intent possible
-                       raise AErr, "Timedness was not specified, and the " +
-                         "arity of the action supplied action closure " +
-                         "(#{action_λ.arity}) does not give clear hint on it."
+                       fail ArgumentError, "Timedness was not specified, and " +
+                         "action closure arity (#{action_λ.arity}) does not " +
+                         "give a clear hint on it!"
                      end
           end
         end
       else # rateless cases with no action closure specified
-        # Assumption must be made on transition's action. In particular,
-        # lambda { 1 } action closure will be assumed,
+        # Consume block, if given:
+        check_in_upstream_for_r oo.update( action: block ) if block
+        # If there is really really no closures, then an Assumption must be made
+        # on the transition's action. In particular, lambda { 1 } action closure
+        # will be assumed as default:
         action_λ = lambda { 1 }
-        # and it will be required that the transition be stoichiometric and
+        # And it will be required that the transition be stoichiometric and
         # timeless. Domain will thus be required empty.
-        raise AErr, "Stoichiometry is compulsory, if rate/action was " +
-          "not supplied." unless stoichiometric?
+        fail ArgumentError, "Stoichiometry is compulsory, if rate/action " +
+          "was not supplied." unless stoichiometric?
         # With this, we can drop worries about missing domain.
-        raise AErr, "When no rate/action is supplied, the transition can't " +
-          "be declared timed." if oo[:timed] if oo.has? :timed
+        fail ArgumentError, "When no rate (propensity) or action is supplied, " +
+          "the transition cannot be timed." if oo[:timed] if oo.has? :timed
         _timed = false
         _domain = []
         _functional = false # the transition is considered functionless
