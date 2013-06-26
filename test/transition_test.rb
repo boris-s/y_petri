@@ -228,9 +228,10 @@ describe ::YPetri::Transition do
       # This should give standard mass action by magic:
       @SR1 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, rate: 0.1
       # While this has custom closure:
-      @SR2 = @ç.new s: { @p1 => -1, @p3 => 1 }, rate: λ { |a| a * 0.5 }
+      @SR2 = @ç.new s: { @p1 => -1, @p3 => 1 }, rate: -> a { a * 0.5 }
       # While this one even has domain explicitly specified:
-      @SR3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, upstream_arcs: @p3, rate: λ { |a| a * 0.5 }
+      @SR3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 },
+                    upstream_arcs: @p3, rate: -> a { a * 0.5 }
     end
 
     it "should init and work" do

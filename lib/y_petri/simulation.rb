@@ -1193,7 +1193,7 @@ class YPetri::Simulation
       p2d = Matrix.correspondence_matrix( places, t.domain )
       c2f = Matrix.correspondence_matrix( t.codomain, free_places )
       if guarded? then
-        λ {
+        -> {
           domain_marking = ( p2d * marking_vector ).column_to_a
           # I. TODO: t.domain_guard.( domain_marking )
           codomain_change = Array t.action_closure.( *domain_marking )
@@ -1201,7 +1201,7 @@ class YPetri::Simulation
           c2f * codomain_change
         }
       else
-        λ { c2f * t.action_closure.( *( p2d * marking_vector ).column_to_a ) }
+        -> { c2f * t.action_closure.( *( p2d * marking_vector ).column_to_a ) }
       end
     }
   end
@@ -1235,21 +1235,21 @@ class YPetri::Simulation
     Tsr_transitions().map { |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
       c2f = Matrix.correspondence_matrix( t.codomain, free_places )
-      λ { |Δt| c2f * t.action_closure.( Δt, *( p2d * marking_vector ).column_to_a ) }
+      -> Δt { c2f * t.action_closure.( Δt, *( p2d * marking_vector ).column_to_a ) }
     }
   end
 
   def create_action_closures_for_tS
     tS_transitions.map{ |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
-      λ { t.action_closure.( *( p2d * marking_vector ).column_to_a ) }
+      -> { t.action_closure.( *( p2d * marking_vector ).column_to_a ) }
     }
   end
 
   def create_action_closures_for_TSr
     TSr_transitions().map{ |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
-      λ { |Δt| t.action_closure.( Δt, *( p2d * marking_vector ).column_to_a ) }
+      -> Δt { t.action_closure.( Δt, *( p2d * marking_vector ).column_to_a ) }
     }
   end
 
@@ -1257,17 +1257,17 @@ class YPetri::Simulation
     sR_transitions.map{ |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
       c2f = Matrix.correspondence_matrix( t.codomain, free_places )
-      λ { c2f * t.rate_closure.( *( p2d * marking_vector ).column_to_a ) }
+      -> { c2f * t.rate_closure.( *( p2d * marking_vector ).column_to_a ) }
     }
   end
 
   def create_rate_closures_for_SR
-    SR_transitions().map{ |t|
+    SR_transitions().map { |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
       puts "Marking is #{pp :marking rescue nil}" if YPetri::DEBUG
-      λ { t.rate_closure.( *( p2d * marking_vector ).column_to_a )
-          .tap do |r| fail YPetri::GuardError, "SR #{t.name}!!!!" if r.is_a? Complex end
-        }
+      -> { t.rate_closure.( *( p2d * marking_vector ).column_to_a )
+           .tap do |r| fail YPetri::GuardError, "SR #{t.name}!!!!" if r.is_a? Complex end
+      }
     }
   end
 
@@ -1280,7 +1280,7 @@ class YPetri::Simulation
       probe = Matrix.column_vector( t.codomain.size.times.map { |a| a + 1 } )
       result = ( F2A() * c2f * probe ).column_to_a.map { |n| n == 0 ? nil : n }
       assignment_addresses = probe.column_to_a.map { |i| result.index i }
-      λ {
+      -> {
         act = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
         act.each_with_index { |e, i|
           fail YPetri::GuardError, "Assignment transition #{t.name} with " +

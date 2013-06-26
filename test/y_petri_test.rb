@@ -31,7 +31,7 @@ describe ::YPetri::Net do
     @p2 = pç.new ɴ: "B", quantum: 0.1, marking: 2.2
     @p3 = pç.new ɴ: "C", quantum: 0.1, marking: 3.3
     @net = nç.new
-    [ @p1, @p2, @p3 ].each { |p| @net.include_place! p }
+    [@p1, @p2, @p3].each { |p| @net.include_place! p }
     @p_not_included = pç.new ɴ: "X", marking: 0
   end
 
@@ -206,11 +206,11 @@ describe ::YPetri::Simulation do
                   rate: 0.1
     @t2 = @tç.new name: "T2",
                   s: { @p1 => -1, @p3 => 1 },
-                  rate: λ { |a| a * 0.5 }
+                  rate: -> a { a * 0.5 }
     @t3 = @tç.new name: "T3",
                   s: { @p1 => -1, @p2 => -1, @p4 => 1 },
                   domain: @p3,
-                  rate: λ { |a| a * 0.5 }
+                  rate: -> a { a * 0.5 }
     @net = @nç.new << @p1 << @p2 << @p3 << @p4 << @p5
     @net.include_transition! @t1
     @net.include_transition! @t2
@@ -543,7 +543,7 @@ describe ::YPetri::TimedSimulation do
   describe "timed 'isomerization' with given as λ" do
     before do
       @t2 = ::YPetri::Transition.new s: { @a => -1, @c => 1 },
-                                     rate_closure: λ { |a| a * 0.5 }
+                                     rate_closure: -> a { a * 0.5 }
       @net = ::YPetri::Net.new << @a << @b << @c << @t2
     end
 
@@ -569,7 +569,7 @@ describe ::YPetri::TimedSimulation do
     before do
       @t3 = ::YPetri::Transition.new s: { @a => -1, @c => 1 },
                                      domain: @b,
-                                     rate: λ { |a| a * 0.5 }
+                                     rate: -> a { a * 0.5 }
       @net = ::YPetri::Net.new << @a << @b << @c << @t3
       @sim = ::YPetri::TimedSimulation.new net: @net,
                initial_marking: { @a => 1, @b => 0.6, @c => 3 },
@@ -612,7 +612,7 @@ describe ::YPetri::Workspace do
                             ɴ: "AA_BB_assembly"
     t2 = @w.Transition.new! ɴ: "AA_appearing",
                             codomain: a,
-                            rate: λ{ 0.1 },
+                            rate: -> { 0.1 },
                             stoichiometry: 1
     @pp, @tt = [a, b, c], [t1, t2]
     @f_name = "test_output.csv"
@@ -735,7 +735,7 @@ describe ::YPetri::Manipulator do
       @p = @m.Place ɴ: "P", default_marking: 1
       @q = @m.Place ɴ: "Q", default_marking: 1
       @decay_t = @m.Transition ɴ: "Tp", s: { P: -1 }, rate: 0.1
-      @constant_flux_t = @m.Transition ɴ: "Tq", s: { Q: 1 }, rate: λ{ 0.02 }
+      @constant_flux_t = @m.Transition ɴ: "Tq", s: { Q: 1 }, rate: -> { 0.02 }
       @m.initial_marking @p => 1.2
       @m.initial_marking @q => 2
       @m.set_step 0.01
