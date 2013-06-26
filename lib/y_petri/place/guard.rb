@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Guard mechanics aspect of the Petri net place.
+# Guard mechanics aspect of a place.
 # 
 class YPetri::Place
   # Marking guard.

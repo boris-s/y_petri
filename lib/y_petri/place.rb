@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+require_relative 'dependency_injection'
 require_relative 'place/guard'
 require_relative 'place/arcs'
 
@@ -7,6 +8,7 @@ require_relative 'place/arcs'
 # 
 class YPetri::Place
   include NameMagic
+  include YPetri::DependencyInjection
 
   attr_reader :quantum
   attr_reader :guards
@@ -139,16 +141,4 @@ class YPetri::Place
     qς = q == 1 ? nil : "quantum: #{q.nil? ? '∅' : q}"
     return nς, mς, dς, qς
   end
-
-  # Place, Transition, Net class -- to be overriden for dependency injection.
-  # 
-  def Place; ::YPetri::Place end
-  def Transition; ::YPetri::Transition end
-  def Net; ::YPetri::Net end
-
-  # Instance identification methods.
-  # 
-  def place( which ); Place().instance( which ) end
-  def transition( which ); Transition().instance( which ) end
-  def net( which ); Net().instance( which ) end
 end # class YPetri::Place
