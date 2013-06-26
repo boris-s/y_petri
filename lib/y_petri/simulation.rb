@@ -143,7 +143,7 @@ class YPetri::Simulation
                       when free_places.size then :set_m
                       else raise TypeError, err_msg end
                     end
-    return duplicate( **oo ).send( update_method, marking )
+    return dup( **oo ).send( update_method, marking )
   end
 
   # Exposing @net.
@@ -845,7 +845,8 @@ class YPetri::Simulation
   def flux_vector
     return flux_vector_for_SR if s_transitions.empty? && r_transitions.empty?
     raise "One may only call this method when all the transitions of the " +
-      "simulation are SR transitions."
+      "simulation are SR transitions. Try #flux_vector_for( *transitions ), " +
+      "#flux_vector_for_SR, #flux_for( *transitions ), or #flux_for_SR"
   end
   alias φ flux_vector
 
@@ -1163,14 +1164,20 @@ class YPetri::Simulation
   # change on the marking vector for all places.
   # 
   def update_marking! Δ_free_places
-    # this i
     @marking_vector += F2A() * Δ_free_places
+  end
+
+  # Guards proposed marking delta.
+  # 
+  def guard_Δ! Δ_free_places
+    ary = ( marking_vector + F2A() * Δ_free_places ).column_to_a
+    places.zip( ary ).each { |pl, proposed_m| pl.guard.( proposed_m ) }
   end
 
   # Fires all assignment transitions once.
   # 
   def assignment_transitions_all_fire!
-    assignment_closures_for_A.each do |closure|
+    assignment_closures_for_A.each_with_index do |closure, i|
       @marking_vector = closure.call # TODO: This offers better algorithm.
     end
   end
@@ -1258,7 +1265,9 @@ class YPetri::Simulation
     SR_transitions().map{ |t|
       p2d = Matrix.correspondence_matrix( places, t.domain )
       puts "Marking is #{pp :marking rescue nil}" if YPetri::DEBUG
-      λ { t.rate_closure.( *( p2d * marking_vector ).column_to_a ) }
+      λ { t.rate_closure.( *( p2d * marking_vector ).column_to_a )
+          .tap do |r| fail YPetri::GuardError, "SR #{t.name}!!!!" if r.is_a? Complex end
+        }
     }
   end
 
@@ -1272,8 +1281,13 @@ class YPetri::Simulation
       result = ( F2A() * c2f * probe ).column_to_a.map { |n| n == 0 ? nil : n }
       assignment_addresses = probe.column_to_a.map { |i| result.index i }
       λ {
-        action = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
-        assign = assignment_addresses.zip( action )
+        act = Array t.action_closure.( *( p2d * marking_vector ).column_to_a )
+        act.each_with_index { |e, i|
+          fail YPetri::GuardError, "Assignment transition #{t.name} with " +
+          "domain #{t.domain_pp( domain_marking )} has produced a complex " +
+          "number at output positon #{i} (output was #{act})!" if e.is_a?( Complex ) || i.is_a?( Complex )
+        }
+        assign = assignment_addresses.zip( act )
           .each_with_object nils.dup do |pair, o| o[pair[0]] = pair[1] end
         marking_vector.map { |orig_val| assign.shift || orig_val }
       }

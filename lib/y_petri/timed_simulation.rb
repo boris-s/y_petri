@@ -96,11 +96,8 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # which is set to the required state / time. In addition to the parent class,
   # this version alseo sets time.
   # 
-  def at *args
-    oo = args.extract_options!
-    duplicate = super *args, oo
-    t = oo.may_have( :t, syn!: :ᴛ ) and duplicate.send :set_time, t
-    return duplicate
+  def at( time: ᴛ, **oo )
+    super( **oo ).tap { |duplicate| duplicate.send :set_time, time }
   end
 
   # At the moment, near alias for #run_to_arget_time!
@@ -156,7 +153,13 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # affected.
   # 
   def Euler_step!( Δt=@step_size ) # implicit Euler method
-    update_marking! Δ_Euler_for_free_places( Δt )
+    delta = Δ_Euler_for_free_places( Δt )
+    if guarded? then
+      guard_Δ! delta
+      update_marking! delta
+    else
+      update_marking! delta
+    end
     update_time! Δt
   end
   alias euler_step! Euler_step!
@@ -165,8 +168,15 @@ class YPetri::TimedSimulation < YPetri::Simulation
   # affected.
   # 
   def timeless_transitions_all_fire!
-    update_marking! Δ_if_tS_fire_once + Δ_if_tsa_fire_once
-    assignment_transitions_all_fire!
+    try "to update marking" do
+      update_marking!( note( "Δ state if tS transitions fire once",
+                             is: Δ_if_tS_fire_once ) +
+                       note( "Δ state if tsa transitions fire once",
+                             is: Δ_if_tsa_fire_once ) )
+    end
+    try "to fire the assignment transitions" do
+      assignment_transitions_all_fire!
+    end
   end
   alias t_all_fire! timeless_transitions_all_fire!
 

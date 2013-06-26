@@ -458,13 +458,16 @@ module YPetri
     def uncock; @cocked = false end
     alias :uncock! :uncock
 
-    # If #fire method of a transition applies its action (token adding/taking)
-    # on its domain, depending on codomain marking. Time step is expected as
-    # argument if the transition is timed. Only works if the transition has
-    # been cocked and causes the transition to uncock.
+    # Applies transition's action (adding/taking tokens) on its downstream
+    # places (aka. domain places). If the transition is timed, delta time has
+    # to be supplied as argument. In order for this method to work, the
+    # transition has to be cocked (#cock method), and firing uncocks the
+    # transition, so it has to be cocked again before it can be fired for
+    # the second time. If the transition is not cocked, this method has no
+    # effect.
     # 
     def fire( Δt=nil )
-      raise AErr, "Δtime argument required for timed transitions!" if
+      raise ArgumentError, "Δtime argument required for timed transitions!" if
         timed? and Δt.nil?
       return false unless cocked?
       uncock
@@ -472,19 +475,28 @@ module YPetri
       return true
     end
 
-    # Fires the transition regardless of cocked/uncocked status.
+    # Fires the transition just like #fire method, but disregards the cocked /
+    # uncocked state of the transition.
     # 
     def fire!( Δt=nil )
-      raise AErr, "Δtime required for timed transitions!" if timed? && Δt.nil?
-      if assignment_action? then
-        act = Array action( Δt )
-        codomain.each_with_index do |place, i|
-          place.marking = act[i]
-        end
-      else
-        act = action_after_feasibility_check( Δt )
-        codomain.each_with_index do |place, i|
-          place.add act[i]
+      raise ArgumentError, "Δt required for timed transitions!" if
+        Δt.nil? if timed?
+      try "to fire" do
+        if assignment_action? then
+          note has: "assignment action"
+          act = note "action", is: Array( action( Δt ) )
+          codomain.each_with_index do |place, i|
+            "place #{place}".try "to assign marking #{i}" do
+              place.marking = act[i]
+            end
+          end
+        else
+          act = note "action", is: action_after_feasibility_check( Δt )
+          codomain.each_with_index do |place, i|
+            "place #{place}".try "to assign marking #{i}" do
+              place.add act[i]
+            end
+          end
         end
       end
       return nil

@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-               -> ( m ) { Array( guard ).( m ) or fail YPetri::GuardError, msg % m }
 #! /usr/bin/ruby
-#encoding: utf-8
+# -*- coding: utf-8 -*-
 
 require 'minitest/spec'
 require 'minitest/autorun'
@@ -11,69 +9,6 @@ require_relative '../lib/y_petri'     # tested component itself
 # require 'sy'
 
 include Pyper if require 'pyper'
-
-# **************************************************************************
-# Test of Place class, part I.
-# **************************************************************************
-#
-describe ::YPetri::Place do
-  before do
-    # skip "to speed up testing"
-    @pç = pç = Class.new ::YPetri::Place
-    @p = pç.new! default_marking: 3.2,
-                 marking: 1.1,
-                 quantum: 0.1,
-                 name: "P1"
-  end
-
-  describe "place behavior" do
-    before do
-      @p.m = 1.1
-    end
-
-    it "should have constant magic included" do
-      assert_respond_to @p, :name
-      assert_equal @p.name, :P1
-    end
-
-    it "should have own marking and be able to update it" do
-      assert_equal 1.1, @p.marking
-      assert_equal 0.1, @p.quantum
-      assert_equal :P1, @p.name
-      @p.add 1
-      assert_equal 2.1, @p.value        # alias for #marking
-      @p.subtract 0.5
-      assert_equal 1.6, @p.m
-      @p.reset_marking
-      assert_equal 3.2, @p.marking
-    end
-
-    it "should respond to the arc getters" do
-      # #action_arcs & aliases
-      assert_equal [], @p.upstream_arcs
-      assert_equal [], @p.upstream_transitions
-      assert_equal [], @p.ϝ
-      # #test_arcs & aliases
-      assert_equal [], @p.downstream_arcs
-      assert_equal [], @p.downstream_transitions
-      # #arcs & aliasesnn
-      assert_equal [], @p.arcs
-      # #precedents & aliases
-      assert_equal [], @p.precedents
-      assert_equal [], @p.upstream_places
-      # #dependents & aliases
-      assert_equal [], @p.dependents
-      assert_equal [], @p.downstream_places
-    end
-
-    it "should respond to register and fire conn. transitions methods" do
-      assert_respond_to @p, :fire_upstream!
-      assert_respond_to @p, :fire_downstream!
-      assert_respond_to @p, :fire_upstream_recursively
-      assert_respond_to @p, :fire_downstream_recursively
-    end
-  end
-end
 
 # **************************************************************************
 # Test of Transition class, part I.
@@ -420,7 +355,7 @@ describe ::YPetri::Net do
     @pç = pç = Class.new ::YPetri::Place
     @nç = nç = Class.new ::YPetri::Net
     [ tç, pç, nç ].each { |ç|
-      ç.class_exec {
+      ç.namespace!.class_exec {
         define_method :Place do pç end
         define_method :Transition do tç end
         define_method :Net do nç end
@@ -459,7 +394,7 @@ describe ::YPetri::Net do
     it "should tell its qualities" do
       assert_equal true, @net.functional?
       assert_equal true, @net.timed?
-      assert @net.include?( @p1 ) && !@net.include?( nil )
+      assert @net.include?( @p1 ) && !@net.include?( YPetri::Place.new )
     end
 
     it "should have 'standard equipment' methods" do
@@ -589,7 +524,7 @@ describe ::YPetri::Simulation do
     @tç = tç = Class.new( ::YPetri::Transition )
     @nç = nç = Class.new( ::YPetri::Net )
     [ @pç, @tç, @nç ].each { |klass|
-      klass.class_exec {
+      klass.namespace!.class_exec {
         private
         define_method :Place do pç end
         define_method :Transition do tç end

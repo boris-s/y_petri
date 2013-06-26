@@ -31,8 +31,8 @@ module YPetri::Manipulator::SimulationRelatedMethods
     # A simulation is identified either by its name (if named), or by its
     # parameters and settings (:net, :cc, :imc, :ssc).
     # 
-    def set *args
-      key = identify *args
+    def set **nn
+      key = identify **nn
       @key = if key.nil? then key
              elsif @hash.has_key? key then key
              else raise "No simulation identified by #{key}!" end
@@ -40,8 +40,8 @@ module YPetri::Manipulator::SimulationRelatedMethods
 
     # Helper method specifying how a simulation is identified by arguments.
     # 
-    def identify( simulation_name=nil, net: nil, cc: nil, imc: nil, ssc: nil )
-      simulation_name || { net: net, cc: cc, imc: imc, ssc: ssc }
+    def identify( name: nil, net: nil, cc: nil, imc: nil, ssc: nil, **nn )
+      name || { net: net, cc: cc, imc: imc, ssc: ssc }.merge( nn )
     end
   end
 

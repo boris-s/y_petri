@@ -137,15 +137,18 @@ module YPetri::Workspace::SimulationRelatedMethods
   #
   # * default_ss = { step_size: 0.1, sampling_period: 5, target_time: 60 }
   # 
-  def new_timed_simulation( settings={} ); st = settings
-    net_ɪ = net( st[:net] || self.Net::Top )
-    cc_id = st.may_have( :cc, syn!: :clamp_collection ) || :Base
-    imc_id = st.may_have( :imc, syn!: :initial_marking_collection ) || :Base
-    ssc_id = st.may_have( :ssc,  syn!: :simulation_settings_collection ) || :Base
+  def new_timed_simulation( net: Net()::Top, **nn )
+    net_ɪ = net( net )
+    nn.may_have :cc, syn!: :clamp_collection
+    nn.may_have :imc, syn!: :initial_marking_collection
+    nn.may_have :ssc, syn!: :simulation_settings_collection
+    cc_id = nn.delete( :cc ) || :Base
+    imc_id = nn.delete( :imc ) || :Base
+    ssc_id = nn.delete( :ssc ) || :Base
 
     # simulation key
-    key = settings.may_have( :ɴ, syn!: :name ) || # either explicit
-      { net: net_ɪ, cc: cc_id, imc: imc_id, ssc: ssc_id } # or constructed
+    key = nn.may_have( :ɴ, syn!: :name ) || # either explicit
+      { net: net_ɪ, cc: cc_id, imc: imc_id, ssc: ssc_id }.merge( nn ) # or constructed
 
     # Let's clarify what we got so far.
     simulation_settings = self.ssc( ssc_id )
@@ -174,7 +177,7 @@ module YPetri::Workspace::SimulationRelatedMethods
 
     # Finally, create and return the simulation
     named_args = simulation_settings.merge( initial_marking: im_hash,
-                                            marking_clamps: clamp_hash )
+                                            marking_clamps: clamp_hash ).merge( nn )
     @simulations[ key ] = net_ɪ.new_timed_simulation **named_args
   end # def new_timed_simulation
 end # module YPetri::Workspace::SimulationRelatedMethods
