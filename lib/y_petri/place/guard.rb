@@ -6,11 +6,11 @@ class YPetri::Place
   # Marking guard.
   # 
   class Guard
-    ERRMSG = -> m, pl, assert do
-      "Marking #{m}:#{m.class}#{pl ? " of place " + pl : ''} #{assert}!"
+    ERRMSG = -> m, of, assert do
+      ["Marking", "#{m}:#{m.class}", of, "#{assert}!"].compact.join ' '
     end
 
-    attr_reader :assertion, :block
+    attr_reader :place, :assertion, :block
 
     # Requires a NL guard assertion (used in GuardError messages), and a guard
     # block expressing the same assertion formally, in code.  Attention: *Only
@@ -23,8 +23,8 @@ class YPetri::Place
     # automatically raise appropriately worded +GuardError+. See also:
     # {+YPetri#guard+ method}[rdoc-ref:YPetri::guard].
     # 
-    def initialize assertion_NL_string, &block
-      @assertion, @block = assertion_NL_string, block
+    def initialize( assertion_NL_string, place: nil, &block )
+      @place, @assertion, @block = place, assertion_NL_string, block
       @Lab = Class.new BasicObject do
         def initialize λ; @λ = λ end
         def fail; @λ.call end
@@ -34,8 +34,8 @@ class YPetri::Place
     # Validates a supplied marking value against the guard block. Raises
     # +YPetri::GuardError+ if the guard fails, otherwise returns _true_.
     # 
-    def validate( marking, place=nil )
-      λ = __fail__( marking, place, assertion )
+    def validate( marking )
+      λ = __fail__( marking, assertion )
       λ.call if @Lab.new( λ ).instance_exec( marking, &block ) == false
       return true
     end
@@ -44,8 +44,9 @@ class YPetri::Place
 
     # Constructs the fail closure.
     # 
-    def __fail__ marking, place, assertion
-      -> { fail YPetri::GuardError, ERRMSG.( marking, place, assertion ) }
+    def __fail__ marking, assertion
+      pl = place
+      -> { fail YPetri::GuardError, ERRMSG.( marking, pl, assertion ) }
     end
   end
 
@@ -82,7 +83,7 @@ class YPetri::Place
   # were given (behaving as +#federated_guard_closure+ alias in this case).
   # 
   def guard *args, &block
-    if block then @guards << Guard.new( *args, &block )
+    if block then @guards << Guard.new( *args, place: name || self, &block )
     elsif args.size == 1 then federated_guard_closure.( args[0] )
     elsif args.empty? then federated_guard_closure
     end
@@ -94,7 +95,7 @@ class YPetri::Place
   # 
   def federated_guard_closure
     place_name, lineup = name.to_s, guards.dup
-    -> m { lineup.each { |g| g.validate( m, place_name ) }; return m }
+    -> m { lineup.each { |g| g.validate( m ) }; return m }
   end
 
   # Applies guards on the marking currently owned by the place.
