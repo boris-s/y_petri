@@ -7,7 +7,7 @@ class YPetri::Place
   # 
   class Guard
     ERRMSG = -> m, pl, assert do
-      "Marking #{m}:#{m.class}#{pl ? " of place #{pl}" : ''} #{assert}!"
+      "Marking #{m}:#{m.class}#{pl ? " of place " + pl : ''} #{assert}!"
     end
 
     attr_reader :assertion, :block
@@ -93,8 +93,8 @@ class YPetri::Place
   # blocks pass for the given marking value.
   # 
   def federated_guard_closure
-    lineup = guards.dup
-    -> m { lineup.each { |g| g.validate( m, self ) }; return m }
+    place_name, lineup = name.to_s, guards.dup
+    -> m { lineup.each { |g| g.validate( m, place_name ) }; return m }
   end
 
   # Applies guards on the marking currently owned by the place.
