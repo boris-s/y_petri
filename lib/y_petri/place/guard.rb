@@ -6,7 +6,9 @@ class YPetri::Place
   # Marking guard.
   # 
   class Guard
-    ERRMSG = -> m, assert { "Marking #{m}:#{m.class} #{assert}!" }
+    ERRMSG = -> m, pl, assert do
+      "Marking #{m}:#{m.class}#{pl ? " of place #{pl}" : ''} #{assert}!"
+    end
 
     attr_reader :assertion, :block
 
@@ -32,9 +34,9 @@ class YPetri::Place
     # Validates a supplied marking value against the guard block. Raises
     # +YPetri::GuardError+ if the guard fails, otherwise returns _true_.
     # 
-    def validate( marking_value )
-      λ = __fail__( marking_value, assertion )
-      λ.call if @Lab.new( λ ).instance_exec( marking_value, &block ) == false
+    def validate( marking, place=nil )
+      λ = __fail__( marking, place, assertion )
+      λ.call if @Lab.new( λ ).instance_exec( marking, &block ) == false
       return true
     end
 
@@ -42,8 +44,8 @@ class YPetri::Place
 
     # Constructs the fail closure.
     # 
-    def __fail__ marking_value, assertion
-      -> { fail YPetri::GuardError, ERRMSG.( marking_value, assertion ) }
+    def __fail__ marking, place, assertion
+      -> { fail YPetri::GuardError, ERRMSG.( marking, place, assertion ) }
     end
   end
 
@@ -92,7 +94,7 @@ class YPetri::Place
   # 
   def federated_guard_closure
     lineup = guards.dup
-    -> m { lineup.each { |g| g.validate m }; return m }
+    -> m { lineup.each { |g| g.validate( m, self ) }; return m }
   end
 
   # Applies guards on the marking currently owned by the place.
