@@ -66,18 +66,19 @@ describe YPetri::Place do
   end
 
   it "should have guard mechanics" do
-    @p.guards.size.must_equal 2 # working automatic guard construction
+    @p.guards.size.must_equal 3 # working automatic guard construction
     g1, g2 = @p.guards
-    g1.assertion.must_include "number"
-    g2.assertion.must_include "complex"
+    [g1.assertion, g2.assertion].tap { |u, v|
+      assert u.include?( "number" ) || u.include?( "Numeric" )
+      assert v.include?( "complex" ) || v.include?( "Complex" )
+    }
     begin; g1.validate 11.1; g2.validate 11.1; @p.guard.( 11.1 ); :nothing_raised
     rescue; :error end.must_equal :nothing_raised
     -> { g2.validate Complex( 1, 1 ) }.must_raise YPetri::GuardError
     @p.marking "must be in 0..10" do |m| fail unless ( 0..10 ) === m end
-    @p.guards.size.must_equal 3
+    @p.guards.size.must_equal 4
     g = @p.federated_guard_closure
     -> { g.( 11.1 ) }.must_raise YPetri::GuardError
-    @p.marking = -1.11
-    -> { @p.guard! }.must_raise YPetri::GuardError
+    -> { @p.marking = -1.11 }.must_raise YPetri::GuardError
   end
 end

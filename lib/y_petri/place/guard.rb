@@ -92,7 +92,7 @@ class YPetri::Place
   # 
   def federated_guard_closure
     lineup = guards.dup
-    -> marking_value { lineup.each { |g| g.validate marking_value }; true }
+    -> m { lineup.each { |g| g.validate m }; return m }
   end
 
   # Applies guards on the marking currently owned by the place.
@@ -109,14 +109,19 @@ class YPetri::Place
   # interchangeable, except complex numbers.
   # 
   def add_default_guards!( reference_marking )
-    ref_class = reference_marking.class
-    if ref_class < Numeric and not ref_class < Complex then
-      # Note that #marking method is overloaded to act as #guard method when
-      # a block is supplied to it:
-      marking "should be a number" do |m| m.is_a? Numeric end
+    case reference_marking
+    when Complex then marking "should be Numeric" do |m| m.is_a? Numeric end
+    when Numeric then
+      marking "should be Numeric" do |m| m.is_a? Numeric end
       marking "should not be complex" do |m| fail if m.is_a? Complex end
+      marking "should not be negative" do |m| m >= 0 end
+    when nil then # no guards
+    when true, false then marking "should be Boolean" do |m| m == !!m end
     else
-      marking "should be a #{ref_class}" do |m| m.is_a? ref_class end
+      reference_marking.class.tap do |klass|
+        marking "should be a #{klass}" do |m| m.is_a? klass end
+      end
     end
+    return nil
   end
 end # class YPetri::Place

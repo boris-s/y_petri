@@ -60,6 +60,7 @@ class YPetri::Transition
   #       
   def initialize *args
     check_in_arguments *args       # the big work of checking in args
+    extend timed? ? Timed : assignment? ? Assignment : OrdinaryTimeless
     inform_upstream_places         # that they have been connected
     inform_downstream_places       # that they have been connected
     uncock                         # transitions initialize uncocked

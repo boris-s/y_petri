@@ -155,15 +155,13 @@ describe ::YPetri::Transition do
         assert @tt.all? { |t| t.action == [1] }
         # #zero_action
         assert @tt.all? { |t| t.zero_action }
-        # #action_after_feasibility_check
-        assert @tt.all? { |t| t.action_after_feasibility_check == [1] }
         # #domain_marking
         assert @tt.all? { |t| t.domain_marking == [] }
         # #codomain_marking
         assert @tt.all? { |t| t.codomain_marking == [@p1.m] }
         # #enabled?
         @p1.m.must_equal 1
-        @p1.guard.( 1 ).must_equal true
+        @p1.guard.( 1 ).must_equal 1
         @tt.each { |t| t.enabled?.must_equal true }
       end
     end
@@ -248,7 +246,7 @@ describe ::YPetri::Transition do
       @SR2.fire! 1.0
       [@p1, @p3].map( &:marking ).must_equal [0.4, 3.4]
       # the action t3 cannot fire with delta time 1.0
-      -> { @SR3.fire! 1.0 }.must_raise RuntimeError
+      -> { @SR3.fire! 1.0 }.must_raise YPetri::GuardError
       [@p1, @p2, @p3, @p4].map( &:marking ).must_equal [0.4, 1.8, 3.4, 4.2]
       # but it can fire with eg. delta time 0.1
       @SR3.fire! 0.1

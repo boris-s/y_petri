@@ -7,7 +7,7 @@ require 'y_support/respond_to'
 require 'y_support/name_magic'
 require 'y_support/unicode'
 require 'y_support/typing'
-require 'y_support/conscience'; include Conscience
+require 'y_support/try'
 require 'y_support/core_ext/hash'
 require 'y_support/core_ext/array'
 require 'y_support/stdlib_ext/matrix'

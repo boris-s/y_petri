@@ -13,7 +13,6 @@ class YPetri::Place
   attr_reader :quantum
   attr_reader :guards
   attr_accessor :default_marking
-  attr_writer :marking
 
   # Named parameters supplied upon place initialization may include:
   # 
@@ -55,7 +54,7 @@ class YPetri::Place
                  &block
     @upstream_arcs, @downstream_arcs, @guards = [], [], [] # init to empty
     @quantum, @default_marking = quantum, default_marking
-    @marking = marking || default_marking
+    self.marking = marking || default_marking
 
     # Check in :guard named argument and &block.
     if guard.ℓ? then # guard NL assertion not given, use block or default guards
@@ -91,6 +90,12 @@ class YPetri::Place
     guard args[0], &block
   end
 
+  # Marking setter.
+  # 
+  def marking=( new_marking )
+    @marking = guard.( new_marking )
+  end
+
   # Alias for #marking=
   # 
   def value=( marking ); self.marking = marking end
@@ -101,20 +106,20 @@ class YPetri::Place
 
   # Adds tokens to the place.
   # 
-  def add( amount_of_tokens )
-    @marking += amount_of_tokens
+  def add( amount )
+    @marking = guard.( @marking + amount )
   end
 
   # Subtracts tokens from the place.
   # 
-  def subtract( amount_of_tokens )
-    @marking -= amount_of_tokens
+  def subtract( amount )
+    @marking = guard.( @marking - amount )
   end
 
   # Resets place marking back to its default marking.
   # 
   def reset_marking
-    @marking = @default_marking
+    @marking = guard.( @default_marking )
   end
 
   # Produces the inspect string of the place.
