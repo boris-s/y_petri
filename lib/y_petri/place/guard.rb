@@ -7,7 +7,9 @@ class YPetri::Place
   # 
   class Guard
     ERRMSG = -> m, of, assert do
-      ["Marking", "#{m}:#{m.class}", of, "#{assert}!"].compact.join ' '
+      "Marking #{m}:#{m.class}" +
+        if of then " of #{of.name || of rescue of}" else '' end +
+        " #{assert}!"
     end
 
     attr_reader :place, :assertion, :block
