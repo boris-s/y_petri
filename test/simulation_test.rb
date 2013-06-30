@@ -13,7 +13,8 @@ describe ::YPetri::Simulation do
     @tç = tç = Class.new( ::YPetri::Transition )
     @nç = nç = Class.new( ::YPetri::Net )
     [ @pç, @tç, @nç ].each { |klass|
-      klass.namespace!.class_exec {
+      klass.namespace!
+      klass.class_exec {
         private
         define_method :Place do pç end
         define_method :Transition do tç end
@@ -135,16 +136,16 @@ describe ::YPetri::Simulation do
   end
 
   it "has stoichiometry matrix for 3. tS transitions" do
-    @s.S_for_tS.must_equal Matrix.empty( 3, 0 )
+    @s.S_tS.must_equal Matrix.empty( 3, 0 )
   end
 
   it "has stoichiometry matrix for 4. Sr transitions" do
-    @s.S_for_TSr.must_equal Matrix.empty( 3, 0 )
+    @s.S_TSr.must_equal Matrix.empty( 3, 0 )
   end
 
   it "has stoichiometry matrix for 6. SR transitions" do
-    @s.S_for_SR.must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
-    @s.S.must_equal @s.S_for_SR
+    @s.S_SR.must_equal Matrix[[-1,  0, -1], [0, 1, 0], [1, 0, 1]]
+    @s.S.must_equal @s.S_SR
   end
 
   it "presents 1. ts" do
@@ -227,13 +228,13 @@ describe ::YPetri::Simulation do
 
   it "2. handles Tsr transitions" do
     @s.Δ_closures_for_Tsr.must_equal []
-    @s.Δ_for_Tsr( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
+    @s.Δ_Tsr( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
   it "3. handles tS transitions" do
     @s.action_closures_for_tS.must_equal []
     @s.action_vector_for_tS.must_equal Matrix.column_vector( [] )
-    @s.α_for_t.must_equal Matrix.column_vector( [] )
+    @s.ᴀ_t.must_equal Matrix.column_vector( [] )
     @s.Δ_if_tS_fire_once.must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
@@ -242,14 +243,14 @@ describe ::YPetri::Simulation do
     @s.action_closures_for_Tr.must_equal []
     @s.action_vector_for_TSr( 1.0 ).must_equal Matrix.column_vector( [] )
     @s.action_vector_for_Tr( 1.0 ).must_equal Matrix.column_vector( [] )
-    @s.Δ_for_TSr( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
+    @s.Δ_TSr( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
   it "5. handles sR transitions" do
     assert_equal [], @s.rate_closures_for_sR
     assert_equal [], @s.rate_closures_for_s
     # @s.gradient_for_sR.must_equal Matrix.zero( @s.free_pp.size, 1 )
-    @s.Δ_Euler_for_sR( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
+    @s.Δ_sR( 1.0 ).must_equal Matrix.zero( @s.free_pp.size, 1 )
   end
 
   it "6. handles stoichiometric transitions with rate" do
@@ -259,11 +260,11 @@ describe ::YPetri::Simulation do
     @s.flux_vector_for_SR.must_equal Matrix.column_vector( [ 0.4, 1.0, 1.5 ] )
     @s.φ_for_SR.must_equal @s.flux_vector
     @s.SR_tt( :φ_for_SR ).must_equal( { T1: 0.4, T2: 1.0, T3: 1.5 } )
-    @s.Euler_action_vector_for_SR( 1 )
+    @s.first_order_action_vector_for_SR( 1 )
       .must_equal Matrix.column_vector [ 0.4, 1.0, 1.5 ]
-    @s.SR_tt( :Euler_action_for_SR, 1 ).must_equal( T1: 0.4, T2: 1.0, T3: 1.5 )
-    @s.Δ_Euler_for_SR( 1 ).must_equal Matrix[[-1.9], [1.0], [1.9]]
-    @s.free_pp( :Δ_Euler_for_SR, 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
+    @s.SR_tt( :first_order_action_for_SR, 1 ).must_equal( T1: 0.4, T2: 1.0, T3: 1.5 )
+    @s.Δ_SR( 1 ).must_equal Matrix[[-1.9], [1.0], [1.9]]
+    @s.free_pp( :Δ_SR, 1 ).must_equal( { P2: -1.9, P3: 1.0, P4: 1.9 } )
   end
 
   it "presents sparse stoichiometry vectors for its transitions" do

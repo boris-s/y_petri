@@ -113,14 +113,14 @@ class YPetri::Net
 
   # Creates a new simulation from the net.
   # 
-  def new_simulation( **named_args )
-    YPetri::Simulation.new **named_args.merge( net: self )
+  def new_simulation( **nn )
+    YPetri::Simulation.new **nn.merge( net: self )
   end
 
   # Creates a new timed simulation from the net.
   # 
-  def new_timed_simulation( **named_args )
-    YPetri::TimedSimulation.new **named_args.merge( net: self )
+  def new_timed_simulation( **nn )
+    new_simulation( **nn ).aT &:timed?
   end
 
   # Networks are equal when their places and transitions are equal.

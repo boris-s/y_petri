@@ -23,7 +23,7 @@ describe "Basic use of TimedSimulation" do
   it "should work" do
     @m.net.must_be_kind_of ::YPetri::Net
     @m.run!
-    @m.simulation.must_be_kind_of ::YPetri::TimedSimulation
+    @m.simulation.must_be_kind_of ::YPetri::Simulation
     @m.plot_state
     sleep 3
   end

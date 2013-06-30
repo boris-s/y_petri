@@ -25,7 +25,7 @@ describe YPetri::Workspace do
     @pp, @tt = [a, b, c], [t1, t2]
     @f_name = "test_output.csv"
     @w.set_imc @pp.τBᴍHτ( &:default_marking )
-    @w.set_ssc step: 0.1, sampling: 10, target_time: 50
+    @w.set_ssc step: 0.1, sampling: 10, time: 0..50
     @w.set_cc( {} )
     @sim = @w.new_timed_simulation
     File.delete @f_name rescue nil

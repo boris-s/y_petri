@@ -79,7 +79,7 @@ describe ::YPetri::Manipulator do
       @m.initial_marking @q => 2
       @m.set_step 0.01
       @m.set_sampling 1
-      @m.set_time 30
+      @m.set_time 0..30
     end
     
     it "works" do

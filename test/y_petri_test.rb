@@ -11,10 +11,8 @@ require_relative '../lib/y_petri'     # tested component itself
 # 
 describe YPetri do
   it "should have basic classes" do
-    assert [ :Place, :Transition, :Net,
-             :Simulation, :TimedSimulation,
-             :Workspace, :Manipulator
-           ].all? { |ß| YPetri.const_get( ß ).is_a? Module }
+    [ :Place, :Transition, :Net, :Simulation, :Workspace, :Manipulator ]
+      .each { |ß| YPetri.const_get( ß ).must_be_kind_of Module }
   end
 end
 

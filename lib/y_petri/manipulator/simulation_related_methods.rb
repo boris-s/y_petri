@@ -192,14 +192,19 @@ module YPetri::Manipulator::SimulationRelatedMethods
   end
   alias set_step_size set_step
 
-  # Changes the simulation time of the current ssc (ssc = simulation
-  # settings collection).
+  # Sets the time frame of the current ssc (sim. settings collection).
   # 
-  def set_time t
-    ssc.update target_time: t
+  def set_time time_range
+    ssc.update time: time_range.aT_kind_of( Range )
   end
-  alias set_target_time set_time
 
+  # Sets the time frame of the current ssc to run from zero to the time supplied
+  # as the argument.
+  # 
+  def set_target_time time
+    set_time time * 0 .. time
+  end
+    
   # Changes the sampling period of the current ssc (ssc = simulation
   # settings collection).
   # 

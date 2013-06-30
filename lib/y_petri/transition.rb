@@ -8,119 +8,115 @@ require_relative 'transition/timed'
 require_relative 'transition/ordinary_timeless'
 require_relative 'transition/assignment'
 
-# A Petri net transition. Usually depicted as square boxes, transitions
-# represent operations over the net's marking vector -- how the marking changes
-# when the transition activates (_fires_).
+# Transitions -- little boxes in Petri net drawings -- represent atomic
+# operations on the Petri net's marking.
 # 
 # === Domain and codomin
 #
-# Each transition has a _domain_ -- upstream places. Upstream places are those,
-# whose marking directly affects the transition's operation. Also, each
-# transition has a _codomain_ -- downstream places. Downstream places are those,
-# whose marking is directly affected by the transition's operation.
+# Each transition has a _domain_ (upstream places) and _codomain_ (downstream
+# places). Upstream places are those, whose marking directly affects
+# the transition. Downstream places are those, whose marking is directly affected
+# by the transition.
 #
 # === Action and action vector
 #
-# Every transition has an _action_ -- the operation it represents, the of what
-# happens to the marking of its codomain when it fires. With respect to the
-# transition's codomain, we can talk about the _action vector_ -- Δ state of the
-# codomain. For _non-stoichiometric_ transitions, this action vector is given
-# as the output of the _action closure_, or (for transitions with rate) of _rate
-# vector_ * Δ_time. For _stoichiometric_ transitions, this output needs to be
-# additionally multiplied by the transition's _stoichiometry vector_.
+# Every transition has an _action_ -- the operation it represents. The action
+# of _non-stoichiometric_ transitions is directly specified by the _action_
+# _closure_ (whose output arity should match the codomain size.) For
+# _stoichiometric_ transitions, the result of the action closure has to be
+# multiplied by the transition's _stoichiometry_ _vector_ to obtain the action.
+# Action of the _transitions_ _with_ _rate_ is specified indirectly by the
+# _rate_ _closure_.
 # 
-# === Basic types of transitions
-# 
-# We have already mentioned different types of transitions _stoichiometric_ and
-# _non-stoichometric_, with or without rate... In total, there are 6 basic types
-# of transitions in *YPetri*:
+# === Rate
 #
-# * *ts* – _timeless nonstoichiometric_
-# * *tS* – _timeless stoichiometric_
-# * *Tsr* – _timed rateless nonstoichiometric_
-# * *TSr* – _timed rateless stoichiometric_
-# * *sR* – _nonstoichiometric with rate_
-# * *SR* – _stoichiometric with rate_
-#
-# These 6 kinds of YPetri transitions correspond to the vertices of a cube, with
-# the following 3 dimensions:
+# In YPetri domain model, marking is always a discrete number of _tokens_ -- as
+# Carl Adam Petri handed it down to us. YPetri recognizes the usefulness of
+# representing a large number of tokens by a floating point number, but sees it
+# as a pragmatic measure only. Other Petri net implementations often make class
+# distincion between discrete and continuous places, and also distinguish between
+# _flux_ ("flow" of the continous transitions) and _propensity_ (firing
+# probability of discrete transitions). In YPetri, flux and propensity are
+# unified under the term _rate_, and the choice between discrete and stochastic
+# computation is seen as a concern of the simulation, not of the model.
 # 
-# - *Stoichiometricity*: _stoichiometric_ (S) / _nonstoichiometric_ (s)
-# - *Timedness*: _timed_ (T) / _timeless_ (t)
-# - *Having rate*: _having rate_ (R) / _not having rate_, _rateless_ (r)
+# === Basic transition types
 # 
-# ==== Stoichiometricity
+# There are 6 basic types of transitions in YPetri:
+#
+# * *ts* – timeless nonstoichiometric
+# * *tS* – timeless stoichiometric
+# * *Tsr* – timed rateless nonstoichiometric
+# * *TSr* – timed rateless stoichiometric
+# * *sR* – nonstoichiometric with rate
+# * *SR* – stoichiometric with rate
+#
+# They arise by combining the 3 basic qualities:
 # 
-# I. For stoichiometric transitions:
-#    1. Either *rate vector* is computed as *rate * stoichiometry vector*,
-#    2. or *action vector* is computed a *action * stoichiometry vector*.
-# II. For non-stoichiometric transitions:
-#    1. Either *Rate vector* is obtained as the *rate closure result*,
-#    2. or *action vector* is obtained as the *action closure result*.
+# 1. *Stoichiometricity*: _stoichiometric_ (*S*) / _nonstoichiometric_ (*s*)
+# 2. *Timedness*: _timed_ (*T*) / _timeless_ (*t*)
+# 3. *Having* *rate*: having _rate_ (*R*) / not having rate (_rateless_) (*r*)
 # 
-# Summary: stoichiometricity distinguishes the *need to multiply the rate/action
-# closure result by stoichiometry*.
-#
-# ==== Having rate
+# ==== 1. Stoichiometricity
 # 
-# I. For transitions with rate, the closure *returns the rate*. The rate has to
-#    be multiplied by the time step (Δt) to get the action value.
-# II. For transitions without rate (_rateless transitions_), the closure result
-#     directly specifies the action.
-#
-# Summary: Having vs. not having rate distinguishes the *need to multiply the
-# closure result by Δ time* -- differentiability of the action by time.
-#
-# ==== Timedness
+# * For *stoichiometric* transitions:
+#   - _either_ <b>rate vector</b> is obtained as
+#     <b>rate * stoichiometry vector</b>,
+#   - _or_ <b>action vector</b> is obtained as
+#     <b>action * stoichiometry vector</b>
+# * For *non-stoichiometric* transitions:
+#   - _either_ <b>rate vector</b> is obtained as the <b>rate closure result</b>,
+#   - _or_ <b>action vector</b> is obtained as the <b>action closure result</b>.
 # 
-# I. Timed transitions are defined as those, whose action has time as a
-#    parameter. Transitions with rate are thus always timed. For rateless
-#    transitions, being timed means that the action closure expects time step
-#    (Δt) as its first argument -- its arity is thus its codomain size + 1.
-# II. Timeless transitions, in turn, are those, whose action is does not have
-#     time a parameter. Timeless transitions are necessarily also rateless.
-#     Arity of their action closure can be expected to match the domain size.
+# Summary: stoichiometricity distinguishes the <b>need to multiply the
+# rate/action closure result by stoichiometry</b>.
+#
+# ==== 2. Having rate
 # 
-# Summary: In rateless transitions, timedness distinguishes the *need to supply
-# time step duration as the first argument to the action closure*. Whereas the
-# transitions with rate are always timed, and vice-versa, timeless transitions
-# always rateless, there are only 6 instead of 2 ** 3 == 8 basic types.
+# * Transitions *with* *rate* have a _rate_ _closure_, whose result is to be
+#   multiplied by +Δt+.
+# * For transitions *without* *rate* (*rateless* transitions), the action
+#   closure specifies the action *directly*.
 #
-# === Other transition types
+# Summary: Having vs. not having rate distinguishes the <b>need to multiply the
+# closure result by Δ time</b> -- differentiability of the action by time.
 #
-# ==== Assignment transitions (_A transitions_)
-# If +:assignment_action+ is set to _true_, it indicates that the transition
-# action entirely replaces the marking of its codomain with the result of its
-# action closure -- like we are used to from spreadsheets. This behavior does
-# not represent a truly novel type of a transition -- assignment transition is
-# merely a *ts transition that cares to clear the codomain before adding the
-# new value to it*. In other words, this behavior is (at least for numeric
-# types) already achievable with ordinary ts transitions, and existence of
-# specialized A transitions is just a convenience.
+# ==== 3. Timedness
+# 
+# * Timed transitions are defined as those, whose action has time as a parameter.
+#   - Transitions with rate are therefore always timed.
+#   - For rateless transitions, being timed means, that their action closure
+#     <b>expects Δt as its first argument</b> -- arity thus equals codomain
+#     size + 1.
+# * Timeless transitions are those, whose action does not have time as
+#   a parameter. Timeless transitions are necessarily also rateless.
+# 
+# Summary: In rateless transitions, timedness distinguishes the <b>need to
+# supply time step duration as the first argument to the action closure</b>.
+# As the transitions with rate are necessarily timed, and timeless transitions
+# necessarily rateless, there are only 6 instead of 2 ** 3 == 8 transition types.
 #
-# ==== Functional / Functionless transitions
-# YPetri is a domain model of _functional Petri nets_. Original Petri's
+# === Other transition attributes
+#
+# ==== Assignment transitions (_A_ _transitions_)
+# If +:assignment_action+ option is set to _true_, it makes the transition
+# entirely replace the codomain marking with its action closure result -- just
+# like spreadsheet functions do. This, however, is just a convenience, and does
+# not constitue a novel transition type, as it can be easily emulated by an
+# ordinary ts transition caring to subtract the current domain marking before
+# adding the desired values.
+#
+# ==== _Functional_ / _functionless_ transitions
+# Other Petri net implementation often make a distinction between "ordinary"
+# and "functional" transitions, where "ordinary" ("functionless") are the
+# transitions as Carl Adam Petri handed them down to us. YPetri transtions
+# are generally "functional", but the possibility of functionless transitions
+# is also provided -- stoichiometric transitions with no action or rate
+# specified become functionless transitions.
 # definition does not speak about transition "functions". The transitions are
 # defined as timeless and more or less assumed to be stoichiometric. Therefore,
 # in +YPetri::Transition+ constructor, stoichiometric transitions with no
 # function specified become functionless vanilla Petri net transitions.
-#
-# === "Discrete" vs. "continuous" in YPetri
-#
-# YPetri uses terminology of both "discrete" and "continuous" Petri nets. But
-# in fact, in YPetri domain model, place marking is always considered discrete
-# -- a discrete number of _tokens_, as defined by Carl Adam Petri. The meaning
-# of _continuous_ in YPetri is different: A pragmatic measure of approximating
-# this integer by a floating point number when the integer is so large, that the
-# impact of this approximation is acceptable. The responsibility for the
-# decision of how to represent the number of tokens is not a concern of the
-# domain model, but only of the simulation method. Therefore, in YPetri, there
-# are no _a priori_ "discrete" and "continuous" places or transitions.
-#
-# As for the transitions, terms _flux_ (flow), associated with continuous
-# transitions, and _propensity_, associated with discrete stochastic
-# transitions, are unified as _rate_. Again, the decision between "discrete"
-# and "stochastic" is a concern of the simulation method, not the domain model.
 # 
 class YPetri::Transition
   include NameMagic

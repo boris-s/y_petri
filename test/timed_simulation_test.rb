@@ -13,7 +13,7 @@ include Pyper if require 'pyper'
 # Test of TimedSimulation class.
 # **************************************************************************
 #
-describe YPetri::TimedSimulation do  
+describe YPetri::Simulation::Timed do  
   before do
     # skip "to speed up testing"
     @a = YPetri::Place.new default_marking: 1.0
@@ -30,37 +30,41 @@ describe YPetri::TimedSimulation do
 
     describe "simulation with step size 1" do
       before do
-        @sim = YPetri::TimedSimulation.new net: @net,
-                                           initial_marking: @im_collection,
-                                           step: 1,
-                                           sampling: 10,
-                                           target_time: 100
+        @sim = YPetri::Simulation.new net: @net,
+                                      initial_marking: @im_collection,
+                                      step: 1,
+                                      sampling: 10,
+                                      time: 0..100
       end
 
       it "should #step! with expected results" do
         m = @sim.step!.marking
-        assert_in_delta 0.8, m[ 0 ], 1e-9
-        assert_in_delta 1.8, m[ 1 ], 1e-9
-        assert_in_delta 3.2, m[ 2 ], 1e-9
+        assert_in_delta 0.8, m[0]
+        assert_in_delta 1.8, m[1]
+        assert_in_delta 3.2, m[2]
       end
 
       it "should behave" do
-        assert_in_delta 0, ( Matrix.column_vector( [-0.02, -0.02, 0.02] ) -
-                             @sim.ΔE( 0.1 ) ).column( 0 ).norm, 1e-9
+        expect = Matrix.column_vector [-0.02, -0.02, 0.02]
+        ( expect - @sim.ΔE( 0.1 ) ).column( 0 ).norm.must_be_within_delta 0
+        @sim.Euler_step! 0.1
+        expect = Matrix.column_vector [0.98, 1.98, 3.02]
+        ( expect - @sim.marking_vector ).column( 0 ).norm.must_be_within_delta 0
+        @sim.method.must_equal :pseudo_Euler
+        @sim.send :reset!
         @sim.step! 0.1
-        assert_in_delta 0, ( Matrix.column_vector( [0.98, 1.98, 3.02] ) -
-                             @sim.marking_vector ).column( 0 ).norm, 1e-9
-
+        expect = Matrix.column_vector [0.98, 1.98, 3.02]
+        ( expect - @sim.marking_vector ).column( 0 ).norm.must_be_within_delta 0
       end
     end
 
     describe "simulation with step size 0.1" do
       before do
-        @sim = YPetri::TimedSimulation.new net: @net,
-                                           initial_marking: @im_collection,
-                                           step: 0.1,
-                                           sampling: 10,
-                                           target_time: 100
+        @sim = YPetri::Simulation.new net: @net,
+                                      initial_marking: @im_collection,
+                                      step: 0.1,
+                                      sampling: 10,
+                                      time: 0..100
       end
 
       it "should behave" do
@@ -72,7 +76,7 @@ describe YPetri::TimedSimulation do
       end
 
       it "should behave" do
-        @sim.run_until_target_time! 31
+        @sim.run_until 31
         expected_recording = {
           0 => [ 1, 2, 3 ],
           10 => [ 0.22265, 1.22265, 3.77735 ],
@@ -102,7 +106,7 @@ describe YPetri::TimedSimulation do
 
     describe "behavior of #step" do
       before do
-        @sim = YPetri::TimedSimulation.new net: @net,
+        @sim = YPetri::Simulation.new net: @net,
                  initial_marking: [ @a, @b, @c ].τBᴍHτ( &:default_marking ),
                  step: 1,
                  sampling: 10
@@ -124,11 +128,11 @@ describe YPetri::TimedSimulation do
                                      domain: @b,
                                      rate: -> a { a * 0.5 }
       @net = YPetri::Net.new << @a << @b << @c << @t3
-      @sim = YPetri::TimedSimulation.new net: @net,
-               initial_marking: { @a => 1, @b => 0.6, @c => 3 },
-               step: 1,
-               sampling: 10,
-               target_time: 2
+      @sim = YPetri::Simulation.new net: @net,
+                                    initial_marking: { @a => 1, @b => 0.6, @c => 3 },
+                                    step: 1,
+                                    sampling: 10,
+                                    time: 0..2
     end
 
     it "should exhibit correct behavior of #step" do

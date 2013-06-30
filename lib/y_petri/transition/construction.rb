@@ -56,7 +56,7 @@ class YPetri::Transition
   # the stoichiometry vector, as in all other stoichiometric transitions).
   #
   #   Transition.new stoichiometry: { A: -1, B: 1 },
-  #                  rate: λ { |a| a * 0.5 }
+  #                  rate: -> a { a * 0.5 }
   #       
   def initialize *args
     check_in_arguments *args       # the big work of checking in args

@@ -13,7 +13,8 @@ describe YPetri::Net do
     @pç = pç = Class.new YPetri::Place
     @nç = nç = Class.new YPetri::Net
     [ tç, pç, nç ].each { |ç|
-      ç.namespace!.class_exec {
+      ç.namespace!
+      ç.class_exec {
         define_method :Place do pç end
         define_method :Transition do tç end
         define_method :Net do nç end

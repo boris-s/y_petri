@@ -8,7 +8,8 @@ module YPetri::Workspace::ParametrizedSubclassing
 
     # Make them namespaces and inject dependencies:
     [ @Place, @Transition, @Net ].each do |klass|
-      klass.namespace!.class_exec do # make'em work together
+      klass.namespace!
+      klass.class_exec do # make'em work together
         define_method :Place do place_subclass end
         define_method :Transition do transition_subclass end
         define_method :Net do net_subclass end

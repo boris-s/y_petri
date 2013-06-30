@@ -22,7 +22,6 @@ require_relative 'y_petri/place'
 require_relative 'y_petri/transition'
 require_relative 'y_petri/net'
 require_relative 'y_petri/simulation'
-require_relative 'y_petri/timed_simulation'
 require_relative 'y_petri/workspace'
 require_relative 'y_petri/manipulator'
 
@@ -48,7 +47,7 @@ module YPetri
   DEFAULT_SIMULATION_SETTINGS = lambda do
     { step_size: 0.02,
       sampling_period: 2,
-      target_time: 60 }
+      time: 0..60 }
   end
 
   GuardError = Class.new TypeError
