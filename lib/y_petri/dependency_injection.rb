@@ -4,9 +4,6 @@
 # parametrized subclasses of Place, Transition and Net in different workspaces.
 #
 module YPetri::DependencyInjection
-
-  private
-
   # Place class -- to be overriden in subclasses for dependency injection.
   # 
   def Place

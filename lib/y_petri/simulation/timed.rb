@@ -260,8 +260,8 @@ module YPetri::Simulation::Timed
 
   # Duplicate creation.
   # 
-  def dup
-    instance = super
+  def dup( time: ᴛ, **nn )
+    instance = super **nn
     instance.send :set_time, time
     return instance
   end

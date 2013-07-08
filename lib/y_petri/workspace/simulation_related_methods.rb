@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 # Workspace instance methods related to simulation (initial marking
 # collections, clamp collections, inital marking collections, management
 # of simulations...)
@@ -138,46 +139,31 @@ module YPetri::Workspace::SimulationRelatedMethods
   # * default_ss = { step_size: 0.1, sampling_period: 5, target_time: 60 }
   # 
   def new_timed_simulation( net: Net()::Top, **nn )
-    net_ɪ = net( net )
+    net_instance = net( net )
     nn.may_have :cc, syn!: :clamp_collection
     nn.may_have :imc, syn!: :initial_marking_collection
     nn.may_have :ssc, syn!: :simulation_settings_collection
     cc_id = nn.delete( :cc ) || :Base
     imc_id = nn.delete( :imc ) || :Base
     ssc_id = nn.delete( :ssc ) || :Base
-
-    # simulation key
-    key = nn.may_have( :ɴ, syn!: :name ) || # either explicit
-      { net: net_ɪ, cc: cc_id, imc: imc_id, ssc: ssc_id }.merge( nn ) # or constructed
-
+    # Construct the simulation key:
+    key = if nn.has? :name, syn!: :ɴ then # explicit key (name)
+            nn[:name]
+          else                       # constructed key
+            {}.merge( net: net_instance,
+                       cc: cc_id,
+                       imc: imc_id,
+                       ssc: ssc_id )
+              .merge( nn )
+          end
     # Let's clarify what we got so far.
-    simulation_settings = self.ssc( ssc_id )
-    clamp_hash = self.cc( cc_id )
-    im_hash = self.imc( imc_id )
-
-    # Use places' :default_marking in absence of explicit initial marking.
-    untreated = net_ɪ.places.select do |p|
-      ! clamp_hash.map { |k, _| place k }.include? p and
-      ! im_hash.map { |k, _| place k }.include? p
-    end
-    im_complement = Hash[ untreated.zip( untreated.map &:default_marking ) ]
-
-    # If marking can't be figured, raise nice errors.
-    missing = im_complement.select { |_, v| v.nil? }
-    err = lambda { |array, txt=''|
-      raise TypeError, "Missing clamp and/or initial marking for %s#{txt}!" %
-      Array( array ).map { |i| missing.keys[i] }.join( ', ' )
-    }
-    case missing.size
-    when 0 then im_hash = im_hash.merge im_complement # everything's OK
-    when 1 then err.( 0 )
-    when 2 then err.( [0, 1] )
-    when 3 then err.( [0, 1, 2] )
-    else err.( [0, 1], " and #{missing.size-2} more places" ) end
-
-    # Finally, create and return the simulation
-    named_args = simulation_settings.merge( initial_marking: im_hash,
-                                            marking_clamps: clamp_hash ).merge( nn )
-    @simulations[ key ] = net_ɪ.new_timed_simulation **named_args
-  end # def new_timed_simulation
+    sim_settings = ssc( ssc_id )
+    mc_hash = cc( cc_id )
+    im_hash = imc( imc_id )
+    # Create and return the simulation
+    @simulations[ key ] = net_instance
+      .new_timed_simulation **sim_settings.merge( initial_marking: im_hash,
+                                                  marking_clamps: mc_hash
+                                                  ).merge( nn )
+  end
 end # module YPetri::Workspace::SimulationRelatedMethods

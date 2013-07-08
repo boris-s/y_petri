@@ -36,60 +36,45 @@ describe ::YPetri::Transition do
     # Note: ts transitions require a function, and thus are always functional
     before do
       @t1 = @ç.new codomain: [ @p1, @p3 ], domain: @p2, action: -> a { [ a, a ] }
-      # saying that the transition is timed saves the day here:
-      @t2 = @ç.new codomain: [ @p1, @p3 ], action: -> t { [ t, t ] }, timed: true
-      # Only when the domain is unary, is the closure allowed to be timeless:
-      @t3 = @ç.new codomain: [ @p1, @p3 ], action: -> t { [ t, t ] }, timed: false, domain: [ @p2 ]
-      # With nullary action closure, timeless is implied, so this is allowed
-      @t4 = @ç.new action: -> { [ 0.5, 0.5 ] }, codomain: [ @p1, @p3 ]
-      # ... also for stoichiometric variety
-      @t5 = @ç.new action: -> { 0.5 }, codomain: [ @p1, @p3 ], s: [ 1, 1 ]
+      @t2 = @ç.new codomain: [ @p1, @p3 ] do |t| [ t, t ] end
+      @t3 = @ç.new action: -> { [ 0.5, 0.5 ] }, codomain: [ @p1, @p3 ]
     end
 
     it "should raise errors for bad parameters" do
-      # omitting the domain should raise ArgumentError about too much ambiguity:
-      -> { @ç.new codomain: [ @p1, @p3 ], action: -> t { [ t, t ] } }
+      # codomain omitted
+      -> { @ç.new domain: @p2, action: -> t { [ t, t ] } }
         .must_raise ArgumentError
-      # saying that the transition is timeless points to a conflict:
-      -> { @ç.new codomain: [ @p1, @p3 ], action: -> t { [ t, t ] }, timeless: true }
-        .must_raise ArgumentError
+      # mangled codomain
+      -> { @ç.new codomain: [ @p1, :a ], action: -> t { [ t, t ] } }
+        .must_raise TypeError
+      # domain omitted
+      -> { @ç.new codomain: [ @p1, :a ], action: -> t { [ t, t ] } }
+        .must_raise TypeError
+      # action closure arity greater than the domain
+      -> { @ç.new codomain: [ @p1, @p3 ], action: -> t { [ t, t ] }, domain: [] }
+        .must_raise TypeError
     end
 
     it "should initialize and perform" do
       @t1.domain.must_equal [@p2]
       @t1.action_arcs.must_equal [@p1, @p3]
       assert @t1.functional?
-      assert @t1.timeless?
-      assert @t2.timed?
-      assert [@t3, @t4, @t5].all? { |t| t.timeless? }
-      assert @t2.rateless?
+      assert [@t1, @t2, @t3].all? { |t| t.timeless? }
+      assert [@t1, @t2, @t3].all? { |t| t.s? }
       # Now let's flex them:
       @t1.fire!
       [@p1.m, @p3.m].must_equal [3, 5]
       @t3.fire!
-      [@p1.m, @p3.m].must_equal [5, 7]
-      @t4.fire!
-      [@p1.m, @p3.m].must_equal [5.5, 7.5]
-      @t5.fire!
-      [@p1.m, @p3.m].must_equal [6, 8]
-      # now t2 for firing requires delta time
-      @t2.fire! 1
-      [@p1.m, @p3.m].must_equal [7, 9]
-      @t2.fire! 0.1
-      [@p1.m, @p3.m ].must_equal [7.1, 9.1]
-      # let's change @p2 marking
-      @p2.m = 0.1
-      @t1.fire!
-      assert_in_epsilon 7.2, @p1.marking, 1e-9
-      assert_in_epsilon 9.2, @p3.marking, 1e-9
-      # let's test #domain_marking, #codomain_marking, #zero_action
+      [@p1.m, @p3.m].must_equal [3.5, 5.5]
+      @t2.fire!
+      [@p1.m, @p3.m].must_equal [7.0, 9.0]
       @t1.codomain_marking.must_equal [@p1.m, @p3.m]
       @t1.domain_marking.must_equal [@p2.m]
       @t1.zero_action.must_equal [0, 0]
     end
   end
 
-  describe "Tsr transitions (timed rateless non-stoichiometric)" do
+  describe "Ts transitions (timed rateless non-stoichiometric)" do
     #LATER: To save time, I omit the full test suite.
   end
 
@@ -120,9 +105,6 @@ describe ::YPetri::Transition do
         assert @tt.all? { |t| t.action_arcs == [@p1] }
         # timeless:
         assert @tt.all? { |t| t.timeless? }
-        # rateless:
-        assert @tt.all? { |t| t.rateless? }
-        assert @tt.all? { |t| not t.has_rate? }
         # no assignment action
         assert @tt.all? { |t| not t.assignment_action? }
         # not considered functional
@@ -193,63 +175,45 @@ describe ::YPetri::Transition do
       it "should init and perform" do
         assert @tt.all? { |t| t.action_arcs == [ @p1 ] }
         assert @tt.all? { |t| t.timeless? }
-        assert @tt.all? { |t| not t.has_rate? }
-        assert @tt.all? { |t| t.rateless? }
         assert @tt.all? { |t| not t.assignment_action? }
         assert @tt.all? { |t| not t.functionless? }
         assert @tt.all? { |t| t.functional? }
-        # and having nullary action closure
         assert @tt.all? { |t| t.action_closure.arity == 0 }
-        # the transitions should be able to #fire!
         @FtS1.fire!
         # no need for more testing here
       end
     end
   end
 
-  describe "TSr transitions (timed rateless stoichiometric)" do
-    # Sr transitions have an action closure, require a function block, and thus
-    # are always functional. Their closure must take Δt as its first argument.
-
-    #LATER: To save time, I omit the tests of TSr transitions for now.
-  end
-
-  describe "sR transitions (nonstoichiometric with rate)" do
-    # Expect a function block with arity equal to their domain size, and output
-    # arity equal to the codomain size.
-
-    #LATER: To save time, I omit the full test suite.
-  end
-
-  describe "SR transitions (stoichiometric with rate)" do
+  describe "TS transitions (timed stoichiometric)" do
     before do
       # This should give standard mass action by magic:
-      @SR1 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, rate: 0.1
+      @TS1 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, rate: 0.1
       # While this has custom closure:
-      @SR2 = @ç.new s: { @p1 => -1, @p3 => 1 }, rate: -> a { a * 0.5 }
+      @TS2 = @ç.new s: { @p1 => -1, @p3 => 1 }, rate: -> a { a * 0.5 }
       # While this one even has domain explicitly specified:
-      @SR3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 },
+      @TS3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 },
                     upstream_arcs: @p3, rate: -> a { a * 0.5 }
     end
 
     it "should init and work" do
-      @SR1.has_rate?.must_equal true
-      @SR1.upstream_arcs.must_equal [@p1, @p2]
-      @SR1.action_arcs.must_equal [@p1, @p2, @p4]
-      @SR2.domain.must_equal [@p1]
-      @SR2.action_arcs.must_equal [@p1, @p3]
-      @SR3.domain.must_equal [@p3]
-      @SR3.action_arcs.must_equal [@p1, @p2, @p4]
+      @TS1.timed?.must_equal true
+      @TS1.upstream_arcs.must_equal [@p1, @p2]
+      @TS1.action_arcs.must_equal [@p1, @p2, @p4]
+      @TS2.domain.must_equal [@p1]
+      @TS2.action_arcs.must_equal [@p1, @p3]
+      @TS3.domain.must_equal [@p3]
+      @TS3.action_arcs.must_equal [@p1, @p2, @p4]
       # and flex them
-      @SR1.fire! 1.0
+      @TS1.fire! 1.0
       [@p1, @p2, @p4].map( &:marking ).must_equal [0.8, 1.8, 4.2]
-      @SR2.fire! 1.0
+      @TS2.fire! 1.0
       [@p1, @p3].map( &:marking ).must_equal [0.4, 3.4]
       # the action t3 cannot fire with delta time 1.0
-      -> { @SR3.fire! 1.0 }.must_raise YPetri::GuardError
+      -> { @TS3.fire! 1.0 }.must_raise YPetri::GuardError
       [@p1, @p2, @p3, @p4].map( &:marking ).must_equal [0.4, 1.8, 3.4, 4.2]
       # but it can fire with eg. delta time 0.1
-      @SR3.fire! 0.1
+      @TS3.fire! 0.1
       assert_in_epsilon 0.23, @p1.marking, 1e-15
       assert_in_epsilon 1.63, @p2.marking, 1e-15
       assert_in_epsilon 3.4, @p3.marking, 1e-15

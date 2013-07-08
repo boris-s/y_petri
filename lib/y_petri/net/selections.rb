@@ -4,206 +4,143 @@
 class YPetri::Net
   # Names of places in the net.
   # 
-  def pp
+  def pn
     places.map &:name
   end
 
   # Names of transitions in the net.
   # 
-  def tt
+  def tn
     transitions.map &:name
   end
 
-  # Array of _ts_ transitions in the net.
+  # *ts* transitions.
   # 
-  def timeless_nonstoichiometric_transitions
-    transitions.select { |t| t.timeless? && t.nonstoichiometric? }
+  def ts_transitions
+    transitions.select &:ts?
   end
-  alias ts_transitions timeless_nonstoichiometric_transitions
 
-  # Names of _ts_ transitions in the net.
+  # Names of *ts* transitions.
   # 
-  def timeless_nonstoichiometric_tt
-    timeless_nonstoichiometric_transitions.map &:name
+  def names_of_ts
+    ts_transitions.names
   end
-  alias ts_tt timeless_nonstoichiometric_tt
+  alias n_ts names_of_ts
 
-  # Array of _tsa_ transitions in the net.
+  # *tS* transitions.
   # 
-  def timeless_nonstoichiometric_nonassignment_transitions
-    transitions.select { |t|
-      t.timeless? && t.nonstoichiometric? && ! t.assignment_action?
-    }
+  def tS_transitions
+    transitions.select &:tS?
   end
-  alias tsa_transitions timeless_nonstoichiometric_nonassignment_transitions
 
-  # Names of _tsa_ transitions in the net.
+  # Names of *tS* transitions.
   # 
-  def timeless_nonstoichiometric_nonassignment_tt
-    timeless_nonstoichiometric_nonassignment_transitions.map &:name
+  def names_of_tS
+    tS_transitions.names
   end
-  alias tsa_tt timeless_nonstoichiometric_nonassignment_tt
+  alias n_tS names_of_tS
 
-  # Array of _tS_ transitions in the net.
+  # *Ts* transitions.
   # 
-  def timeless_stoichiometric_transitions
-    transitions.select { |t| t.timeless? && t.stoichiometric? }
+  def Ts_transitions
+    transitions.select &:Ts?
   end
-  alias tS_transitions timeless_stoichiometric_transitions
 
-  # Names of _tS_ transitions in the net.
+  # Names of *Ts* transitions.
   # 
-  def timeless_stoichiometric_tt
-    timeless_stoichiometric_transitions.map &:name
+  def names_of_Ts
+    Ts_transitions().names
   end
-  alias tS_tt timeless_stoichiometric_tt
+  alias n_Ts names_of_Ts
 
-  # Array of _Tsr_ transitions in the net.
+  # *TS* transitions.
   # 
-  def timed_nonstoichiometric_transitions_without_rate
-    transitions.select { |t| t.timed? && t.nonstoichiometric? && t.rateless? }
+  def TS_transitions
+    transitions.select &:TS?
   end
-  alias timed_rateless_nonstoichiometric_transitions \
-        timed_nonstoichiometric_transitions_without_rate
-  alias Tsr_transitions timed_nonstoichiometric_transitions_without_rate
 
-  # Names of _Tsr_ transitions in the net.
+  # Names of *TS* transitions.
   # 
-  def timed_nonstoichiometric_tt_without_rate
-    timed_nonstoichiometric_transitions_without_rate.map &:name
+  def names_of_TS
+    TS_transitions().names
   end
-  alias timed_rateless_nonstoichiometric_tt \
-        timed_nonstoichiometric_tt_without_rate
-  alias Tsr_tt timed_nonstoichiometric_tt_without_rate
+  alias n_TS names_of_TS
 
-  # Array of _TSr_ transitions in the net.
+  # *A* transitions.
   # 
-  def timed_stoichiometric_transitions_without_rate
-    transitions.select { |t| t.timed? && t.stoichiometric? && t.rateless? }
+  def A_transitions
+    transitions.select &:A?
   end
-  alias timed_rateless_stoichiometric_transitions \
-        timed_stoichiometric_transitions_without_rate
-  alias TSr_transitions timed_stoichiometric_transitions_without_rate
 
-  # Names of _TSr_ transitions in the net.
+  # Names of *A* transitions.
   # 
-  def timed_stoichiometric_tt_without_rate
-    timed_stoichiometric_transitions_without_rate.map &:name
+  def names_of_A
+    A_transitions().names
   end
-  alias timed_rateless_stoichiometric_tt timed_stoichiometric_tt_without_rate
-  alias Tsr_tt timed_stoichiometric_tt_without_rate
+  alias n_A names_of_A
 
-  # Array of _sR_ transitions in the net.
+  # *a* transitions.
   # 
-  def nonstoichiometric_transitions_with_rate
-    transitions.select { |t| t.has_rate? && t.nonstoichiometric? }
+  def a_transitions
+    transitions.select &:a?
   end
-  alias sR_transitions nonstoichiometric_transitions_with_rate
 
-  # Names of _sR_ transitions in the net.
+  # Names of *a* transitions.
   # 
-  def nonstoichiometric_tt_with_rate
-    nonstoichiometric_transitions_with_rate.map &:name
+  def names_of_a
+    A_transitions().names
   end
-  alias sR_tt nonstoichiometric_tt_with_rate
+  alias n_a names_of_a
 
-  # Array of _SR_ transitions in the net.
+  # *S* transitions.
   # 
-  def stoichiometric_transitions_with_rate
-    transitions.select { |t| t.has_rate? and t.stoichiometric? }
+  def S_transitions
+    transitions.select &:S?
   end
-  alias SR_transitions stoichiometric_transitions_with_rate
 
-  # Names of _SR_ transitions in the net.
+  # Names of *S* transitions.
   # 
-  def stoichiometric_tt_with_rate
-    stoichiometric_transitions_with_rate.map &:name
+  def names_of_S
+    S_transitions().names
   end
-  alias SR_tt stoichiometric_tt_with_rate
+  alias n_S names_of_S
 
-  # Array of transitions with _explicit assignment action_ (_A transitions_)
-  # in the net.
+  # *s* transitions.
   # 
-  def assignment_transitions
-    transitions.select { |t| t.assignment_action? }
+  def s_transitions
+    transitions.select &:s?
   end
-  alias A_transitions assignment_transitions
 
-  # Names of transitions with _explicit assignment action_ (_A transitions_)
-  # in the net.
+  # Names of *s* transitions.
   # 
-  def assignment_tt
-    assignment_transitions.map &:name
+  def names_of_s
+    s_transitions.names
   end
-  alias A_tt assignment_tt
+  alias n_s names_of_s
 
-  # Array of _stoichiometric_ transitions in the net.
-  # 
-  def stoichiometric_transitions
-    transitions.select &:stoichiometric?
-  end
-  alias S_transitions stoichiometric_transitions
-
-  # Names of _stoichiometric_ transitions in the net.
-  # 
-  def stoichiometric_tt
-    stoichiometric_transitions.map &:name
-  end
-  alias S_tt stoichiometric_tt
-
-  # Array of _nonstoichiometric_ transitions in the net.
-  # 
-  def nonstoichiometric_transitions
-    transitions.select &:nonstoichiometric?
-  end
-  alias s_transitions nonstoichiometric_transitions
-
-  # Names of _nonstoichimetric_ transitions in the net.
-  # 
-  def nonstoichiometric_tt
-    nonstoichiometric_transitions.map &:name
-  end
-  alias s_tt nonstoichiometric_tt
-
-  # Array of _timed_ transitions in the net.
+  # *T* transitions.
   #
-  def timed_transitions; transitions.select &:timed? end
-  alias T_transitions timed_transitions
+  def T_transitions
+    transitions.select &:T?
+  end
 
-  # Names of _timed_ transitions in the net.
+  # Names of *T* transitions.
   # 
-  def timed_tt; timed_transitions.map &:name end
-  alias T_tt timed_tt
+  def names_of_T
+    T_transitions().names
+  end
+  alias n_T names_of_T
 
-  # Array of _timeless_ transitions in the net.
+  # *t* transitions.
   # 
-  def timeless_transitions; transitions.select &:timeless? end
-  alias t_transitions timeless_transitions
+  def t_transitions
+    transitions.select &:t?
+  end
 
-  # Names of _timeless_ transitions in the net.
+  # Names of *t* transitions.
   # 
-  def timeless_tt; timeless_transitions.map &:name end
-  alias t_tt timeless_tt
-
-  # Array of _transitions with rate_ in the net.
-  # 
-  def transitions_with_rate; transitions.select &:has_rate? end
-  alias R_transitions transitions_with_rate
-
-  # Names of _transitions with rate_ in the net.
-  # 
-  def tt_with_rate; transitions_with_rate.map &:name end
-  alias R_tt tt_with_rate
-
-  # Array of _rateless_ transitions in the net.
-  # 
-  def rateless_transitions; transitions.select &:rateless? end
-  alias transitions_without_rate rateless_transitions
-  alias r_transitions rateless_transitions
-
-  # Names of _rateless_ transitions in the net.
-  # 
-  def rateless_tt; rateless_transitions.map &:name end
-  alias tt_without_rate rateless_tt
-  alias r_tt rateless_tt
+  def names_of_t
+    t_transitions.names
+  end  
+  alias n_t names_of_t
 end # class YPetri::Net

@@ -81,23 +81,28 @@ class YPetri::Net
     return self
   end
 
-  # Inquirer whether the net includes a place / transition.
+  # Does the net include a place?
   # 
-  def include? place_or_transition
-    pl = begin
-           place( place_or_transition )
-         rescue NameError
-           nil
-         end
-    return places.include? pl if pl
-    tr = begin
-           transition( place_or_transition )
-         rescue NameError
-           nil
-         end
-    return transitions.include? tr if tr
-    return false
+  def includes_place? id
+    pl = begin; place( id ); rescue NameError; nil end
+    if pl then places.include? pl else false end
   end
+  alias include_place? includes_place?
+
+  # Does the net include a transition?
+  # 
+  def includes_transition? id
+    tr = begin; transition( id ); rescue NameError; nil end
+    if tr then transitions.include? tr else false end
+  end
+  alias include_transition? includes_transition?
+
+  # Inquirer whether the net includes an element.
+  # 
+  def include? id
+    include_place?( id ) || include_transition?( id )
+  end
+  alias includes? include?
 
   # Is the net _functional_?
   # 

@@ -31,6 +31,7 @@ DeoxyU12P = Place m!: 0.0.µM
 DeoxyTMP = Place m!: 3.3.µM
 DeoxyT23P = Place m!: 5.0.µM
 Thymidine = Place m!: 0.5.µM
+
 TK1 = Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
 TYMS = Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume
 RNR = Place m!: 100_000.unit.( SY::MoleAmount ) / Cytoplasm_volume

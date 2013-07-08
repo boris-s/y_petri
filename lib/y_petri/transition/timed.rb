@@ -6,20 +6,11 @@ module YPetri::Transition::Timed
   # Transition's action (before validation). Requires Δt as an argument.
   # 
   def action Δt
-    if has_rate? then
-      if stoichiometric? then
-        rate = rate_closure.( *domain_marking )
-        stoichiometry.map { |coeff| rate * coeff * Δt }
-      else # assuming that rate closure return value has correct arity
-        rate_closure.( *domain_marking ).map { |e| component * Δt }
-      end
-    else # timed rateless
-      if stoichiometric? then
-        rslt = action_closure.( Δt, *domain_marking )
-        stoichiometry.map { |coeff| rslt * coeff }
-      else
-        action_closure.( Δt, *domain_marking ) # caveat result arity!
-      end
+    if stoichiometric? then
+      rate = rate_closure.( *domain_marking )
+      stoichiometry.map { |coeff| rate * coeff * Δt }
+    else
+      rate_closure.( *domain_marking ).map { |e| e * Δt }
     end
   end
 

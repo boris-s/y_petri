@@ -24,13 +24,15 @@ module YPetri::Transition::OrdinaryTimeless
   # Fires the transition regardless of cocking.
   # 
   def fire!
-    try "to call #fire method" do
-      act = note "action", is: Array( action )
-      codomain.each_with_index do |codomain_place, i|
-        note "adding action element no. #{i} to place #{codomain_place}"
-        codomain_place.add( note "marking change", is: act.fetch( i ) )
-      end
-    end
+    act = Array( action )
+    codomain.each_with_index do |pl, i| pl.add act.fetch( i ) end
+    # try "to call #fire method" do
+    #   act = note "action", is: Array( action )
+    #   codomain.each_with_index do |codomain_place, i|
+    #     note "adding action element no. #{i} to place #{codomain_place}"
+    #     codomain_place.add( note "marking change", is: act.fetch( i ) )
+    #   end
+    # end
     return nil
   end
 

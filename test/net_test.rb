@@ -38,16 +38,13 @@ describe YPetri::Net do
 
     it "should expose its elements" do
       assert_equal [@p1, @p2, @p3], @net.places
-      assert_equal [:A, :B, :C], @net.pp
+      assert_equal [:A, :B, :C], @net.pn
       assert_equal [], @net.transitions
     end
 
     it "should expose transition groups" do
-      assert_equal [], @net.transitions_with_rate
-      assert_equal [], @net.rateless_transitions
-      assert_equal [], @net.transitions_without_rate
-      assert_equal [], @net.stoichiometric_transitions
-      assert_equal [], @net.nonstoichiometric_transitions
+      assert_equal [], @net.S_transitions
+      assert_equal [], @net.s_transitions
     end
 
     it "should tell its qualities" do
@@ -78,15 +75,12 @@ describe YPetri::Net do
 
       it "should expose its elements" do
         assert_equal [@t1], @net.transitions
-        assert_equal [:T1], @net.tt
+        assert_equal [:T1], @net.tn
       end
 
       it "should expose transition groups" do
-        assert_equal true, @t1.has_rate?
-        assert_equal [@t1], @net.transitions_with_rate
-        assert_equal [], @net.rateless_transitions
-        assert_equal [@t1], @net.stoichiometric_transitions
-        assert_equal [], @net.nonstoichiometric_transitions
+        assert_equal [@t1], @net.S_transitions
+        assert_equal [], @net.s_transitions
       end
 
       it "should tell its qualities" do
@@ -121,42 +115,28 @@ describe YPetri::Net do
 
         it "should expose its elements" do
           assert_equal [@t1, @t2], @net.transitions
-          assert_equal [:T1, nil], @net.tt
+          assert_equal [:T1, nil], @net.tn
           @net.tap{ |n| n.exclude_transition! @t1 }.exclude_transition! @t2
-          @net.tap{ |n| n.exclude_place! @p3 }.pp.must_equal [:A, :B]
+          @net.tap{ |n| n.exclude_place! @p3 }.pn.must_equal [:A, :B]
         end
 
         it "should expose transition groups" do
-          assert_equal [], @net.timeless_nonstoichiometric_transitions
-          assert_equal [], @net.timeless_nonstoichiometric_tt
-          assert_equal [@t2], @net.timeless_stoichiometric_transitions
-          assert_equal [nil], @net.timeless_stoichiometric_tt
-          assert_equal [], @net.timed_nonstoichiometric_transitions_without_rate
-          assert_equal [], @net.timed_rateless_nonstoichiometric_transitions
-          assert_equal [], @net.timed_nonstoichiometric_tt_without_rate
-          assert_equal [], @net.timed_rateless_nonstoichiometric_tt
-          assert_equal [], @net.timed_nonstoichiometric_transitions_without_rate
-          assert_equal [], @net.timed_rateless_nonstoichiometric_transitions
-          assert_equal [], @net.timed_nonstoichiometric_tt_without_rate
-          assert_equal [], @net.timed_rateless_nonstoichiometric_tt
-          assert_equal [], @net.nonstoichiometric_transitions_with_rate
-          assert_equal [], @net.nonstoichiometric_tt_with_rate
-          assert_equal [@t1], @net.stoichiometric_transitions_with_rate
-          assert_equal [:T1], @net.stoichiometric_tt_with_rate
-          assert_equal [], @net.assignment_transitions
-          assert_equal [], @net.assignment_tt
-          assert_equal [@t1, @t2], @net.stoichiometric_transitions
-          assert_equal [:T1, nil], @net.stoichiometric_tt
-          assert_equal [], @net.nonstoichiometric_transitions
-          assert_equal [], @net.nonstoichiometric_tt
-          assert_equal [@t1], @net.timed_transitions
-          assert_equal [:T1], @net.timed_tt
-          assert_equal [@t2], @net.timeless_transitions
-          assert_equal [nil], @net.timeless_tt
-          assert_equal [@t1], @net.transitions_with_rate
-          assert_equal [:T1], @net.tt_with_rate
-          assert_equal [@t2], @net.rateless_transitions
-          assert_equal [nil], @net.rateless_tt
+          assert_equal [], @net.ts_transitions
+          assert_equal [], @net.n_ts
+          assert_equal [@t2], @net.tS_transitions
+          assert_equal [nil], @net.n_tS
+          assert_equal [@t1], @net.TS_transitions
+          assert_equal [:T1], @net.n_TS
+          assert_equal [], @net.A_transitions
+          assert_equal [], @net.n_A
+          assert_equal [@t1, @t2], @net.S_transitions
+          assert_equal [:T1, nil], @net.n_S
+          assert_equal [], @net.s_transitions
+          assert_equal [], @net.n_s
+          assert_equal [@t1], @net.T_transitions
+          assert_equal [:T1], @net.n_T
+          assert_equal [@t2], @net.t_transitions
+          assert_equal [nil], @net.n_t
         end
 
         it "should tell its qualities" do

@@ -1,3 +1,5 @@
+require 'matrix'
+
 require 'gnuplot'
 require 'csv'
 require 'graphviz'
