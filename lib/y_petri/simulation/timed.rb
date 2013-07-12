@@ -1,270 +1,197 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # A mixin for timed simulations.
 # 
-module YPetri::Simulation::Timed
-  SAMPLING_TIME_DECIMAL_PLACES = 5
-  SIMULATION_METHODS =
-    [
-      [ :Euler ],
-      [ :Euler_with_timeless_transitions_firing_after_each_time_tick, :quasi_Euler ],
-      [ :Euler_with_timeless_transitions_firing_after_each_step, :pseudo_Euler ]
-    ]
-  DEFAULT_SIMULATION_METHOD = :Euler
+class YPetri::Simulation
+  module Timed
+    require_relative 'timed/recording'
+    require_relative 'timed/method'
+    
+    def self.included receiver
+      receiver.Recording.class_exec { prepend Recording }
+    end
+    
+    # True for timed simulations.
+    # 
+    def timed?
+      true
+    end
+    
+    SIMULATION_METHODS =
+      [
+       [ :Euler ],
+       [ :Euler_with_timeless_transitions_firing_after_each_time_tick, :quasi_Euler ],
+       [ :Euler_with_timeless_transitions_firing_after_each_step, :pseudo_Euler ]
+      ]
+    DEFAULT_SIMULATION_METHOD = :Euler
+    
+    attr_reader :time,
+    :time_unit,
+    :initial_time,
+    :target_time
+    
+    alias starting_time initial_time
+    alias ending_time target_time
+    
+    attr_accessor :step_size,
+    :sampling_period
 
-  # ==== Exposing time-related global simulation settings
+    # Initialization subroutine.
+    # 
+    def init **nn
+      if nn[:time] then # time range given
+        time_range = nn[:time]
+        @initial_time = time_range.begin
+        @target_time = time_range.end
+        @time_unit = target_time / target_time.to_f
+      else
+        anything = nn[:step] || nn[:sampling]
+        @time_unit = anything / anything.to_f
+        @initial_time = time_unit * 0
+        @target_time = time_unit * Float::INFINITY
+      end
+      
+      @step_size = nn[:step] || time_unitarget_time / target_time.to_f
 
-  # Simulation parameter: :initial_time.
-  # 
-  attr_reader :initial_time
-  
-  # Simulation parameter: :step_size
-  # 
-  attr_accessor :step_size
-  
-  # Simulation parameter: :sampling_period
-  # 
-  attr_accessor :sampling_period
-  
-  # Simulation parameter: :target_time
-  # 
-  attr_accessor :target_time
-  
-  # Reads the sampling rate.
-  # 
-  def sampling_rate; 1 / sampling_period end
-  
-  # Reads the time range (initial_time..target_time) of the simulation.
-  # 
-  def time_range; initial_time..target_time end
-  
-  # Reads simulation settings
-  # (:step_size, :sampling_period and :time_range).
-  # 
-  def settings
-    { step: step_size,
+      @Recording = Class.new Recording
+      @Method = Class.new Method
+      tap do |sim|
+        [ Recording(),
+          Method()
+        ].each { |ç| ç.class_exec { define_method :simulation do sim end } }
+      end
+
+      recording.sampling_period = nn[:sampling] || step_size
+    end
+    
+    # Reads the time range (initial_time..target_time) of the simulation.
+    # 
+    def time_range
+      initial_time..target_time
+    end
+    
+    # Reads the settings pertaining to the Timed aspoect of the simulation:
+    # (:step, :sampling and :time).
+    # 
+    def settings
+      super.update step: step_size,
       sampling: sampling_period,
-      time: time_range }
-  end
-  alias simulation_settings settings
-
-  # Exposing time.
-  # 
-  attr_reader :time
-  alias ᴛ time
-
-  # def stop; end # LATER
-  # def continue; end # LATER
-
-  # # Makes one Gillespie step
-  # def gillespie_step
-  #   t, dt = gillespie_select( @net.transitions )
-  #   @marking_vector += t.project( @marking_vector, @step_size )
-  #   @time += dt
-  #   note_state_change
-  # end
-
-  # # Return projection of Δᴍ by mysode-ing the interior.
-  # def project_mysode_interior( Δt )
-  #   # So far, no interior
-  #   # the internals of this method were already heavily obsolete
-  #   # they can be seen in previous versions, if needed
-  #   # so now, I just take use of the Δ_Euler_free
-  #   Δ_Euler_free
-  # end
-
-  # Allows to explore the system at different state / time. Creates a double,
-  # which is set to the required state / time. In addition to the parent class,
-  # this version alseo sets time.
-  # 
-  def at( time: ᴛ, **oo )
-    super( **oo ).tap { |duplicate| duplicate.send :set_time, time }
-  end
-
-  # Near alias for #run!, checks against infinite run.
-  # 
-  def run( until_time=target_time, final_step: :exact )
-    fail "Target time equals infinity!" if target_time = Float::INFINITY
-    run! until_time, final_step: final_step
-  end
-
-  # Near alias for #run_until, uses @target_time as :until_time by default.
-  # 
-  def run!( until_time=target_time, final_step: :exact )
-    run_until until_time, final_step: final_step
-  end
-
-  # Runs the simulation until the target time, using step! method. The second
-  # optional parameter tunes the behavior towards the end of the run, with
-  # alternatives :just_before, :just_after and :exact (default).
-  #
-  # just_before:     all steps have normal size, simulation stops
-  #                  before or just on the target time
-  # just_after:      all steps have normal size, simulation stops
-  #                  after or just on the target time_step
-  # exact:           simulation stops exactly on the prescribed time,
-  #                  to make this possible last step is shortened if necessary
-  #
-  def run_until( target_time, final_step: :exact )
-    case final_step
-    when :before then              # step until on or just before the target
-      step! while @time + @step_size <= target_time
-    when :exact then               # simulate to exact time
-      step! while @time + @step_size < target_time
-      step!( target_time - @time ) # make a short last step as required
-      @time = target_time          # to get exactly on the prescribed time
-    when :after then               # step until on or after target
-      step! while @time < target_time
-    else
-      fail ArgumentError, "Unrecognized :final_step option: #{final_step}"
+      time: time_range
     end
-  end
-
-  # Scalar field gradient for free places.
-  # 
-  def gradient_for_free_places
-    g_sR = gradient_for_sR
-    if g_sR then
-      S_SR() * flux_vector_for_SR + g_sR
-    else
-      S_SR() * flux_vector_for_SR
+    alias simulation_settings settings
+    
+    # Near alias for #run!, checks against infinite run.
+    # 
+    def run( to=target_time, final_step: :exact )
+      fail "Target time equals infinity!" if target_time == Float::INFINITY
+      run!( to, final_step: final_step )
     end
-  end
-
-  # Gradient for free places as a hash { place_name: ∂ / ∂ᴛ }.
-  #
-  def ∂
-    free_places :gradient_for_free_places
-  end
-
-  # Scalar field gradient for all places.
-  # 
-  def gradient_for_all_places
-    F2A() * gradient_for_free_places
-  end
-  alias gradient gradient_for_all_places
-
-  # Δ state of free places that would happen by a single Euler step Δt.
-  # 
-  def Δ_Euler_for_free_places( Δt=step_size )
-    # Here, ∂ represents all R transitions, to which TSr and Tsr are added:
-    delta_free = gradient_for_free_places * Δt
-    delta_free + Δ_TSr( Δt ) + Δ_Tsr( Δt )
-  end
-  alias Δ_euler_for_free_places Δ_Euler_for_free_places
-  alias ΔE Δ_Euler_for_free_places
-
-  # Δ state of all places that would happen by a single Euler step Δt.
-  # 
-  def Δ_Euler_for_all_places( Δt=step_size )
-    F2A() * ΔE( Δt )
-  end
-  alias Δ_euler_for_all_places Δ_Euler_for_all_places
-  alias Δ_Euler Δ_Euler_for_all_places
-
-  # Makes one Euler step with T transitions. Timeless transitions are not
-  # affected.
-  # 
-  def Euler_step!( Δt=@step_size ) # implicit Euler method
-    delta = Δ_Euler_for_free_places( Δt )
-    if guarded? then
-      guard_Δ! delta
-      update_marking! delta
-    else
-      update_marking! delta
+    
+    # Near alias for #run_until, uses @target_time as :until_time by default.
+    # 
+    def run!( to=target_time, final_step: :exact )
+      run_until( to, final_step: final_step )
     end
-    update_time! Δt
-  end
-  alias euler_step! Euler_step!
-
-  # Fires timeless transitions once. Time and timed transitions are not
-  # affected.
-  # 
-  def timeless_transitions_all_fire!
-    try "to update marking" do
-      update_marking!( note( "Δ state if tS transitions fire once",
-                             is: Δ_if_tS_fire_once ) +
-                       note( "Δ state if tsa transitions fire once",
-                             is: Δ_if_tsa_fire_once ) )
+    
+    # Runs the simulation until the target time. Named argument :final_step has
+    # options :just_before, :just_after and :exact, and tunes the simulation
+    # behavior towards the end of the run.
+    # 
+    # just_before:     last step has normal size, simulation stops before or just
+    #                  on the target time
+    # just_after:      last step has normal size, simulation stops after or just
+    #                  on the target time_step
+    # exact:           simulation stops exactly on the prescribed time, last step
+    #                  is shortened if necessary
+    #
+    def run_until( target_time, final_step: :exact )
+      case final_step
+      when :before then
+        step! while @time + @step_size <= target_time
+      when :exact then
+        step! while @time + @step_size < target_time
+        step!( target_time - @time )
+        @time = target_time
+      when :after then
+        step! while @time < target_time
+      else
+        fail ArgumentError, "Unrecognized :final_step option: #{final_step}"
+      end
     end
-    try "to fire the assignment transitions" do
-      assignment_transitions_all_fire!
+    
+    # At the moment, near alias of #euler_step!
+    # 
+    def step! Δt=step_size
+      method.step! Δt
     end
-  end
-  alias t_all_fire! timeless_transitions_all_fire!
-
-  # At the moment, near alias of #euler_step!
-  # 
-  def step! Δt=step_size
-    case @method
-    when :Euler then
-      Euler_step! Δt
-      note_state_change!
-    when :Euler_with_timeless_transitions_firing_after_each_step,
-      :pseudo_Euler then
-      Euler_step! Δt
-      timeless_transitions_all_fire!
-      note_state_change!
-    when :Euler_with_timeless_transitions_firing_after_each_time_tick,
-      :quasi_Euler then
-      raise                          # FIXME: quasi_Euler doesn't work yet
-      Euler_step! Δt
-      # if time tick has elapsed, call #timeless_transitions_all_fire!
-      note_state_change!
-    else
-      raise "Unrecognized simulation method: #@method !!!"
+    
+    # Produces the inspect string for this timed simulation.
+    # 
+    def inspect
+      "#<Simulation: Time: #{time}, #{pp.size} places, #{tt.size} " +
+        "transitions, object id: #{object_id}>"
     end
-    return self
-  end
-
-  # Produces the inspect string for this timed simulation.
-  # 
-  def inspect
-    "#<Simulation: Time: #{time}, #{pp.size} places, #{tt.size} " +
-      "transitions, object id: #{object_id}>"
-  end
-
-  # Produces a string brief
-  def to_s                         # :nodoc:
-    "Simulation[T: #{time}, pp: #{pp.size}, tt: #{tt.size}]"
-  end
-
-  private
-
-  def reset!
-    @time = initial_time || 0
-    @next_sampling_time = @time
-    super # otherwise same as for timeless cases
-  end
-
-  # Records a sample, now.
-  def sample!
-    print '.'
-    super time.round( SAMPLING_TIME_DECIMAL_PLACES )
-  end
-
-  # Hook to allow Simulation to react to its state changes.
-  def note_state_change!
-    return nil unless @time.round( 9 ) >= @next_sampling_time.round( 9 )
-    sample!
-    @next_sampling_time += @sampling_period
-  end
-
-  def update_time! Δt=step_size
-    @time += Δt
-  end
-
-  def set_time t
-    @time = t
-  end
-
-  # Duplicate creation.
-  # 
-  def dup( time: ᴛ, **nn )
-    instance = super **nn
-    instance.send :set_time, time
-    return instance
-  end
+    
+    # Produces a string brief
+    def to_s                         # :nodoc:
+      "Simulation[T: #{time}, pp: #{pp.size}, tt: #{tt.size}]"
+    end
+    
+    protected
+    
+    # Resets the time to initial time, or to the argument (if provided).
+    # 
+    def reset_time! time=nil
+      @time = time.nil? ? initial_time : time
+    end
+    
+    private
+    
+    # Resets the timed simulation.
+    # 
+    def reset!
+      @time = initial_time || time_unit * 0
+      super
+    end
+    
+    # Increments the simulation's time.
+    # 
+    def increment_time! Δt=step_size
+      @time += Δt
+      recording.note_state_change
+    end
+    
+    # Allows to explore the system at different state / time. Creates a double,
+    # which is set to the required state / time. In addition to the parent class,
+    # this version alseo sets time.
+    # 
+    def at time: time, **oo
+      oo.update marking: recording.at( time )
+      super( **oo ).tap { |dup| dup.reset_time! time }
+    end
+    
+    # Customized dup method that allows to modify the attributes of the duplicate
+    # upon creation.
+    # 
+    def dup time: time, **nn
+      super( **nn ).tap { |i| i.reset_time! time }
+    end
+    
+    # Returns the zero gradient. Optionally, places can be specified, for which
+    # the zero vector is returned.
+    # 
+    def zero_∇( places: nil )
+      return zero_∇( places: places() ) if places.nil?
+      places.each { |id|
+        pl = place( id )
+        if pl.free? then
+          pl.initial_marking * 0 / time_unit
+        else
+          pl.clamp * 0 / time_unit
+        end
+      }.to_column_vector
+    end
+  end # module Timed
 end # module YPetri::Simulation::Timed
 
 # In general, it is not required that all net elements are simulated with the

@@ -32,16 +32,24 @@ class YPetri::Simulation::Transitions
     end
     alias delta_all Δ
 
-    # Construcst a delta closure for this collection of transitions.
+    # Constructs a delta closure that outputs a delta vector corresponding to
+    # free places. The vector is the delta contribution of the transitions in
+    # this collection.
     # 
-    def delta_closure
-      zero = simulation.send :zero_m_vector, { places: free_places }
-      closures = delta_closures
-      code = map.with_index do |t, i|
-        "g = closures[#{i}].call\n" +
-          t.codomain_assignment_code( vector: :fv, source: :g )
-      end.join
-      eval "-> { fv = zero\n" + code + "return fv }"
+    def to_delta_closure
+      free_pl, closures = free_places, delta_closures
+      body = map.with_index do |t, i|
+        "a = closures[ #{i} ]\n" +
+          t.increment_by_codomain_code( vector: "delta", source: "a" )
+      end
+      λ = <<-LAMBDA
+        -> do
+        delta = simulation.MarkingVector.zero( free_pl )
+        #{body}
+        return delta
+        end
+      LAMBDA
+      eval λ
     end
   end
 end # class YPetri::Simulation::Transitions

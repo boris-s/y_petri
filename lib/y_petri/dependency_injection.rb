@@ -34,6 +34,20 @@ module YPetri::DependencyInjection
     Transition().instance( id )
   end
 
+  # Element instance identification.
+  # 
+  def element id
+    begin
+      place( id )
+    rescue NameError, TypeError
+      begin
+        transition( id )
+      rescue NameError, TypeError => err
+        raise TypeError, "Unrecognized place or transition: #{element} (#{err})"
+      end
+    end
+  end
+
   # Net instance identification.
   # 
   def net id

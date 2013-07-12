@@ -55,7 +55,8 @@ describe ::YPetri::Transition do
         .must_raise TypeError
     end
 
-    it "should initialize and perform" do
+    it "should work" do
+      @t1.type.must_equal :ts
       @t1.domain.must_equal [@p2]
       @t1.action_arcs.must_equal [@p1, @p3]
       assert @t1.functional?
@@ -74,114 +75,52 @@ describe ::YPetri::Transition do
     end
   end
 
-  describe "Ts transitions (timed rateless non-stoichiometric)" do
-    #LATER: To save time, I omit the full test suite.
-  end
-
-  describe "tS transitions (timeless stoichiometric)" do
-    describe "functionless tS transitions" do
-      # For functionless tS transitions, stoichiometric vector must be given,
-      # from which the action closure is then generated.
-
-      before do
-        # tS transition with only stoichiometric vector, as hash
-        @ftS1 = @ç.new stoichiometry: { @p1 => 1 }
-        # tS transition with only stoichiometric vector, as array + codomain
-        @ftS2 = @ç.new stoichiometry: 1, codomain: @p1
-        # :stoichiometry keyword is aliased as :s
-        @ftS3 = @ç.new s: 1, codomain: @p1
-        # :codomain is aliased as :action_arcs
-        @ftS4 = @ç.new s: 1, action_arcs: @p1
-        # square brackets (optional for size 1 vectors)
-        @ftS5 = @ç.new s: [ 1 ], downstream: [ @p1 ]
-        # another alias of :codomain is :downstream_places
-        @ftS6 = @ç.new s: [ 1 ], downstream_places: [ @p1 ]
-        # And now, collect all of the above:
-        @tt = @ftS1, @ftS2, @ftS3, @ftS4, @ftS5, @ftS6
-      end
-
-      it "should work" do
-        # ...should be the same, having a single action arc:
-        assert @tt.all? { |t| t.action_arcs == [@p1] }
-        # timeless:
-        assert @tt.all? { |t| t.timeless? }
-        # no assignment action
-        assert @tt.all? { |t| not t.assignment_action? }
-        # not considered functional
-        assert @tt.all? { |t| t.functionless? }
-        assert @tt.all? { |t| not t.functional? }
-        # and having nullary action closure
-        assert @tt.all? { |t| t.action_closure.arity == 0 }
-        # the transitions should be able to #fire!
-        @ftS1.fire!
-        # the difference is apparent: marking of place @p1 jumped to 2:
-        @p1.marking.must_equal 2
-        # but should not #fire (no exclamation mark) unless cocked
-        assert !@ftS1.cocked?
-        @ftS1.fire
-        @p1.marking.must_equal 2
-        # cock it
-        @ftS1.cock
-        assert @ftS1.cocked?
-        # uncock again, just to test cocking
-        @ftS1.uncock
-        assert @ftS1.uncocked?
-        @ftS1.cock
-        assert !@ftS1.uncocked?
-        @ftS1.fire
-        @p1.marking.must_equal 3
-        # enough playing, we'll reset @p1 marking
-        @p1.reset_marking
-        @p1.marking.must_equal 1
-        # #action
-        assert @tt.all? { |t| t.action == [1] }
-        # #zero_action
-        assert @tt.all? { |t| t.zero_action }
-        # #domain_marking
-        assert @tt.all? { |t| t.domain_marking == [] }
-        # #codomain_marking
-        assert @tt.all? { |t| t.codomain_marking == [@p1.m] }
-        # #enabled?
-        @p1.m.must_equal 1
-        @p1.guard.( 1 ).must_equal 1
-        @tt.each { |t| t.enabled?.must_equal true }
-      end
+  describe "tS transitions" do
+    before do
+      @t1 = @ç.new s: { @p5 => -1, @p1 => 1 }, action: proc { 1 }
+      @t2 = @ç.new s: { @p5 => -1, @p1 => 1 } # should be "functionless"
     end
 
-    describe "functional tS transitions" do
-      # Closure supplied to tS transitions governs their action.
+    it "should work" do
+      @t1.type.must_equal :tS
+      @t2.type.must_equal :tS
+      @t1.codomain.must_equal [@p5, @p1]
+      @t2.codomain.must_equal [@p5, @p1]
+      assert @t1.functional?
+      assert ! @t2.functional? # "functionless"
+      assert ! @t1.timed?
+      assert ! @t2.timed?
+      @t1.stoichiometry.must_equal [-1, 1]
+      @t2.stoichiometry.must_equal [-1, 1]
+      @t1.stoichio.must_equal( { @p5 => -1, @p1 => 1 } )
+      @t2.stoichio.must_equal( { @p5 => -1, @p1 => 1 } )
+      @t1.s.must_equal( { @p5.object_id => -1, @p1.object_id => 1 } ) 
+      @t2.s.must_equal( { @p5.object_id => -1, @p1.object_id => 1 } )
+      @t1.domain.must_equal [@p5] # inferred domain
+      @t2.domain.must_equal [] # domain is empty in functionless transitions!
+      [@p1.m, @p5.m].must_equal [1, 5]
+      @t1.fire!
+      [@p1.m, @p5.m].must_equal [2, 4]
+      @t2.fire!
+      [@p1.m, @p5.m].must_equal [3, 3]
+    end
+  end
 
-      before do
-        # stoichiometry given as hash
-        @FtS1 = @ç.new action_closure: ->{ 1 }, s: { @p1 => 1 }
-        # :action_closure has alias :action
-        @FtS2 = @ç.new action: ->{ 1 }, s: { @p1 => 1 }
-        # stoichiometry given as array of coefficients + codomain
-        @FtS3 = @ç.new s: 1, codomain: @p1, action: ->{ 1 }
-        # Specifying +timed: false+ as well as +timeless: true+ should be OK.
-        @FtS4 = @ç.new s: { @p1 => 1 }, action: ->{ 1 }, timed: false
-        @FtS5 = @ç.new s: { @p1 => 1 }, action: ->{ 1 }, timeless: true
-        # Even together in one statement:
-        @FtS6 = @ç.new s: { @p1 => 1 }, action: ->{ 1 }, timed: false, timeless: true
-        @tt = @FtS1, @FtS2, @FtS3, @FtS4, @FtS5, @FtS6
-      end
 
-      it "should reject bad parameters" do
-        # # +timed: true+ should raise a complaint:
-        # -> { @ç.new s: { @p1 => 1 }, action: ->{ 1 }, timed: true }
-        #   .must_raise ArgumentError # constraint relaxed?
-      end
+  describe "Ts transitions" do
+    before do
+      @t1 = @ç.new domain: @p5, codomain: [@p5, @p1], rate: proc { [-1, 1] }
+    end
 
-      it "should init and perform" do
-        assert @tt.all? { |t| t.action_arcs == [ @p1 ] }
-        assert @tt.all? { |t| t.timeless? }
-        assert @tt.all? { |t| not t.assignment_action? }
-        assert @tt.all? { |t| not t.functionless? }
-        assert @tt.all? { |t| t.functional? }
-        assert @tt.all? { |t| t.action_closure.arity == 0 }
-        @FtS1.fire!
-        # no need for more testing here
-      end
+    it "should work" do
+      @t1.type.must_equal :Ts
+      @t1.codomain.must_equal [@p5, @p1]
+      assert @t1.functional?
+      assert @t1.timed?
+      @t1.domain.must_equal [@p5]
+      [@p1.m, @p5.m].must_equal [1, 5]
+      @t1.fire! 0.5
+      [@p1.m, @p5.m].must_equal [1.5, 4.5]
     end
   end
 

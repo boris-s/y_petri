@@ -10,7 +10,7 @@ module YPetri::Transition::Timed
       rate = rate_closure.( *domain_marking )
       stoichiometry.map { |coeff| rate * coeff * Δt }
     else
-      rate_closure.( *domain_marking ).map { |e| e * Δt }
+      Array( rate_closure.( *domain_marking ) ).map { |e| e * Δt }
     end
   end
 
@@ -29,6 +29,8 @@ module YPetri::Transition::Timed
       act = note "action", is: Array( action Δt )
       codomain.each_with_index do |codomain_place, i|
         note "adding action element no. #{i} to place #{codomain_place}"
+        # if fetch( i ) raises IndexError, it probably means wrong output arity
+        # TODO: Be user friendly and warnd about this possibility.
         codomain_place.add( note "marking change", is: act.fetch( i ) )
       end
     end

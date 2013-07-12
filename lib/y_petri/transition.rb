@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
-require_relative 'dependency_injection'
 require_relative 'transition/arcs'
 require_relative 'transition/cocking'
-require_relative 'transition/construction'
+require_relative 'transition/init'
 require_relative 'transition/timed'
 require_relative 'transition/ordinary_timeless'
 require_relative 'transition/assignment'
@@ -222,8 +221,7 @@ class YPetri::Transition
   # 
   def type
     return :A if assignment_action?
-    if timed? then stoichiometric? ? :TS : :Ts
-    else stoichiometric? ? :tS : :ts end
+    timed? ? ( stoichiometric? ? :TS : :Ts ) : ( stoichiometric? ? :tS : :ts )
   end
 
   # Is it an assignment transition? (Transitions with 'assignment action'

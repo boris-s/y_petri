@@ -6,27 +6,16 @@ require 'minitest/autorun'
 require_relative '../lib/y_petri'     # tested component itself
 # require 'y_petri'
 # require 'sy'
+require_relative 'workspace_mock'
 
 describe YPetri::Net do
   before do
-    @tç = tç = Class.new YPetri::Transition
-    @pç = pç = Class.new YPetri::Place
-    @nç = nç = Class.new YPetri::Net
-    [ tç, pç, nç ].each { |ç|
-      ç.namespace!
-      ç.class_exec {
-        define_method :Place do pç end
-        define_method :Transition do tç end
-        define_method :Net do nç end
-        private :Place, :Transition, :Net
-      }
-    }
-    @p1 = pç.new ɴ: "A", quantum: 0.1, marking: 1.1
-    @p2 = pç.new ɴ: "B", quantum: 0.1, marking: 2.2
-    @p3 = pç.new ɴ: "C", quantum: 0.1, marking: 3.3
-    @net = nç.new
-    [@p1, @p2, @p3].each { |p| @net.include_place! p }
-    @p_not_included = pç.new ɴ: "X", marking: 0
+    @P, @T, @N, @S = *WORKSPACE_MOCK.(), YPetri::Simulation
+    @p1 = @P.nw "A", quantum: 0.1, marking: 1.1
+    @p2 = @P.nw "B", quantum: 0.1, marking: 2.2
+    @p3 = @P.nw "C", quantum: 0.1, marking: 3.3
+    @net = @N.of @p1, @p2, @p3
+    @p_not_included = @P.nw "X", marking: 0
   end
 
   describe "net of 3 places and no transitions" do
@@ -67,9 +56,9 @@ describe YPetri::Net do
 
     describe "plus 1 stoichio. transition with rate" do
       before do
-        @t1 = @tç.new!( ɴ: "T1",
-                        s: { @p1 => 1, @p2 => -1, @p3 => -1 },
-                        rate: 0.01 )
+        @t1 = @T.new!( ɴ: "T1",
+                       s: { @p1 => 1, @p2 => -1, @p3 => -1 },
+                       rate: 0.01 )
         @net.include_transition! @t1
       end
 
@@ -92,11 +81,11 @@ describe YPetri::Net do
       it "should have #place & #transition for safe access to the said elements" do
         @net.send( :place, @p1 ).must_equal @p1
         @net.send( :transition, @t1 ).must_equal @t1
+        @net.send( :element, @p1 ).must_equal @p1
       end
 
       it "has #new_simulation & #new_timed_simulation constructors" do
-        @net.must_respond_to :new_simulation
-        @net.must_respond_to :new_timed_simulation
+        @net.must_respond_to :simulation
       end
 
       it "should have other methods" do
@@ -109,7 +98,7 @@ describe YPetri::Net do
 
       describe "plus 1 more nameless timeless functionless transition" do
         before do
-          @t2 = @tç.new s: { @p2 => -1, @p3 => 1 }
+          @t2 = @T.new s: { @p2 => -1, @p3 => 1 }
           @net.include_transition! @t2
         end
 

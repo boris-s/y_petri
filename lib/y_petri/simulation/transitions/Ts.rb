@@ -32,18 +32,25 @@ class YPetri::Simulation::Transitions
     end
     alias gradient_all ∇
 
-    # Constructs a gradient closure that outputs a a gradient vector
-    # corresponding to free places. The vector is the gradient contribution
-    # of the transitions in this collection.
+    # Constructs a gradient closure that outputs a gradient vector corresponding
+    # to free places. The vector is the gradient contribution of the transitions
+    # in this collection.
     # 
     def to_gradient_closure
-      zero = simulation.send :zero_∇, { places: free_places }
-      closures = gradient_closures
-      code = map.with_index do |t, i|
-        "g = closures[#{i}].call\n" +
-          t.codomain_assignment_code( vector: :fv, source: :g )
-      end.join
-      eval "-> { fv = zero\n" + code + "return fv }"
+      free_pl, closures = free_places, gradient_closures
+      sMV, stu = simulation.MarkingVector, simulation.time_unit
+      body = map.with_index do |t, i|pp
+        "a = closures[ #{i} ]\n" +
+          t.increment_by_codomain_code( vector: "g", source: "a" )
+      end
+      λ = <<-LAMBDA
+        -> do
+        g = sMV.zero( free_pl ) / stu
+        #{body}
+        return delta
+        end
+      LAMBDA
+      eval λ
     end
   end # module Type_Ts
 end # class YPetri::Simulation::Transitions

@@ -1,22 +1,34 @@
 #encoding: utf-8
 
-require_relative 'dependency_injection'
 require_relative 'net/visualization'
 require_relative 'net/selections'
 
 # Represents a _Petri net_: A collection of places and transitions. The
 # connector arrows – called _arcs_ in classical Petri net terminology – can be
-# considered a property of transitions. Therefore in +YPetri+, term 'arcs' is
-# mostly used as a synonym  denoting neighboring places / transitions.
+# considered a property of transitions. Therefore in +YPetri::Net+, you won't
+# find arcs as first-class citizens, but only as a synonym denoting nearest
+# neighbors of elements (places or transitions).
 # 
 class YPetri::Net
   include NameMagic
   include YPetri::DependencyInjection
+
+  class << self
+    # Constructs a net containing a particular set of elements.
+    # 
+    def of *elements
+      new.tap { |inst| elements.each { |e| inst << e } }
+    end
+  end
   
   attr_reader :places, :transitions
 
+  # Takes 2 arguments (+:places+ and +:transitions+) and builds a net from them.
+  # 
   def initialize( places: [], transitions: [] )
-    @places, @transitions = places, transitions
+    @places, @transitions = [], []
+    places.each &method( :include_place! )
+    transitions.each &method( :include_transition! )
   end
 
   # Includes a place in the net. Returns _true_ if successful, _false_ if the
@@ -24,23 +36,18 @@ class YPetri::Net
   # 
   def include_place! place
     pl = place( place )
-    return false if @places.include? pl
-    @places << pl
-    return true
+    return false if includes_place? pl
+    true.tap { @places << pl }
   end
 
   # Includes a transition in the net. Returns _true_ if successful, _false_ if
   # the transition is already included in the net. The arcs of the transition
   # being included may only connect to the places already in the net.
   # 
-  def include_transition! transition;
+  def include_transition! transition
     tr = transition( transition )
-    return false if @transitions.include? tr
-    raise TypeError, "Unable to include the transition #{tr} in #{self}: " +
-      "It connects to one or more places outside the net." unless
-      tr.arcs.all? { |pl| include? pl }
-    @transitions << tr
-    return true
+    return false if includes_transition? tr
+    true.tap { @transitions << tr }
   end
 
   # Excludes a place from the net. Returns _true_ if successful, _false_ if the
@@ -49,10 +56,9 @@ class YPetri::Net
   # 
   def exclude_place! place
     pl = place( place )
-    raise "Unable to exclude #{pl} from #{self}: One or more transitions" +
-      "depend on it" if transitions.any? { |tr| tr.arcs.include? pl }
-    return true if @places.delete pl
-    return false
+    msg = "Unable to exclude #{pl} from #{self}: Transition(s) depend on it!"
+    fail msg if transitions.any? { |tr| tr.arcs.include? pl }
+    false.tap { return true if @places.delete( pl ) }
   end
 
   # Excludes a transition from the net. Returns _true_ if successful, _false_ if
@@ -60,25 +66,22 @@ class YPetri::Net
   # 
   def exclude_transition! transition
     tr = transition( transition )
-    return true if @transitions.delete tr
-    return false
+    false.tap { return true if @transitions.delete( tr ) }
   end
 
-  # Includes an object (either place or transition) in the net. Acts by calling
-  # +#include_place!+ or +#include_transition!+, as needed, swallowing errors.
+  # Includes an element in the net.
   # 
-  def << place_or_transition
-    begin
-      include_place! place_or_transition
-    rescue NameError
-      begin
-        include_transition! place_or_transition
-      rescue NameError
-        raise NameError, "Unrecognized place/transition: #{place_or_transition}"
-        # TODO: Exceptional Ruby
-      end
-    end
-    return self
+  def << element
+    self.tap { begin
+                 include_place! element
+               rescue NameError, TypeError
+                 begin
+                   include_transition! element
+                 rescue NameError, TypeError => err
+                   msg = "Unrecognized place or transition: #{element} (#{err})"
+                   raise TypeError, err
+                 end
+               end }
   end
 
   # Does the net include a place?
@@ -118,20 +121,14 @@ class YPetri::Net
 
   # Creates a new simulation from the net.
   # 
-  def new_simulation( **nn )
+  def simulation( **nn )
     YPetri::Simulation.new **nn.merge( net: self )
-  end
-
-  # Creates a new timed simulation from the net.
-  # 
-  def new_timed_simulation( **nn )
-    new_simulation( **nn ).aT &:timed?
   end
 
   # Networks are equal when their places and transitions are equal.
   # 
   def == other
-    return false unless other.class_complies?( ç )
+    return false unless other.class_complies?( self.class )
     places == other.places && transitions == other.transitions
   end
 
@@ -144,5 +141,7 @@ class YPetri::Net
 
   # Inspect string of the instance.
   # 
-  def inspect; to_s end
+  def inspect
+    to_s
+  end
 end # class YPetri::Net

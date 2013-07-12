@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require_relative 'dependency_injection'
 require_relative 'place/guard'
 require_relative 'place/arcs'
 

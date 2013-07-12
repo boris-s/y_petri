@@ -23,6 +23,7 @@ class YPetri::Simulation::TransitionRepresentation
     # Initialization subroutine.
     # 
     def init
+      simulation.extend YPetri::Simulation::Timed unless simulation.timed?
       super
       @function = source.rate_closure
     end

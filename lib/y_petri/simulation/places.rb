@@ -17,8 +17,7 @@ class YPetri::Simulation::Places
         rescue NameError, TypeError
           return super place( place )
         end
-    return super Place().new( p, name: p.name ) if p.name
-    super Place().new( p )
+    super p.name ? Place().new( p, name: p.name ) : Place().new( p )
   end
 
   # Correspondence matrix to another set of places.
@@ -42,7 +41,7 @@ class YPetri::Simulation::Places
     missing.each { |pl|
       dflt = pl.source.default_marking
       fail TypeError, "Source's default marking is missing (nil)!" if dflt.nil?
-      simulation.set_initial_marking( of: pl, to: dflt )
+      simulation.send :set_initial_marking, { of: pl, to: dflt }
     }
   end
 end # class YPetri::Simulation::Places

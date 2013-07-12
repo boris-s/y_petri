@@ -1,20 +1,19 @@
 #encoding: utf-8
 
 # Representation of a YPetri::Place inside a YPetri::Simulation instance.
-#
+# 
 class YPetri::Simulation
-  class PlaceRepresentation
-    include NameMagic
-    include DependencyInjection
+  class PlaceRepresentation < ElementRepresentation
 
-    attr_reader :source # source place
-    attr_reader :m_vector_index
+    # Index
+    def m_vector_index
+      places.index( self )
+    end
 
     # Expect a single YPetri place as an argument.
     # 
     def initialize net_place
-      @source = net.place( net_place )
-      @m_vector_index = net.places.index( source )
+      super
     end
 
     # Setter of clamp.
@@ -32,14 +31,14 @@ class YPetri::Simulation
     # Marking clamp value (or nil, if the place is clamped).
     # 
     def marking_clamp
-      simulation.marking_clamp( of: self ) if clamped?
+      simulation.marking_clamp of: self if clamped?
     end
     alias clamp marking_clamp
 
     # Initial marking value (or nil, if the place is free).
     # 
     def initial_marking
-      simulation.initial_marking( of: self ) if free?
+      simulation.initial_marking[ self ] if free?
     end
 
     # Is the place free in the current simulation?
@@ -57,7 +56,7 @@ class YPetri::Simulation
     # Set the marking of this place in the simulation.
     # 
     def m=( value )
-      simulation.m_vector.send :[]=, m_vector_index, 0, value
+      m_vector.set self, value
     end
 
     # Alias of #m=
@@ -69,7 +68,7 @@ class YPetri::Simulation
     # Get the current marking of this place in the simulation.
     # 
     def m
-      simulation.m_vector[ m_vector_index, 0 ]
+      m_vector[ self ]
     end
     alias marking m
   end # class PlaceRepresentation

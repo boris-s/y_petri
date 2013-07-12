@@ -3,23 +3,23 @@
 class YPetri::Simulation
   class Elements < Array
     include DependencyInjection
-
+    
     class << self
       # New collection constructor
-      # 
+      #
       def load collection
         new.tap { |inst| inst.load collection }
       end
     end
-
+    
     # Loads elements to this collection.
-    # 
+    #
     def load elements
       elements.each{ |e| push e }
     end
-
+    
     # Creates a subset of this collection (of the same class).
-    # 
+    #
     def subset *elements, &block
       if block_given? then
         msg = "If block is given, arguments are not allowed!"
@@ -30,5 +30,12 @@ class YPetri::Simulation
         self.class.load( ee )
       end
     end
+
+    # Returns an array of the element sources (elemens in the original net).
+    # 
+    def sources
+      map &:source
+    end
+    alias to_sources sources
   end
 end

@@ -1,0 +1,93 @@
+#encoding: utf-8
+
+# Simulation mixin providing access to places.
+#
+class YPetri::Simulation::Places
+  module Access
+    # With no arguments, a reader of @f2a -- the correspondence matrix between
+    # free places and all places. If argument is given, it is assumed to be
+    # a column vector, and multiplication is performed.
+    # 
+    def f2a arg=nil
+      if arg.nil? then @f2a else @f2a * arg end
+    end
+
+    # With no arguments, a reader of @c2a -- the correspondence matrix between
+    # clamped places and all places. If argument is given, it is assumed to be
+    # a column vector, and multiplication is performed.
+    # 
+    def c2a arg=nil
+      if arg.nil? then @c2a else @c2a * arg end
+    end
+
+    # Place instance identification.
+    # 
+    def place( id )
+      begin
+        Place().instance( id )
+      rescue NameError, TypeError
+        begin
+          pl = net.place( id )
+          places.find { |p_rep| p_rep.source == pl } ||
+            Place().instance( pl.name )
+        rescue NameError, TypeError => msg
+          raise TypeError, "The argument #{id} (class #{id.class}) does not identify a " +
+            "place instance! (#{msg})"
+        end
+      end
+    end
+
+    # Does a place belong to the simulation?
+    # 
+    def includes_place?( id )
+      true.tap { begin; place( id )
+                 rescue NameError, TypeError
+                   return false
+                 end }
+    end
+    alias include_place? includes_place?
+
+    # Without arguments, returns all the places. If arguments are given, they
+    # are converted to places before being returned.
+    # 
+    def places *ids
+      return @places if ids.empty?
+      Places().load( ids.map { |id| place( id ) } )
+    end
+
+    # Places' names. Arguments, if any, are treated as in +#places+ method.
+    # 
+    def pn *ids
+      places( *ids ).names
+    end
+    alias n_places pn
+
+    # Free places. If arguments are given, they must be identify free places,
+    # and are converted to them.
+    # 
+    def free_places *ids
+      return places.free if ids.empty?
+      places.free.subset( *ids )
+    end
+
+    # Clamped places. If arguments are given, they must be identify clamped
+    # places, and are converted to them.
+    # 
+    def clamped_places *ids
+      return places.clamped if ids.empty?
+      places.clamped.subset( ids )
+    end
+
+    # Names of free places. Arguments are handled as with +#free_places+.
+    # 
+    def n_free *ids
+      free_places( *ids ).names
+    end
+
+    # Names of free places. Arguments are handled as with +#clamped_places+.
+    # 
+    def n_clamped *ids
+      clamped_places( *ids ).names
+    end
+  end # module Access
+end # class YPetri::Simulation::Places
