@@ -60,13 +60,6 @@ class YPetri::Simulation
               :Recording,
               :Method
 
-  # Default simulation method (accesses the constant DEFAULT_SIMULATION_METHOD
-  # in the receiver's class).
-  # 
-  def default_simulation_method
-    :pseudo_Euler
-  end
-
   attr_reader :net,
               :method,
               :guarded,
@@ -94,7 +87,7 @@ class YPetri::Simulation
   # range, :step, controlling the simulation step size, and :sampling,
   # controlling the sampling frequency.
   # 
-  def initialize method: default_simulation_method,
+  def initialize method: nil,
                  guarded: false,
                  net: ( fail ArgumentError, "Net missing!" ),
                  marking_clamps: {},
@@ -102,7 +95,8 @@ class YPetri::Simulation
                  use_default_marking: true,
                  **nn
 
-    @net, @method, @guarded = net, method, guarded
+    @net = net
+    @guarded = guarded
 
     init_parametrized_subclasses
     
@@ -134,6 +128,8 @@ class YPetri::Simulation
     end
 
     @recording = Recording().new
+
+    @method = method || Method()::DEFAULT
 
     reset!
   end

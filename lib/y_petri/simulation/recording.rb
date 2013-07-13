@@ -6,11 +6,12 @@ class YPetri::Simulation
 
     SAMPLING_DECIMAL_PLACES = 5
 
-    # Without an argument, resets the recording to empty. With an argument,
-    # resets the recording to a new specified recording.
+    # Without an argument, resets the recording to empty. With a named argument
+    # +:recording+, resets the recording to a new specified recording.
     # 
-    def reset! new_recording=nil
+    def reset! **nn
       clear
+      new_recording = nn[:recording]
       update Hash[ new_recording ] unless new_recording.nil?
     end
 
@@ -35,5 +36,5 @@ class YPetri::Simulation
     def at event
       fetch event
     end
-  end
-end
+  end # class Recording
+end # YPetri::Simulation

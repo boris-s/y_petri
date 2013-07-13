@@ -4,7 +4,7 @@
 # 
 module YPetri::Simulation::Timeless
   class Method < YPetri::Simulation::Method
-    require_relative 'method/regular.rb' # all fire simultaneously at each step
+    require_relative 'method/pseudo_euler.rb'
 
     alias delta delta_timeless
     alias Δ delta

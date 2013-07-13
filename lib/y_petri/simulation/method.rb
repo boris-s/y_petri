@@ -4,6 +4,8 @@
 # 
 class YPetri::Simulation
   class Method
+    DEFAULT = :pseudo_euler
+
     module Guarded
       # Guarded version of the method.
       # 

@@ -108,7 +108,9 @@ describe YPetri::Simulation do
           end
 
           it "should behave" do
-            
+            @sim.timed?.must_equal false
+            @sim.recording.must_equal( { 0 => [1, 2]} )
+            @sim.method.must_equal :pseudo_euler
           end
         end
 

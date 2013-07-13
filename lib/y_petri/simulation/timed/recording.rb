@@ -8,11 +8,13 @@ module YPetri::Simulation::Timed
     attr_accessor :next_sampling_time,
                   :sampling_period
 
-    # Resets the recording.
+    # Like +YPetri::Simulation::Recording#reset+, allowing for additional named
+    # argument +:next_time+ that sets the next sampling time.
     # 
-    def reset!
+    def reset! **nn
       super
-      @next_sampling_time = time
+      next_time = nn[:next_time] || time
+      next_sampling_time = next_time
     end
 
     # Hook to allow Simulation to react to its state changes.
