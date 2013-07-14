@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # Workspace instance methods related to Petri net itsef (places, transitions,
 # net instances).
@@ -28,27 +28,39 @@ module YPetri::Workspace::PetriNetRelatedMethods
 
   # Returns a place instance identified by the argument.
   # 
-  def place which; Place().instance which end
+  def place id
+    Place().instance( id )
+  end
 
   # Returns a transition instance identified by the argument.
   # 
-  def transition which; Transition().instance which end
+  def transition id
+    Transition().instance( id )
+  end
 
   # Returns a net instance identified by the argument.
   # 
-  def net which; Net().instance which end
+  def net id
+    Net().instance( id )
+  end
 
   # Place instances.
   # 
-  def places; Place().instances end
+  def places
+    Place().instances
+  end
 
   # Transition instances.
   # 
-  def transitions; Transition().instances end
+  def transitions
+    Transition().instances
+  end
 
   # Net instances.
   # 
-  def nets; Net().instances end
+  def nets
+    Net().instances
+  end
 
   private
 

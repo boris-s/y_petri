@@ -58,9 +58,14 @@ module YPetri::Manipulator::SimulationRelatedMethods
   # 
   ImcPoint = Class.new YPetri::Manipulator::HashKeyPointer
 
-  attr_reader :simulation_point, :ssc_point, :cc_point, :imc_point,
-              :simulation_selection, :ssc_selection,
-              :cc_selection, :imc_selection
+  attr_reader :simulation_point,
+              :ssc_point,
+              :cc_point,
+              :imc_point,
+              :simulation_selection,
+              :ssc_selection,
+              :cc_selection,
+              :imc_selection
 
   def initialize
     # set up this manipulator's pointers
