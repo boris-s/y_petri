@@ -246,25 +246,19 @@ module YPetri::Manipulator::SimulationRelatedMethods
 
   # Plot the recorded samples.
   # 
-  def plot *args
-    oo = args.extract_options!
-    case args.size
-    when 0 then plot_recording oo
-    when 1 then
-      plot_what = args[0]
-      case plot_what
-      when :state then plot_recording oo
-      when :flux then plot_flux oo
-      when :all then plot_all oo
-      else plot_selected *args end
-    else raise "Too many ordered arguments!" end
-  end
+  def plot **features
+    # --> state feature ids
+    # --> gradient feature ids
+    # --> delta feature ids
+    # --> flux feature ids
+    # --> firing feature ids
 
-  # Plot the selected features.
-  # 
-  def plot_selected *args
-    oo = args.extract_options!
-    collection = Array args[0]
+    # take these features together
+
+    # construct the labels and the time series for each
+
+    # plot them
+
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide abnout the features
     features = sim.places.dup.map { |p|
@@ -282,30 +276,28 @@ module YPetri::Manipulator::SimulationRelatedMethods
     gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
              title: "Selected features plot", ylabel: "Marking" )
   end
-    
 
   # Plot the recorded samples (system state history).
   # 
-  def plot_state( *args )
-    oo = args.extract_options!
-    excluded = Array oo[:except]
-    return nil unless sim = @workspace.simulations.values[-1] # sim@point
-    # Decide about the features to plot.
-    features = excluded.each_with_object sim.places.dup do |x, α|
-      i = α.index x
-      α[i] = nil if i
-    end
-    # Get recording
-    rec = sim.recording
-    # Select a time series for each feature.
-    time_series = features.map.with_index do |feature, i|
-      feature and rec.map { |key, val| [ key, val[i] ] }.transpose
-    end
-    # Time axis
-    ᴛ = sim.target_time
-    # Gnuplot call
-    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
-             title: "State plot", ylabel: "Marking" )
+  def plot_state( place_ids=nil, **nn )
+    # excluded = Array nn[:except]
+    # return nil unless sim = @workspace.simulations.values[-1] # sim@point
+    # # Decide about the features to plot.
+    # features = excluded.each_with_object sim.places.dup do |x, α|
+    #   i = α.index x
+    #   α[i] = nil if i
+    # end
+    # # Get recording
+    # rec = sim.recording
+    # # Select a time series for each feature.
+    # time_series = features.map.with_index do |feature, i|
+    #   feature and rec.map { |key, val| [ key, val[i] ] }.transpose
+    # end
+    # # Time axis
+    # ᴛ = sim.target_time
+    # # Gnuplot call
+    # gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
+    #          title: "State plot", ylabel: "Marking" )
   end
 
   # Plot the recorded flux (computed flux history at the sampling points).
