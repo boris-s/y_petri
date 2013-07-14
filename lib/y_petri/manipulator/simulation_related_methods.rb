@@ -153,7 +153,7 @@ module YPetri::Manipulator::SimulationRelatedMethods
   # field:
   # * No arguments: returns current imc
   # * Exactly one ordered argument: it is assumed to identify a place whose
-  #   im in teh current imc will be returned.
+  #   im in the current imc will be returned.
   # * A hash: Assumed to be { place_id => im }, current imc is updated with it.
   # * One ordered argument, and a hash: The imc identified by the ordered
   #   ordered arg is updated with the hash.
