@@ -20,13 +20,15 @@ class YPetri::Simulation
     
     # Creates a subset of this collection (of the same class).
     #
-    def subset *elements, &block
+    def subset element_ids=nil, &block
       if block_given? then
         msg = "If block is given, arguments are not allowed!"
-        fail ArgumentError, msg unless elements.empty?
+        fail ArgumentError, msg unless element_ids.nil?
         self.class.load select( &block )
       else
-        ee = elements( *elements ).aT_all "element" do |e| include? e end
+        ee = elements( element_ids )
+        ee.all? { |e| include? e } or
+          fail TypeError, "All subset elements must be in the collection."
         self.class.load( ee )
       end
     end

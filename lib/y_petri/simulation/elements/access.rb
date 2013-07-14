@@ -9,8 +9,12 @@ class YPetri::Simulation::Elements
     # Element instance identification.
     # 
     def element( id )
-      return place( id ) if includes_place?( place( id ) )
-      return transition( id ) if includes_transition?( transition( id ) )
+      if include_place? id
+        return place( id )
+      end
+      if include_transition? id
+        return transition( id )
+      end
       fail TypeError, "No element #{id} in the simulation!"
     end
   

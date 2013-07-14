@@ -158,7 +158,7 @@ class YPetri::Simulation
   # 
   def dup marking: marking, recording: recording, **nn
     self.class.new( nn.reverse_merge! settings ).tap do |dup|
-      dup.recording.reset! recording
+      dup.recording.reset! recording: recording
       dup.m_vector.reset! case marking
                           when Hash then
                             m_vector.to_hash_with_source_places
@@ -168,6 +168,7 @@ class YPetri::Simulation
                           else marking.each.to_a end
     end
   end
+  alias at dup
 
   # Produces the inspect string of the transition.
   # 

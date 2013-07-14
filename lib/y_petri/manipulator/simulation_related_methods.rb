@@ -310,28 +310,23 @@ module YPetri::Manipulator::SimulationRelatedMethods
 
   # Plot the recorded flux (computed flux history at the sampling points).
   # 
-  def plot_flux( *args )
-    oo = args.extract_options!
-    excluded = Array oo[:except]
-    return nil unless sim = @workspace.simulations.values[-1] # sim@point
-    # Decide about the features to plot.
-    all = sim.TS_transitions
-    features = excluded.each_with_object all.dup do |x, α|
-      i = α.index x
-      if i then α[i] = nil end
+  def plot_flux( transition_ids=nil, **options )
+    sim = @workspace.simulations.values[-1] or return nil # sim@point
+    tt = sim.TS_transitions( transition_ids ).sources
+    excluded = sim.transitions( Array options[:except] ).sources
+    tt -= excluded
+    flux = sim.recording.modify do |time, record|
+      [ time,
+        sim.at( time: time, marking: record ).TS_transitions( tt ).flux_vector ]
     end
-    # Get recording.
-    rec = sim.recording
-    # Get flux recording.
-    flux = rec.modify { |ᴛ, ᴍ| [ ᴛ, sim.at( t: ᴛ, m: ᴍ ).flux_for( *all ) ] }
     # Select a time series for each feature.
-    time_series = features.map.with_index do |feature, i|
-      feature and flux.map { |ᴛ, flux| [ ᴛ, flux[i] ] }.transpose
+    time_series = tt.map.with_index do |tr, i|
+      tr and flux.map { |time, flux| [ time, flux[i] ] }.transpose
     end
     # Time axis
-    ᴛ = sim.target_time
+    time = sim.target_time
     # Gnuplot call
-    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
+    gnuplot( time, tt.compact.names, time_series.compact,
              title: "Flux plot", ylabel: "Flux [µMⁿ.s⁻¹]" )
   end
 

@@ -39,8 +39,8 @@ class YPetri::Simulation::Places
 
     # Does a place belong to the simulation?
     # 
-    def includes_place?( id )
-      true.tap { begin; place( id )
+    def includes_place? id
+      true.tap { begin; place id
                  rescue NameError, TypeError
                    return false
                  end }
