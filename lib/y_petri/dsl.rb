@@ -1,24 +1,27 @@
-# YPetri DSL.
-# 
 module YPetri
+  # YPetri DSL.
+  # 
   module DSL
     def y_petri_manipulator
       @y_petri_manipulator ||= Manipulator.new
         .tap { puts "Defining Manipulator for #{self}" if YPetri::DEBUG }
+    end
   end
 
-  delegate( :workspace, to: :y_petri_manipulator )
+  delegate :workspace, to: :y_petri_manipulator
 
   # Petri net aspect.
-  delegate( :Place, :Transition, :Net,
+  delegate( :Place,
+            :Transition, :T, :A,
+            :Net,
             :place, :transition, :pl, :tr,
             :places, :transitions, :nets,
-            :pp, :tt, :nn,
+            :pn, :tn, :nn,
             :net_point,
             :net_selection,
-            :net, :ne,
+            :net, :nnet,
             :net_point_reset,
-            :net_point_set,
+            :net_point=,
             to: :y_petri_manipulator )
 
   # Simulation aspect.
@@ -29,13 +32,13 @@ module YPetri
             :clamp_collections,
             :initial_marking_collections,
             :simulation_settings_collections,
-            :clamp_collection_names, :cc_names,
-            :initial_marking_collection_names, :imc_names,
-            :simulation_settings_collection_names, :ssc_names,
+            :clamp_collection_names, :ncc,
+            :initial_marking_collection_names, :nimc,
+            :simulation_settings_collection_names, :nssc,
             :set_clamp_collection, :set_cc,
             :set_initial_marking_collection, :set_imc,
             :set_simulation_settings_collection, :set_ssc,
-            :new_timed_simulation,
+            :new_simulation,
             :clamp_cc, :initial_marking_cc, :simulation_settings_cc,
             :simulation_point_position,
             :simulation,
@@ -56,5 +59,4 @@ module YPetri
             :plot_state,
             :plot_flux,
             to: :y_petri_manipulator )
-  end
 end

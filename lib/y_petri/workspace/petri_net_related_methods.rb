@@ -38,18 +38,6 @@ module YPetri::Workspace::PetriNetRelatedMethods
   # 
   def net which; Net().instance which end
 
-  # Returns the name of a place identified by the argument.
-  # 
-  def pl which; place( which ).name end
-
-  # Returns the name of a transition identified by the argument.
-  # 
-  def tr which; transition( which ).name end
-
-  # Returns the name of a net identified by the argument.
-  # 
-  def ne which; net( which ).name end
-
   # Place instances.
   # 
   def places; Place().instances end
@@ -61,18 +49,6 @@ module YPetri::Workspace::PetriNetRelatedMethods
   # Net instances.
   # 
   def nets; Net().instances end
-
-  # Place names.
-  # 
-  def pp; places.map &:name end
-
-  # Transition names.
-  # 
-  def tt; transitions.map &:name end
-
-  # Net names.
-  # 
-  def nn; nets.map &:name end
 
   private
 

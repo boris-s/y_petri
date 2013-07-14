@@ -5,7 +5,7 @@ require 'gnuplot'                      # used for graph visualization
 require 'csv'                          # not used at the moment
 require 'graphviz'                     # used for Petri net visualization
 
-# The following are YSupport components used by YPetri:
+# The following are the YSupport components used by YPetri:
 require 'y_support/local_object'       # object aware of its creation scope
 require 'y_support/respond_to'         # Symbol#~@ + RespondTo#===
 require 'y_support/name_magic'         # naming by assignment & more
@@ -55,6 +55,7 @@ module YPetri
   class << self
     def included( receiver )
       receiver.extend YPetri::DSL
+      receiver.delegate :y_petri_manipulator, to: :class
     end
   end
 end

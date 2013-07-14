@@ -67,6 +67,7 @@ class YPetri::Simulation
     # Increments the marking vector by a given delta.
     # 
     def increment_marking_vector( delta )
+      print '.'
       simulation.increment_marking_vector_closure.( delta )
     end
 

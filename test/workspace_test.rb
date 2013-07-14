@@ -34,9 +34,7 @@ describe YPetri::Workspace do
   it "should present places, transitions, nets, simulations" do
     assert_kind_of YPetri::Net, @w.Net::Top
     assert_equal @pp[0], @w.place( "AA" )
-    assert_equal :AA, @w.pl( @pp[0] )
     assert_equal @tt[0], @w.transition( "AA_BB_assembly" )
-    assert_equal :AA_appearing, @w.tr( @tt[1] )
     assert_equal @pp, @w.places
     assert_equal @tt, @w.transitions
     assert_equal 1, @w.nets.size
@@ -48,9 +46,9 @@ describe YPetri::Workspace do
     assert_equal [:Base], @w.clamp_collections.keys
     assert_equal [:Base], @w.initial_marking_collections.keys
     assert_equal [:Base], @w.simulation_settings_collections.keys
-    assert_equal [:AA, :BB, :CC], @w.pp
-    assert_equal [:AA_BB_assembly, :AA_appearing], @w.tt
-    assert_equal [:Top], @w.nn
+    assert_equal [:AA, :BB, :CC], @w.places.names
+    assert_equal [:AA_BB_assembly, :AA_appearing], @w.transitions.names
+    assert_equal [:Top], @w.nets.names
   end
 
   it "should simulate" do

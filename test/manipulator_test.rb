@@ -15,7 +15,7 @@ describe ::YPetri::Manipulator do
   it "has net basic points" do
     # --- net point related assets ---
     @m.net_point_reset
-    @m.net_point_set @m.workspace.net( :Top )
+    @m.net_point_reset @m.workspace.net( :Top )
     @m.net.must_equal @m.workspace.Net::Top
     # --- simulation point related assets ---
     @m.simulation_point.reset
@@ -64,8 +64,8 @@ describe ::YPetri::Manipulator do
       @m.initial_marking_collections,
       @m.simulation_settings_collections ]
     .map( &:keys ).must_equal [[:Base]] * 3
-    @m.pp.must_equal []
-    @m.tt.must_equal []
+    @m.pn.must_equal []
+    @m.tn.must_equal []
     @m.nn.must_equal [ :Top ]       # ie. :Top net spanning whole workspace
   end
   

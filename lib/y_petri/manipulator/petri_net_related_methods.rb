@@ -20,9 +20,41 @@ module YPetri::Manipulator::PetriNetRelatedMethods
     super
   end
 
-  delegate :place, :transition, :pl, :tr,
-           :places, :transitions, :nets,
-           :pp, :tt, :nn, to: :workspace
+  # Elements and selections:
+  # 
+  delegate :place, :transition, :element, 
+           :nets, :places, :transitions,
+           to: :workspace
+
+  # Place name.
+  # 
+  def pl( place_id )
+    place( place_id ).name
+  end
+
+  # Transition name.
+  # 
+  def tr( transition_id )
+    transition( transition_id ).name
+  end
+
+  # Place names.
+  # 
+  def pn
+    places.names
+  end
+
+  # Transition names.
+  # 
+  def tn
+    transitions.names
+  end
+
+  # Net names.
+  # 
+  def nn
+    nets.names
+  end
 
   # Place constructor: Creates a new place in the current workspace.
   # 
@@ -35,16 +67,31 @@ module YPetri::Manipulator::PetriNetRelatedMethods
     workspace.Place.new *ordered_args, **named_args
   end
 
-  # Transiton constructor: Creates a new transition in the current workspace.
+  # Transition constructor: Creates a new transition in the current workspace.
   # 
-  def Transition( *aa, **oo, &b )
-    workspace.Transition.new *aa, **oo, &b
+  def Transition( *ordered, **named, &block )
+    workspace.Transition.new *ordered, **named, &block
+  end
+
+  # Timed transition constructor: Creates a new timed transition in the current
+  # workspace. Rate closure has to be supplied as a block.
+  # 
+  def T( *ordered, **named, &block )
+    workspace.Transition.new *ordered, **named.update( rate: block )
+  end
+
+  # Assignment transition constructor: Creates a new assignment transition in
+  # the current workspace. Assignment closure has to be supplied as a block.
+  # 
+  def A( *ordered, **named, &block )
+    workspace.Transition.new *ordered,
+                             **named.update( assignment: true, action: block )
   end
 
   # Net constructor: Creates a new Net instance in the current workspace.
   # 
-  def Net *aa, **oo, &b
-    workspace.Net.new *aa, **oo, &b
+  def Net *ordered, **named, &block
+    workspace.Net.new *ordered, **named, &block
   end
 
   # Returns the net identified, or the net at point (if no argument given).
@@ -53,22 +100,15 @@ module YPetri::Manipulator::PetriNetRelatedMethods
     id.nil? ? @net_point : workspace.net( id )
   end
 
-  # Returns the name of the identified net, or of the net at point (if no
-  # argument given).
+  # Sets the net point to a given net, or to workspace.Net::Top if none given.
   # 
-  def ne id=nil
-    net( id ).name
-  end
-
-  # Sets net point to workspace.Net::Top
-  # 
-  def net_point_reset
-    net_point_set( workspace.Net::Top )
-  end
-
-  # Sets net point to the net identified by the argument (by name or instance).
-  # 
-  def net_point_set id
+  def net_point_reset id=workspace.Net::Top
     @net_point = workspace.net( id )
+  end
+
+  # Sets net point to a given net.
+  # 
+  def net_point= id
+    net_point_reset id
   end
 end # module YPetri::Manipulator::PetriNetRelatedMethods

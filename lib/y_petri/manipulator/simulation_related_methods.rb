@@ -89,13 +89,13 @@ module YPetri::Manipulator::SimulationRelatedMethods
            :clamp_collections,
            :initial_marking_collections,
            :simulation_settings_collections,
-           :clamp_collection_names, :cc_names,
-           :initial_marking_collection_names, :imc_names,
-           :simulation_settings_collection_names, :ssc_names,
-           :set_clamp_collection, :set_cc,
-           :set_initial_marking_collection, :set_imc,
+           :clamp_collection_names, :ncc,
+           :initial_marking_collection_names, :nimc,
+           :simulation_settings_collection_names, :nssc,
+           :set_clamp_collection, :ncc,
+           :set_initial_marking_collection, :nimc,
            :set_simulation_settings_collection, :set_ssc,
-           :new_timed_simulation,
+           :new_simulation,
            :clamp_cc, :initial_marking_cc, :simulation_settings_cc,
            to: :workspace
 
@@ -107,10 +107,6 @@ module YPetri::Manipulator::SimulationRelatedMethods
     return simulation_point.get if args.empty?
     SimulationPoint.new( hash: simulations, hash_value_is: "simulation" ).get
   end
-
-  # # TEMPORARY KLUGE - FIXME
-  # # 
-  # def simulation; @workspace.simulations.values[-1] end
 
   # Returns identified clamp collection, or (if no argument given) one
   # corresponding to cc_point.
