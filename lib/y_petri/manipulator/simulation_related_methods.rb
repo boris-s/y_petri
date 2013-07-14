@@ -315,7 +315,7 @@ module YPetri::Manipulator::SimulationRelatedMethods
     excluded = Array oo[:except]
     return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # Decide about the features to plot.
-    all = sim.SR_transitions
+    all = sim.TS_transitions
     features = excluded.each_with_object all.dup do |x, α|
       i = α.index x
       if i then α[i] = nil end
