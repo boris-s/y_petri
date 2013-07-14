@@ -19,10 +19,10 @@ class YPetri::Net
       ꜧ[tr] = γ.add_nodes tr.name.to_s,
                           shape: 'box',
                           fillcolor: if tr.assignment? then 'yellow'
-                                     elsif tr.basic_type == :SR then 'lightcyan'
+                                     elsif tr.type == :TS then 'lightcyan'
                                      else 'ghostwhite' end,
                           color: if tr.assignment? then 'goldenrod'
-                                 elsif tr.basic_type == :SR then 'cyan'
+                                 elsif tr.type == :TS then 'cyan'
                                  else 'grey' end,
                           style: 'filled'
     end
@@ -35,7 +35,7 @@ class YPetri::Net
         ( tr.domain - tr.codomain ).each { |pl|
           γ.add_edges tr_node, place_nodes[pl], color: 'grey', arrowhead: 'none'
         }
-      elsif tr.basic_type == :SR then
+      elsif tr.type == :TS then
         tr.codomain.each { |pl|
           if tr.stoichio[pl] > 0 then # producing arc
             γ.add_edges tr_node, place_nodes[pl], color: 'cyan'

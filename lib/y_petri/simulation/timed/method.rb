@@ -35,6 +35,16 @@ module YPetri::Simulation::Timed
       ( simulation.TS_stoichiometry_matrix * flux_vector_TS )
     end
 
+    # Flux vector. The caller asserts that all the timed transitions are
+    # stoichiometric, or error.
+    # 
+    def flux_vector
+      msg = "#flux_vector method only applies to the timed simulations with " +
+        "no Ts transitions. Try #flux_vector_TS instead!"
+      fail msg unless simulation.Ts_transitions.empty?
+      simulation.TS_rate_closure.call
+    end
+
     # Flux vector of TS transitions.
     # 
     def flux_vector_TS

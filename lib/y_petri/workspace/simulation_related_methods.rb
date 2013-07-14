@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
-# Workspace instance methods related to simulation (initial marking
-# collections, clamp collections, inital marking collections, management
-# of simulations...)
+# Workspace instance methods related to simulation (initial marking collections,
+# clamp collections, inital marking collections, management of simulations...)
 # 
 module YPetri::Workspace::SimulationRelatedMethods
   # Collections of clamps, initial marking vectors, and simulation settings.
@@ -24,24 +23,30 @@ module YPetri::Workspace::SimulationRelatedMethods
 
   # Hash of simulation instances and their settings.
   # 
-  def simulations; @simulations end
+  def simulations
+    @simulations
+  end
 
   # Clamp collection names.
   # 
-  def clamp_collection_names; @clamp_collections.keys end
-  alias cc_names clamp_collection_names
+  def clamp_collection_names
+    @clamp_collections.keys
+  end
+  alias ncc clamp_collection_names
 
   # Initial marking collection names.
   # 
-  def initial_marking_collection_names; @initial_marking_collections.keys end
-  alias imc_names initial_marking_collection_names
+  def initial_marking_collection_names
+    @initial_marking_collections.keys
+  end
+  alias nimc initial_marking_collection_names
 
   # Simulation settings collection names.
   # 
   def simulation_settings_collection_names
     @simulation_settings_collections.keys
   end
-  alias ssc_names simulation_settings_collection_names
+  alias nssc simulation_settings_collection_names
 
   # Clamp collection identified by the argument.
   # 
@@ -138,8 +143,8 @@ module YPetri::Workspace::SimulationRelatedMethods
   #
   # * default_ss = { step_size: 0.1, sampling_period: 5, target_time: 60 }
   # 
-  def new_timed_simulation( net: Net()::Top, **nn )
-    net_instance = net( net )
+  def new_simulation( net: Net()::Top, **nn )
+    net_inst = net( net )
     nn.may_have :cc, syn!: :clamp_collection
     nn.may_have :imc, syn!: :initial_marking_collection
     nn.may_have :ssc, syn!: :simulation_settings_collection
@@ -150,7 +155,7 @@ module YPetri::Workspace::SimulationRelatedMethods
     key = if nn.has? :name, syn!: :ɴ then # explicit key (name)
             nn[:name]
           else                       # constructed key
-            {}.merge( net: net_instance,
+            {}.merge( net: net_inst,
                        cc: cc_id,
                        imc: imc_id,
                        ssc: ssc_id )
@@ -161,9 +166,9 @@ module YPetri::Workspace::SimulationRelatedMethods
     mc_hash = cc( cc_id )
     im_hash = imc( imc_id )
     # Create and return the simulation
-    @simulations[ key ] = net_instance
-      .new_timed_simulation **sim_settings.merge( initial_marking: im_hash,
-                                                  marking_clamps: mc_hash
-                                                  ).merge( nn )
+    sim = net_inst.simulation **sim_settings.merge( initial_marking: im_hash,
+                                                    marking_clamps: mc_hash
+                                                    ).merge( nn )
+    @simulations[ key ] = sim
   end
 end # module YPetri::Workspace::SimulationRelatedMethods

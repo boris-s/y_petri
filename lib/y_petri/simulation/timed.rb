@@ -36,6 +36,13 @@ class YPetri::Simulation
     attr_accessor :step_size,
                   :sampling_period
 
+    delegate :flux_vector_TS,
+             :gradient_TS,
+             :gradient_Ts,
+             :gradient,
+             :flux_vector,
+             to: :core
+
     # Initialization subroutine.
     # 
     def init **nn

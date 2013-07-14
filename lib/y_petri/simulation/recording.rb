@@ -35,5 +35,11 @@ class YPetri::Simulation
     def at event
       fetch event
     end
+
+    # Outputs the current recording in CSV format.
+    # 
+    def to_csv
+      map { |lbl, rec| [ lbl, *rec ].join ',' }.join "\n"
+    end
   end # class Recording
 end # YPetri::Simulation

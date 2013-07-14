@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
+
 # Manipulator instance methods related to simulation (initial marking
 # collections, clamp collections, initial marking collections, management
 # of simulations...)
@@ -222,8 +223,8 @@ module YPetri::Manipulator::SimulationRelatedMethods
   # Create a new timed simulation and make it available in the simulations
   # table.
   # 
-  def new_timed_simulation *args, &block
-    instance = workspace.new_timed_simulation( *args, &block )
+  def new_simulation *args, &block
+    instance = workspace.new_simulation( *args, &block )
     # Set the point to it
     simulation_point.set( simulations.rassoc( instance )[0] )
     return instance
@@ -232,7 +233,7 @@ module YPetri::Manipulator::SimulationRelatedMethods
   # Create a new timed simulation and run it.
   # 
   def run!
-    new_timed_simulation.run!
+    new_simulation.run!
   end
 
   # Write the recorded samples in a file (csv).

@@ -1,5 +1,5 @@
 #! /usr/bin/ruby
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 require 'minitest/spec'
 require 'minitest/autorun'
@@ -27,7 +27,7 @@ describe YPetri::Workspace do
     @w.set_imc @pp.τBᴍHτ( &:default_marking )
     @w.set_ssc step: 0.1, sampling: 10, time: 0..50
     @w.set_cc( {} )
-    @sim = @w.new_timed_simulation
+    @sim = @w.new_simulation
     File.delete @f_name rescue nil
   end
 
@@ -56,17 +56,18 @@ describe YPetri::Workspace do
   it "should simulate" do
     assert_equal 1, @w.simulations.size
     assert_kind_of( YPetri::Simulation, @w.simulation )
-    assert_equal 2, @w.simulation.SR_transitions.size
+    assert_equal 2, @w.simulation.TS_transitions.size
     @tt[0].domain.must_equal [ @pp[0], @pp[1] ]
     @tt[1].domain.must_equal []
-    assert_equal [0.2, 0.1], @w.simulation.φ.column_to_a
+    assert @w.simulation.timed?
+    assert_equal [0.2, 0.1], @w.simulation.flux_vector.column_to_a
     @w.simulation.step!
     @w.simulation.run!
-    rec_string = @w.simulation.recording_csv_string
-    expected_recording_string =
+    rec_csv = @w.simulation.recording.to_csv
+    expected_rec_csv =
       "0.0,1.0,2.0,3.0\n" +
       "10.0,0.86102,0.86102,4.13898\n" +
       "20.0,1.29984,0.29984,4.70016\n"
-    assert rec_string.start_with?( expected_recording_string )
+    rec_csv.to_s[0, expected_rec_csv.size].must_equal expected_rec_csv
   end
 end

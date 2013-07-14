@@ -84,15 +84,13 @@ describe ::YPetri::Manipulator do
     
     it "works" do
       @m.run!
-      @m.simulation.places.must_equal [ @p, @q ]
-      @m.simulation.transitions.must_equal [ @decay_t, @constant_flux_t ]
-      @m.simulation.SR_tt.must_equal [ :Tp, :Tq ]
-      @m.simulation.sparse_stoichiometry_vector( :Tp )
+      @m.simulation.places.map( &:source ).must_equal [ @p, @q ]
+      @m.simulation.transitions.map( &:source ).must_equal [ @decay_t, @constant_flux_t ]
+      @m.simulation.nTS.must_equal [ :Tp, :Tq ]
+      @m.simulation.transition( :Tp ).sparse_stoichiometry_vector
         .must_equal Matrix.column_vector( [-1, 0] )
-      @m.simulation.stoichiometry_matrix_for( @m.transitions ).column_size
-        .must_equal 2
-      @m.simulation.stoichiometry_matrix_for( @m.transitions ).row_size
-        .must_equal 2
+      @m.simulation.S_transitions.stoichiometry_matrix.column_size.must_equal 2
+      @m.simulation.S_transitions.stoichiometry_matrix.row_size.must_equal 2
       @m.simulation.flux_vector.row_size.must_equal 2
       # @m.plot_recording
     end

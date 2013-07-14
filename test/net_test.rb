@@ -111,21 +111,21 @@ describe YPetri::Net do
 
         it "should expose transition groups" do
           assert_equal [], @net.ts_transitions
-          assert_equal [], @net.n_ts
+          assert_equal [], @net.nts
           assert_equal [@t2], @net.tS_transitions
-          assert_equal [nil], @net.n_tS
+          assert_equal [nil], @net.ntS
           assert_equal [@t1], @net.TS_transitions
-          assert_equal [:T1], @net.n_TS
+          assert_equal [:T1], @net.nTS
           assert_equal [], @net.A_transitions
-          assert_equal [], @net.n_A
+          assert_equal [], @net.nA
           assert_equal [@t1, @t2], @net.S_transitions
-          assert_equal [:T1, nil], @net.n_S
+          assert_equal [:T1, nil], @net.nS
           assert_equal [], @net.s_transitions
-          assert_equal [], @net.n_s
+          assert_equal [], @net.ns
           assert_equal [@t1], @net.T_transitions
-          assert_equal [:T1], @net.n_T
+          assert_equal [:T1], @net.nT
           assert_equal [@t2], @net.t_transitions
-          assert_equal [nil], @net.n_t
+          assert_equal [nil], @net.nt
         end
 
         it "should tell its qualities" do
