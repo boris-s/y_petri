@@ -24,17 +24,16 @@ class YPetri::Simulation::Elements
     # Without arguments, returns all the elements (places + transitions). If
     # arguments are given, they are converted into elements.
     # 
-    def elements *ids
-      return places + transitions if ids.empty?
+    def elements ids=nil
+      return places + transitions if ids.nil?
       ids.map { |id| element( id ) }
     end
 
     # Names of the simulation's elements. Arguments, if any, are treated
     # analogically to the +#elements+ method.
     # 
-    def en *ids
-      elements( *ids ).names
+    def en ids=nil
+      elements( ids ).names
     end
-    alias n_elements en
   end # module Access
 end # class YPetri::Simulation::Elements

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # Mixin for timed non-assignment timeless Petri net transitions.
 # 
@@ -24,15 +24,15 @@ module YPetri::Transition::OrdinaryTimeless
   # Fires the transition regardless of cocking.
   # 
   def fire!
-    act = Array( action )
-    codomain.each_with_index do |pl, i| pl.add act.fetch( i ) end
-    # try "to call #fire method" do
-    #   act = note "action", is: Array( action )
-    #   codomain.each_with_index do |codomain_place, i|
-    #     note "adding action element no. #{i} to place #{codomain_place}"
-    #     codomain_place.add( note "marking change", is: act.fetch( i ) )
-    #   end
-    # end
+    consciously "call #fire method" do
+      act = Array( action )
+      msg = "Wrong output arity of the action closure of #{self}!"
+      fail TypeError, msg if act.size != codomain.size
+      codomain.each_with_index do |p, i|
+        note "adding action element no. #{i} to #{p}"
+        p.add note( "marking change", is: act.fetch( i ) )
+      end
+    end
     return nil
   end
 

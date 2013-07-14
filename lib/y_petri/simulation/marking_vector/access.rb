@@ -6,31 +6,31 @@ class YPetri::Simulation::MarkingVector
   module Access
     # Marking of all places (as a column vector).
     # 
-    def m_vector *ids
-      if ids.empty? then
+    def m_vector ids=nil
+      if ids.nil? then
         msg = "Marking vector not established yet!"
         @m_vector or fail TypeError, msg
       else
-        m_vector.select( *ids )
+        m_vector.select( ids )
       end
     end
 
     # Marking of all places (as array).
     # 
-    def m *ids
-      m_vector( *ids ).to_a
+    def m ids=nil
+      m_vector( ids ).to_a
     end
 
     # Marking of all places (as hash).
     # 
-    def place_m *ids
-      m_vector( *ids ).to_hash
+    def place_m ids=nil
+      m_vector( ids ).to_hash
     end
   
     # Marking of all places (as hash with place names as keys).
     # 
-    def p_m *ids
-      p_m
+    def p_m ids=nil
+      places( ids ).names( true ) >> m( ids )
     end
     alias pn_m p_m
     alias pm p_m
@@ -55,26 +55,26 @@ class YPetri::Simulation::MarkingVector
 
     # Marking vector of free places.
     # 
-    def marking_vector *ids
-      m_vector *free_places( *ids )
+    def marking_vector ids=nil
+      m_vector free_places( ids )
     end
 
     # Marking of free places (as array).
     # 
-    def marking *ids
-      marking_vector( *ids ).to_a
+    def marking ids=nil
+      marking_vector( ids ).to_a
     end
 
     # Marking of free places (as hash).
     # 
-    def place_marking *ids
-      marking_vector( *ids ).to_hash
+    def place_marking ids=nil
+      marking_vector( ids ).to_hash
     end
 
     # Marking of free places (as hash with place names as keys).
     # 
-    def p_marking *ids
-      marking_vector( *ids ).to_h
+    def p_marking ids=nil
+      marking_vector( ids ).to_h
     end
     alias pn_marking p_marking
 
@@ -100,7 +100,7 @@ class YPetri::Simulation::MarkingVector
     # change on the marking vector of the simulation.
     # 
     def increment_marking Δ_free
-      @m_vector += f2a() * Δ_free
+      @m_vector += f2a * Δ_free
     end
   end # module Access
 end # class YPetri::Simulation::MarkingVector

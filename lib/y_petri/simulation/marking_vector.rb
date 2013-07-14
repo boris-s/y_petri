@@ -34,9 +34,9 @@ class YPetri::Simulation
       # 
       def annotated_with place_ids
         annot = if annotation then
-                  annotation.subset *place_ids
+                  annotation.subset place_ids
                 else
-                  places( *place_ids )
+                  places( place_ids )
                 end
         Class.new self do @annotation = annot end
       end
@@ -66,15 +66,15 @@ class YPetri::Simulation
 
     # Creates a subset of this marking vector.
     # 
-    def select *place_ids, &block
+    def select place_ids, &block
       if block_given? then
         msg = "If block is given, arguments are not allowed!"
         fail ArgumentError, msg unless place_ids.empty?
-        select *annotation.select( &block )
+        select annotation.select( &block )
       else
-        pp = places( *place_ids )
+        pp = places( place_ids )
         annotated_subcl = self.class.annotated_with( pp )
-        annotated_subcl[ pp.map { |p| fetch( p ) } ]
+        annotated_subcl[ pp.map { |p| fetch p } ]
       end
     end
 

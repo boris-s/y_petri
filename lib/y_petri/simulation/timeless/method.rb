@@ -8,10 +8,5 @@ module YPetri::Simulation::Timeless
 
     alias delta delta_timeless
     alias Δ delta
-
-    def step!
-      super
-      note_state_change
-    end
   end
 end

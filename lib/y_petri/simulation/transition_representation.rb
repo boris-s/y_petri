@@ -14,7 +14,7 @@ class YPetri::Simulation
     # 
     def initialize net_transition
       super
-      @domain, @codomain = places( *source.domain ), places( *source.codomain )
+      @domain, @codomain = places( source.domain ), places( source.codomain )
       type_init
     end
 
@@ -46,7 +46,8 @@ class YPetri::Simulation
     # 
     def build_closure
       mv, f = simulation.m_vector, function
-      eval "-> { f.( %s ) }" % domain_access_code( vector: :mv )
+      λ = "-> { f.( %s ) }" % domain_access_code( vector: :mv )
+      eval λ
     end
 
     # Builds a code string for accessing the domain directly from a marking
@@ -70,9 +71,9 @@ class YPetri::Simulation
     # 
     def increment_by_codomain_code vector: (fail ArgumentError, "No vector!"),
                                    source: (fail ArgumentError, "No source array!")
-      Matrix.column_vector_increment_code vector: vector,
-                                          indices: free_codomain_indices,
-                                          source: source
+      Matrix.column_vector_increment_by_array_code vector: vector,
+                                                   indices: free_codomain_indices,
+                                                   source: source
     end
   end # class TransitionRepresentation
 end # class YPetri::Simulation

@@ -22,10 +22,9 @@ class YPetri::Net
 
   # Names of *ts* transitions.
   # 
-  def names_of_ts
+  def nts
     ts_transitions.names
   end
-  alias n_ts names_of_ts
 
   # *tS* transitions.
   # 
@@ -35,10 +34,9 @@ class YPetri::Net
 
   # Names of *tS* transitions.
   # 
-  def names_of_tS
+  def ntS
     tS_transitions.names
   end
-  alias n_tS names_of_tS
 
   # *Ts* transitions.
   # 
@@ -48,10 +46,9 @@ class YPetri::Net
 
   # Names of *Ts* transitions.
   # 
-  def names_of_Ts
+  def nTs
     Ts_transitions().names
   end
-  alias n_Ts names_of_Ts
 
   # *TS* transitions.
   # 
@@ -61,10 +58,9 @@ class YPetri::Net
 
   # Names of *TS* transitions.
   # 
-  def names_of_TS
+  def nTS
     TS_transitions().names
   end
-  alias n_TS names_of_TS
 
   # *A* transitions.
   # 
@@ -74,10 +70,9 @@ class YPetri::Net
 
   # Names of *A* transitions.
   # 
-  def names_of_A
+  def nA
     A_transitions().names
   end
-  alias n_A names_of_A
 
   # *a* transitions.
   # 
@@ -87,10 +82,9 @@ class YPetri::Net
 
   # Names of *a* transitions.
   # 
-  def names_of_a
+  def na
     A_transitions().names
   end
-  alias n_a names_of_a
 
   # *S* transitions.
   # 
@@ -100,10 +94,9 @@ class YPetri::Net
 
   # Names of *S* transitions.
   # 
-  def names_of_S
+  def nS
     S_transitions().names
   end
-  alias n_S names_of_S
 
   # *s* transitions.
   # 
@@ -113,10 +106,9 @@ class YPetri::Net
 
   # Names of *s* transitions.
   # 
-  def names_of_s
+  def ns
     s_transitions.names
   end
-  alias n_s names_of_s
 
   # *T* transitions.
   #
@@ -126,10 +118,9 @@ class YPetri::Net
 
   # Names of *T* transitions.
   # 
-  def names_of_T
+  def nT
     T_transitions().names
   end
-  alias n_T names_of_T
 
   # *t* transitions.
   # 
@@ -139,8 +130,7 @@ class YPetri::Net
 
   # Names of *t* transitions.
   # 
-  def names_of_t
+  def nt
     t_transitions.names
   end  
-  alias n_t names_of_t
 end # class YPetri::Net

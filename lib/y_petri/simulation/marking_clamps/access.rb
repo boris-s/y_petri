@@ -8,12 +8,12 @@ class YPetri::Simulation::MarkingClamps
     # arguments are supplied, they must identify clamped places, and are mapped
     # to their clamp values.
     # 
-    def marking_clamps *ids
-      if ids.empty? then
+    def marking_clamps ids=nil
+      if ids.nil? then
         @marking_clamps or
           fail TypeError, "MarkingClamps object not instantiated yet!"
       else
-        clamped_places( *ids ).map { |pl| marking_clamp of: pl }
+        clamped_places( ids ).map { |p| marking_clamp of: p }
       end
     end
     alias clamps marking_clamps

@@ -37,14 +37,17 @@ class YPetri::Simulation::Transitions
     # this collection.
     # 
     def to_delta_closure
-      free_pl, closures = free_places, delta_closures
-      body = map.with_index do |t, i|
-        "a = closures[ #{i} ]\n" +
+      fp = free_places
+      closures = delta_closures
+      sMV = simulation.MarkingVector
+      code_sections = map.with_index do |t, i|
+        "a = closures[#{i}].call\n" +
           t.increment_by_codomain_code( vector: "delta", source: "a" )
       end
+      body = code_sections.join( "\n" )
       λ = <<-LAMBDA
         -> do
-        delta = simulation.MarkingVector.zero( free_pl )
+        delta = sMV.zero( fp )
         #{body}
         return delta
         end

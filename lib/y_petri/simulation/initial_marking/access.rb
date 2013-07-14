@@ -8,12 +8,12 @@ class YPetri::Simulation::InitialMarking
     # supplied, they must identify free places, and are mapped to their initial
     # marking.
     # 
-    def initial_marking *ids
-      if ids.empty? then
+    def initial_marking ids=nil
+      if ids.nil? then
         @initial_marking or
           fail TypeError, "InitialMarking object not instantiated yet!"
       else
-        free_places( *ids ).map { |pl| initial_marking[ place( pl ) ] }
+        free_places( ids ).map { |pl| initial_marking[ place( pl ) ] }
       end
     end
 
@@ -22,9 +22,9 @@ class YPetri::Simulation::InitialMarking
     # supplied, they must identify places, and are converted to either their
     # initial marking (free places), or their clamp value (clamped places).
     # 
-    def im *ids
-      return im( *places ) if ids.empty?
-      places( *ids ).map { |pl|
+    def im ids=nil
+      return im( places ) if ids.nil?
+      places( ids ).map { |pl|
         pl.free? ? initial_marking( of: pl ) : marking_clamp( of: pl )
       }
     end
@@ -32,15 +32,15 @@ class YPetri::Simulation::InitialMarking
     # Returns initial marking vector for free places. Like +#initial_marking+,
     # but returns a column vector.
     # 
-    def initial_marking_vector *ids
-      initial_marking( *ids ).to_column_vector
+    def initial_marking_vector ids=nil
+      initial_marking( ids ).to_column_vector
     end
 
     # Returns initial marking vector for all places. Like +#initial_marking+,
     # but returns a column vector.
     # 
-    def im_vector *ids
-      im( *ids ).to_column_vector
+    def im_vector ids=nil
+      im( ids ).to_column_vector
     end
 
     private

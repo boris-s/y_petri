@@ -26,6 +26,7 @@ class YPetri::Simulation
              :f2a,
              :c2a,
              :m_vector,
+             :recording,
              to: :simulation
   end # class DependencyInjection
 end # class YPetri::Simulation

@@ -24,8 +24,7 @@ class YPetri::Simulation
 
     # Records the current state as a pair { sampling_event => system state }.
     # 
-    def sample! event=nil
-      @sample_number = @sample_number + 1 rescue 0
+    def sample! event
       self[ event ] = simulation.marking.map do |n|
         n.round SAMPLING_DECIMAL_PLACES rescue n
       end

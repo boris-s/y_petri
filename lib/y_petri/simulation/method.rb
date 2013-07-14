@@ -29,21 +29,14 @@ class YPetri::Simulation
 
     include DependencyInjection
 
+    delegate :note_state_change, to: :recording
+
     class << self
-      alias __new__ new
-
-      def new &block
-        Class.new( self ) do
-          prepend( Module.new &block )
-        end.__new__
+      def construct_core( method_symbol )
+        method_module = const_get method_symbol.to_s.camelize
+        parametrized_subclass = Class.new self do prepend method_module end
+        parametrized_subclass.new
       end
-    end
-
-    # Makes a single step.
-    # 
-    def step!
-      super
-      simulation.recording.note_state_change
     end
 
     # Delta for free places.
@@ -53,16 +46,22 @@ class YPetri::Simulation
     end
     alias delta_t delta_timeless
 
+    # Delta contribution by tS transitions.
+    # 
+    def delta_tS
+      simulation.tS_stoichiometry_matrix * firing_vector_tS
+    end
+
     # Delta contribution by ts transitions.
     # 
     def delta_ts
-      simulation.tS_stoichiometry_matrix * firing_vector_tS
+      simulation.ts_delta_closure.call
     end
 
     # Firing vector of tS transitions.
     # 
     def firing_vector_tS
-      simulation.tS_delta_closure.call
+      simulation.tS_firing_closure.call
     end
 
     # Increments the marking vector by a given delta.

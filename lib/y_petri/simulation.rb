@@ -62,6 +62,7 @@ class YPetri::Simulation
 
   attr_reader :net,
               :method,
+              :core,
               :guarded,
               :tS_stoichiometry_matrix,
               :TS_stoichiometry_matrix,
@@ -71,10 +72,12 @@ class YPetri::Simulation
               :Ts_gradient_closure,
               :tS_firing_closure,
               :TS_rate_closure,
-              :A_assignment_closure
+              :A_assignment_closure,
               :increment_marking_vector_closure
 
   alias guarded? guarded
+
+  delegate :step!, to: :core
 
   # The basic simulation parameter is :net – +YPetri::Net+ instance which to
   # simulate. Net implies the collection of places and transitions. Other
@@ -97,21 +100,19 @@ class YPetri::Simulation
 
     @net = net
     @guarded = guarded
-
     init_parametrized_subclasses
-    
     init_places( marking_clamps, initial_marking,
                  use_default_marking: use_default_marking )
-
     @m_vector = MarkingVector().zero
-
-    init_transitions
-
-    if nn.has?( :time ) || nn.has?( :step ) || nn.has?( :sampling )
+    if nn.has?( :time, syn!: :time_range ) ||
+        nn.has?( :step, syn!: :time_step ) ||
+        nn.has?( :sampling, syn!: :sampling_period )
       extend Timed
     else
       extend Timeless
     end
+
+    init_transitions
 
     init **nn # Timed / Timeless dependent initialization
 
@@ -124,14 +125,19 @@ class YPetri::Simulation
     # Init the timed closures, if timed?.
     if timed? then
       @Ts_gradient_closure = transitions.Ts.gradient_closure
-      @TS_flux_closure = transitions.TS.rate_closure
+      @TS_rate_closure = transitions.TS.rate_closure
     end
 
-    @recording = Recording().new
-
-    @method = method || Method()::DEFAULT
-
+    self.method = method || Method()::DEFAULT
     reset!
+  end
+
+  # This setter takes a simulation method symbol as an argument, and constructs
+  # the core implementing that method.
+  # 
+  def method= symbol
+    @core = Method().construct_core( symbol )
+    @method = symbol
   end
 
   # Simulation settings.

@@ -37,17 +37,21 @@ class YPetri::Simulation::Transitions
     # in this collection.
     # 
     def to_gradient_closure
-      free_pl, closures = free_places, gradient_closures
-      sMV, stu = simulation.MarkingVector, simulation.time_unit
-      body = map.with_index do |t, i|pp
-        "a = closures[ #{i} ]\n" +
+      fp = free_places
+      closures = gradient_closures
+      sMV = simulation.MarkingVector
+      stu = simulation.time_unit
+
+      code_sections = map.with_index do |t, i|
+        "a = closures[ #{i} ].call\n" +
           t.increment_by_codomain_code( vector: "g", source: "a" )
       end
+      body = code_sections.join( "\n" )
       λ = <<-LAMBDA
         -> do
-        g = sMV.zero( free_pl ) / stu
+        g = sMV.zero( fp ) / stu
         #{body}
-        return delta
+        return g
         end
       LAMBDA
       eval λ

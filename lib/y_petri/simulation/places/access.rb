@@ -50,44 +50,45 @@ class YPetri::Simulation::Places
     # Without arguments, returns all the places. If arguments are given, they
     # are converted to places before being returned.
     # 
-    def places *ids
-      return @places if ids.empty?
-      Places().load( ids.map { |id| place( id ) } )
+    def places( ids=nil )
+      return @places if ids.nil?
+      Places().load( ids.map { |id| place id } )
     end
 
     # Places' names. Arguments, if any, are treated as in +#places+ method.
     # 
-    def pn *ids
-      places( *ids ).names
+    def pn( ids=nil )
+      places( ids ).names
     end
-    alias n_places pn
 
     # Free places. If arguments are given, they must be identify free places,
     # and are converted to them.
     # 
-    def free_places *ids
-      return places.free if ids.empty?
-      places.free.subset( *ids )
+    def free_places ids=nil
+      return places.free if ids.nil?
+      places.free.subset( ids )
     end
 
     # Clamped places. If arguments are given, they must be identify clamped
     # places, and are converted to them.
     # 
-    def clamped_places *ids
-      return places.clamped if ids.empty?
+    def clamped_places ids=nil
+      return places.clamped if ids.nil?
       places.clamped.subset( ids )
     end
 
     # Names of free places. Arguments are handled as with +#free_places+.
     # 
-    def n_free *ids
-      free_places( *ids ).names
+    def nfree ids=nil
+      free_places( ids ).names
     end
+    alias freen nfree
 
     # Names of free places. Arguments are handled as with +#clamped_places+.
     # 
-    def n_clamped *ids
-      clamped_places( *ids ).names
+    def nclamped ids=nil
+      clamped_places( ids ).names
     end
+    alias clampedn nclamped
   end # module Access
 end # class YPetri::Simulation::Places

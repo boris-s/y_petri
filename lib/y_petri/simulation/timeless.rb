@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # A mixin for timeless simulations.
 # 
@@ -23,6 +23,8 @@ class YPetri::Simulation
           Method()
         ].each { |ç| ç.class_exec { define_method :simulation do sim end } }
       end
+
+      @recording = Recording().new
     end
   end # module Timeless
 end # module YPetri::Simulation

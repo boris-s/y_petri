@@ -1,5 +1,5 @@
 #! /usr/bin/ruby
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 require 'minitest/spec'
 require 'minitest/autorun'
@@ -119,6 +119,7 @@ describe ::YPetri::Transition do
       assert @t1.timed?
       @t1.domain.must_equal [@p5]
       [@p1.m, @p5.m].must_equal [1, 5]
+      @t1.rate_closure.arity.must_equal 0
       @t1.fire! 0.5
       [@p1.m, @p5.m].must_equal [1.5, 4.5]
     end

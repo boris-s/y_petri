@@ -13,6 +13,7 @@ module YPetri::Simulation::Timed
     def step! Δt=simulation.step_size
       increment_marking_vector Δ( Δt )
       increment_time! Δt
+      note_state_change
     end
 
     # Gradient for free places.
@@ -31,13 +32,13 @@ module YPetri::Simulation::Timed
     # Gradient contribution by TS transitions.
     # 
     def gradient_TS
-      simulation.TS_stoichiometry_matrix * flux_vector_TS
+      ( simulation.TS_stoichiometry_matrix * flux_vector_TS )
     end
 
     # Flux vector of TS transitions.
     # 
     def flux_vector_TS
-      simulation.TS_flux_closure.call
+      simulation.TS_rate_closure.call
     end
   end
 end

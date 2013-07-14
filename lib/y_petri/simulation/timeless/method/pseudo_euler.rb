@@ -2,12 +2,14 @@
 
 module YPetri::Simulation::Timeless
   class Method
-    # Implicit Euler for timeless nets. Simply, timeless transitions fire simultaneously, after which A transitions (if any) fire.
+    # Implicit Euler for timeless nets. Simply, timeless transitions
+    # fire simultaneously, after which A transitions (if any) fire.
     #
     module PseudoEuler
       def step!
         increment_marking_vector Δ
         assignment_transitions_all_fire!
+        note_state_change
       end
     end
   end

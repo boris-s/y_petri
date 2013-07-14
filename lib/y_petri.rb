@@ -20,6 +20,7 @@ require 'y_support/kde'                # popup file with kioclient
 
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/array/extract_options'
+require 'active_support/inflector'
 
 require_relative 'y_petri/version'
 require_relative 'y_petri/fixed_assets'

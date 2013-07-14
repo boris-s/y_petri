@@ -34,24 +34,28 @@ class YPetri::Simulation
     alias ending_time target_time
     
     attr_accessor :step_size,
-    :sampling_period
+                  :sampling_period
 
     # Initialization subroutine.
     # 
     def init **nn
-      if nn[:time] then # time range given
+      if nn.may_have( :time, syn!: :time_range ) then # time range given
         time_range = nn[:time]
         @initial_time = time_range.begin
         @target_time = time_range.end
         @time_unit = target_time / target_time.to_f
       else
-        anything = nn[:step] || nn[:sampling]
+        anything = nn.may_have(:step, syn!: :time_step ) ||
+          nn.may_have( :sampling, syn!: :sampling_period )
+        msg = "The simulation is timed, but the constructor lacks any of the " +
+          "time-related arguments: :time, :step, or :sampling!"
+        fail ArgumentError, msg unless anything
         @time_unit = anything / anything.to_f
         @initial_time = time_unit * 0
         @target_time = time_unit * Float::INFINITY
       end
-      
-      @step_size = nn[:step] || time_unitarget_time / target_time.to_f
+
+      @step_size = nn[:step] || time_unit
 
       @Recording = Class.new Recording
       @Method = Class.new Method
@@ -60,6 +64,10 @@ class YPetri::Simulation
           Method()
         ].each { |ç| ç.class_exec { define_method :simulation do sim end } }
       end
+
+      reset_time!
+
+      @recording = Recording().new
 
       recording.sampling_period = nn[:sampling] || step_size
     end
@@ -119,12 +127,6 @@ class YPetri::Simulation
       end
     end
     
-    # At the moment, near alias of #euler_step!
-    # 
-    def step! Δt=step_size
-      method.step! Δt
-    end
-    
     # Produces the inspect string for this timed simulation.
     # 
     def inspect
@@ -135,6 +137,13 @@ class YPetri::Simulation
     # Produces a string brief
     def to_s                         # :nodoc:
       "Simulation[T: #{time}, pp: #{pp.size}, tt: #{tt.size}]"
+    end
+    
+    # Increments the simulation's time.
+    # 
+    def increment_time! Δt=step_size
+      @time += Δt
+      recording.note_state_change
     end
     
     protected
@@ -152,13 +161,6 @@ class YPetri::Simulation
     def reset!
       @time = initial_time || time_unit * 0
       super
-    end
-    
-    # Increments the simulation's time.
-    # 
-    def increment_time! Δt=step_size
-      @time += Δt
-      recording.note_state_change
     end
     
     # Allows to explore the system at different state / time. Creates a double,

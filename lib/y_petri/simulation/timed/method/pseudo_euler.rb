@@ -19,7 +19,8 @@ module YPetri::Simulation::Timed
       def step! Δt=simulation.step_size
         increment_marking_vector Δ( Δt )
         assignment_transitions_all_fire!
-        increment_time! Δt
+        simulation.increment_time! Δt
+        note_state_change
       end
     end
   end
