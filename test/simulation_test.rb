@@ -124,7 +124,7 @@ describe YPetri::Simulation do
             @sim.pm.must_equal( { A: 1, B: 2 } )
             @sim.recording.must_equal( { 0 => [1, 2]} )
             @sim.method.must_equal :pseudo_euler
-            @sim.core.must_be_kind_of YPetri::Simulation::Method
+            @sim.core.must_be_kind_of YPetri::Simulation::Core
             @sim.transitions.ts.first.domain.must_equal []
             @sim.transitions.ts.first.domain_access_code.must_equal ''
             λ = @sim.transitions.ts.first.delta_closure
