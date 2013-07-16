@@ -7,6 +7,12 @@ class YPetri::Simulation
     DEFAULT_METHOD = :pseudo_euler
 
     module Guarded
+      # Guarded simulation.
+      # 
+      def guarded?
+        true
+      end
+
       # Guarded version of the method.
       # 
       def increment_marking_vector( delta )
@@ -40,6 +46,12 @@ class YPetri::Simulation
         # TODO: "guarded" argument not handled yet
         Class.new self do prepend method_module end.__new__
       end
+    end
+
+    # Simlation is not guarded by default.
+    # 
+    def guarded?
+      false
     end
 
     # Delta for free places.

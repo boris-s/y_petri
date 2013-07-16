@@ -136,13 +136,6 @@ class YPetri::Simulation
     reset!
   end
 
-  # This setter takes a simulation method symbol as an argument, and constructs
-  # the core implementing that method.
-  # 
-  def init_core method: nil, guarded: false
-
-  end
-
   # Simulation settings.
   # 
   def settings
