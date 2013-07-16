@@ -77,7 +77,7 @@ class YPetri::Simulation
   alias guarded? guarded
 
   delegate :method,
-           :guarded,
+           :guarded?,
            :step!,
            to: :core
 
@@ -140,7 +140,7 @@ class YPetri::Simulation
   # 
   def settings
     { method: method,
-      guarded: guarded,
+      guarded: guarded?,
       net: net,
       marking_clamps: marking_clamps.keys_to_source_places,
       initial_marking: initial_marking.keys_to_source_places

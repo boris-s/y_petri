@@ -239,12 +239,12 @@ module YPetri::Manipulator::SimulationRelatedMethods
 
   # Write the recorded samples in a file (csv).
   # 
-  def print_recording( filename = nil )
+  def print_recording( filename=nil )
     if filename.nil? then
-      puts simulation.recording_csv_string
+      puts simulation.recording.to_csv
     else
       File.open( filename, "w" ) do |f|
-        f << simulation.recording_csv_string
+        f << simulation.recording.to_csv
       end
     end
   end
