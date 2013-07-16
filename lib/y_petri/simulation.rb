@@ -47,6 +47,11 @@ class YPetri::Simulation
   include Recording::Access
   include MarkingVector::Access
 
+  DEFAULT_SETTINGS = -> do
+    { method: :pseudo_euler,
+      guarded: false }
+  end
+
   # Parametrized subclasses:
   attr_reader :Place,
               :Transition,
@@ -106,9 +111,8 @@ class YPetri::Simulation
     init_places( marking_clamps, initial_marking,
                  use_default_marking: use_default_marking )
     @m_vector = MarkingVector().zero
-    if nn.has?( :time, syn!: :time_range ) ||
-        nn.has?( :step, syn!: :time_step ) ||
-        nn.has?( :sampling, syn!: :sampling_period )
+
+    if nn[:time] || nn[:step] || nn[:sampling] then
       extend Timed
     else
       extend Timeless
@@ -138,22 +142,21 @@ class YPetri::Simulation
 
   # Simulation settings.
   # 
-  def settings
-    { method: method,
-      guarded: guarded?,
-      net: net,
-      marking_clamps: marking_clamps.keys_to_source_places,
-      initial_marking: initial_marking.keys_to_source_places
-    }
+  def settings all=false
+    return { method: method, guarded: guarded? } unless all == true
+    settings( false )
+      .update( net: net,
+               marking_clamps: marking_clamps.keys_to_source_places,
+               initial_marking: initial_marking.keys_to_source_places )
   end
-  alias :simulation_settings :settings
+  alias simulation_settings settings
 
   # Returns a new simulation instance. Unless modified by arguments, the state
   # of the new instance is the same as the creator's. Arguments can partially or
   # wholly modify the attributes of the duplicate.
   # 
   def dup marking: marking, recording: recording, **nn
-    self.class.new( nn.reverse_merge! settings ).tap do |dup|
+    self.class.new( nn.reverse_merge! settings( true ) ).tap do |dup|
       dup.recording.reset! recording: recording
       dup.m_vector.reset! case marking
                           when Hash then

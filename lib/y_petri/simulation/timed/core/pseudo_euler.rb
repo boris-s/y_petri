@@ -22,7 +22,7 @@ module YPetri::Simulation::Timed
 
       # Makes a single step by Δt.
       # 
-      def step! Δt=simulation.step_size
+      def step! Δt=simulation.step
         increment_marking_vector Δ( Δt )
         assignment_transitions_all_fire!
         simulation.increment_time! Δt

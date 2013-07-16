@@ -7,6 +7,12 @@ class YPetri::Simulation
     require_relative 'timed/recording'
     require_relative 'timed/core'
 
+    DEFAULT_SETTINGS = -> do
+      { step_size: 0.1,
+        sampling_period: 5,
+        time: 0..60 }
+    end
+
     def self.included receiver
       receiver.Recording.class_exec { prepend Recording }
     end
@@ -17,24 +23,16 @@ class YPetri::Simulation
       true
     end
 
-    SIMULATION_METHODS =
-      [
-       [ :Euler ],
-       [ :Euler_with_timeless_transitions_firing_after_each_time_tick, :quasi_Euler ],
-       [ :Euler_with_timeless_transitions_firing_after_each_step, :pseudo_Euler ]
-      ]
-    DEFAULT_SIMULATION_METHOD = :Euler
-
     attr_reader :time,
-    :time_unit,
-    :initial_time,
-    :target_time
+                :time_unit,
+                :initial_time,
+                :target_time
 
     alias starting_time initial_time
     alias ending_time target_time
 
-    attr_accessor :step_size,
-                  :sampling_period
+    attr_accessor :step,
+                  :sampling
 
     delegate :flux_vector_TS,
              :gradient_TS,
@@ -62,7 +60,7 @@ class YPetri::Simulation
         @target_time = time_unit * Float::INFINITY
       end
 
-      @step_size = nn[:step] || time_unit
+      @step = nn[:step] || time_unit
 
       @Recording = Class.new Recording
       @Core = Class.new Core
@@ -76,7 +74,7 @@ class YPetri::Simulation
 
       @recording = Recording().new
 
-      recording.sampling_period = nn[:sampling] || step_size
+      recording.sampling = nn[:sampling] || step_size
     end
 
     # Reads the time range (initial_time..target_time) of the simulation.
@@ -160,8 +158,8 @@ class YPetri::Simulation
       super
     end
 
-    # Customized dup method that allows to modify the attributes of the duplicate
-    # upon creation.
+    # Customized dup method that allows to modify the attributes of
+    # the duplicate upon creation.
     #
     def dup time: time, **nn
       super( **nn ).tap { |i| i.reset_time! time }

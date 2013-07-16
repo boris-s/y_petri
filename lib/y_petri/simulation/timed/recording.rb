@@ -6,7 +6,7 @@ module YPetri::Simulation::Timed
 
     delegate :time, to: :simulation
     attr_reader :next_sampling_time
-    attr_accessor :sampling_period
+    attr_accessor :sampling
 
     # Like +YPetri::Simulation::Recording#reset+, allowing for additional named
     # argument +:next_time+ that sets the next sampling time.
@@ -24,7 +24,7 @@ module YPetri::Simulation::Timed
       t2 = next_sampling_time.round( 9 )
       if t >= t2 then
         sample! # !sample it the sampling time has passed
-        @next_sampling_time += @sampling_period
+        @next_sampling_time += @sampling
       else nil end
     end
 

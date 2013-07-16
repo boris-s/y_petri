@@ -17,7 +17,8 @@ module YPetri::Workspace::SimulationRelatedMethods
     @clamp_collections = { Base: {} } # { collection name => clamp hash }
     @initial_marking_collections = { Base: {} } # { collection name => im hash }
     @simulation_settings_collections = # { collection name => ss hash }
-      { Base: YPetri::DEFAULT_SIMULATION_SETTINGS.call }
+      { Base: ( YPetri::Simulation::DEFAULT_SETTINGS.call
+                  .update YPetri::Simulation::Timed::DEFAULT_SETTINGS.call ) }
     super
   end
 
