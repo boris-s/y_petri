@@ -5,7 +5,7 @@
 class YPetri::Simulation
   module Timed
     require_relative 'timed/recording'
-    require_relative 'timed/method'
+    require_relative 'timed/core'
 
     def self.included receiver
       receiver.Recording.class_exec { prepend Recording }
@@ -65,10 +65,10 @@ class YPetri::Simulation
       @step_size = nn[:step] || time_unit
 
       @Recording = Class.new Recording
-      @Method = Class.new Method
+      @Core = Class.new Core
       tap do |sim|
         [ Recording(),
-          Method()
+          Core()
         ].each { |ç| ç.class_exec { define_method :simulation do sim end } }
       end
 

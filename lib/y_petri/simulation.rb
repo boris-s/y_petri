@@ -22,7 +22,7 @@
      'marking_vector/access',
      'recording',
      'recording/access',
-     'method',
+     'core',
      'timeless',
      'timed' )
 
@@ -58,10 +58,9 @@ class YPetri::Simulation
               :InitialMarking,
               :MarkingVector,
               :Recording,
-              :Method
+              :Core
 
   attr_reader :net,
-              :method,
               :core,
               :guarded,
               :tS_stoichiometry_matrix,
@@ -77,7 +76,10 @@ class YPetri::Simulation
 
   alias guarded? guarded
 
-  delegate :step!, to: :core
+  delegate :method,
+           :guarded,
+           :step!,
+           to: :core
 
   # The basic simulation parameter is :net – +YPetri::Net+ instance which to
   # simulate. Net implies the collection of places and transitions. Other
@@ -128,16 +130,17 @@ class YPetri::Simulation
       @TS_rate_closure = transitions.TS.rate_closure
     end
 
-    self.method = method || Method()::DEFAULT
+    # Init the core.
+    @core = Core().new( method: method, guarded: guarded  )
+
     reset!
   end
 
   # This setter takes a simulation method symbol as an argument, and constructs
   # the core implementing that method.
   # 
-  def method= symbol
-    @core = Method().construct_core( symbol )
-    @method = symbol
+  def init_core method: nil, guarded: false
+
   end
 
   # Simulation settings.

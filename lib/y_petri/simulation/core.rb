@@ -3,8 +3,8 @@
 # A simulation method class.
 # 
 class YPetri::Simulation
-  class Method
-    DEFAULT = :pseudo_euler
+  class Core
+    DEFAULT_METHOD = :pseudo_euler
 
     module Guarded
       # Guarded version of the method.
@@ -32,10 +32,13 @@ class YPetri::Simulation
     delegate :note_state_change, to: :recording
 
     class << self
-      def construct_core( method_symbol )
-        method_module = const_get method_symbol.to_s.camelize
-        parametrized_subclass = Class.new self do prepend method_module end
-        parametrized_subclass.new
+      alias __new__ new
+
+      def new( method: nil, guarded: false )
+        meth = method || DEFAULT_METHOD
+        method_module = const_get( meth.to_s.camelize )
+        # TODO: "guarded" argument not handled yet
+        Class.new self do prepend method_module end.__new__
       end
     end
 
@@ -76,5 +79,5 @@ class YPetri::Simulation
     def assignment_transitions_all_fire!
       simulation.A_assignment_closure.call
     end
-  end
-end
+  end # class Core
+end # module YPetri::Simulation::Timed

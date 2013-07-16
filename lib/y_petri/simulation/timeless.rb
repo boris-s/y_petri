@@ -5,7 +5,7 @@
 class YPetri::Simulation
   module Timeless
     require_relative 'timeless/recording'
-    require_relative 'timeless/method'
+    require_relative 'timeless/core'
 
     # False for timeless simulations.
     # 
@@ -17,10 +17,10 @@ class YPetri::Simulation
     # 
     def init **nn
       @Recording = Class.new Recording
-      @Method = Class.new Method
+      @Core = Class.new Core
       tap do |sim|
         [ Recording(),
-          Method()
+          Core()
         ].each { |ç| ç.class_exec { define_method :simulation do sim end } }
       end
 
