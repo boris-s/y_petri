@@ -54,7 +54,9 @@ module YPetri::Simulation::Timed
       end
     end
 
-    # ...
+    # Expects a hash of features (:firing of TS transitions, :gradient of
+    # places and T transitions, plus the same options as the timeless version
+    # of this method) and returns the corresponding mapping of the recording.
     # 
     def features slice: labels, **nn
       ss = []
@@ -73,10 +75,17 @@ module YPetri::Simulation::Timed
       end
     end
 
-    # ...
+    # Takes an array of place identifiers, an array of T transition identifiers,
+    # and returns the corresponding series of the transitions' gradient
+    # contributions to those places. Optional :slice argument (Range or Array)
+    # specifies, which slide of the recording to return (whole recording by
+    # default).
     # 
     def gradient_series places: places, transitions: transitions, slice: labels
-      
+      ii = simulation.places.indices_of places( places )
+      slice( slice ).map { |lbl, _|
+        at( lbl ).T_transitions( transitions ).gradient
+          .column( 0 ).to_a.values_at *ii
     end
 
     def gradient_features ids, slice: labels

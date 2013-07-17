@@ -83,9 +83,9 @@ class YPetri::Simulation
     end
     alias state_series marking_series
 
-    # ...
+    # Returns the history for the selected marking features.
     # 
-    def marking_features ids, slice: labels
+    def marking ids, slice: labels
       features marking: ids, slice: slice
     end
     
@@ -101,16 +101,16 @@ class YPetri::Simulation
       }.transpose
     end
 
-    # ...
+    # Returns the history for the selected firing features.
     # 
-    def firing_features ids, slice: labels
+    def firing ids, slice: labels
       features firing: ids, slice: slice
     end
 
     # Takes an array of place identifiers, an array of transition identifiers,
     # and returns the corresponding series of the transitions' delta
-    # contributions to the places in one time step.  Optional :slice argument
-    # (Range or Array) specifies which slice of recording to return (whole
+    # contributions to those places in one time step.  Optional :slice argument
+    # (Range or Array) specifies, which slice of the recording to return (whole
     # recording by default).
     # 
     def delta_series places: places, transitions: transitions, slice: labels
@@ -121,14 +121,13 @@ class YPetri::Simulation
       }.transpose
     end
 
-    # ...
+    # Returns the history for the selected delta features.
     # 
-    def delta_features ids, slice: labels
+    def delta ids, slice: labels
       features delta: ids, slice: slice
     end
 
-    # TODO:
-    # Customized #slice method returning a Recording instance.
+    # TODO: Customized #slice method returning a Recording instance?
 
     private
 
