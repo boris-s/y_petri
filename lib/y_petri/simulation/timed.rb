@@ -7,11 +7,7 @@ class YPetri::Simulation
     require_relative 'timed/recording'
     require_relative 'timed/core'
 
-    DEFAULT_SETTINGS = -> do
-      { step_size: 0.1,
-        sampling_period: 5,
-        time: 0..60 }
-    end
+    DEFAULT_SETTINGS = -> do { step: 0.1, sampling: 5, time: 0..60 } end
 
     def self.included receiver
       receiver.Recording.class_exec { prepend Recording }
@@ -31,8 +27,7 @@ class YPetri::Simulation
     alias starting_time initial_time
     alias ending_time target_time
 
-    attr_accessor :step,
-                  :sampling
+    attr_accessor :step
 
     delegate :flux_vector_TS,
              :gradient_TS,
@@ -41,17 +36,19 @@ class YPetri::Simulation
              :flux_vector,
              to: :core
 
+    delegate :sampling,
+             to: :recording
+
     # Initialization subroutine.
     #
     def init **nn
-      if nn.may_have( :time, syn!: :time_range ) then # time range given
+      if nn.has? :time, syn!: :time_range then # time range given
         time_range = nn[:time]
         @initial_time = time_range.begin
         @target_time = time_range.end
         @time_unit = target_time / target_time.to_f
       else
-        anything = nn.may_have(:step, syn!: :time_step ) ||
-          nn.may_have( :sampling, syn!: :sampling_period )
+        anything = nn[:step] || nn[:sampling]
         msg = "The simulation is timed, but the constructor lacks any of the " +
           "time-related arguments: :time, :step, or :sampling!"
         fail ArgumentError, msg unless anything
@@ -74,7 +71,7 @@ class YPetri::Simulation
 
       @recording = Recording().new
 
-      recording.sampling = nn[:sampling] || step_size
+      recording.sampling = nn[:sampling] || step
     end
 
     # Reads the time range (initial_time..target_time) of the simulation.
@@ -87,11 +84,10 @@ class YPetri::Simulation
     # (:step, :sampling and :time).
     #
     def settings
-      super.update step: step_size,
-      sampling: sampling_period,
+      super.update step: step,
+      sampling: sampling,
       time: time_range
     end
-    alias simulation_settings settings
 
     # Near alias for #run!, checks against infinite run.
     #
@@ -120,13 +116,13 @@ class YPetri::Simulation
     def run_until( target_time, final_step: :exact )
       case final_step
       when :before then
-        step! while @time + @step_size <= target_time
+        step! while time + step <= target_time
       when :exact then
-        step! while @time + @step_size < target_time
-        step!( target_time - @time )
+        step! while time + step < target_time
+        step!( target_time - time )
         @time = target_time
       when :after then
-        step! while @time < target_time
+        step! while time < target_time
       else
         fail ArgumentError, "Unrecognized :final_step option: #{final_step}"
       end
@@ -146,7 +142,7 @@ class YPetri::Simulation
 
     # Increments the simulation's time.
     #
-    def increment_time! Δt=step_size
+    def increment_time! Δt=step
       @time += Δt
       recording.note_state_change
     end

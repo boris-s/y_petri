@@ -47,10 +47,7 @@ class YPetri::Simulation
   include Recording::Access
   include MarkingVector::Access
 
-  DEFAULT_SETTINGS = -> do
-    { method: :pseudo_euler,
-      guarded: false }
-  end
+  DEFAULT_SETTINGS = -> do { method: :pseudo_euler, guarded: false } end
 
   # Parametrized subclasses:
   attr_reader :Place,
@@ -86,6 +83,9 @@ class YPetri::Simulation
            :step!,
            to: :core
 
+  delegate :at,
+           to: :recording
+
   # The basic simulation parameter is :net – +YPetri::Net+ instance which to
   # simulate. Net implies the collection of places and transitions. Other
   # required attributes are marking clamps and initial marking. These can be
@@ -110,6 +110,7 @@ class YPetri::Simulation
     init_parametrized_subclasses
     init_places( marking_clamps, initial_marking,
                  use_default_marking: use_default_marking )
+
     @m_vector = MarkingVector().zero
 
     if nn[:time] || nn[:step] || nn[:sampling] then
@@ -117,6 +118,7 @@ class YPetri::Simulation
     else
       extend Timeless
     end
+
 
     init_transitions
 
@@ -149,7 +151,6 @@ class YPetri::Simulation
                marking_clamps: marking_clamps.keys_to_source_places,
                initial_marking: initial_marking.keys_to_source_places )
   end
-  alias simulation_settings settings
 
   # Returns a new simulation instance. Unless modified by arguments, the state
   # of the new instance is the same as the creator's. Arguments can partially or
@@ -167,7 +168,6 @@ class YPetri::Simulation
                           else marking.each.to_a end
     end
   end
-  alias at dup
 
   # Produces the inspect string of the transition.
   # 

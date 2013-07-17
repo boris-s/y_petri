@@ -190,7 +190,7 @@ describe YPetri::Simulation do
 
         describe "no clamps" do
           before do
-            @sim = @S.new( net: @net, sampling_period: 1 )
+            @sim = @S.new( net: @net, sampling: 1 )
           end
 
           it "should behave" do
@@ -207,7 +207,7 @@ describe YPetri::Simulation do
 
         describe "with clamps" do
           before do
-            @sim = @S.new( net: @net, sampling_period: 1, marking_clamps: { B: 43 } )
+            @sim = @S.new( net: @net, sampling: 1, marking_clamps: { B: 43 } )
           end
 
           it "should behave" do
@@ -225,7 +225,7 @@ describe YPetri::Simulation do
 
         describe "no clamps" do
           before do
-            @sim = @S.new( net: @net, sampling_period: 1 )
+            @sim = @S.new( net: @net, sampling: 1 )
           end
 
           it "should behave" do
@@ -237,7 +237,7 @@ describe YPetri::Simulation do
 
         describe "with clamps" do
           before do
-            @sim = @S.new( net: @net, sampling_period: 1, marking_clamps: { B: 43 } )
+            @sim = @S.new( net: @net, sampling: 1, marking_clamps: { B: 43 } )
           end
 
           it "should behave" do
@@ -248,5 +248,41 @@ describe YPetri::Simulation do
         end
       end # TS transition
     end # transition representation aspects
+  end
+end
+
+
+describe YPetri::Simulation do
+  before do
+    self.class.class_exec { include YPetri }
+    A = Place m!: 0.5
+    B = Place m!: 0.5
+    A_pump = T s: { A: -1 } do 0.005 end
+    B_decay = Transition s: { B: -1 }, rate: 0.05
+    run!
+  end
+
+  it "should behave" do
+    places.map( &:marking ).must_equal [0.5, 0.5] # marking unaffected
+    simulation.tap do |s|
+      s.settings.must_equal( { method: :pseudo_euler, guarded: false,
+                               step: 0.1, sampling: 5, time: 0..60 } ) 
+      assert s.recording.to_csv.start_with?( "0.0,0.5,0.5\n" +
+                                             "5.0,0.475,0.38916\n" +
+                                             "10.0,0.45,0.30289\n" + 
+                                             "15.0,0.425,0.23574\n" +
+                                             "20.0,0.4,0.18348\n" +
+                                             "25.0,0.375,0.1428\n" )
+      assert s.recording.to_csv.end_with?( "60.0,0.2,0.02471" )
+      s.recording.labels.must_equal [ 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0,
+                                      35.0, 40.0, 45.0, 50.0, 55.0, 60.0 ]
+      s.recording.values_at( 5, 10 ).must_equal [[0.475, 0.38916], [0.45, 0.30289]]
+      puts s.recording
+      matcher = [5.0, 10.0]
+      s.recording.select { |key, _| matcher.include? key }.must_equal []
+      s.recording.marking_series.must_equal []
+      s.recording.marking_series( [:A] ).must_equal [ 0.5, 0.475, 0.45 ]
+      plot_state
+    end
   end
 end

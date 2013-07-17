@@ -285,7 +285,10 @@ module YPetri::Manipulator::SimulationRelatedMethods
   # Plot the recorded samples (system state history).
   # 
   def plot_state( place_ids=nil, **nn )
-    # excluded = Array nn[:except]
+    excluded = Array nn[:except]
+    sim = simulation
+    return nil unless sim
+    puts "Hooray, simulation here!"
     # return nil unless sim = @workspace.simulations.values[-1] # sim@point
     # # Decide about the features to plot.
     # features = excluded.each_with_object sim.places.dup do |x, α|
@@ -304,6 +307,7 @@ module YPetri::Manipulator::SimulationRelatedMethods
     # gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
     #          title: "State plot", ylabel: "Marking" )
   end
+  alias plot_marking plot_state
 
   # Plot the recorded flux (computed flux history at the sampling points).
   # 

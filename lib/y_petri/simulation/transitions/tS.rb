@@ -25,6 +25,12 @@ class YPetri::Simulation::Transitions
       firing_closure.call
     end
 
+    # Firing vector for these tS transitions, returned as array.
+    # 
+    def firing
+      firing_closures.map &:call
+    end
+
     # Delta contribution to free places.
     # 
     def delta
