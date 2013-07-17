@@ -91,18 +91,27 @@ module YPetri::Simulation::Timed
       }
     end
 
-    def gradient_features ids, slice: labels
+    # Returns the history for the selected gradient features.
+    # 
+    def gradient ids, slice: labels
       features gradient: ids, slice: slice
     end
 
-    # ...
+    # Takes an array of TS transition identifiers, and returns an array of flux
+    # series for those TS transitions. Optional :slice argument (Range or Array)
+    # specifies which slice of recording to return (whole recording by default).
     # 
-    def flux_series ids=nil, slice: labels
-      
+    def flux_series transitions: simulation.TS_transitions, slice: labels
+      ii = simulation.transitions.indices_of transitions( transitions )
+      slice( slice ).map { |lbl, _|
+        at( lbl ).transitions( transitions( transitions ).sources ).TS.flux
+      }.transpose
     end
 
-    def flux_features ids, slice: labels
-      features flux: ids, slice: slice
+    # Returns the history for the selected flux features.
+    # 
+    def flux transitions: simulation.TS_transitions, slice: labels
+      features flux: transitions, slice: slice
     end
 
     # Takes an array of place identifiers, an array of transition identifiers,
@@ -114,15 +123,15 @@ module YPetri::Simulation::Timed
     def delta_series places: places, transitions: transitions, slice: labels
       ii = simulation.places.indices_of places( places )
       slice( slice ).map do |lbl, _|
-        at( lbl ).transitions( transitions ).T.delta( simulation.step )
+        at( lbl ).transitions( transitions( transitions ) ).T.delta( simulation.step )
           .column( 0 ).to_a.values_at *ii
       end.transpose.zip( super ).map do |timed_series, timeless_series|
           timed_series.zip( timeless_series ).map { |u, v| u + v }
       end
     end
 
-    def delta_features ids, slice: labels
-      features delta: ids, slice: slice
+    def delta places: places, transitions: transitions, slice: labels
+      features delta: { places: places, transitions: transitions }, slice: slice
     end
   end
 end

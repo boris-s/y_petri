@@ -95,15 +95,14 @@ class YPetri::Simulation
     def firing_series transitions: simulation.tS_transitions, slice: labels
       ii = simulation.transitions.indices_of transitions( transitions )
       slice( slice ).map { |lbl, _|
-        at( lbl ).transitions( transitions ).tS.firing
+        at( lbl ).transitions( transitions( transitions ).sources ).tS.firing
       }.transpose
     end
 
     # Returns the history for the selected firing features.
     # 
-    def firing ids=nil, slice: labels
-      features firing: simulation.tS_transitions, slice: slice if ids.nil?
-      features firing: ids, slice: slice
+    def firing transitions: simulation.tS_transitions, slice: labels
+      features firing: transitions, slice: slice
     end
 
     # Takes an array of place identifiers, an array of transition identifiers,
@@ -115,15 +114,15 @@ class YPetri::Simulation
     def delta_series places: places, transitions: transitions, slice: labels
       ii = simulation.places.indices_of places( places )
       slice( slice ).map { |lbl, _|
-        at( lbl ).transitions( transitions ).t.delta
+        at( lbl ).transitions( transitions( transitions ).sources ).t.delta
           .column( 0 ).to_a.values_at *ii
       }.transpose
     end
 
     # Returns the history for the selected delta features.
     # 
-    def delta ids, slice: labels
-      features delta: ids, slice: slice
+    def delta places: places, transitions: transitions, slice: labels
+      features delta: { places: places, transitions: transitions }, slice: slice
     end
 
     # TODO: Customized #slice method returning a Recording instance?
