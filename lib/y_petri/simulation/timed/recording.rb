@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # Timed simulation -- recording.
 # 
 module YPetri::Simulation::Timed
@@ -70,8 +72,8 @@ module YPetri::Simulation::Timed
         ss += delta_series **nn.delete( :delta ).update( slice: slice )
       end
       ss = ss.transpose
-      super( slice: slice, **nn ).with_values!.with_index do |record, i|
-        record.concat ss[i]
+      super( slice: slice, **nn ).with_values! do |record|
+        record.concat ss.shift
       end
     end
 
@@ -103,10 +105,20 @@ module YPetri::Simulation::Timed
       features flux: ids, slice: slice
     end
 
-    # ...
+    # Takes an array of place identifiers, an array of transition identifiers,
+    # and returns the corresponding series of the transitions' delta
+    # contributions to those places in one time step (passing of Δt time).
+    # Optional :slice argument (Range or Array) specifies, which slice of the
+    # recording to return (whole recording by default).
     # 
     def delta_series places: places, transitions: transitions, slice: labels
-      
+      ii = simulation.places.indices_of places( places )
+      slice( slice ).map do |lbl, _|
+        at( lbl ).transitions( transitions ).T.delta( simulation.step )
+          .column( 0 ).to_a.values_at *ii
+      end.transpose.zip( super ).map do |timed_series, timeless_series|
+          timed_series.zip( timeless_series ).map { |u, v| u + v }
+      end
     end
 
     def delta_features ids, slice: labels

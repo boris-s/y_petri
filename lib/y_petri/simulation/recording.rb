@@ -54,17 +54,17 @@ class YPetri::Simulation
       map { |lbl, rec| [ lbl, *rec ].join ',' }.join "\n"
     end
 
-    # Expects a hash of features (:marking (alias :state) of places,
-    # :firing of tS transitions, :delta of places and/or transitions) and
-    # returns the corresponding mapping of the recording.
+    # Expects a hash of features (:marking (alias :state) of places, :firing
+    # of tS transitions, :delta of places and/or transitions) and returns the
+    # corresponding mapping of the recording.
     # 
     def features slice: labels, **nn
       ss = []
       if nn.has? :marking, syn!: :state then
-        ss += marking_series nn[:marking], slice: slice
+        ss += marking_series places: nn[:marking], slice: slice
       end
       if nn.has? :firing then
-        ss += firing_series nn[:firing], slice: slice 
+        ss += firing_series transitions: nn[:firing], slice: slice 
       end
       if nn.has? :delta then
         ss += delta_series **nn[:delta].update( slice: slice )
@@ -76,47 +76,46 @@ class YPetri::Simulation
     # for those places. Optional :slice argument (Range or Array) specifies which
     # slice of recording to return (whole recording by default).
     # 
-    def marking_series ids=nil, slice: labels
-      return marking_series free_places, slice: slice if ids.nil?
-      ii = places.indices_of places( ids )
+    def marking_series places: free_places, slice: labels
+      ii = simulation.places.indices_of places( places )
       slice( slice ).map { |_, record| record.values_at *ii }.transpose
     end
     alias state_series marking_series
 
     # Returns the history for the selected marking features.
     # 
-    def marking ids, slice: labels
-      features marking: ids, slice: slice
+    def marking places: free_places, slice: labels
+      features marking: places, slice: slice
     end
-    
 
     # Takes an array of tS transition identifiers, and returns an array of firing
     # series for those tS transitions. Optional :slice argument (Range or Array)
     # specifies which slice of recording to return (whole recording by default).
     # 
-    def firing_series ids=nil, slice: labels
-      return firing_series simulation.tS_transitions, slice: slice if ids.nil?
+    def firing_series transitions: simulation.tS_transitions, slice: labels
+      ii = simulation.transitions.indices_of transitions( transitions )
       slice( slice ).map { |lbl, _|
-        at( lbl ).tS_transitions( ids ).firing
+        at( lbl ).transitions( transitions ).tS.firing
       }.transpose
     end
 
     # Returns the history for the selected firing features.
     # 
-    def firing ids, slice: labels
+    def firing ids=nil, slice: labels
+      features firing: simulation.tS_transitions, slice: slice if ids.nil?
       features firing: ids, slice: slice
     end
 
     # Takes an array of place identifiers, an array of transition identifiers,
     # and returns the corresponding series of the transitions' delta
-    # contributions to those places in one time step.  Optional :slice argument
+    # contributions to those places in one step.  Optional :slice argument
     # (Range or Array) specifies, which slice of the recording to return (whole
     # recording by default).
     # 
     def delta_series places: places, transitions: transitions, slice: labels
       ii = simulation.places.indices_of places( places )
       slice( slice ).map { |lbl, _|
-        at( lbl ).t_transitions( transitions ).delta
+        at( lbl ).transitions( transitions ).t.delta
           .column( 0 ).to_a.values_at *ii
       }.transpose
     end
@@ -134,10 +133,13 @@ class YPetri::Simulation
     # Expects an array of series, where each series is itself an array of values,
     # and returns a reconstructed recording hash for the series. Optional :slice
     # argument (Range or Array) specifies, which slice of recording is being
-    # built (whole recording by default)
+    # built (whole recording by default).
     # 
     def build series, slice: labels
-      slice( slice ).keys >> series.reduce( [], :+ ).transpose
+      kk = slice( slice ).keys
+      kk >> series.each_with_object( kk.map { [] } ) do |series, memo|
+        memo.each_with_index { |ary, i| ary << series[i] }
+      end
     end
   end # class Recording
 end # YPetri::Simulation

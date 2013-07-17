@@ -12,6 +12,12 @@ class YPetri::Simulation::Transitions
       map &:gradient_closure
     end
 
+    # Gradient by the T transitions.
+    # 
+    def gradient
+      TS().gradient + Ts().gradient
+    end
+
     # State change of free places if the timed transitions fire for given time.
     # 
     def delta Δt

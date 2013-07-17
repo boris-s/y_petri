@@ -11,7 +11,6 @@ class YPetri::Simulation::Transitions
         Transition().instance( id )
       rescue NameError, TypeError
         begin
-          puts 'here'
           tr = net.transition( id )
           Transition().instances.find { |t_rep| t_rep.source == tr } || 
             Transition().instance( tr.name )
