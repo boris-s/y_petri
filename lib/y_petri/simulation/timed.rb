@@ -83,10 +83,10 @@ class YPetri::Simulation
     # Reads the settings pertaining to the Timed aspoect of the simulation:
     # (:step, :sampling and :time).
     #
-    def settings
-      super.update step: step,
-      sampling: sampling,
-      time: time_range
+    def settings all=false
+      super.update( step: step,
+                    sampling: sampling,
+                    time: time_range )
     end
 
     # Near alias for #run!, checks against infinite run.

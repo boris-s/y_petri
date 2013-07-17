@@ -86,6 +86,7 @@ module YPetri::Simulation::Timed
       slice( slice ).map { |lbl, _|
         at( lbl ).T_transitions( transitions ).gradient
           .column( 0 ).to_a.values_at *ii
+      }
     end
 
     def gradient_features ids, slice: labels
