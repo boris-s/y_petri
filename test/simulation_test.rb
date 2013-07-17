@@ -277,11 +277,9 @@ describe YPetri::Simulation do
       s.recording.labels.must_equal [ 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0,
                                       35.0, 40.0, 45.0, 50.0, 55.0, 60.0 ]
       s.recording.values_at( 5, 10 ).must_equal [[0.475, 0.38916], [0.45, 0.30289]]
-      puts s.recording
-      matcher = [5.0, 10.0]
-      s.recording.select { |key, _| matcher.include? key }.must_equal []
-      s.recording.marking_series.must_equal []
-      s.recording.marking_series( [:A] ).must_equal [ 0.5, 0.475, 0.45 ]
+      s.recording.slice( 2..12 ).must_equal( { 5.0 => [0.475, 0.38916], 10.0=>[0.45, 0.30289] } )
+      s.recording.marking_series( [:A] ).must_equal [ [ 0.5, 0.475, 0.45, 0.425, 0.4, 0.375, 0.35,
+                                                        0.325, 0.3, 0.275, 0.25, 0.225, 0.2 ] ]
       plot_state
     end
   end

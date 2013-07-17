@@ -56,8 +56,31 @@ module YPetri::Simulation::Timed
 
     # ...
     # 
+    def features slice: labels, **nn
+      ss = []
+      if nn.has? :gradient then
+        ss += gradient_series **nn.delete( :gradient ).update( slice: slice )
+      end
+      if nn.has? :flux then
+        ss += flux_series nn.delete( :flux ), slice: slice
+      end
+      if nn.has? :delta then
+        ss += delta_series **nn.delete( :delta ).update( slice: slice )
+      end
+      ss = ss.transpose
+      super( slice: slice, **nn ).with_values!.with_index do |record, i|
+        record.concat ss[i]
+      end
+    end
+
+    # ...
+    # 
     def gradient_series places: places, transitions: transitions, slice: labels
       
+    end
+
+    def gradient_features ids, slice: labels
+      features gradient: ids, slice: slice
     end
 
     # ...
@@ -66,10 +89,18 @@ module YPetri::Simulation::Timed
       
     end
 
+    def flux_features ids, slice: labels
+      features flux: ids, slice: slice
+    end
+
     # ...
     # 
     def delta_series places: places, transitions: transitions, slice: labels
       
+    end
+
+    def delta_features ids, slice: labels
+      features delta: ids, slice: slice
     end
   end
 end

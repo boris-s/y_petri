@@ -13,4 +13,4 @@ simulation
 places.map &:marking
 simulation.settings
 print_recording
-plot_recording; nil
+plot_state; nil

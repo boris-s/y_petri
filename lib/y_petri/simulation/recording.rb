@@ -79,8 +79,16 @@ class YPetri::Simulation
     def marking_series ids=nil, slice: labels
       return marking_series free_places, slice: slice if ids.nil?
       ii = places.indices_of places( ids )
-      slice( slice ).map { |_, record| record.values_at ii }.transpose
+      slice( slice ).map { |_, record| record.values_at *ii }.transpose
     end
+    alias state_series marking_series
+
+    # ...
+    # 
+    def marking_features ids, slice: labels
+      features marking: ids, slice: slice
+    end
+    
 
     # Takes an array of tS transition identifiers, and returns an array of firing
     # series for those tS transitions. Optional :slice argument (Range or Array)
@@ -91,6 +99,12 @@ class YPetri::Simulation
       slice( slice ).map { |lbl, _|
         at( lbl ).tS_transitions( ids ).firing
       }.transpose
+    end
+
+    # ...
+    # 
+    def firing_features ids, slice: labels
+      features firing: ids, slice: slice
     end
 
     # Takes an array of place identifiers, an array of transition identifiers,
@@ -105,6 +119,12 @@ class YPetri::Simulation
         at( lbl ).t_transitions( transitions ).delta
           .column( 0 ).to_a.values_at *ii
       }.transpose
+    end
+
+    # ...
+    # 
+    def delta_features ids, slice: labels
+      features delta: ids, slice: slice
     end
 
     # TODO:

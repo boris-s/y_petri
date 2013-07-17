@@ -1,5 +1,9 @@
 #encoding: utf-8
 
+require 'active_support/core_ext/module/delegation'
+require 'active_support/core_ext/array/extract_options'
+require 'active_support/inflector'
+
 # The following are Ruby libraries used by YPetri:
 require 'gnuplot'                      # used for graph visualization
 require 'csv'                          # not used at the moment
@@ -17,10 +21,6 @@ require 'y_support/core_ext/array'     # array extensions
 require 'y_support/stdlib_ext/matrix'  # matrix extensions
 require 'y_support/abstract_algebra'   # 
 require 'y_support/kde'                # popup file with kioclient
-
-require 'active_support/core_ext/module/delegation'
-require 'active_support/core_ext/array/extract_options'
-require 'active_support/inflector'
 
 require_relative 'y_petri/version'
 require_relative 'y_petri/fixed_assets'

@@ -285,18 +285,11 @@ module YPetri::Manipulator::SimulationRelatedMethods
   # Plot the recorded samples (system state history).
   # 
   def plot_state( place_ids=nil, **nn )
-    excluded = Array nn[:except]
     sim = simulation
     return nil unless sim
-    puts "Hooray, simulation here!"
-    # return nil unless sim = @workspace.simulations.values[-1] # sim@point
-    # # Decide about the features to plot.
-    # features = excluded.each_with_object sim.places.dup do |x, α|
-    #   i = α.index x
-    #   α[i] = nil if i
-    # end
-    # # Get recording
-    # rec = sim.recording
+    excluded = sim.places Array( nn[:except] )
+    features = sim.places.reject { |p| excluded.include? p }
+    rec = sim.recording.marking_series
     # # Select a time series for each feature.
     # time_series = features.map.with_index do |feature, i|
     #   feature and rec.map { |key, val| [ key, val[i] ] }.transpose
