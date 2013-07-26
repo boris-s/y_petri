@@ -3,24 +3,8 @@
 # Provides basic skeleton for dependency injection for the triples of the
 # parametrized subclasses of Place, Transition and Net in different workspaces.
 #
-module YPetri::DependencyInjection
-  # Place class -- to be overriden in subclasses for dependency injection.
-  # 
-  def Place
-    YPetri::Place
-  end
-
-  # Transition class -- to be overriden in subclasses for dependency injection.
-  # 
-  def Transition
-    YPetri::Transition
-  end
-
-  # Net class -- to be overriden in subclasses for dependency injection
-  # 
-  def Net
-    YPetri::Net
-  end
+module YPetri::World::Dependency
+  delegate :Place, :Transition, :Net, to: :world
 
   # Place instance identification.
   # 

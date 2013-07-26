@@ -1,4 +1,4 @@
-WORKSPACE_MOCK = -> do
+WORLD_MOCK = -> do
   p = Class.new( YPetri::Place )
   t = Class.new( YPetri::Transition )
   n = Class.new( YPetri::Net )

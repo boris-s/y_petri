@@ -3,7 +3,7 @@
 # Workspace instance methods related to Petri net itsef (places, transitions,
 # net instances).
 # 
-module YPetri::Workspace::PetriNetRelatedMethods
+module YPetri::World::PetriNetRelated
   # Readers for @Place, @Transition, @Net instance variables, which should
   # contain said classes, or their instance-specific subclasses.
 
@@ -73,4 +73,4 @@ module YPetri::Workspace::PetriNetRelatedMethods
     # Hook new transitions to add themselves magically to the :Top net.
     Transition().new_instance_closure { |new_inst| net( :Top ) << new_inst }    
   end
-end # module YPetri::Workspace::PetriNetRelatedMethods
+end # module YPetri::World::PetriNetRelated

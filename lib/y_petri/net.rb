@@ -2,6 +2,7 @@
 
 require_relative 'net/visualization'
 require_relative 'net/selections'
+require_relative 'net/state'
 
 # Represents a _Petri net_: A collection of places and transitions. The
 # connector arrows – called _arcs_ in classical Petri net terminology – can be
@@ -11,7 +12,7 @@ require_relative 'net/selections'
 # 
 class YPetri::Net
   include NameMagic
-  include YPetri::DependencyInjection
+  include YPetri::World::Dependency
 
   class << self
     # Constructs a net containing a particular set of elements.
@@ -20,12 +21,13 @@ class YPetri::Net
       new.tap { |inst| elements.each { |e| inst << e } }
     end
   end
-  
+
   attr_reader :places, :transitions
 
   # Takes 2 arguments (+:places+ and +:transitions+) and builds a net from them.
   # 
   def initialize( places: [], transitions: [] )
+    param_class( { State: State }, with: { net: self } )
     @places, @transitions = [], []
     places.each &method( :include_place! )
     transitions.each &method( :include_transition! )
@@ -116,7 +118,7 @@ class YPetri::Net
   # Is the net <em>timed</em>?
   # 
   def timed?
-    transitions.all? { |t| t.timed? }
+    transitions.any? { |t| t.timed? }
   end
 
   # Creates a new simulation from the net.

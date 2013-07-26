@@ -4,6 +4,102 @@
 #
 class YPetri::Simulation::Transitions
   module Access
+    # Does a transition belong to the simulation?
+    # 
+    def includes_transition?( id )
+      true.tap { begin; transition( id )
+                 rescue NameError, TypeError
+                   return false
+                 end }
+    end
+    alias include_transition? includes_transition?
+
+    # Transition of the simulation (belonging to the net).
+    # 
+    def t( id )
+      transitions( id ).source
+    end
+
+    # Transitions of the simulation (belonging to the net).
+    # 
+    def tt( ids=nil )
+      transitions( ids ).sources
+    end
+
+    # Free places of the simulation (belonging to the net).
+    # 
+    def ts_tt( ids=nil )
+      ts_transitions( ids ).sources
+    end
+
+    # Free places of the simulation (belonging to the net).
+    # 
+    def tS_tt( ids=nil )
+      tS_transitions( ids ).sources
+    end
+
+    # Free places of the simulation (belonging to the net).
+    # 
+    def Ts_tt( ids=nil )
+      Ts_transitions( ids ).sources
+    end
+
+    # Free places of the simulation (belonging to the net).
+    # 
+    def TS_tt( ids=nil )
+      TS_transitions( ids ).sources
+    end
+
+    # Transitions' names. Arguments, if any, are treated as in +#tranistions+ method.
+    # 
+    def tn ids=nil
+      transitions( ids ).names
+    end
+
+    # Names of *ts* transitions. Arguments are handled as with +#ts_transitions+.
+    # 
+    def nts ids=nil
+      ts_transitions( ids ).names( true )
+    end
+
+    # Names of *tS* transitions. Arguments are handled as with +#tS_transitions+.
+    # 
+    def ntS ids=nil
+      tS_transitions( ids ).names( true )
+    end
+
+    # Names of *Ts* transitions. Arguments are handled as with +#tS_transitions+.
+    # 
+    def nTs ids=nil
+      Ts_transitions( ids ).names( true )
+    end
+
+    # Names of *TS* transitions. Arguments are handled as with +#TS_transitions+.
+    # 
+    def nTS ids=nil
+      TS_transitions( ids ).names( true )
+    end
+
+    # Names of *A* transitions. Arguments are handled as with +#A_transitions+.
+    # 
+    def nA ids=nil
+      A_transitions( ids ).names( true )
+    end
+
+    # Names of *S* transitions. Arguments are handled as with +#S_transitions+.
+    # 
+    def nS ids=nil
+      S_transitions( ids ).names( true )
+    end
+
+    # Names of *s* transitions. Arguments are handled as with +#s_transitions+.
+    # 
+    def ns ids=nil
+      s_transitions( ids ).names( true )
+    end
+
+    protected
+
     # Transition instance identification.
     # 
     def transition( id )
@@ -21,28 +117,12 @@ class YPetri::Simulation::Transitions
       end
     end
 
-    # Does a transition belong to the simulation?
-    # 
-    def includes_transition?( id )
-      true.tap { begin; transition( id )
-                 rescue NameError, TypeError
-                   return false
-                 end }
-    end
-    alias include_transition? includes_transition?
-
     # Without arguments, returns all the transitions. If arguments are given,
     # they are converted to transitions before being returned.
     # 
     def transitions ids=nil
       return @transitions if ids.nil?
       Transitions().load( ids.map { |id| transition id } )
-    end
-
-    # Transitions' names. Arguments, if any, are treated as in +#tranistions+ method.
-    # 
-    def tn ids=nil
-      transitions( ids ).names
     end
 
     # Simulation's *ts* transtitions. If arguments are given, they must identify
@@ -55,24 +135,12 @@ class YPetri::Simulation::Transitions
       transitions.ts.subset( ids )
     end
 
-    # Names of *ts* transitions. Arguments are handled as with +#ts_transitions+.
-    # 
-    def nts ids=nil
-      ts_transitions( ids ).names( true )
-    end
-
     # Simulation's *tS* transitions. If arguments are given, they must identify
     # *tS* transitions, and are treated as in +#transitions+ method.
     # 
     def tS_transitions ids=nil
       return transitions.tS if ids.nil?
       transitions.tS.subset( ids )
-    end
-
-    # Names of *tS* transitions. Arguments are handled as with +#tS_transitions+.
-    # 
-    def ntS ids=nil
-      tS_transitions( ids ).names( true )
     end
 
     # Simulation's *Ts* transitions. If arguments are given, they must identify
@@ -83,24 +151,12 @@ class YPetri::Simulation::Transitions
       transitions.Ts.subset( ids )
     end
 
-    # Names of *Ts* transitions. Arguments are handled as with +#tS_transitions+.
-    # 
-    def nTs ids=nil
-      Ts_transitions( ids ).names( true )
-    end
-
     # Simulation's *TS* transitions. If arguments are given, they must identify
     # *TS* transitions, and are treated as in +#transitions+ method.
     # 
     def TS_transitions ids=nil
       return transitions.TS if ids.nil?
       transitions.TS.subset( ids )
-    end
-
-    # Names of *TS* transitions. Arguments are handled as with +#TS_transitions+.
-    # 
-    def nTS ids=nil
-      TS_transitions( ids ).names( true )
     end
 
     # Simulation's *A* transitions. If arguments are given, they must identify
@@ -111,12 +167,6 @@ class YPetri::Simulation::Transitions
       transitions.A.subset( ids )
     end
 
-    # Names of *A* transitions. Arguments are handled as with +#A_transitions+.
-    # 
-    def nA ids=nil
-      A_transitions( ids ).names( true )
-    end
-
     # Simulation's *S* transitions. If arguments are given, they must identify
     # *S* transitions, and are treated as in +#transitions+ method.
     # 
@@ -125,24 +175,12 @@ class YPetri::Simulation::Transitions
       transitions.S.subset( ids )
     end
 
-    # Names of *S* transitions. Arguments are handled as with +#S_transitions+.
-    # 
-    def nS ids=nil
-      S_transitions( ids ).names( true )
-    end
-
     # Simulation's *s* transitions. If arguments are given, they must identify
     # *s* transitions, and are treated as in +#transitions+ method.
     # 
     def s_transitions ids=nil
       return transitions.s if ids.nil?
       transitions.s.subset( ids )
-    end
-
-    # Names of *s* transitions. Arguments are handled as with +#s_transitions+.
-    # 
-    def ns ids=nil
-      s_transitions( ids ).names( true )
     end
   end # Access
 end # class YPetri::Simulation::Transitions

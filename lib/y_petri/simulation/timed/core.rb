@@ -52,3 +52,19 @@ module YPetri::Simulation::Timed
     end
   end # class Core
 end # module YPetri::Simulation::Timed
+
+# In general, it is not required that all net elements are simulated with the
+# same method. Practically, ODE systems have many good simulation methods
+# available.
+#
+# (1) ᴍ(t) = ϝ f(ᴍ, t).dt, where f(ᴍ, t) is a known function.
+#
+# Many of these methods depend on the Jacobian, but that may not be available
+# for some places. Therefore, the places, whose marking defines the system
+# state, are divided into two categories: "A" (accelerated), for which as
+# common Jacobian can be found, and "E" places, where "E" can stand either for
+# "External" or "Euler".
+#
+# If we apply the definition of "causal orientation" on A and E places, then it
+# can be said, that only the transitions causally oriented towards "A" places
+# are allowed for compliance with the equation (1).

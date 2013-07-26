@@ -1,7 +1,5 @@
 # encoding: utf-8
 
-# A simulation method class.
-# 
 class YPetri::Simulation
   class Core
     DEFAULT_METHOD = :pseudo_euler
@@ -33,8 +31,9 @@ class YPetri::Simulation
       end
     end
 
-    include DependencyInjection
+    include Dependency
 
+    delegate :simulation, to: :class
     delegate :note_state_change, to: :recording
 
     class << self

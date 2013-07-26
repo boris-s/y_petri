@@ -1,33 +1,34 @@
 # encoding: utf-8
 
-# Manipulator instance methods related to simulation (initial marking
-# collections, clamp collections, initial marking collections, management
-# of simulations...)
+# Agent instance methods related to simulation (initial marking collections,
+# clamp collections, initial marking collections, management of simulations...)
 # 
-module YPetri::Manipulator::SimulationRelatedMethods
+module YPetri::Agent::SimulationRelated
   require_relative 'hash_key_pointer'
   require_relative 'selection'
 
   # Simulation selection class.
   # 
-  SimulationSelection = Class.new YPetri::Manipulator::Selection
+  SimulationSelection = YPetri::Agent::Selection.parametrize agent: self
 
   # Simulation settings collection selection class.
   # 
-  SscSelection = Class.new YPetri::Manipulator::Selection
+  SscSelection = YPetri::Agent::Selection.parametrize agent: self
 
   # Clamp collection selection class.
   # 
-  CcSelection = Class.new YPetri::Manipulator::Selection
+  CcSelection = YPetri::Agent::Selection.parametrize agent: self
 
   # Initial marking collection selection class.
   # 
-  ImcSelection = Class.new YPetri::Manipulator::Selection
+  ImcSelection = YPetri::Agent::Selection.parametrize agent: self
 
-  class SimulationPoint < YPetri::Manipulator::HashKeyPointer
+  class SimulationPoint < YPetri::Agent::HashKeyPointer
     # Reset to the first simulation, or nil if that is absent.
     # 
-    def reset; @key = @hash.empty? ? nil : set( @hash.first[0] ) end
+    def reset
+      @key = @hash.empty? ? nil : set( @hash.first[0] )
+    end
 
     # A simulation is identified either by its name (if named), or by its
     # parameters and settings (:net, :cc, :imc, :ssc).
@@ -48,15 +49,15 @@ module YPetri::Manipulator::SimulationRelatedMethods
 
   # Pointer to a collection of simulation settings.
   # 
-  SscPoint = Class.new YPetri::Manipulator::HashKeyPointer
+  SscPoint = YPetri::Agent::HashKeyPointer.parametrize agent: self
 
   # Pointer to a clamp collection.
   # 
-  CcPoint = Class.new YPetri::Manipulator::HashKeyPointer
+  CcPoint = YPetri::Agent::HashKeyPointer.parametrize agent: self
 
   # Pointer to a collection of initial markings.
   # 
-  ImcPoint = Class.new YPetri::Manipulator::HashKeyPointer
+  ImcPoint = YPetri::Agent::HashKeyPointer.parametrize agent: self
 
   attr_reader :simulation_point,
               :ssc_point,
@@ -102,7 +103,7 @@ module YPetri::Manipulator::SimulationRelatedMethods
            :set_simulation_settings_collection, :set_ssc,
            :new_simulation,
            :clamp_cc, :initial_marking_cc, :simulation_settings_cc,
-           to: :workspace
+           to: :world
 
   # Returns the simulation identified by the argument, or one at simulation
   # point, if no argument given. The simulation is identified in the same way
@@ -284,21 +285,11 @@ module YPetri::Manipulator::SimulationRelatedMethods
 
   # Plot the recorded samples (system state history).
   # 
-  def plot_state( place_ids=nil, **nn )
-    sim = simulation
-    return nil unless sim
-    excluded = sim.places Array( nn[:except] )
-    features = sim.places.reject { |p| excluded.include? p }
-    rec = sim.recording.marking_series
-    # # Select a time series for each feature.
-    # time_series = features.map.with_index do |feature, i|
-    #   feature and rec.map { |key, val| [ key, val[i] ] }.transpose
-    # end
-    # # Time axis
-    # ᴛ = sim.target_time
-    # # Gnuplot call
-    # gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
-    #          title: "State plot", ylabel: "Marking" )
+  def plot_state( place_ids=nil, except: [] )
+    sim = simulation or return nil
+    feat = sim.pp( place_ids || sim.pp ) - sim.pp( Array except )
+    gnuplot sim.record.marking( feat ), time: sim.target_time,
+            title: "State plot", ylabel: "Marking"
   end
   alias plot_marking plot_state
 
@@ -326,27 +317,33 @@ module YPetri::Manipulator::SimulationRelatedMethods
 
   private
 
-  # Gnuplots things.
+  # Gnuplots a recording. Target time or time range can be supplied as :time
+  # named argument.
   # 
-  def gnuplot( time, labels, time_series, *args )
-    labels = labels.dup
-    time_series = time_series.dup
-    oo = args.extract_options!
+  def gnuplot( dataset, time: nil, **nn )
+    event_vector = dataset.events
+    data_vectors = dataset.values.transpose
+    x_range = if time.is_a? Range then
+                "[#{time.begin}:#{time.end}]"
+              else
+                "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
+              end
+    labels = recording.features.labels
 
     Gnuplot.open do |gp|
       Gnuplot::Plot.new( gp ) do |plot|
-        plot.xrange "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
-        plot.title oo[:title] || "Simulation plot"
-        plot.ylabel oo[:ylabel] || "Values"
-        plot.xlabel oo[:xlabel] || "Time [s]"
+        plot.xrange x_range
+        plot.title nn[:title] || "Simulation plot"
+        plot.ylabel nn[:ylabel] || "Values"
+        plot.xlabel nn[:xlabel] || "Time [s]"
 
-        labels.zip( time_series ).each { |label, series|
-          plot.data << Gnuplot::DataSet.new( series ) do |data_series|
-            data_series.with = "linespoints"
-            data_series.title = label
-          end
+        labels.zip( data_vectors ).each { |label, data_vector|
+          plot.data << Gnuplot::DataSet.new( [event_vector, data_vector] ) { |ds|
+            ds.with = "linespoints"
+            ds.title = lbl
+          }
         }
       end
     end
   end
-end # module YPetri::Manipulator
+end # module YPetri::Agent::SimulationRelated

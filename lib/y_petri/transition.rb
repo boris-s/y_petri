@@ -93,7 +93,7 @@ require_relative 'transition/assignment'
 # 
 class YPetri::Transition
   include NameMagic
-  include YPetri::DependencyInjection
+  include YPetri::World::Dependency
 
   BASIC_TRANSITION_TYPES = {
     TS: "timed stoichiometric",

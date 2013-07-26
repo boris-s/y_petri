@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
+
 # Public command interface of YPetri.
 # 
-module YPetri::Manipulator::PetriNetRelatedMethods
+module YPetri::Agent::PetriNetRelated
   # Net selection class.
   # 
-  NetSelection = Class.new YPetri::Manipulator::Selection
+  NetSelection = Class.new YPetri::Agent::Selection
 
   # Net point
   # 
@@ -24,7 +25,7 @@ module YPetri::Manipulator::PetriNetRelatedMethods
   # 
   delegate :place, :transition, :element, 
            :nets, :places, :transitions,
-           to: :workspace
+           to: :world
 
   # Place name.
   # 
@@ -56,7 +57,7 @@ module YPetri::Manipulator::PetriNetRelatedMethods
     nets.names
   end
 
-  # Place constructor: Creates a new place in the current workspace.
+  # Place constructor: Creates a new place in the current world.
   # 
   def Place( *ordered_args, **named_args, &block )
     fail ArgumentError, "If block is given, :guard named argument " +
@@ -64,46 +65,46 @@ module YPetri::Manipulator::PetriNetRelatedMethods
     named_args.update( guard: block ) if block # use block as a guard
     named_args.may_have :default_marking, syn!: :m!
     named_args.may_have :marking, syn!: :m
-    workspace.Place.new *ordered_args, **named_args
+    world.Place.new *ordered_args, **named_args
   end
 
   # Transition constructor: Creates a new transition in the current workspace.
   # 
   def Transition( *ordered, **named, &block )
-    workspace.Transition.new *ordered, **named, &block
+    world.Transition.new *ordered, **named, &block
   end
 
   # Timed transition constructor: Creates a new timed transition in the current
   # workspace. Rate closure has to be supplied as a block.
   # 
   def T( *ordered, **named, &block )
-    workspace.Transition.new *ordered, **named.update( rate: block )
+    world.Transition.new *ordered, **named.update( rate: block )
   end
 
   # Assignment transition constructor: Creates a new assignment transition in
   # the current workspace. Assignment closure has to be supplied as a block.
   # 
   def A( *ordered, **named, &block )
-    workspace.Transition.new *ordered,
-                             **named.update( assignment: true, action: block )
+    world.Transition.new *ordered,
+                         **named.update( assignment: true, action: block )
   end
 
   # Net constructor: Creates a new Net instance in the current workspace.
   # 
   def Net *ordered, **named, &block
-    workspace.Net.new *ordered, **named, &block
+    world.Net.new *ordered, **named, &block
   end
 
   # Returns the net identified, or the net at point (if no argument given).
   # 
   def net id=nil
-    id.nil? ? @net_point : workspace.net( id )
+    id.nil? ? @net_point : world.net( id )
   end
 
   # Sets the net point to a given net, or to workspace.Net::Top if none given.
   # 
-  def net_point_reset id=workspace.Net::Top
-    @net_point = workspace.net( id )
+  def net_point_reset id=world.Net::Top
+    @net_point = world.net( id )
   end
 
   # Sets net point to a given net.
@@ -111,4 +112,4 @@ module YPetri::Manipulator::PetriNetRelatedMethods
   def net_point= id
     net_point_reset id
   end
-end # module YPetri::Manipulator::PetriNetRelatedMethods
+end # module YPetri::Agent::PetriNetRelated

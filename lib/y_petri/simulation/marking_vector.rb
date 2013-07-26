@@ -2,10 +2,10 @@
 #
 class YPetri::Simulation
   class MarkingVector < Matrix
-    include DependencyInjection
+    include Dependency
 
     class << self
-      include DependencyInjection
+      include Dependency
 
       attr_reader :annotation
 
@@ -63,6 +63,8 @@ class YPetri::Simulation
         starting( place_ids ) * 0
       end
     end
+
+    delegate :simulation, to: :class
 
     # Creates a subset of this marking vector.
     # 

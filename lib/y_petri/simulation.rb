@@ -1,30 +1,27 @@
 #encoding: utf-8
 
--> *a do a.each { |e| require_relative "simulation/#{e}" } end
-  .( 'init',
-     'matrix',
-     'dependency_injection',
-     'element_representation',
-     'elements',
-     'elements/access',
-     'place_representation',
-     'places',
-     'places/access',
-     'transition_representation',
-     'transitions',
-     'transitions/access',
-     'place_mapping',
-     'marking_clamps',
-     'marking_clamps/access',
-     'initial_marking',
-     'initial_marking/access',
-     'marking_vector',
-     'marking_vector/access',
-     'recording',
-     'recording/access',
-     'core',
-     'timeless',
-     'timed' )
+require_relative 'simulation/matrix'
+require_relative 'simulation/dependency'
+require_relative 'simulation/element_representation'
+require_relative 'simulation/elements'
+require_relative 'simulation/elements/access'
+require_relative 'simulation/place_representation'
+require_relative 'simulation/places'
+require_relative 'simulation/places/access'
+require_relative 'simulation/transition_representation'
+require_relative 'simulation/transitions'
+require_relative 'simulation/transitions/access'
+require_relative 'simulation/place_mapping'
+require_relative 'simulation/marking_clamps'
+require_relative 'simulation/marking_clamps/access'
+require_relative 'simulation/initial_marking'
+require_relative 'simulation/initial_marking/access'
+require_relative 'simulation/marking_vector'
+require_relative 'simulation/marking_vector/access'
+require_relative 'simulation/recorder'
+require_relative 'simulation/core'
+require_relative 'simulation/timeless'
+require_relative 'simulation/timed'
 
 # Represents a Petri net simulation, concerning are the simulation method and
 # settings, initial values, marking clamps, guards and similar. Its concerns are
@@ -44,24 +41,11 @@ class YPetri::Simulation
   include Elements::Access
   include InitialMarking::Access
   include MarkingClamps::Access
-  include Recording::Access
   include MarkingVector::Access
 
   DEFAULT_SETTINGS = -> do { method: :pseudo_euler, guarded: false } end
 
   # Parametrized subclasses:
-  attr_reader :Place,
-              :Transition,
-              :Elements,
-              :Places,
-              :Transitions,
-              :PlaceMapping,
-              :MarkingClamps,
-              :InitialMarking,
-              :MarkingVector,
-              :Recording,
-              :Core
-
   attr_reader :net,
               :core,
               :guarded,
@@ -83,8 +67,8 @@ class YPetri::Simulation
            :step!,
            to: :core
 
-  delegate :at,
-           to: :recording
+  delegate :recording,
+           to: :recorder
 
   # The basic simulation parameter is :net – +YPetri::Net+ instance which to
   # simulate. Net implies the collection of places and transitions. Other
@@ -97,8 +81,8 @@ class YPetri::Simulation
   # range, :step, controlling the simulation step size, and :sampling,
   # controlling the sampling frequency.
   # 
-  def initialize method: nil,
-                 guarded: false,
+  def initialize method: nil,        # the simulation method
+                 guarded: false,     # whether the simulation is guarded
                  net: ( fail ArgumentError, "Net missing!" ),
                  marking_clamps: {},
                  initial_marking: {},
@@ -107,31 +91,24 @@ class YPetri::Simulation
 
     @net = net
     @guarded = guarded
-    init_parametrized_subclasses
+    init_element_representation
+    @m_vector = MarkingVector().zero
+    extend nn[:time] || nn[:step] || nn[:sampling] ? Timed : Timeless
+
+    init_core_and_recorder_subclasses
     init_places( marking_clamps, initial_marking,
                  use_default_marking: use_default_marking )
 
-    @m_vector = MarkingVector().zero
-
-    if nn[:time] || nn[:step] || nn[:sampling] then
-      extend Timed
-    else
-      extend Timeless
-    end
-
-
     init_transitions
-
     init **nn # Timed / Timeless dependent initialization
 
-    # Init the timeless closures.
+    # Make timeless closures:
     @ts_delta_closure = transitions.ts.delta_closure
     @tS_firing_closure = transitions.tS.firing_closure
     @A_assignment_closure = transitions.A.assignment_closure
     @increment_marking_vector_closure = m_vector.increment_closure
 
-    # Init the timed closures, if timed?.
-    if timed? then
+    if timed? then # also make timed closures:
       @Ts_gradient_closure = transitions.Ts.gradient_closure
       @TS_rate_closure = transitions.TS.rate_closure
     end
@@ -156,7 +133,7 @@ class YPetri::Simulation
   # of the new instance is the same as the creator's. Arguments can partially or
   # wholly modify the attributes of the duplicate.
   # 
-  def dup marking: marking, recording: recording, **nn
+  def dup( marking: marking, recording: recording, **nn )
     self.class.new( nn.reverse_merge! settings( true ) ).tap do |dup|
       dup.recording.reset! recording: recording
       dup.m_vector.reset! case marking
@@ -169,18 +146,17 @@ class YPetri::Simulation
     end
   end
 
-  # Produces the inspect string of the transition.
+  # Inspect string for this simulation.
   # 
   def inspect
-    "#<YPetri::Simulation: #{pp.size} pp, #{tt.size} tt, ID: #{object_id} >"
+    to_s
   end
 
-  # Produces a string briefly describing the simulation instance.
+  # String representation of this simulation.
   # 
   def to_s
-    "Simulation[#{pp.size} pp, #{tt.size} tt]"
+    "#<Simulation: pp: %s, tt: %s, oid: %s>" % [ pp.size, tt.size, object_id ]
   end
-  alias include? includes?
 
   # Resets the simulation
   # 
@@ -197,5 +173,48 @@ class YPetri::Simulation
   def guard_Δ! Δ_free_places
     ary = ( marking_vector + F2A() * Δ_free_places ).column_to_a
     places.zip( ary ).each { |pl, proposed_m| pl.guard.( proposed_m ) }
+  end
+
+  private
+
+  # Sets up parametrized subclasses representing elements / element collections.
+  # 
+  def init_element_representation
+    param_class( { Place: PlaceRepresentation,
+                   Transition: TransitionRepresentation,
+                   Places: Places,
+                   Transitions: Transitions,
+                   PlaceMapping: PlaceMapping,
+                   InitialMarking: InitialMarking,
+                   MarkingClamps: MarkingClamps,
+                   MarkingVector: MarkingVector },
+                 with: { simulation: self } )
+    Place().namespace!
+    Transition().namespace!
+  end
+
+  # Sets up a representation of the net's places, clamps and initial marking.
+  # 
+  def init_places( marking_clamps, initial_marking, use_default_marking: true )
+    # Seting up the place and transition collections.
+    @places = Places().load( net.places )
+    @marking_clamps = MarkingClamps().load( marking_clamps )
+    @initial_marking = InitialMarking().load( initial_marking )
+    @places.complete_initial_marking( use_default_marking: use_default_marking )
+    # Correspondence matrices free --> all and clamped --> all:
+    @f2a = free_places.correspondence_matrix( places )
+    @c2a = clamped_places.correspondence_matrix( places )
+  end
+
+  # Sets up a representation of the net's transitions.
+  # 
+  def init_transitions
+    @transitions = Transitions().load( net.transitions )
+    # Stoichiometry matrices relative to free places:
+    @tS_stoichiometry_matrix = transitions.tS.stoichiometry_matrix
+    @TS_stoichiometry_matrix = transitions.TS.stoichiometry_matrix
+    # Stoichiometry matrices relative to all places:
+    @tS_SM = transitions.tS.SM
+    @TS_SM = transitions.TS.SM
   end
 end # class YPetri::Simulation

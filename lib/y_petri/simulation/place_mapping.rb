@@ -2,7 +2,7 @@
 # 
 class YPetri::Simulation
   class PlaceMapping < Hash
-    include DependencyInjection
+    include Dependency
 
     class << self
       # Initializes the initial marking from a hash.
@@ -16,6 +16,8 @@ class YPetri::Simulation
         end
       end
     end
+
+    delegate :simulation, to: :class
 
     alias places keys
 

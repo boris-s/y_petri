@@ -2,7 +2,7 @@
 #
 class YPetri::Simulation
   class Elements < Array
-    include DependencyInjection
+    include Dependency
     
     class << self
       # New collection constructor
@@ -11,6 +11,8 @@ class YPetri::Simulation
         new.tap { |inst| inst.load collection }
       end
     end
+
+    delegate :simulation, to: :class
     
     # Loads elements to this collection.
     #

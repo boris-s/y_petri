@@ -5,9 +5,11 @@
 class YPetri::Simulation
   class ElementRepresentation
     include NameMagic
-    include DependencyInjection
+    include Dependency
 
     attr_reader :source # source place
+
+    delegate :simulation, to: :class
 
     # Expect a single YPetri place as an argument.
     # 

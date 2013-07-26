@@ -6,24 +6,24 @@ require 'minitest/autorun'
 require_relative '../lib/y_petri'     # tested component itself
 # require 'y_petri'
 # require 'sy'
-require_relative 'workspace_mock'
+require_relative 'world_mock'
 
 describe YPetri::Simulation do
   before do
-    @P, @T, @N, @S = *WORKSPACE_MOCK.(), YPetri::Simulation
+    @P, @T, @N, @S = *WORLD_MOCK.(), YPetri::Simulation
   end
 
   it "should allow for creation of an empty simulation" do
     @n = @N.new
     @s = @S.new( net: @n )
-    @s.places.must_equal []
-    @s.places( *[] ).must_equal []
-    @s.transitions.must_equal( [] )
-    @s.transitions( *[] ).must_equal []
+    @s.pp.must_equal []
+    @s.pp( *[] ).must_equal []
+    @s.tt.must_equal( [] )
+    @s.tt( *[] ).must_equal []
     @s.m_vector.must_equal Matrix.column_vector( [] )
     @n << @P.new( marking: 1 )
     @n.places.size.must_equal( 1 )
-    @s.places.must_equal [] # simulation must not change when net is changed
+    @s.pp.must_equal [] # simulation must not change when net is changed
   end
 
   describe "simulation setup" do
@@ -53,18 +53,20 @@ describe YPetri::Simulation do
       end
 
       it "should have elements/access" do
-        @s.place( :A ).must_be_kind_of YPetri::Simulation::PlaceRepresentation
-        @s.place( :B ).must_be_kind_of YPetri::Simulation::PlaceRepresentation
+        @s.send( :place, :A )
+            .must_be_kind_of YPetri::Simulation::PlaceRepresentation
+        @s.send( :place, :B )
+          .must_be_kind_of YPetri::Simulation::PlaceRepresentation
         @s.net.places.names.must_equal [:A, :B]
         @s.pn.must_equal [:A, :B]
-        @s.places.free.size.must_equal 1
-        @s.free_places.names.must_equal [:A]
-        @s.places.clamped.size.must_equal 1
-        @s.clamped_places.names.must_equal [:B]
-        @s.places( [:A] ).map( &:source ).must_equal [@p]
-        @s.transitions( [] ).must_equal []
-        @s.places( [:A] ).map( &:source ).must_equal [@p]
-        @s.places( [] ).must_equal []
+        @s.send( :places ).free.size.must_equal 1
+        @s.send( :free_places ).names.must_equal [:A]
+        @s.send( :places ).clamped.size.must_equal 1
+        @s.send( :clamped_places ).names.must_equal [:B]
+        @s.send( :places, [:A] ).map( &:source ).must_equal [@p]
+        @s.send( :transitions, [] ).must_equal []
+        @s.send( :places, [:A] ).map( &:source ).must_equal [@p]
+        @s.send( :places, [] ).must_equal []
       end
 
       describe "marking vector representation" do
@@ -114,25 +116,25 @@ describe YPetri::Simulation do
           end
 
           it "should behave" do
-            @sim.transitions.size.must_equal 1
+            @sim.tt.size.must_equal 1
             @ts.codomain.names.must_equal [:A]
-            @sim.transitions.ts.first.codomain.names.must_equal [:A]
+            @sim.ts_tt.first.codomain.names.must_equal [:A]
             @ts.domain.names.must_equal []
-            @sim.transitions.ts.first.domain.names.must_equal []
+            @sim.ts_tt.first.domain.names.must_equal []
             @sim.timed?.must_equal false
             @sim.m.must_equal [1, 2]
             @sim.pm.must_equal( { A: 1, B: 2 } )
             @sim.recording.must_equal( { 0 => [1, 2]} )
             @sim.method.must_equal :pseudo_euler
             @sim.core.must_be_kind_of YPetri::Simulation::Core
-            @sim.transitions.ts.first.domain.must_equal []
-            @sim.transitions.ts.first.domain_access_code.must_equal ''
-            λ = @sim.transitions.ts.first.delta_closure
+            @sim.ts_tt.first.domain.must_equal []
+            @sim.send( :ts_transitions ).first.domain_access_code.must_equal ''
+            λ = @sim.send( :transitions ).ts.first.delta_closure
             λ.arity.must_equal 0
             λ.call.must_equal 1
-            cc = @sim.transitions.ts.delta_closures
+            cc = @sim.send( :transitions ).ts.delta_closures
             cc.map( &:call ).must_equal [1]
-            cl = @sim.transitions.ts.delta_closure
+            cl = @sim.send( :transitions ).ts.delta_closure
             cl.call.must_equal Matrix[ [1], [0] ]
             @sim.step!
             @sim.pm.must_equal( { A: 2, B: 2 } ) # marking of A goes up by 1
@@ -196,9 +198,9 @@ describe YPetri::Simulation do
           it "should behave" do
             @sim.timed?.must_equal true
             @sim.method.must_equal :pseudo_euler
-            @sim.transitions.Ts.size.must_equal 1
-            @sim.transitions.Ts.first.gradient_closure.call.must_equal 1
-            @sim.transitions.Ts.first.codomain.names.must_equal [:A]
+            @sim.Ts_tt.size.must_equal 1
+            @sim.send( :transitions ).Ts.first.gradient_closure.call.must_equal 1
+            @sim.Ts_tt.first.codomain.names.must_equal [:A]
             @sim.recording.must_equal( { 0.0 => [1, 2] } )
             @sim.step! 1
             @sim.recording.must_equal( { 0.0 => [1, 2], 1.0 => [2, 2] } )
@@ -257,8 +259,8 @@ describe YPetri::Simulation do
     self.class.class_exec { include YPetri }
     U = Place m!: 2.5
     V = Place m!: 2.5
-    Uplus = Transition codomain: :U do 1 end
-    U2V = Transition s: { U: -1, V: 1 }
+    Uplus = Transition codomain: :U do 1 end # s transition
+    U2V = Transition s: { U: -1, V: 1 }      # S transition
     set_ssc :Timeless, YPetri::Simulation::DEFAULT_SETTINGS.call
     new_simulation ssc: :Timeless
     5.times do simulation.step! end
@@ -281,8 +283,18 @@ describe YPetri::Simulation do
         .must_equal( { 2 => [2.5, 4.5],
                        3 => [2.5, 5.5],
                        4 => [2.5, 6.5] } )
-      s.recording.firing_series( slice: 1..2 ).must_equal [[1, 1]]
-      s.recording.delta_series places: [:U], transitions: [:Uplus]
+      s.recording.firing_series( slice: 1..2 )
+        .must_equal [[1, 1]]
+      s.recording.firing_series( transitions: [:U2V] )
+        .must_equal [[1, 1, 1, 1, 1, 1]]
+      s.recording.delta_series( places: [:U], transitions: [:Uplus] )
+        .must_equal [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
+      tmp = s.recording.features( marking: [:U], firing: [:U2V] )
+      tmp.delete( :features )
+        .must_equal( { marking: [:U], firing: [:U2V],
+                       delta: { places: [], transitions: [] } } )
+      tmp.must_equal( { 0 => [2.5, 1], 1 => [2.5, 1], 2 => [2.5, 1],
+                        3 => [2.5, 1], 4 => [2.5, 1], 5 => [2.5, 1] } )
     end
   end
 end
@@ -320,10 +332,12 @@ describe YPetri::Simulation::Timed do
         .must_equal [ [ 0.5, 0.475, 0.45, 0.425, 0.4, 0.375, 0.35, 0.325,
                         0.3, 0.275, 0.25, 0.225, 0.2 ] ]
       s.recording.firing_series.must_equal []
-      s.recording.firing.must_equal [*0..12].map { |n| n * 5.0 } >> [] * 13
+      s.recording.firing
+        .must_equal( [*0..12].map { |n| n * 5.0 } >> [[]] * 13 )
       s.recording.delta_series( places: [:A], transitions: [:A_pump] )
         .must_equal [ [ -0.0005 ] * 13 ]
       plot_state
+      sleep 100
     end
   end
 end

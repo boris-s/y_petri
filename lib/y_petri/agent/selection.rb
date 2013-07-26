@@ -1,4 +1,5 @@
-class YPetri::Manipulator::Selection
+class YPetri::Agent::Selection
+  # TODO: This calls for refactor as Array subclass.
   def initialize
     clear
   end

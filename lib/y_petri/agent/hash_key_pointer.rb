@@ -1,7 +1,7 @@
 # Represents a pointer to a key of a specific hash associated with the pointer
-# instance. Used to implement pointers of the Manipulator class.
+# instance. Used to implement pointers of the Agent class.
 # 
-class YPetri::Manipulator::HashKeyPointer
+class YPetri::Agent::HashKeyPointer
   # Key at which the pointer points.
   # 
   attr_reader :key

@@ -20,6 +20,62 @@ class YPetri::Simulation::Places
       if arg.nil? then @c2a else @c2a * arg end
     end
 
+    # Does a place belong to the simulation?
+    # 
+    def includes_place? id
+      true.tap { begin; place id
+                 rescue NameError, TypeError
+                   return false
+                 end }
+    end
+    alias include_place? includes_place?
+
+    # Place of the simulation (belonging to the net).
+    # 
+    def p( id )
+      place( id ).source
+    end
+
+    # Places of the simulation (belonging to the net).
+    # 
+    def pp( ids=nil )
+      places( ids ).sources
+    end
+
+    # Free places of the simulation (belonging to the net).
+    # 
+    def free_pp( ids=nil )
+      free_places( ids ).sources
+    end
+
+    # Clamped places of the simulation (belonging to the net).
+    # 
+    def clamped_pp( ids=nil )
+      clamped_places( ids ).sources
+    end
+
+    # Places' names. Arguments, if any, are treated as in +#places+ method.
+    # 
+    def pn( ids=nil )
+      places( ids ).names
+    end
+
+    # Names of free places. Arguments are handled as with +#free_places+.
+    # 
+    def nfree ids=nil
+      free_places( ids ).names
+    end
+    alias free_pn nfree
+
+    # Names of free places. Arguments are handled as with +#clamped_places+.
+    # 
+    def nclamped ids=nil
+      clamped_places( ids ).names
+    end
+    alias clamped_pn nclamped
+
+    protected
+
     # Place instance identification.
     # 
     def place( id )
@@ -37,28 +93,12 @@ class YPetri::Simulation::Places
       end
     end
 
-    # Does a place belong to the simulation?
-    # 
-    def includes_place? id
-      true.tap { begin; place id
-                 rescue NameError, TypeError
-                   return false
-                 end }
-    end
-    alias include_place? includes_place?
-
     # Without arguments, returns all the places. If arguments are given, they
     # are converted to places before being returned.
     # 
     def places( ids=nil )
       return @places if ids.nil?
       Places().load( ids.map { |id| place id } )
-    end
-
-    # Places' names. Arguments, if any, are treated as in +#places+ method.
-    # 
-    def pn( ids=nil )
-      places( ids ).names
     end
 
     # Free places. If arguments are given, they must be identify free places,
@@ -76,19 +116,5 @@ class YPetri::Simulation::Places
       return places.clamped if ids.nil?
       places.clamped.subset( ids )
     end
-
-    # Names of free places. Arguments are handled as with +#free_places+.
-    # 
-    def nfree ids=nil
-      free_places( ids ).names
-    end
-    alias freen nfree
-
-    # Names of free places. Arguments are handled as with +#clamped_places+.
-    # 
-    def nclamped ids=nil
-      clamped_places( ids ).names
-    end
-    alias clampedn nclamped
   end # module Access
 end # class YPetri::Simulation::Places

@@ -7,7 +7,7 @@ require_relative 'place/arcs'
 # 
 class YPetri::Place
   include NameMagic
-  include YPetri::DependencyInjection
+  include YPetri::World::Dependency
 
   attr_reader :quantum
   attr_reader :guards

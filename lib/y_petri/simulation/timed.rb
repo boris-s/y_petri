@@ -1,10 +1,10 @@
 # encoding: utf-8
 
-# A mixin for timed simulations.
-# 
 class YPetri::Simulation
+  # A mixin for timed simulations, used by an +#extend+ call during init.
+  # 
   module Timed
-    require_relative 'timed/recording'
+    require_relative 'timed/recorder'
     require_relative 'timed/core'
 
     DEFAULT_SETTINGS = -> do { step: 0.1, sampling: 5, time: 0..60 } end
@@ -22,12 +22,11 @@ class YPetri::Simulation
     attr_reader :time,
                 :time_unit,
                 :initial_time,
-                :target_time
+                :target_time,
+                :step
 
     alias starting_time initial_time
     alias ending_time target_time
-
-    attr_accessor :step
 
     delegate :flux_vector_TS,
              :gradient_TS,
@@ -36,43 +35,7 @@ class YPetri::Simulation
              :flux_vector,
              to: :core
 
-    delegate :sampling,
-             to: :recording
-
-    # Initialization subroutine.
-    #
-    def init **nn
-      if nn.has? :time, syn!: :time_range then # time range given
-        time_range = nn[:time]
-        @initial_time = time_range.begin
-        @target_time = time_range.end
-        @time_unit = target_time / target_time.to_f
-      else
-        anything = nn[:step] || nn[:sampling]
-        msg = "The simulation is timed, but the constructor lacks any of the " +
-          "time-related arguments: :time, :step, or :sampling!"
-        fail ArgumentError, msg unless anything
-        @time_unit = anything / anything.to_f
-        @initial_time = time_unit * 0
-        @target_time = time_unit * Float::INFINITY
-      end
-
-      @step = nn[:step] || time_unit
-
-      @Recording = Class.new Recording
-      @Core = Class.new Core
-      tap do |sim|
-        [ Recording(),
-          Core()
-        ].each { |ç| ç.class_exec { define_method :simulation do sim end } }
-      end
-
-      reset_time!
-
-      @recording = Recording().new
-
-      recording.sampling = nn[:sampling] || step
-    end
+    delegate :sampling, to: :recorder
 
     # Reads the time range (initial_time..target_time) of the simulation.
     #
@@ -80,8 +43,8 @@ class YPetri::Simulation
       initial_time..target_time
     end
 
-    # Reads the settings pertaining to the Timed aspoect of the simulation:
-    # (:step, :sampling and :time).
+    # Returnst the settings pertaining to the Timed aspect of the simulation,
+    # that is, +:step+, +:sampling+ and +:time+.
     #
     def settings all=false
       super.update( step: step,
@@ -89,17 +52,19 @@ class YPetri::Simulation
                     time: time_range )
     end
 
-    # Near alias for #run!, checks against infinite run.
+    # Same as +#run!+, but guards against run upto infinity.
     #
-    def run( to=target_time, final_step: :exact )
-      fail "Target time equals infinity!" if target_time == Float::INFINITY
-      run!( to, final_step: final_step )
+    def run( upto: target_time, final_step: :exact )
+      fail "Upto time equals infinity!" if upto == Float::INFINITY
+      run!( upto: upto, final_step: final_step )
     end
 
-    # Near alias for #run_until, uses @target_time as :until_time by default.
+    # Near alias for +#run_upto+. Accepts +:upto+ named argument, using
+    # @target_time attribute as a default. The second optional argument,
+    # +:final_step+, has the same options as in +#run_upto+ method.
     #
-    def run!( to=target_time, final_step: :exact )
-      run_until( to, final_step: final_step )
+    def run!( upto: target_time, final_step: :exact )
+      run_upto( upto, final_step: final_step )
     end
 
     # Runs the simulation until the target time. Named argument :final_step has
@@ -113,7 +78,7 @@ class YPetri::Simulation
     # exact:           simulation stops exactly on the prescribed time, last step
     #                  is shortened if necessary
     #
-    def run_until( target_time, final_step: :exact )
+    def run_upto( target_time, final_step: :exact )
       case final_step
       when :before then
         step! while time + step <= target_time
@@ -128,23 +93,18 @@ class YPetri::Simulation
       end
     end
 
-    # Produces the inspect string for this timed simulation.
-    #
-    def inspect
-      "#<Simulation: Time: #{time}, #{pn.size} places, #{tn.size} " +
-        "transitions, object id: #{object_id}>"
+    # String representation of this timed simulation.
+    # 
+    def to_s
+      "#<Simulation: time: %s, pp: %s, tt: %s, oid: %s>" %
+        [ time, pp.size, tt.size, object_id ]
     end
 
-    # Produces a string brief
-    def to_s                         # :nodoc:
-      "Simulation[time: #{time}, P: #{pn.size}, T: #{tn.size}]"
-    end
-
-    # Increments the simulation's time.
+    # Increments the simulation's time and alerts the recorder.
     #
     def increment_time! Δt=step
       @time += Δt
-      recording.note_state_change
+      recorder.alert
     end
 
     # Resets the timed simulation.
@@ -165,16 +125,53 @@ class YPetri::Simulation
     # Returns the zero gradient. Optionally, places can be specified, for which
     # the zero vector is returned.
     #
-    def zero_∇( places: nil )
-      return zero_∇( places: places() ) if places.nil?
-      places.each { |id|
-        pl = place( id )
-        if pl.free? then
-          pl.initial_marking * 0 / time_unit
-        else
-          pl.clamp * 0 / time_unit
-        end
+    def zero_gradient places: nil
+      return zero_gradient places: places() if places.nil?
+      places.map { |id|
+        p = place( id )
+        ( p.free? ? p.initial_marking : p.clamp ) * 0 / time_unit
       }.to_column_vector
+    end
+    alias zero_∇ zero_gradient
+
+    private
+
+    # Initialization subroutine for timed simulations. Expects named arguments
+    # +:time+ (alias +:time_range+), meaning the simulation time range (a Range
+    # of initial_time..target_time), +:step+, meaning time step of the
+    # simulation, and +:sampling+, meaning sampling period of the simulation.
+    #
+    # Initializes the time-related attributes @initial_time, @target_time,
+    # @time_unit and @time (via +#reset_time!+ call). Also sets up the
+    # parametrized subclasses +@Core+ and +@Recorder+, and initializes the
+    # +@recorder+ attribute.
+    #
+    def init **nn
+      if nn.has? :time, syn!: :time_range then # time range given
+        time_range = nn[:time]
+        @initial_time, @target_time = time_range.begin, time_range.end
+        @time_unit = target_time / target_time.to_f
+      else
+        anything = nn[:step] || nn[:sampling]
+        msg = "The simulation is timed, but the constructor lacks any of the " +
+          "time-related arguments: :time, :step, or :sampling!"
+        fail ArgumentError, msg unless anything
+        @time_unit = anything / anything.to_f
+        @initial_time, @target_time = time_unit * 0, time_unit * Float::INFINITY
+      end
+
+      init_core_and_recorder_subclasses
+      reset_time!
+      @step = nn[:step]
+      @recorder = Recorder().new sampling: nn[:sampling]
+    end
+
+    # Sets up subclasses of +Core+ (the simulator) and +Recorder+ (the sampler)
+    # for timed simulations.
+    # 
+    def init_core_and_recorder_subclasses
+      param_class( { Core: Core, Recrder: Recorder },
+                   with: { simulation: self } )
     end
 
     # Resets the time to initial time, or to the argument (if provided).
@@ -184,19 +181,3 @@ class YPetri::Simulation
     end
   end # module Timed
 end # module YPetri::Simulation::Timed
-
-# In general, it is not required that all net elements are simulated with the
-# same method. Practically, ODE systems have many good simulation methods
-# available.
-#
-# (1) ᴍ(t) = ϝ f(ᴍ, t).dt, where f(ᴍ, t) is a known function.
-#
-# Many of these methods depend on the Jacobian, but that may not be available
-# for some places. Therefore, the places, whose marking defines the system
-# state, are divided into two categories: "A" (accelerated), for which as
-# common Jacobian can be found, and "E" places, where "E" can stand either for
-# "External" or "Euler".
-#
-# If we apply the definition of "causal orientation" on A and E places, then it
-# can be said, that only the transitions causally oriented towards "A" places
-# are allowed for compliance with the equation (1).

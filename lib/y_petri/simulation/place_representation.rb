@@ -4,7 +4,6 @@
 # 
 class YPetri::Simulation
   class PlaceRepresentation < ElementRepresentation
-
     # Index
     def m_vector_index
       places.index( self )

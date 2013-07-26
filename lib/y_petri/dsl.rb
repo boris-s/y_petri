@@ -3,12 +3,12 @@ module YPetri
   # 
   module DSL
     def y_petri_manipulator
-      @y_petri_manipulator ||= Manipulator.new
-        .tap { puts "Defining Manipulator for #{self}" if YPetri::DEBUG }
+      @y_petri_agent ||= Agent.new
+        .tap { puts "Defining agent for #{self}" if YPetri::DEBUG }
     end
   end
 
-  delegate :workspace, to: :y_petri_manipulator
+  delegate :world, to: :y_petri_agent
 
   # Petri net aspect.
   delegate( :Place,
@@ -22,7 +22,7 @@ module YPetri
             :net, :nnet,
             :net_point_reset,
             :net_point=,
-            to: :y_petri_manipulator )
+            to: :y_petri_agent )
 
   # Simulation aspect.
   delegate( :simulation_point, :ssc_point, :cc_point, :imc_point,
@@ -58,5 +58,5 @@ module YPetri
             :plot_selected,
             :plot_state,
             :plot_flux,
-            to: :y_petri_manipulator )
+            to: :y_petri_agent )
 end

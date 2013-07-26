@@ -6,11 +6,11 @@ require 'minitest/autorun'
 require_relative '../lib/y_petri'     # tested component itself
 # require 'y_petri'
 # require 'sy'
-require_relative 'workspace_mock'
+require_relative 'world_mock'
 
 describe YPetri::Net do
   before do
-    @P, @T, @N, @S = *WORKSPACE_MOCK.(), YPetri::Simulation
+    @P, @T, @N, @S = *WORLD_MOCK.(), YPetri::Simulation
     @p1 = @P.nw "A", quantum: 0.1, marking: 1.1
     @p2 = @P.nw "B", quantum: 0.1, marking: 2.2
     @p3 = @P.nw "C", quantum: 0.1, marking: 3.3
@@ -38,7 +38,7 @@ describe YPetri::Net do
 
     it "should tell its qualities" do
       assert_equal true, @net.functional?
-      assert_equal true, @net.timed?
+      assert_equal false, @net.timed?
       assert @net.include?( @p1 ) && !@net.include?( YPetri::Place.new )
     end
 
@@ -130,7 +130,7 @@ describe YPetri::Net do
 
         it "should tell its qualities" do
           assert_equal false, @net.functional?
-          assert_equal false, @net.timed?
+          assert_equal true, @net.timed?
           @net.exclude_transition! @t2
           assert_equal true, @net.functional?
           assert_equal true, @net.timed?
