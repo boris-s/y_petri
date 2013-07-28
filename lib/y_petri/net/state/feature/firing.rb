@@ -12,8 +12,8 @@ class YPetri::Net::State
             Hash.new do |hsh, id|
               case id
               when Firing then hsh[ id.transition ]
-              when net.Transition then hsh[ id ] = ç.__new__( id )
-              else hsh[ net.transition( id ) ] end
+              when ç.net.Transition then hsh[ id ] = ç.__new__( id )
+              else hsh[ ç.net.transition( id ) ] end
             end.tap { |ꜧ| ç.instance_variable_set :@instances, ꜧ }
           end
         end

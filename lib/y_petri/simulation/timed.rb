@@ -23,7 +23,8 @@ class YPetri::Simulation
                 :time_unit,
                 :initial_time,
                 :target_time,
-                :step
+                :step,
+                :default_sampling
 
     alias starting_time initial_time
     alias ending_time target_time
@@ -152,7 +153,7 @@ class YPetri::Simulation
         @initial_time, @target_time = time_range.begin, time_range.end
         @time_unit = target_time / target_time.to_f
       else
-        anything = nn[:step] || nn[:sampling]
+        anything = settings[:step] || settings[:sampling]
         msg = "The simulation is timed, but the constructor lacks any of the " +
           "time-related arguments: :time, :step, or :sampling!"
         fail ArgumentError, msg unless anything
@@ -161,8 +162,8 @@ class YPetri::Simulation
       end
       init_core_and_recorder_subclasses
       reset_time!
-      @step = nn[:step]
-      puts "Hello from #init, setting up timed @recorder"
+      @step = settings[:step]
+      @default_sampling = settings[:sampling] || step
       @recorder = Recorder().new sampling: settings[:sampling]
     end
 

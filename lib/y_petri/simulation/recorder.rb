@@ -19,7 +19,8 @@ class YPetri::Simulation
     # initial state of the recording.
     # 
     def initialize features: net.State.Features.marking, # marking and nothing else
-                   recording: features.new_dataset
+                   recording: features.new_dataset,
+                   **nn
       @features = net.State.features( features )
       reset! recording: recording
     end

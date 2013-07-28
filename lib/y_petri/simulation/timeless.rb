@@ -21,7 +21,6 @@ class YPetri::Simulation
     # 
     def init **settings
       init_core_and_recorder_subclasses
-      puts "Hello from #init, setting up timeless @recorder"
       @recorder = Recorder().new # init the recorder
     end
 

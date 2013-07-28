@@ -193,7 +193,7 @@ class YPetri::Simulation
 
   # Resets the simulation
   # 
-  def reset!
+  def reset! **settings
     tap do
       m_vector.reset!
       recorder.reset!

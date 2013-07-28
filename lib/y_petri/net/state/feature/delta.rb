@@ -17,14 +17,14 @@ class YPetri::Net::State
               else
                 p, tt = id.fetch( 0 ), id.fetch( 1 ).fetch( :transitions )
                 step = id[:step]
-                if p.is_a? net.Place and tt.all? { |t| t.is_a? net.Transition }
+                if p.is_a? ç.net.Place and tt.all? { |t| t.is_a? ç.net.Transition }
                   if tt = tt.sort then
                     hsh[ id ] = ç.__new__( *id )
                   else
                     hsh[ [ p, transitions: tt.sort ] ]
                   end
                 else
-                  hsh[ [ net.place( p ), transitions: net.transitions( tt ) ] ]
+                  hsh[ [ ç.net.place( p ), transitions: ç.net.transitions( tt ) ] ]
                 end
               end
             end.tap { |ꜧ| ç.instance_variable_set :@instances, ꜧ }

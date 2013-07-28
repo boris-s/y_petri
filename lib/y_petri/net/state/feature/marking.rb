@@ -13,8 +13,8 @@ class YPetri::Net::State
             Hash.new do |hsh, id|
               case id
               when Marking then hsh[ id.place ]
-              when net.Place then hsh[ id ] = ç.__new__( id )
-              else hsh[ net.place( id ) ] end
+              when ç.net.Place then hsh[ id ] = ç.__new__( id )
+              else hsh[ ç.net.place( id ) ] end
             end.tap { |ꜧ| ç.instance_variable_set :@instances, ꜧ }
           end
         end

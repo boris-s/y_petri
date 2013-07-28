@@ -13,20 +13,17 @@ class YPetri::Net::State
     class << self
       def parametrize **nn
         super.tap do |ç|
-          ç.instance_variable_set :@Marking,
-                                  Marking.parametrize( State: ç.State )
-          ç.instance_variable_set :@Firing,
-                                  Firing.parametrize( State: ç.State )
-          ç.instance_variable_set :@Gradient,
-                                  Gradient.parametrize( State: ç.State )
-          ç.instance_variable_set :@Flux,
-                                  Flux.parametrize( State: ç.State )
-          ç.instance_variable_set :@Delta,
-                                  Delta.parametrize( State: ç.State )
+          sç = ç.State
+          ç.instance_variable_set :@Marking, Marking.parametrize( State: sç )
+          ç.instance_variable_set :@Firing, Firing.parametrize( State: sç )
+          ç.instance_variable_set :@Gradient, Gradient.parametrize( State: sç )
+          ç.instance_variable_set :@Flux, Flux.parametrize( State: sç )
+          ç.instance_variable_set :@Delta, Delta.parametrize( State: sç )
         end
       end
 
-      delegate :net, to: "State()"
+      delegate :net,
+               to: "State()"
 
       def Marking id=L!
         return @Marking if id.local_object?

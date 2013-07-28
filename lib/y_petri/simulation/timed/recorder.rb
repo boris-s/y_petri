@@ -6,13 +6,24 @@ module YPetri::Simulation::Timed
 
     attr_reader :next_time
     attr_accessor :sampling
-    delegate :time, to: :simulation
+    delegate :time,
+             :default_sampling,
+             to: :simulation
+
+    # Apart from the vanilla version arguments, timed recorder takes +:sampling+
+    # argument.
+    # 
+    def initialize sampling: default_sampling, next_time: time, **nn
+      super
+      @sampling = sampling
+      @next_time = next_time
+    end
 
     # Like +YPetri::Simulation::Recorder#reset+, but allowing for an additional
     # named argument +:next_time+ that sets the next sampling time, and
     # +:sampling:, resetting the sampling period.
     # 
-    def reset! sampling: simulation.default_sampling, next_time: time, **nn
+    def reset! sampling: default_sampling, next_time: time, **nn
       super
       @sampling = sampling
       @next_time = next_time
@@ -23,7 +34,7 @@ module YPetri::Simulation::Timed
     # 
     def alert
       t = time.round( 9 )
-      t2 = next_sampling_time.round( 9 )
+      t2 = next_time.round( 9 )
       if t >= t2 then # it's time to sample
         sample!
         @next_time += sampling
@@ -34,7 +45,7 @@ module YPetri::Simulation::Timed
 
     # Records the current state as a pair { sampling_time => system_state }.
     # 
-    def sample! time
+    def sample!
       sampling_time = time.round( TIME_DECIMAL_PLACES )
       super sampling_time
     end
