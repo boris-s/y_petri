@@ -51,7 +51,7 @@ class YPetri::Simulation::Elements
     # 
     def elements ids=nil
       return places + transitions if ids.nil?
-      ids.map { |id| element( id ) }
+      ids.map { |id| element id }
     end
   end # module Access
 end # class YPetri::Simulation::Elements

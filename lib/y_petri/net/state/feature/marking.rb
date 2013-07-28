@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class YPetri::Net::State
   class Feature
     # Marking of a Petri net place.
@@ -7,20 +9,40 @@ class YPetri::Net::State
 
       class << self
         def parametrize *args
-          Class.instance_method( :parametrize ).bind( self ).( *args )
+          Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
+            Hash.new do |hsh, id|
+              case id
+              when Marking then hsh[ id.place ]
+              when net.Place then hsh[ id ] = ç.__new__( id )
+              else hsh[ net.place( id ) ] end
+            end.tap { |ꜧ| ç.instance_variable_set :@instances, ꜧ }
+          end
         end
 
-        def of place_id
-          new place_id
+        attr_reader :instances
+
+        alias __new__ new
+
+        def new id
+          instances[ id ]
+        end
+
+        def of id
+          new id
         end
       end
 
-      def initialize place_id
-        @place = net.place place_id
+      def initialize place
+        @place = net.place( place )
       end
 
       def extract_from arg, **nn
-        arg.marking( place )
+        case arg
+        when YPetri::Simulation then
+          arg.m( [ place ] ).first
+        else
+          fail TypeError, "Argument type not supported!"
+        end
       end
 
       def to_s

@@ -2,6 +2,8 @@
 # names) in a Petri net.
 # 
 class YPetri::Net
+  
+
   # Names of places in the net.
   # 
   def pn

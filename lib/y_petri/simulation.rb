@@ -45,9 +45,17 @@ class YPetri::Simulation
 
   DEFAULT_SETTINGS = -> do { method: :pseudo_euler, guarded: false } end
 
+  class << self
+    alias __new__ new
+
+    def new net: (fail ArgumentError, "No net supplied!"), **settings
+      net.simulation **settings
+    end
+  end
+
   # Parametrized subclasses:
-  attr_reader :net,
-              :core,
+  attr_reader :core,
+              :recorder,
               :guarded,
               :tS_stoichiometry_matrix,
               :TS_stoichiometry_matrix,
@@ -61,6 +69,8 @@ class YPetri::Simulation
               :increment_marking_vector_closure
 
   alias guarded? guarded
+
+  delegate :net, to: :class
 
   delegate :method,
            :guarded?,
@@ -81,41 +91,64 @@ class YPetri::Simulation
   # range, :step, controlling the simulation step size, and :sampling,
   # controlling the sampling frequency.
   # 
-  def initialize method: nil,        # the simulation method
-                 guarded: false,     # whether the simulation is guarded
-                 net: ( fail ArgumentError, "Net missing!" ),
-                 marking_clamps: {},
-                 initial_marking: {},
-                 use_default_marking: true,
-                 **nn
-
-    @net = net
-    @guarded = guarded
-    init_element_representation
+  def initialize **settings
+    method = settings[:method] # the simulation method
+    @guarded = settings[:guarded] # guarding on / off
+    m_clamps = settings[:marking_clamps] || {}
+    init_m = settings[:initial_marking] || {}
+    use_default_marking = settings[:use_default_marking] || true
+    # Time-independent simulation settings received, constructing param. classes
+    param_class( { Place: PlaceRepresentation,
+                   Places: Places,
+                   Transition: TransitionRepresentation,
+                   Transitions: Transitions,
+                   PlaceMapping: PlaceMapping,
+                   InitialMarking: InitialMarking,
+                   MarkingClamps: MarkingClamps,
+                   MarkingVector: MarkingVector }, with: { simulation: self } )
+    # Place and transition representation classes are their own namespaces.
+    Place().namespace!
+    Transition().namespace!
+    # Set up the places collection.
+    @places = Places().load( net.places )
+    # Clamped places' mapping to the clamp values.
+    @marking_clamps = MarkingClamps().load( m_clamps )
+    # Free places' mapping to the initial marking values.
+    @initial_marking = InitialMarking().load( init_m )
+    # Set up the place and transition collections.
+    @places.complete_initial_marking( use_default_marking: use_default_marking )
+    # Correspondence matrix free --> all
+    @f2a = free_places.correspondence_matrix( places )
+    # Correspondence matrix clamped --> all
+    @c2a = clamped_places.correspondence_matrix( places )
+    # Conditionally extend self depending on net's timedness.
+    extend( settings[:time] || settings[:step] || settings[:sampling] ?
+            Timed : Timeless )
+    # Initialize the marking vector.
     @m_vector = MarkingVector().zero
-    extend nn[:time] || nn[:step] || nn[:sampling] ? Timed : Timeless
-
-    init_core_and_recorder_subclasses
-    init_places( marking_clamps, initial_marking,
-                 use_default_marking: use_default_marking )
-
-    init_transitions
-    init **nn # Timed / Timeless dependent initialization
-
-    # Make timeless closures:
+    # Set up the transitions collection.
+    @transitions = Transitions().load( net.transitions )
+    # Set up stoichiometry matrices relative to free places.
+    @tS_stoichiometry_matrix = transitions.tS.stoichiometry_matrix
+    @TS_stoichiometry_matrix = transitions.TS.stoichiometry_matrix
+    # Set up stoichiometry matrices relative to all places.
+    @tS_SM = transitions.tS.SM
+    @TS_SM = transitions.TS.SM
+    # Call timedness-dependent initialization.
+    init **settings
+    # Make timeless closures.
     @ts_delta_closure = transitions.ts.delta_closure
     @tS_firing_closure = transitions.tS.firing_closure
     @A_assignment_closure = transitions.A.assignment_closure
     @increment_marking_vector_closure = m_vector.increment_closure
-
-    if timed? then # also make timed closures:
+    # Make timed closures.
+    if timed? then
       @Ts_gradient_closure = transitions.Ts.gradient_closure
       @TS_rate_closure = transitions.TS.rate_closure
     end
-
     # Init the core.
     @core = Core().new( method: method, guarded: guarded  )
-
+    # Reset.
     reset!
   end
 
@@ -163,8 +196,8 @@ class YPetri::Simulation
   def reset!
     tap do
       m_vector.reset!
-      recording.reset!
-      recording.note_state_change
+      recorder.reset!
+      recorder.alert
     end
   end
 
@@ -175,46 +208,9 @@ class YPetri::Simulation
     places.zip( ary ).each { |pl, proposed_m| pl.guard.( proposed_m ) }
   end
 
-  private
-
-  # Sets up parametrized subclasses representing elements / element collections.
+  # Extract a prescribed set of features.
   # 
-  def init_element_representation
-    param_class( { Place: PlaceRepresentation,
-                   Transition: TransitionRepresentation,
-                   Places: Places,
-                   Transitions: Transitions,
-                   PlaceMapping: PlaceMapping,
-                   InitialMarking: InitialMarking,
-                   MarkingClamps: MarkingClamps,
-                   MarkingVector: MarkingVector },
-                 with: { simulation: self } )
-    Place().namespace!
-    Transition().namespace!
-  end
-
-  # Sets up a representation of the net's places, clamps and initial marking.
-  # 
-  def init_places( marking_clamps, initial_marking, use_default_marking: true )
-    # Seting up the place and transition collections.
-    @places = Places().load( net.places )
-    @marking_clamps = MarkingClamps().load( marking_clamps )
-    @initial_marking = InitialMarking().load( initial_marking )
-    @places.complete_initial_marking( use_default_marking: use_default_marking )
-    # Correspondence matrices free --> all and clamped --> all:
-    @f2a = free_places.correspondence_matrix( places )
-    @c2a = clamped_places.correspondence_matrix( places )
-  end
-
-  # Sets up a representation of the net's transitions.
-  # 
-  def init_transitions
-    @transitions = Transitions().load( net.transitions )
-    # Stoichiometry matrices relative to free places:
-    @tS_stoichiometry_matrix = transitions.tS.stoichiometry_matrix
-    @TS_stoichiometry_matrix = transitions.TS.stoichiometry_matrix
-    # Stoichiometry matrices relative to all places:
-    @tS_SM = transitions.tS.SM
-    @TS_SM = transitions.TS.SM
+  def get_features arg
+    net.State.features( arg ).extract_from( self )
   end
 end # class YPetri::Simulation

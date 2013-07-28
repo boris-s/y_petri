@@ -18,9 +18,9 @@ class YPetri::Simulation
     # feature set to record during simulation, and +:recording+, expecting the
     # initial state of the recording.
     # 
-    def initialize features: net.Features.state, # marking and nothing else
+    def initialize features: net.State.Features.marking, # marking and nothing else
                    recording: features.new_dataset
-      @features = net.Features.new( features )
+      @features = net.State.features( features )
       reset! recording: recording
     end
 
@@ -45,7 +45,7 @@ class YPetri::Simulation
     # Records the current state as a pair { sampling_event => system_state }.
     # 
     def sample! event
-      record = simulation.get( features )
+      record = simulation.get_features( features )
       recording[ event ] = record.dump( precision: SAMPLING_DECIMAL_PLACES )
     end
   end # class Recorder

@@ -7,7 +7,7 @@ class YPetri::Simulation::Transitions
     include Type_t
     include Type_s
 
-    # delta closure accessor.
+    # Delta closure accessor.
     # 
     def delta_closure
       @delta_closure ||= to_delta_closure

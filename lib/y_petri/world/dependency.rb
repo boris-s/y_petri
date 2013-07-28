@@ -9,13 +9,13 @@ module YPetri::World::Dependency
   # Place instance identification.
   # 
   def place id
-    Place().instance( id )
+    world.place( id )
   end
 
   # Transition instance identification.
   # 
   def transition id
-    Transition().instance( id )
+    world.transition( id )
   end
 
   # Element instance identification.

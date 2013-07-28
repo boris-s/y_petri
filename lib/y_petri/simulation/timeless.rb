@@ -19,8 +19,9 @@ class YPetri::Simulation
     # parametrized subclasses +@Core+ (the simulator) and +@Recorder+,
     # and initializes the +@recorder+ attribute.
     # 
-    def init **nn
+    def init **settings
       init_core_and_recorder_subclasses
+      puts "Hello from #init, setting up timeless @recorder"
       @recorder = Recorder().new # init the recorder
     end
 
@@ -28,7 +29,7 @@ class YPetri::Simulation
     # for timeless simulations.
     # 
     def init_core_and_recorder_subclasses
-      param_class( { Core: Core, Recrder: Recorder },
+      param_class( { Core: Core, Recorder: Recorder },
                    with: { simulation: self } )
     end
   end # module Timeless

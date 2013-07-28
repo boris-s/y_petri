@@ -10,7 +10,7 @@ module YPetri::Simulation::Timeless
     # 
     def reset! **nn
       super
-      self.next_event = nn[:next_event] || 0
+      @next_event = nn[:next_event] || 0
     end
 
     private

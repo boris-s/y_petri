@@ -1,41 +1,50 @@
-class YPetri::Net
-  class State
-    class Features
-      # A collection of values for a given set of state features.
-      # 
-      class Record < Array
-        class << self
-          # Construcs a new Record object from a given collection of values.
-          # 
-          def load values
-            new( features.zip( values ).map { |feat, val| feat.load val } )
-          end
-        end
-
-        delegate :Features,
-                 :features,
-                 to: :class
-
+class YPetri::Net::State
+  class Features
+    # A collection of values for a given set of state features.
+    # 
+    class Record < Array
+      class << self
         delegate :State,
                  :net,
-                 to: :Features
+                 to: "Features()"
 
-        def dump precision: nil
-          features.each { |f| self[ f ] }
+        # Construcs a new Record object from a given collection of values.
+        # 
+        def load values
+          new( features.zip( values ).map { |feat, val| feat.load val } )
         end
+      end
 
-        def fetch feature
-          super begin
-                  Integer( feature )
-                rescue TypeError
-                  features.index State.feature( feature )
-                end
-        end
+      delegate :Features,
+               :State,
+               :net,
+               :features,
+               to: :class
 
-        def reconstruct **settings
-          # FIXME - Reconstruct the simulation
-        end
-      end # class Record
-    end # class Features
-  end # class State
-end # YPetri::Net
+      # Outputs the record as a plain array.
+      # 
+      def dump precision: nil
+        features.each { |f| fetch( f ).round( precision ) }
+      end
+
+      # Returns an identified feature, or fails.
+      # 
+      def fetch feature
+        super begin
+                Integer( feature )
+              rescue TypeError
+                features.index State().feature( feature )
+              end
+      end
+
+      # Returns the state instance implied by the receiver record, and a set of
+      # complementary marking clamps supplied as the argument.
+      # 
+      def state marking_clamps: {}
+        State.new self, marking_clamps: marking_clamps
+      end
+
+      delegate :reconstruct, to: :state
+    end # class Record
+  end # class Features
+end # YPetri::Net::State

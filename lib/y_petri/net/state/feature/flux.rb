@@ -15,12 +15,17 @@ class YPetri::Net::State
         end
       end
 
-      def initialize transition_id
-        @transition = net.transition transition_id
+      def initialize id
+        @transition = net.transition( id.is_a?( Flux ) ? id.transition : id )
       end
 
       def extract_from arg, **nn
-        arg.flux( transition )
+        case arg
+        when YPetri::Simulation then
+          arg.send( :TS_transitions, [ transition ] ).flux.first
+        else
+          fail TypeError, "Argument type not supported!"
+        end
       end
     end # class Flux
   end # class Feature

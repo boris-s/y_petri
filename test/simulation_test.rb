@@ -254,90 +254,90 @@ describe YPetri::Simulation do
 end
 
 
-describe YPetri::Simulation do
-  before do
-    self.class.class_exec { include YPetri }
-    U = Place m!: 2.5
-    V = Place m!: 2.5
-    Uplus = Transition codomain: :U do 1 end # s transition
-    U2V = Transition s: { U: -1, V: 1 }      # S transition
-    set_ssc :Timeless, YPetri::Simulation::DEFAULT_SETTINGS.call
-    new_simulation ssc: :Timeless
-    5.times do simulation.step! end
-  end
+# describe YPetri::Simulation do
+#   before do
+#     self.class.class_exec { include YPetri }
+#     U = Place m!: 2.5
+#     V = Place m!: 2.5
+#     Uplus = Transition codomain: :U do 1 end # s transition
+#     U2V = Transition s: { U: -1, V: 1 }      # S transition
+#     set_ssc :Timeless, YPetri::Simulation::DEFAULT_SETTINGS.call
+#     new_simulation ssc: :Timeless
+#     5.times do simulation.step! end
+#   end
 
-  it "should behave" do
-    simulation.tap do |s|
-      assert ! s.timed?
-      s.core.must_be_kind_of YPetri::Simulation::Timeless::Core::PseudoEuler
-      s.recording.size.must_equal 6
-      s.recording.labels.must_equal [0, 1, 2, 3, 4, 5]
-      s.recording.send( :build, [ [42] * 5 + [43] ] )
-        .must_equal( { 0 => [42], 1 => [42],
-                       2 => [42], 3 => [42],
-                       4 => [42], 5 => [43] } )
-      s.at( 2 ).pm.must_equal( { U: 2.5, V: 4.5 } )
-      s.recording.marking_series( slice: 2..4 )
-        .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
-      s.recording.marking( slice: 2..4 )
-        .must_equal( { 2 => [2.5, 4.5],
-                       3 => [2.5, 5.5],
-                       4 => [2.5, 6.5] } )
-      s.recording.firing_series( slice: 1..2 )
-        .must_equal [[1, 1]]
-      s.recording.firing_series( transitions: [:U2V] )
-        .must_equal [[1, 1, 1, 1, 1, 1]]
-      s.recording.delta_series( places: [:U], transitions: [:Uplus] )
-        .must_equal [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
-      tmp = s.recording.features( marking: [:U], firing: [:U2V] )
-      tmp.delete( :features )
-        .must_equal( { marking: [:U], firing: [:U2V],
-                       delta: { places: [], transitions: [] } } )
-      tmp.must_equal( { 0 => [2.5, 1], 1 => [2.5, 1], 2 => [2.5, 1],
-                        3 => [2.5, 1], 4 => [2.5, 1], 5 => [2.5, 1] } )
-    end
-  end
-end
+#   it "should behave" do
+#     simulation.tap do |s|
+#       assert ! s.timed?
+#       s.core.must_be_kind_of YPetri::Simulation::Timeless::Core::PseudoEuler
+#       s.recording.size.must_equal 6
+#       s.recording.labels.must_equal [0, 1, 2, 3, 4, 5]
+#       s.recording.send( :build, [ [42] * 5 + [43] ] )
+#         .must_equal( { 0 => [42], 1 => [42],
+#                        2 => [42], 3 => [42],
+#                        4 => [42], 5 => [43] } )
+#       s.at( 2 ).pm.must_equal( { U: 2.5, V: 4.5 } )
+#       s.recording.marking_series( slice: 2..4 )
+#         .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
+#       s.recording.marking( slice: 2..4 )
+#         .must_equal( { 2 => [2.5, 4.5],
+#                        3 => [2.5, 5.5],
+#                        4 => [2.5, 6.5] } )
+#       s.recording.firing_series( slice: 1..2 )
+#         .must_equal [[1, 1]]
+#       s.recording.firing_series( transitions: [:U2V] )
+#         .must_equal [[1, 1, 1, 1, 1, 1]]
+#       s.recording.delta_series( places: [:U], transitions: [:Uplus] )
+#         .must_equal [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
+#       tmp = s.recording.features( marking: [:U], firing: [:U2V] )
+#       tmp.delete( :features )
+#         .must_equal( { marking: [:U], firing: [:U2V],
+#                        delta: { places: [], transitions: [] } } )
+#       tmp.must_equal( { 0 => [2.5, 1], 1 => [2.5, 1], 2 => [2.5, 1],
+#                         3 => [2.5, 1], 4 => [2.5, 1], 5 => [2.5, 1] } )
+#     end
+#   end
+# end
 
-describe YPetri::Simulation::Timed do
-  before do
-    self.class.class_exec { include YPetri }
-    A = Place m!: 0.5
-    B = Place m!: 0.5
-    A_pump = T s: { A: -1 } do 0.005 end
-    B_decay = Transition s: { B: -1 }, rate: 0.05
-    run!
-  end
+# describe YPetri::Simulation::Timed do
+#   before do
+#     self.class.class_exec { include YPetri }
+#     A = Place m!: 0.5
+#     B = Place m!: 0.5
+#     A_pump = T s: { A: -1 } do 0.005 end
+#     B_decay = Transition s: { B: -1 }, rate: 0.05
+#     run!
+#   end
 
-  it "should behave" do
-    places.map( &:marking ).must_equal [0.5, 0.5] # marking unaffected
-    simulation.tap do |s|
-      s.settings.must_equal( { method: :pseudo_euler, guarded: false,
-                               step: 0.1, sampling: 5, time: 0..60 } ) 
-      assert s.recording.to_csv.start_with?( "0.0,0.5,0.5\n" +
-                                             "5.0,0.475,0.38916\n" +
-                                             "10.0,0.45,0.30289\n" + 
-                                             "15.0,0.425,0.23574\n" +
-                                             "20.0,0.4,0.18348\n" +
-                                             "25.0,0.375,0.1428\n" )
-      assert s.recording.to_csv.end_with?( "60.0,0.2,0.02471" )
-      s.recording.labels.must_equal [ 0.0, 5.0, 10.0, 15.0, 20.0,
-                                      25.0, 30.0, 35.0, 40.0, 45.0,
-                                      50.0, 55.0, 60.0 ]
-      s.recording.values_at( 5, 10 )
-        .must_equal [ [0.475, 0.38916], [0.45, 0.30289] ]
-      s.recording.slice( 2..12 )
-        .must_equal( { 5.0 => [0.475, 0.38916], 10.0=>[0.45, 0.30289] } )
-      s.recording.marking_series( places: [:A] )
-        .must_equal [ [ 0.5, 0.475, 0.45, 0.425, 0.4, 0.375, 0.35, 0.325,
-                        0.3, 0.275, 0.25, 0.225, 0.2 ] ]
-      s.recording.firing_series.must_equal []
-      s.recording.firing
-        .must_equal( [*0..12].map { |n| n * 5.0 } >> [[]] * 13 )
-      s.recording.delta_series( places: [:A], transitions: [:A_pump] )
-        .must_equal [ [ -0.0005 ] * 13 ]
-      plot_state
-      sleep 100
-    end
-  end
-end
+#   it "should behave" do
+#     places.map( &:marking ).must_equal [0.5, 0.5] # marking unaffected
+#     simulation.tap do |s|
+#       s.settings.must_equal( { method: :pseudo_euler, guarded: false,
+#                                step: 0.1, sampling: 5, time: 0..60 } ) 
+#       assert s.recording.to_csv.start_with?( "0.0,0.5,0.5\n" +
+#                                              "5.0,0.475,0.38916\n" +
+#                                              "10.0,0.45,0.30289\n" + 
+#                                              "15.0,0.425,0.23574\n" +
+#                                              "20.0,0.4,0.18348\n" +
+#                                              "25.0,0.375,0.1428\n" )
+#       assert s.recording.to_csv.end_with?( "60.0,0.2,0.02471" )
+#       s.recording.labels.must_equal [ 0.0, 5.0, 10.0, 15.0, 20.0,
+#                                       25.0, 30.0, 35.0, 40.0, 45.0,
+#                                       50.0, 55.0, 60.0 ]
+#       s.recording.values_at( 5, 10 )
+#         .must_equal [ [0.475, 0.38916], [0.45, 0.30289] ]
+#       s.recording.slice( 2..12 )
+#         .must_equal( { 5.0 => [0.475, 0.38916], 10.0=>[0.45, 0.30289] } )
+#       s.recording.marking_series( places: [:A] )
+#         .must_equal [ [ 0.5, 0.475, 0.45, 0.425, 0.4, 0.375, 0.35, 0.325,
+#                         0.3, 0.275, 0.25, 0.225, 0.2 ] ]
+#       s.recording.firing_series.must_equal []
+#       s.recording.firing
+#         .must_equal( [*0..12].map { |n| n * 5.0 } >> [[]] * 13 )
+#       s.recording.delta_series( places: [:A], transitions: [:A_pump] )
+#         .must_equal [ [ -0.0005 ] * 13 ]
+#       plot_state
+#       sleep 100
+#     end
+#   end
+# end

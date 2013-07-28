@@ -1,7 +1,7 @@
 #encoding: utf-8
 
 require_relative 'net/visualization'
-require_relative 'net/selections'
+require_relative 'net/element_access'
 require_relative 'net/state'
 
 # Represents a _Petri net_: A collection of places and transitions. The
@@ -13,6 +13,7 @@ require_relative 'net/state'
 class YPetri::Net
   include NameMagic
   include YPetri::World::Dependency
+  include ElementAccess
 
   class << self
     # Constructs a net containing a particular set of elements.
@@ -22,8 +23,6 @@ class YPetri::Net
     end
   end
 
-  attr_reader :places, :transitions
-
   # Takes 2 arguments (+:places+ and +:transitions+) and builds a net from them.
   # 
   def initialize( places: [], transitions: [] )
@@ -31,13 +30,15 @@ class YPetri::Net
     @places, @transitions = [], []
     places.each &method( :include_place! )
     transitions.each &method( :include_transition! )
+    param_class( { Simulation: YPetri::Simulation },
+                 with: { net: self } )
   end
 
   # Includes a place in the net. Returns _true_ if successful, _false_ if the
   # place is already included in the net.
   # 
-  def include_place! place
-    pl = place( place )
+  def include_place! id
+    pl = Place().instance( id )
     return false if includes_place? pl
     true.tap { @places << pl }
   end
@@ -46,8 +47,8 @@ class YPetri::Net
   # the transition is already included in the net. The arcs of the transition
   # being included may only connect to the places already in the net.
   # 
-  def include_transition! transition
-    tr = transition( transition )
+  def include_transition! id
+    tr = Transition().instance( id )
     return false if includes_transition? tr
     true.tap { @transitions << tr }
   end
@@ -56,8 +57,8 @@ class YPetri::Net
   # place was not found in the net. A place may not be excluded from the net so
   # long as any transitions in the net connect to it.
   # 
-  def exclude_place! place
-    pl = place( place )
+  def exclude_place! id
+    pl = Place().instance( id )
     msg = "Unable to exclude #{pl} from #{self}: Transition(s) depend on it!"
     fail msg if transitions.any? { |tr| tr.arcs.include? pl }
     false.tap { return true if @places.delete( pl ) }
@@ -66,8 +67,8 @@ class YPetri::Net
   # Excludes a transition from the net. Returns _true_ if successful, _false_ if
   # the transition was not found in the net.
   # 
-  def exclude_transition! transition
-    tr = transition( transition )
+  def exclude_transition! id
+    tr = Transition().instance( id )
     false.tap { return true if @transitions.delete( tr ) }
   end
 
@@ -86,29 +87,6 @@ class YPetri::Net
                end }
   end
 
-  # Does the net include a place?
-  # 
-  def includes_place? id
-    pl = begin; place( id ); rescue NameError; nil end
-    if pl then places.include? pl else false end
-  end
-  alias include_place? includes_place?
-
-  # Does the net include a transition?
-  # 
-  def includes_transition? id
-    tr = begin; transition( id ); rescue NameError; nil end
-    if tr then transitions.include? tr else false end
-  end
-  alias include_transition? includes_transition?
-
-  # Inquirer whether the net includes an element.
-  # 
-  def include? id
-    include_place?( id ) || include_transition?( id )
-  end
-  alias includes? include?
-
   # Is the net _functional_?
   # 
   def functional?
@@ -123,8 +101,8 @@ class YPetri::Net
 
   # Creates a new simulation from the net.
   # 
-  def simulation( **nn )
-    YPetri::Simulation.new **nn.merge( net: self )
+  def simulation( **settings )
+    Simulation().__new__ **settings
   end
 
   # Networks are equal when their places and transitions are equal.
@@ -137,8 +115,9 @@ class YPetri::Net
   # Returns a string briefly describing the net.
   # 
   def to_s
-    "#<Net: " + ( name.nil? ? "%s" : "name: #{name}, %s" ) %
-      "#{places.size} places, #{transitions.size} transitions" + ">"
+    "#<Net: " +
+      ( name.nil? ? "%s" : "name: #{name}, %s" ) %
+      "#{pp.size rescue '∅'} places, #{tt.size rescue '∅'} transitions" + ">"
   end
 
   # Inspect string of the instance.

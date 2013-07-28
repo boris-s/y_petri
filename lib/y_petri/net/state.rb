@@ -8,10 +8,87 @@ class YPetri::Net
     require_relative 'state/features'
 
     class << self
+      # Customization of the parametrize method for the State class: Its
+      # dependents Feature and Features (ie. feature set) are also parametrized.
+      # 
       def parametrize net: (fail ArgumentError, "No owning net!")
         super.tap do |ç|
-          ç.param_class( { Feature: Feature }, with: { State: self } )
-          ç.param_class( { Features: Features }, with: { State: self } )
+          ç.param_class( { Feature: Feature,
+                           Features: Features }, with: { State: ç } )
+        end
+      end
+
+      delegate :Marking,
+               :Firing,
+               :Gradient,
+               :Flux,
+               :Delta,
+               to: "Feature()"
+
+      alias __new__ new
+
+      # Revives a state from a record and a given set of marking clamps.
+      # 
+      def new record, marking_clamps: {}
+        cc = marking_clamps.with_keys { |k| net.place k }.with_values! do |v|
+          case v
+          when YPetri::Place then v.marking
+          when ~:call then v.call
+          else v end
+        end
+
+        record = features( marking: net.pp - cc.keys ).load( record )
+
+        __new__ net.pp.map do |p|p
+          begin; cc.fetch p; rescue IndexError
+            record.fetch Marking().of( p )
+          end
+        end
+      end
+
+      # Returns the feature identified by the argument.
+      # 
+      def feature id
+        case id
+        when Feature() then id
+        when Feature then id.class.new( id )
+        else
+          features( id ).tap do |ff|
+            ff.size == 1 or fail ArgumentError, "Argument #{id} must identify " +
+                                 "exactly 1 feature!"
+          end.first
+        end
+      end
+
+      # If the argument is an array of features, or another Features instance,
+      # a feature set based on this array is returned. But the real purpose of
+      # this method is to allow hash-type argument, with keys +:marking+,
+      # +:firing+, +:gradient+, +:flux+ and +:delta+, specifying the respective
+      # features. For +:marking+, an array of places (or Marking features) is
+      # expected. For +:firing+ and +:flux+, an array of transitions (or Firing
+      # / Flux features) is expected. For +:gradient+ and +:delta+, a hash value
+      # is expected, containing keys +:places+ and +:transitions+, specifying
+      # for which place set / transition set should gradient / delta features
+      # be constructed. More in detail, values supplied under keys +:marking+,
+      # +:firing+, +:gradient+, +:flux+ and +:delta+ are delegated to
+      # +Features.marking+, +Features.firing+, +Features.gradient+ and
+      # +Features.flux+ methods, and their results are joined into a single
+      # feature set.
+      # 
+      def features arg
+        case arg
+        when Features(), Array then Features().new( arg )
+        else # the real job of the method
+          marking = arg[:marking] || []
+          firing = arg[:firing] || [] # array of tS transitions
+          gradient = arg[:gradient] || { places: [], transitions: [] }
+          flux = arg[:flux] || [] # array of TS transitions
+          delta = arg[:delta] || { places: [], transitions: [] }
+          [ Features().marking( places: marking ),
+            Features().firing( transitions: firing ),
+            Features().gradient( gradient ),
+            Features().flux( transitions: flux ),
+            Features().delta( delta ) ].reduce :+
         end
       end
     end
@@ -26,12 +103,13 @@ class YPetri::Net
              :Features,
              to: :class
 
-    def reconstruct( event: nil, time: nil, marking_clamps: [], **nn )
-      # FIXME
-      net.new_simulation( marking: self,
-                          marking_clamps: marking_clamps,
-                          time: time,
-                          **nn )
+    # Reconstructs a simulation from the current state instance, given marking
+    # clamps and other simulation settings.
+    # 
+    def reconstruct marking_clamps: {}, **settings
+      net.simulation marking: to_hash,
+                     marking_clamps: marking_clamps,
+                     **settings
     end
   end # class State
 end # YPetri::Net

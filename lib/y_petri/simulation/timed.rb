@@ -146,9 +146,9 @@ class YPetri::Simulation
     # parametrized subclasses +@Core+ and +@Recorder+, and initializes the
     # +@recorder+ attribute.
     #
-    def init **nn
-      if nn.has? :time, syn!: :time_range then # time range given
-        time_range = nn[:time]
+    def init **settings
+      if settings.has? :time, syn!: :time_range then # time range given
+        time_range = settings[:time]
         @initial_time, @target_time = time_range.begin, time_range.end
         @time_unit = target_time / target_time.to_f
       else
@@ -159,18 +159,18 @@ class YPetri::Simulation
         @time_unit = anything / anything.to_f
         @initial_time, @target_time = time_unit * 0, time_unit * Float::INFINITY
       end
-
       init_core_and_recorder_subclasses
       reset_time!
       @step = nn[:step]
-      @recorder = Recorder().new sampling: nn[:sampling]
+      puts "Hello from #init, setting up timed @recorder"
+      @recorder = Recorder().new sampling: settings[:sampling]
     end
 
     # Sets up subclasses of +Core+ (the simulator) and +Recorder+ (the sampler)
     # for timed simulations.
     # 
     def init_core_and_recorder_subclasses
-      param_class( { Core: Core, Recrder: Recorder },
+      param_class( { Core: Core, Recorder: Recorder },
                    with: { simulation: self } )
     end
 

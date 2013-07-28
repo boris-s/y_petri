@@ -15,7 +15,7 @@ class YPetri::Simulation::Transitions
     # Gradient by the T transitions.
     # 
     def gradient
-      TS().gradient + Ts().gradient
+      Ts().gradient + TS().gradient
     end
 
     # State change of free places if the timed transitions fire for given time.

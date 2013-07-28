@@ -287,4 +287,12 @@ class YPetri::Transition
       [ "#{assignment_action? ? ' Assign.' : ''}",
         "#{name.nil? ? ' id:%s' % object_id : ''}" ]
   end
+
+  def place id
+    super rescue Place().instance( id )
+  end
+
+  def transition id
+    super rescue Transition().instance( id )
+  end
 end # class YPetri::Transition

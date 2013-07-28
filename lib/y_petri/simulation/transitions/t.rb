@@ -9,7 +9,7 @@ class YPetri::Simulation::Transitions
     # State change if the timeless transitions fire once.
     # 
     def delta
-      tS.delta + ts.delta
+      ts.delta + tS.delta
     end
 
     # State change if the timeless transitions fire once.
