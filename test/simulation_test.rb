@@ -231,6 +231,8 @@ describe YPetri::Simulation do
           end
 
           it "should behave" do
+            @sim.recording.must_be_kind_of YPetri::Net::State::Features::Dataset
+            @sim.recording.must_equal @net.State.marking.new_dataset.update( 0.0 => [1, 2] )
             @sim.recording.must_equal( { 0.0 => [1, 2] } )
             @sim.step! 1
             @sim.recording.must_equal( { 0.0 => [1, 2], 1.0 => [2, 1] } )
