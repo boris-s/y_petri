@@ -19,7 +19,7 @@ class YPetri::Net::State
                :State,
                :net,
                :features,
-               to: :class
+               to: "self.class"
 
       # Outputs the record as a plain array.
       # 
