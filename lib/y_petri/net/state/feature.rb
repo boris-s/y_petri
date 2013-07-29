@@ -71,6 +71,6 @@ class YPetri::Net::State
     delegate :net,
              :State,
              :Marking, :Firing, :Gradient, :Flux, :Delta,
-             to: :class
+             to: "self.class"
   end # class Feature
 end # YPetri::Net::State
