@@ -2,7 +2,7 @@ module YPetri
   # YPetri DSL.
   # 
   module DSL
-    def y_petri_manipulator
+    def y_petri_agent
       @y_petri_agent ||= Agent.new
         .tap { puts "Defining agent for #{self}" if YPetri::DEBUG }
     end

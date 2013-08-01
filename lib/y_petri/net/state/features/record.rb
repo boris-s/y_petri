@@ -24,7 +24,7 @@ class YPetri::Net::State
       # Outputs the record as a plain array.
       # 
       def dump precision: nil
-        features.each { |f| fetch( f ).round( precision ) }
+        features.map { |f| fetch( f ).round( precision ) }
       end
 
       # Returns an identified feature, or fails.

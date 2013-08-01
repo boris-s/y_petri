@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 require_relative 'place/guard'
 require_relative 'place/arcs'
@@ -8,6 +8,12 @@ require_relative 'place/arcs'
 class YPetri::Place
   include NameMagic
   include YPetri::World::Dependency
+
+  class << self
+    include YPetri::World::Dependency
+  end
+
+  delegate :world, to: "self.class"
 
   attr_reader :quantum
   attr_reader :guards

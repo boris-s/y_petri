@@ -95,6 +95,12 @@ class YPetri::Transition
   include NameMagic
   include YPetri::World::Dependency
 
+  class << self
+    include YPetri::World::Dependency
+  end
+
+  delegate :world, to: "self.class"
+
   BASIC_TRANSITION_TYPES = {
     TS: "timed stoichiometric",
     tS: "timeless stoichiometric",

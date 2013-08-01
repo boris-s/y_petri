@@ -17,7 +17,7 @@ class YPetri::Simulation
       end
     end
 
-    delegate :simulation, to: :class
+    delegate :simulation, to: "self.class"
 
     alias places keys
 

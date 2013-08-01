@@ -91,6 +91,8 @@ class YPetri::Net
             Features().delta( delta ) ].reduce :+
         end
       end
+
+      delegate :marking, :firing, :gradient, :flux, :delta, to: "Features()"
     end
 
     # For non-parametrized vesion of the class, the class instance variables
@@ -101,7 +103,9 @@ class YPetri::Net
     delegate :net,
              :Feature,
              :Features,
-             to: :class
+             :features,
+             :marking, :firing, :gradient, :flux, :delta,
+             to: "self.class"
 
     # Reconstructs a simulation from the current state instance, given marking
     # clamps and other simulation settings.

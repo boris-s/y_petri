@@ -3,8 +3,8 @@
 
 require 'minitest/spec'
 require 'minitest/autorun'
-# require_relative '../lib/y_petri'     # tested component itself
-require 'y_petri'
+require_relative '../lib/y_petri'     # tested component itself
+# require 'y_petri'
 # require 'sy'
 
 describe YPetri::Place do

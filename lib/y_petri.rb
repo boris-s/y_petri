@@ -28,6 +28,7 @@ require_relative 'y_petri/place'
 require_relative 'y_petri/transition'
 require_relative 'y_petri/net'
 require_relative 'y_petri/simulation'
+require_relative 'y_petri/core'
 require_relative 'y_petri/agent'
 require_relative 'y_petri/dsl'
 
@@ -57,7 +58,7 @@ module YPetri
   class << self
     def included( receiver )
       receiver.extend YPetri::DSL
-      receiver.delegate :y_petri_agent, to: :class
+      receiver.delegate :y_petri_agent, to: "self.class"
     end
   end
 end

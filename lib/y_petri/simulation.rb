@@ -19,7 +19,6 @@ require_relative 'simulation/initial_marking/access'
 require_relative 'simulation/marking_vector'
 require_relative 'simulation/marking_vector/access'
 require_relative 'simulation/recorder'
-require_relative 'simulation/core'
 require_relative 'simulation/timeless'
 require_relative 'simulation/timed'
 
@@ -70,9 +69,9 @@ class YPetri::Simulation
 
   alias guarded? guarded
 
-  delegate :net, to: :class
+  delegate :net, to: "self.class"
 
-  delegate :method,
+  delegate :simulation_method,
            :guarded?,
            :step!,
            to: :core
@@ -96,7 +95,11 @@ class YPetri::Simulation
     @guarded = settings[:guarded] # guarding on / off
     m_clamps = settings[:marking_clamps] || {}
     init_m = settings[:initial_marking] || {}
-    use_default_marking = settings[:use_default_marking] || true
+    use_default_marking = if settings.has? :use_default_marking then
+                            settings[:use_default_marking]
+                          else
+                            true
+                          end
     # Time-independent simulation settings received, constructing param. classes
     param_class( { Place: PlaceRepresentation,
                    Places: Places,

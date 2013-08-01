@@ -64,7 +64,7 @@ class YPetri::Simulation
       end
     end
 
-    delegate :simulation, to: :class
+    delegate :simulation, to: "self.class"
 
     # Creates a subset of this marking vector.
     # 

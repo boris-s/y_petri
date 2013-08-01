@@ -9,7 +9,7 @@ class YPetri::Simulation
 
     attr_reader :source # source place
 
-    delegate :simulation, to: :class
+    delegate :simulation, to: "self.class"
 
     # Expect a single YPetri place as an argument.
     # 

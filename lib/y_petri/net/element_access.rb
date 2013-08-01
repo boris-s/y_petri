@@ -5,7 +5,9 @@ module YPetri::Net::ElementAccess
   # Does the net include a place?
   # 
   def includes_place? id
-    begin; place( id ) and true; rescue NameError, TypeError; false end
+    begin
+      place( id ) and true
+    rescue NameError, TypeError; false end
   end
   alias include_place? includes_place?
 

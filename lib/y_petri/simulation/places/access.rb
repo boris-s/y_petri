@@ -87,6 +87,7 @@ class YPetri::Simulation::Places
           places.find { |p_rep| p_rep.source == pl } ||
             Place().instance( pl.name )
         rescue NameError, TypeError => msg
+          raise
           raise TypeError, "The argument #{id} (class #{id.class}) does not identify a " +
             "place instance! (#{msg})"
         end

@@ -90,7 +90,7 @@ module YPetri::Agent::SimulationRelated
     super
   end
 
-  # Simulation-related methods delegated to the workspace.
+  # Simulation-related methods delegated to the world.
   delegate :simulations,
            :clamp_collections,
            :initial_marking_collections,
@@ -146,7 +146,7 @@ module YPetri::Agent::SimulationRelated
 
   def clamp clamp_hash
     clamp_hash.each_pair do |place, clamp|
-      clamp_collection.merge! workspace.place( place ) => clamp
+      clamp_collection.merge! world.place( place ) => clamp
     end
   end
 
@@ -226,7 +226,7 @@ module YPetri::Agent::SimulationRelated
   # table.
   # 
   def new_simulation *args, &block
-    instance = workspace.new_simulation( *args, &block )
+    instance = world.new_simulation( *args, &block )
     # Set the point to it
     simulation_point.set( simulations.rassoc( instance )[0] )
     return instance
@@ -265,7 +265,7 @@ module YPetri::Agent::SimulationRelated
 
     # plot them
 
-    return nil unless sim = @workspace.simulations.values[-1] # sim@point
+    return nil unless sim = world.simulations.values[-1] # sim@point
     # Decide abnout the features
     features = sim.places.dup.map { |p|
       collection.include?( p ) ? p : nil
@@ -296,7 +296,7 @@ module YPetri::Agent::SimulationRelated
   # Plot the recorded flux (computed flux history at the sampling points).
   # 
   def plot_flux( transition_ids=nil, **options )
-    sim = @workspace.simulations.values[-1] or return nil # sim@point
+    sim = world.simulations.values[-1] or return nil # sim@point
     tt = sim.TS_transitions( transition_ids ).sources
     excluded = sim.transitions( Array options[:except] ).sources
     tt -= excluded

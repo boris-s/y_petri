@@ -5,7 +5,6 @@ class YPetri::Simulation
   # 
   module Timed
     require_relative 'timed/recorder'
-    require_relative 'timed/core'
 
     DEFAULT_SETTINGS = -> do { step: 0.1, sampling: 5, time: 0..60 } end
 
@@ -162,7 +161,7 @@ class YPetri::Simulation
       end
       init_core_and_recorder_subclasses
       reset_time!
-      @step = settings[:step]
+      @step = settings[:step] || time_unit
       @default_sampling = settings[:sampling] || step
       @recorder = Recorder().new sampling: settings[:sampling]
     end
@@ -171,7 +170,8 @@ class YPetri::Simulation
     # for timed simulations.
     # 
     def init_core_and_recorder_subclasses
-      param_class( { Core: Core, Recorder: Recorder },
+      param_class( { Core: YPetri::Core::Timed,
+                     Recorder: Recorder },
                    with: { simulation: self } )
     end
 

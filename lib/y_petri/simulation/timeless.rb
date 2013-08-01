@@ -5,7 +5,6 @@
 class YPetri::Simulation
   module Timeless
     require_relative 'timeless/recorder'
-    require_relative 'timeless/core'
 
     # False for timeless simulations.
     # 
@@ -28,7 +27,8 @@ class YPetri::Simulation
     # for timeless simulations.
     # 
     def init_core_and_recorder_subclasses
-      param_class( { Core: Core, Recorder: Recorder },
+      param_class( { Core: YPetri::Core::Timeless,
+                     Recorder: Recorder },
                    with: { simulation: self } )
     end
   end # module Timeless

@@ -14,12 +14,13 @@ class YPetri::World
   include self::SimulationRelated
 
   def initialize
-    # Parametrized subclasses of Place, Transition and Net.
-    @Place = YPetri::Place.parametrize( world: self )
-    @Transition = YPetri::Transition.parametrize( world: self )
-    @Net = YPetri::Net.parametrize( world: self )
+    # Parametrize the Place / Transition / Net classes.
+    param_class!( { Place: YPetri::Place,
+                    Transition: YPetri::Transition,
+                    Net: YPetri::Net },
+                  with: { world: self } )
     # Make them their own namespaces.
-    [ @Place, @Transition, @Net ].each &:namespace!
+    [ Place(), Transition(), Net() ].each &:namespace!
     # And proceeed as usual.
     super
   end

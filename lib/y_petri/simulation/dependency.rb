@@ -23,7 +23,7 @@ class YPetri::Simulation
              :A_tt,
              :f2a, :c2a,
              :m_vector,
-             :recording,
+             :recorder,
              to: :simulation
 
     # Delegates to the protected (and private) methods of simulation.

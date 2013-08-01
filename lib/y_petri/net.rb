@@ -12,10 +12,12 @@ require_relative 'net/state'
 # 
 class YPetri::Net
   include NameMagic
-  include YPetri::World::Dependency
-  include ElementAccess
+  include YPetri::World::Dependency # it is important for the Dependency
+  include ElementAccess             # to be below ElementAccess
 
   class << self
+    include YPetri::World::Dependency
+
     # Constructs a net containing a particular set of elements.
     # 
     def of *elements
@@ -23,13 +25,15 @@ class YPetri::Net
     end
   end
 
+  delegate :world, to: "self.class"
+
   # Takes 2 arguments (+:places+ and +:transitions+) and builds a net from them.
   # 
   def initialize( places: [], transitions: [] )
     param_class( { State: State }, with: { net: self } )
     @places, @transitions = [], []
-    places.each &method( :include_place! )
-    transitions.each &method( :include_transition! )
+    places.each &method( :include_place )
+    transitions.each &method( :include_transition )
     param_class( { Simulation: YPetri::Simulation },
                  with: { net: self } )
   end
@@ -37,7 +41,7 @@ class YPetri::Net
   # Includes a place in the net. Returns _true_ if successful, _false_ if the
   # place is already included in the net.
   # 
-  def include_place! id
+  def include_place id
     pl = Place().instance( id )
     return false if includes_place? pl
     true.tap { @places << pl }
@@ -47,7 +51,7 @@ class YPetri::Net
   # the transition is already included in the net. The arcs of the transition
   # being included may only connect to the places already in the net.
   # 
-  def include_transition! id
+  def include_transition id
     tr = Transition().instance( id )
     return false if includes_transition? tr
     true.tap { @transitions << tr }
@@ -57,7 +61,7 @@ class YPetri::Net
   # place was not found in the net. A place may not be excluded from the net so
   # long as any transitions in the net connect to it.
   # 
-  def exclude_place! id
+  def exclude_place id
     pl = Place().instance( id )
     msg = "Unable to exclude #{pl} from #{self}: Transition(s) depend on it!"
     fail msg if transitions.any? { |tr| tr.arcs.include? pl }
@@ -67,24 +71,31 @@ class YPetri::Net
   # Excludes a transition from the net. Returns _true_ if successful, _false_ if
   # the transition was not found in the net.
   # 
-  def exclude_transition! id
+  def exclude_transition id
     tr = Transition().instance( id )
     false.tap { return true if @transitions.delete( tr ) }
   end
 
   # Includes an element in the net.
   # 
-  def << element
-    self.tap { begin
-                 include_place! element
-               rescue NameError, TypeError
-                 begin
-                   include_transition! element
-                 rescue NameError, TypeError => err
-                   msg = "Unrecognized place or transition: #{element} (#{err})"
-                   raise TypeError, err
-                 end
-               end }
+  def << element_id
+    element_type, element = begin
+                              [ :place,
+                                self.class.place( element_id ) ]
+                            rescue NameError, TypeError
+                              begin
+                                [ :transition,
+                                  self.class.transition( element_id ) ]
+                              rescue NameError, TypeError => err
+                                msg = "Current world contains no place or" +
+                                  "transition identified by #{element_id}!"
+                                raise TypeError, "#{msg} (#{err})"
+                              end
+                            end
+    case element_type
+    when :place then include_place( element )
+    when :transition then include_transition( element )
+    else fail "Mangled method YPetri::Net#<<!" end
   end
 
   # Is the net _functional_?
@@ -92,7 +103,7 @@ class YPetri::Net
   def functional?
     transitions.all? { |t| t.functional? }
   end
-    
+
   # Is the net <em>timed</em>?
   # 
   def timed?

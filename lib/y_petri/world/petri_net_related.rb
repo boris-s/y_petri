@@ -4,21 +4,6 @@
 # net instances).
 # 
 module YPetri::World::PetriNetRelated
-  # Readers for @Place, @Transition, @Net instance variables, which should
-  # contain said classes, or their instance-specific subclasses.
-
-  # Parametrized Place class.
-  # 
-  attr_reader :Place
-
-  # Parametrized Transition class.
-  # 
-  attr_reader :Transition
-
-  # Parametrized Net class.
-  # 
-  attr_reader :Net
-
   # Instance initialization.
   # 
   def initialize

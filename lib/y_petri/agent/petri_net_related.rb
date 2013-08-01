@@ -68,28 +68,28 @@ module YPetri::Agent::PetriNetRelated
     world.Place.new *ordered_args, **named_args
   end
 
-  # Transition constructor: Creates a new transition in the current workspace.
+  # Transition constructor: Creates a new transition in the current world.
   # 
   def Transition( *ordered, **named, &block )
     world.Transition.new *ordered, **named, &block
   end
 
   # Timed transition constructor: Creates a new timed transition in the current
-  # workspace. Rate closure has to be supplied as a block.
+  # world. Rate closure has to be supplied as a block.
   # 
   def T( *ordered, **named, &block )
     world.Transition.new *ordered, **named.update( rate: block )
   end
 
   # Assignment transition constructor: Creates a new assignment transition in
-  # the current workspace. Assignment closure has to be supplied as a block.
+  # the current world. Assignment closure has to be supplied as a block.
   # 
   def A( *ordered, **named, &block )
     world.Transition.new *ordered,
                          **named.update( assignment: true, action: block )
   end
 
-  # Net constructor: Creates a new Net instance in the current workspace.
+  # Net constructor: Creates a new Net instance in the current world.
   # 
   def Net *ordered, **named, &block
     world.Net.new *ordered, **named, &block
@@ -101,7 +101,7 @@ module YPetri::Agent::PetriNetRelated
     id.nil? ? @net_point : world.net( id )
   end
 
-  # Sets the net point to a given net, or to workspace.Net::Top if none given.
+  # Sets the net point to a given net, or to world.Net::Top if none given.
   # 
   def net_point_reset id=world.Net::Top
     @net_point = world.net( id )

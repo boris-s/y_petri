@@ -82,7 +82,7 @@ class YPetri::Net::State
              :Flux,
              :Delta,
              :load,
-             to: :class
+             to: "self.class"
 
     # Extracts the features from a given target
     # 

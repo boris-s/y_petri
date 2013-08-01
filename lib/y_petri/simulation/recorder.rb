@@ -11,14 +11,14 @@ class YPetri::Simulation
     SAMPLING_DECIMAL_PLACES = 5
 
     attr_reader :features, :recording
-    delegate :simulation, to: :class
+    delegate :simulation, to: "self.class"
     delegate :reconstruct, :reduce, to: :recording
 
     # Initializes the recorder. Takes 2 arguments: +:features+ expecting the
     # feature set to record during simulation, and +:recording+, expecting the
     # initial state of the recording.
     # 
-    def initialize features: net.State.Features.marking, # marking and nothing else
+    def initialize features: net.State.marking( places: free_pp ),
                    recording: features.new_dataset,
                    **nn
       @features = net.State.features( features )
@@ -30,6 +30,7 @@ class YPetri::Simulation
     # recording is filled with the prescribed contents.
     # 
     def reset! **nn
+      @features = net.State.features( nn[:features] || @features )
       @recording = features.new_dataset
       @recording.update Hash[ nn[:recording] ] if nn[:recording]
     end
