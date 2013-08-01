@@ -169,7 +169,6 @@ end
 #
 describe "upstream and downstream reference mτs of places and transitions" do
   before do
-    # skip "to speed up testing"
     @tç = tç = Class.new YPetri::Transition
     @pç = pç = Class.new YPetri::Place
     [ tç, pç ].each { |ç|

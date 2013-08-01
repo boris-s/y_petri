@@ -41,7 +41,7 @@ class YPetri::Core
     def flux_vector
       msg = "#flux_vector method only applies to the timed simulations with " +
         "no Ts transitions. Try #flux_vector_TS instead!"
-      fail msg unless simulation.Ts_transitions.empty?
+      fail msg unless Ts_transitions().empty?
       simulation.TS_rate_closure.call
     end
 

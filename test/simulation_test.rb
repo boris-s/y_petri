@@ -254,7 +254,6 @@ end
 
 describe YPetri::Simulation do
   before do
-    skip
     self.class.class_exec { include YPetri }
     U = Place m!: 2.5
     V = Place m!: 2.5
@@ -268,15 +267,11 @@ describe YPetri::Simulation do
   it "should behave" do
     simulation.tap do |s|
       assert ! s.timed?
-      s.core.must_be_kind_of YPetri::Simulation::Timeless::Core::PseudoEuler
+      s.core.must_be_kind_of YPetri::Core::Timeless::PseudoEuler
       s.recording.size.must_equal 6
-      s.recording.labels.must_equal [0, 1, 2, 3, 4, 5]
-      s.recording.send( :build, [ [42] * 5 + [43] ] )
-        .must_equal( { 0 => [42], 1 => [42],
-                       2 => [42], 3 => [42],
-                       4 => [42], 5 => [43] } )
-      s.at( 2 ).pm.must_equal( { U: 2.5, V: 4.5 } )
-      s.recording.marking_series( slice: 2..4 )
+      s.recording.events.must_equal [0, 1, 2, 3, 4, 5]
+      s.recording.reconstruct( event: 2 ).pm.must_equal( { U: 2.5, V: 4.5 } )
+      s.recording.marking.slice( 2..4 ).series
         .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
       s.recording.marking( slice: 2..4 )
         .must_equal( { 2 => [2.5, 4.5],
@@ -301,6 +296,7 @@ end
 
 describe YPetri::Simulation::Timed do
   before do
+    skip
     self.class.class_exec { include YPetri }
     A = Place m!: 0.5
     B = Place m!: 0.5
@@ -353,7 +349,7 @@ describe YPetri::Simulation::Timed do
         .must_equal [ [ -0.0005 ] * 13 ]
 =end
       plot_state
-      sleep 100
+      sleep 5
     end
   end
 end

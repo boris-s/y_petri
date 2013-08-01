@@ -9,22 +9,22 @@ require_relative '../lib/y_petri'     # tested component itself
 
 include Pyper if require 'pyper'
 
-describe YPetri::Workspace do
+describe YPetri::World do
   before do
-    @w = YPetri::Workspace.new
-    a = @w.Place.new!( default_marking: 1.0, name: "AA" )
-    b = @w.Place.new!( default_marking: 2.0, name: "BB" )
-    c = @w.Place.new!( ɴ: "CC", default_marking: 3.0 )
-    t1 = @w.Transition.new! s: { a => -1, b => -1, c => 1 },
+    @w = YPetri::World.new
+    a = @w.Place.avid( default_marking: 1.0, name: "AA" )
+    b = @w.Place.avid( default_marking: 2.0, name: "BB" )
+    c = @w.Place.avid( ɴ: "CC", default_marking: 3.0 )
+    t1 = @w.Transition.avid s: { a => -1, b => -1, c => 1 },
                             rate: 0.1,
                             ɴ: "AA_BB_assembly"
-    t2 = @w.Transition.new! ɴ: "AA_appearing",
+    t2 = @w.Transition.avid ɴ: "AA_appearing",
                             codomain: a,
                             rate: -> { 0.1 },
                             stoichiometry: 1
     @pp, @tt = [a, b, c], [t1, t2]
     @f_name = "test_output.csv"
-    @w.set_imc @pp.τBᴍHτ( &:default_marking )
+    @w.set_imc @pp >> @pp.map( &:default_marking )
     @w.set_ssc step: 0.1, sampling: 10, time: 0..50
     @w.set_cc( {} )
     @sim = @w.new_simulation
@@ -54,7 +54,7 @@ describe YPetri::Workspace do
   it "should simulate" do
     assert_equal 1, @w.simulations.size
     assert_kind_of( YPetri::Simulation, @w.simulation )
-    assert_equal 2, @w.simulation.TS_transitions.size
+    assert_equal 2, @w.simulation.TS_tt.size
     @tt[0].domain.must_equal [ @pp[0], @pp[1] ]
     @tt[1].domain.must_equal []
     assert @w.simulation.timed?

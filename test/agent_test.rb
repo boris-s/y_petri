@@ -7,16 +7,16 @@ require_relative '../lib/y_petri'     # tested component itself
 # require 'y_petri'
 # require 'sy'
 
-describe ::YPetri::Manipulator do
+describe YPetri::Agent do
   before do
-    @m = ::YPetri::Manipulator.new
+    @m = YPetri::Agent.new
   end
   
   it "has net basic points" do
     # --- net point related assets ---
     @m.net_point_reset
-    @m.net_point_reset @m.workspace.net( :Top )
-    @m.net.must_equal @m.workspace.Net::Top
+    @m.net_point_reset @m.world.net( :Top )
+    @m.net.must_equal @m.world.Net::Top
     # --- simulation point related assets ---
     @m.simulation_point.reset
     @m.simulation.must_equal nil
@@ -24,19 +24,19 @@ describe ::YPetri::Manipulator do
     # --- cc point related assets ---
     @m.cc_point.reset
     @m.cc_point.set :Base
-    @m.cc.must_equal @m.workspace.clamp_collection
+    @m.cc.must_equal @m.world.clamp_collection
     @m.cc.wont_equal :Base
     @m.cc_point.key.must_equal :Base
     # --- imc point related assets ---
     @m.imc_point.reset
     @m.imc_point.set :Base
-    @m.imc.must_equal @m.workspace.initial_marking_collection
+    @m.imc.must_equal @m.world.initial_marking_collection
     @m.imc.wont_equal :Base
     @m.imc_point.key.must_equal :Base
     # --- ssc point related assets ---
     @m.ssc_point.reset
     @m.ssc_point.set :Base
-    @m.ssc.must_equal @m.workspace.simulation_settings_collection
+    @m.ssc.must_equal @m.world.simulation_settings_collection
     @m.ssc.wont_equal :Base
     @m.ssc_point.key.must_equal :Base
   end
@@ -84,13 +84,17 @@ describe ::YPetri::Manipulator do
     
     it "works" do
       @m.run!
-      @m.simulation.places.map( &:source ).must_equal [ @p, @q ]
-      @m.simulation.transitions.map( &:source ).must_equal [ @decay_t, @constant_flux_t ]
+      @m.simulation.send( :places ).map( &:source )
+        .must_equal [ @p, @q ]
+      @m.simulation.send( :transitions ).map( &:source )
+        .must_equal [ @decay_t, @constant_flux_t ]
       @m.simulation.nTS.must_equal [ :Tp, :Tq ]
-      @m.simulation.transition( :Tp ).sparse_stoichiometry_vector
+      @m.simulation.send( :transition, :Tp ).sparse_stoichiometry_vector
         .must_equal Matrix.column_vector( [-1, 0] )
-      @m.simulation.S_transitions.stoichiometry_matrix.column_size.must_equal 2
-      @m.simulation.S_transitions.stoichiometry_matrix.row_size.must_equal 2
+      @m.simulation.send( :S_transitions )
+        .stoichiometry_matrix.column_size.must_equal 2
+      @m.simulation.send( :S_transitions )
+        .stoichiometry_matrix.row_size.must_equal 2
       @m.simulation.flux_vector.row_size.must_equal 2
       # @m.plot_recording
     end

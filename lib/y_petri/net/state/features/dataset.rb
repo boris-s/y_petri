@@ -36,11 +36,12 @@ class YPetri::Net::State
         interpolate( event ).reconstruct **settings
       end
 
-      # Interpolates the recordint an the given point (event).
+      # Interpolates the recording an the given point (event).
       # 
       def interpolate( event )
+        # TODO: This whole interpolation thing is unfinished.
         begin
-          fetch( event )
+          record( event )
         rescue KeyError => msg
           timed? or raise TypeError, "Event #{event} does not have a record!"
           f_time, floor = floor( event ) # timed datasets support floor, ceiling
