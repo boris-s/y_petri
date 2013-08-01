@@ -18,7 +18,7 @@ class YPetri::Simulation
     # feature set to record during simulation, and +:recording+, expecting the
     # initial state of the recording.
     # 
-    def initialize features: net.State.marking( places: free_pp ),
+    def initialize features: net.State.marking( free_pp ),
                    recording: features.new_dataset,
                    **nn
       @features = net.State.features( features )

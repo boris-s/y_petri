@@ -45,26 +45,26 @@ class YPetri::Net::State
         end
       end
 
-      def marking places: net.pp
+      def marking places=net.pp
         new net.pp( places ).map { |p| Marking( p ) }
       end
 
-      def firing transitions: net.tS_tt
+      def firing transitions=net.tS_tt
         new net.tS_tt( transitions ).map { |t| Firing( t ) }
       end
 
-      def gradient places: net.pp, transitions: net.T_tt
+      def gradient places=net.pp, transitions: net.T_tt
         tt = net.T_tt( transitions )
         new net.pp( places ).map { |p|
           Gradient( p, transitions: tt )
         } 
       end
 
-      def flux transitions: net.TS_tt
+      def flux transitions=net.TS_tt
         new net.TS_tt( transitions ).map { |t| Flux( t ) }
       end
 
-      def delta places: net.pp, transitions: net.tt
+      def delta places=net.pp, transitions: net.tt
         tt = net.tt( transitions )
         new net.pp( places ).map { |p|
           Delta( p, transitions: tt )

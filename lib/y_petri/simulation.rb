@@ -158,7 +158,7 @@ class YPetri::Simulation
   # Simulation settings.
   # 
   def settings all=false
-    return { method: method, guarded: guarded? } unless all == true
+    return { method: simulation_method, guarded: guarded? } unless all == true
     settings( false )
       .update( net: net,
                marking_clamps: marking_clamps.keys_to_source_places,

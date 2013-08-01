@@ -300,8 +300,6 @@ end
 
 describe YPetri::Simulation::Timed do
   before do
-    puts "Hello.jpg"
-    puts "self.class is #{self.class}"
     self.class.class_exec { include YPetri }
     A = Place m!: 0.5
     B = Place m!: 0.5
@@ -322,17 +320,25 @@ describe YPetri::Simulation::Timed do
                                              "20.0,0.4,0.18348\n" +
                                              "25.0,0.375,0.1428\n" )
       assert s.recording.to_csv.end_with?( "60.0,0.2,0.02471" )
-      s.recording.labels.must_equal [ 0.0, 5.0, 10.0, 15.0, 20.0,
+      s.recording.events.must_equal [ 0.0, 5.0, 10.0, 15.0, 20.0,
                                       25.0, 30.0, 35.0, 40.0, 45.0,
                                       50.0, 55.0, 60.0 ]
       s.recording.values_at( 5, 10 )
         .must_equal [ [0.475, 0.38916], [0.45, 0.30289] ]
       s.recording.slice( 2..12 )
         .must_equal( { 5.0 => [0.475, 0.38916], 10.0=>[0.45, 0.30289] } )
-      s.recording.marking_series( places: [:A] )
+      s.recording.net.must_equal net
+
+      s.recording.features
+        .must_equal net.State.marking( [:A, :B] )
+      net.State.Features.State.must_equal net.State
+      s.recording.State.must_equal net.State
+
+
+      s.recording.series( marking: [:A] )
         .must_equal [ [ 0.5, 0.475, 0.45, 0.425, 0.4, 0.375, 0.35, 0.325,
                         0.3, 0.275, 0.25, 0.225, 0.2 ] ]
-      s.recording.firing_series.must_equal []
+      s.recording.firing.series.must_equal []
       s.recording.firing
         .must_equal( [*0..12].map { |n| n * 5.0 } >> [[]] * 13 )
       s.recording.delta_series( places: [:A], transitions: [:A_pump] )
