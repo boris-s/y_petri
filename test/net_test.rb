@@ -31,6 +31,9 @@ describe YPetri::Net do
       @net.includes_place?( p ).must_equal false
       @net.include_place p
       @net.places.must_equal [ p ]
+      @net.place( :A ).must_equal p
+      @net.places( [] ).must_equal []
+      @net.places( [:A] ).must_equal [ p ]
     end
   end
 
@@ -88,8 +91,15 @@ describe YPetri::Net do
         end
 
         it "should expose its elements" do
-          assert_equal [@t1], @net.transitions
-          assert_equal [:T1], @net.tn
+          assert_equal [ @t1 ], @net.transitions
+          assert_equal [ :T1 ], @net.tn
+          @net.transition( :T1 ).must_equal @t1
+          @net.transitions( [] ).must_equal []
+          @net.transitions( [ :T1 ] ).must_equal [ @t1 ]
+          @net.element( :T1 ).must_equal @t1
+          @net.elements( [] ).must_equal []
+          @net.elements( [ :T1 ] ).must_equal [ @t1 ]
+          @net.elements( [ :A, :T1 ] ).must_equal [ @p1, @t1 ]
         end
 
         it "should expose transition groups" do

@@ -10,7 +10,7 @@ require_relative '../lib/y_petri'     # tested component itself
 describe YPetri::Place do
   before do
     @pç = pç = Class.new YPetri::Place
-    @p = pç.new! default_marking: 3.2,
+    @p = pç.avid default_marking: 3.2,
                  marking: 1.1,
                  quantum: 0.1,
                  name: "P1"

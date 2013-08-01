@@ -97,18 +97,16 @@ class YPetri::Simulation
     init_m = settings[:initial_marking] || {}
     use_default_marking = if settings.has? :use_default_marking then
                             settings[:use_default_marking]
-                          else
-                            true
-                          end
+                          else true end
     # Time-independent simulation settings received, constructing param. classes
-    param_class( { Place: PlaceRepresentation,
-                   Places: Places,
-                   Transition: TransitionRepresentation,
-                   Transitions: Transitions,
-                   PlaceMapping: PlaceMapping,
-                   InitialMarking: InitialMarking,
-                   MarkingClamps: MarkingClamps,
-                   MarkingVector: MarkingVector }, with: { simulation: self } )
+    param_class!( { Place: PlaceRepresentation,
+                    Places: Places,
+                    Transition: TransitionRepresentation,
+                    Transitions: Transitions,
+                    PlaceMapping: PlaceMapping,
+                    InitialMarking: InitialMarking,
+                    MarkingClamps: MarkingClamps,
+                    MarkingVector: MarkingVector }, with: { simulation: self } )
     # Place and transition representation classes are their own namespaces.
     Place().namespace!
     Transition().namespace!

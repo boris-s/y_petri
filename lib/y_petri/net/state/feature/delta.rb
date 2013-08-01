@@ -10,35 +10,55 @@ class YPetri::Net::State
       class << self
         def parametrize *args
           Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
-            Hash.new do |hsh, id|
+            # First, prepare the hash of instances.
+            hsh = Hash.new do |ꜧ, id|
+              puts "Delta received:"
+              p id
+              puts "of class #{id.class}, with ancestors:"
+              p id.class.ancestors
               if id.is_a? Delta then
-                hsh[ [ id.place,
-                       transitions: id.transitions.sort( &:object_id ) ] ]
+                ꜧ[ [ id.place, transitions: id.transitions.sort( &:object_id ) ] ]
               else
-                p, tt = id.fetch( 0 ), id.fetch( 1 ).fetch( :transitions )
-                step = id[:step]
+                puts "here"
+                p id
+                puts "id size is #{id.size}"
+                p = id.fetch( 0 )
+                tt = id
+                  .fetch( 1 )
+                  .fetch( :transitions )
                 if p.is_a? ç.net.Place and tt.all? { |t| t.is_a? ç.net.Transition }
-                  if tt = tt.sort then
-                    hsh[ id ] = ç.__new__( *id )
+                  if tt == tt.sort then
+                    ꜧ[ id ] = ç.__new__( *id )
                   else
-                    hsh[ [ p, transitions: tt.sort ] ]
+                    ꜧ[ [ p, transitions: tt.sort ] ]
                   end
                 else
-                  hsh[ [ ç.net.place( p ), transitions: ç.net.transitions( tt ) ] ]
+                  ꜧ[ [ ç.net.place( p ), transitions: ç.net.transitions( tt ) ] ]
                 end
               end
-            end.tap { |ꜧ| ç.instance_variable_set :@instances, ꜧ }
+            end
+            # And then, assign it to the :@instances variable.
+            ç.instance_variable_set :@instances, hsh
           end
         end
 
-        def of place_id, transitions: []
-          new place_id, transitions
+        attr_reader :instances
+
+        alias __new__ new
+
+        def new *args
+          return instances[ *args ] if args.size == 1
+          instances[ args ]
+        end
+
+        def of *args
+          new *args
         end
       end
 
-      def initialize *id
-        @place = net.place id.fetch( 0 )
-        @transitions = net.transitions id.fetch( 1 ).fetch( :transitions )
+      def initialize place, transitions: net.tt
+        @place = net.place( place )
+        @transitions = net.transitions( transitions )
       end
 
       def extract_from arg, **nn
@@ -58,6 +78,10 @@ class YPetri::Net::State
 
       def to_s
         place.name
+      end
+
+      def label
+        "∂:#{place.name}:#{transitions.size}tt"
       end
     end # class Delta
   end # class Feature

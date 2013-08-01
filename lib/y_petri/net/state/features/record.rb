@@ -11,7 +11,7 @@ class YPetri::Net::State
         # Construcs a new Record object from a given collection of values.
         # 
         def load values
-          new( features.zip( values ).map { |feat, val| feat.load val } )
+          new( values.dup )
         end
       end
 

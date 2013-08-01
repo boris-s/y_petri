@@ -98,6 +98,7 @@ module YPetri::Net::ElementAccess
     return transitions.select &:ts? if ids.nil?
     transitions( ids ).aT_all "transition identifiers", "be ts", &:ts?
   end
+  alias ts_tt ts_transitions
 
   # Names of *ts* transitions.
   # 
@@ -111,6 +112,7 @@ module YPetri::Net::ElementAccess
     return transitions.select &:tS? if ids.nil?
     transitions( ids ).aT_all "transition identifiers", "be tS", &:tS?
   end
+  alias tS_tt tS_transitions
 
   # Names of *tS* transitions.
   # 
@@ -124,6 +126,7 @@ module YPetri::Net::ElementAccess
     return transitions.select &:Ts? if ids.nil?
     transitions( ids ).aT_all "transition identifiers", "be Ts", &:Ts?
   end
+  alias Ts_tt Ts_transitions
 
   # Names of *Ts* transitions.
   # 
@@ -137,6 +140,7 @@ module YPetri::Net::ElementAccess
     return transitions.select &:TS? if ids.nil?
     transitions( ids ).aT_all "transition identifiers", "be TS", &:TS?
   end
+  alias TS_tt TS_transitions
 
   # Names of *TS* transitions.
   # 
@@ -150,6 +154,7 @@ module YPetri::Net::ElementAccess
     return transitions.select &:A? if ids.nil?
     transitions( ids ).aT_all "transition identifiers", "be A", &:A?
   end
+  alias A_tt A_transitions
 
   # Names of *A* transitions.
   # 
@@ -164,6 +169,7 @@ module YPetri::Net::ElementAccess
     transitions( ids ).aT_all "transition identifiers",
                               "be a (non-assignment)", &:a?
   end
+  alias a_tt a_transitions
 
   # Names of *a* transitions.
   # 
@@ -178,6 +184,7 @@ module YPetri::Net::ElementAccess
     transitions( ids ).aT_all "transition identifiers",
                               "be S (stoichiometric)", &:S?
   end
+  alias S_tt S_transitions
 
   # Names of *S* transitions.
   # 
@@ -192,6 +199,7 @@ module YPetri::Net::ElementAccess
     transitions( ids ).aT_all "transition identifiers",
                               "be s (non-stoichiometric)", &:s?
   end
+  alias s_tt s_transitions
 
   # Names of *s* transitions.
   # 
@@ -206,6 +214,7 @@ module YPetri::Net::ElementAccess
     transitions( ids ).aT_all "transition identifiers",
                               "be T (timed)", &:T?
   end
+  alias T_tt T_transitions
 
   # Names of *T* transitions.
   # 
@@ -220,6 +229,7 @@ module YPetri::Net::ElementAccess
     transitions( ids ).aT_all "transition identifiers",
                               "be t (timeless)", &:t?
   end
+  alias t_tt t_transitions
 
   # Names of *t* transitions.
   # 

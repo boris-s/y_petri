@@ -12,9 +12,11 @@ class YPetri::Net
       # dependents Feature and Features (ie. feature set) are also parametrized.
       # 
       def parametrize net: (fail ArgumentError, "No owning net!")
-        super.tap do |ç|
-          ç.param_class( { Feature: Feature,
-                           Features: Features }, with: { State: ç } )
+        Class.new( self ).tap do |subclass|
+          subclass.define_singleton_method :net do net end
+          subclass.param_class( { Feature: Feature,
+                                  Features: Features },
+                                with: { State: subclass } )
         end
       end
 
@@ -39,7 +41,7 @@ class YPetri::Net
 
         record = features( marking: net.pp - cc.keys ).load( record )
 
-        __new__ net.pp.map do |p|p
+        __new__ net.pp.map do |p|
           begin; cc.fetch p; rescue IndexError
             record.fetch Marking().of( p )
           end
@@ -81,14 +83,14 @@ class YPetri::Net
         else # the real job of the method
           marking = arg[:marking] || []
           firing = arg[:firing] || [] # array of tS transitions
-          gradient = arg[:gradient] || { places: [], transitions: [] }
+          gradient = arg[:gradient] || [ [], transitions: [] ]
           flux = arg[:flux] || [] # array of TS transitions
-          delta = arg[:delta] || { places: [], transitions: [] }
-          [ Features().marking( places: marking ),
-            Features().firing( transitions: firing ),
-            Features().gradient( gradient ),
-            Features().flux( transitions: flux ),
-            Features().delta( delta ) ].reduce :+
+          delta = arg[:delta] || [ [], transitions: [] ]
+          [ Features().marking( marking ),
+            Features().firing( firing ),
+            Features().gradient( *gradient ),
+            Features().flux( flux ),
+            Features().delta( *delta ) ].reduce :+
         end
       end
 

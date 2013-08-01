@@ -60,22 +60,74 @@ class YPetri::Net::State
       # of tS transitions, :delta of places and/or transitions) and returns the
       # corresponding mapping of the recording.
       # 
-      def reduce_features features, slice: events
-        # now you know what to do
-        # get the record for each event
-        # if necessary, reconstruct
-        # get the prescribed features
-        # and return a new recording
-        
-        # .update build( marking_series( places: marking, slice: slice ) +
-        #                firing_series( transitions: firing, slice: slice ) +
-        #                delta_series( slice: slice, **delta ), slice: slice )
+      def reduce_features features
+        rf = net.State.features( features )
+        rr_class = rf.Record
+        rf.new_dataset.tap do |ds|
+        ( events >> records ).each_pair { |event, record|
+            ds.update event => rr_class.load( rf.map { |f| record.fetch f } )
+          }
+        end
+      end
+
+      def marking *args
+        return reduce_features features.select { |f| f.is_a? YPetri::Net::State::Feature::Marking } if args.empty?
+        reduce_features marking: args.first
+      end
+
+      def firing *args
+        return reduce_features features.select { |f| f.is_a? YPetri::Net::State::Feature::Firing } if args.empty?
+        reduce_features firing: args.first
+      end
+
+      def flux *args
+        return reduce_features features.select { |f| f.is_a? YPetri::Net::State::Feature::Flux } if args.empty?
+        reduce_features flux: args.first
+      end
+
+      def gradient *args
+        return reduce_features features.select { |f| f.is_a? YPetri::Net::State::Feature::Gradient } if args.empty?
+        reduce_features gradient: args
+      end
+
+      def delta *args
+        return reduce_features features.select { |f| f.is_a? YPetri::Net::State::Feature::Delta } if args.empty?
+        reduce_features delta: args
       end
 
       # Outputs the current recording in CSV format.
       # 
       def to_csv
         map { |lbl, rec| [ lbl, *rec ].join ',' }.join "\n"
+      end
+
+      # Plots the dataset.
+      # 
+      def plot time: nil, **nn
+        events = events()
+        data_ss = series
+        x_range = if time.is_a? Range then
+                    "[#{time.begin}:#{time.end}]"
+                  else
+                    "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
+                  end
+        
+        Gnuplot.open do |gp|
+          Gnuplot::Plot.new gp do |plot|
+            plot.xrange x_range
+            plot.title nn[:title] || "#{net} plot"
+            plot.ylabel nn[:ylabel] || "Values"
+            plot.xlabel nn[:xlabel] || "Time [s]"
+
+            features.labels.zip( data_ss )
+              .each { |label, data_array|
+              plot.data << Gnuplot::DataSet.new( [ events, data_array ] ) { |ds|
+                ds.with = "linespoints"
+                ds.title = label
+              }
+            }
+          end
+        end
       end
     end # class Dataset
   end # class Features

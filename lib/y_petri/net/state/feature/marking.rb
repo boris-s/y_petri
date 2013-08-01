@@ -10,12 +10,17 @@ class YPetri::Net::State
       class << self
         def parametrize *args
           Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
-            Hash.new do |hsh, id|
-              case id
-              when Marking then hsh[ id.place ]
-              when ç.net.Place then hsh[ id ] = ç.__new__( id )
-              else hsh[ ç.net.place( id ) ] end
-            end.tap { |ꜧ| ç.instance_variable_set :@instances, ꜧ }
+            ç.instance_variable_set( :@instances,
+                                     Hash.new do |hsh, id|
+                                       case id
+                                       when Marking then
+                                         hsh[ id.place ]
+                                       when ç.net.Place then
+                                         hsh[ id ] = ç.__new__( id )
+                                       else
+                                         hsh[ ç.net.place( id ) ]
+                                       end
+                                     end )
           end
         end
 
@@ -47,6 +52,10 @@ class YPetri::Net::State
 
       def to_s
         place.name
+      end
+
+      def label
+        ":#{place.name}"
       end
     end # class Marking
   end # class Feature

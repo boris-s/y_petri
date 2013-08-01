@@ -11,10 +11,13 @@ class YPetri::Net::State
       # Customization of the parametrize method for the Features class: Its
       # dependents Record and Dataset are also parametrized.
       # 
-      def parametrize *args
-        super.tap do |ç|
-          ç.param_class( { Record: Record,
-                           Dataset: Dataset }, with: { Features: ç } )
+      def parametrize parameters
+        Class.new( self ).tap do |subclass|
+          parameters.each_pair { |symbol, value|
+            subclass.define_singleton_method symbol do value end
+          }
+          subclass.param_class( { Record: Record, Dataset: Dataset },
+                                with: { Features: subclass } )
         end
       end
 
@@ -40,8 +43,8 @@ class YPetri::Net::State
           # Parametrize them <em>one more time</em> with Features instance.
           # Banged version of #param_class! ensures that #Record, #Dataset
           # methods are shadowed.
-          inst.param_class!( { Record: Record(),
-                               Dataset: Dataset() }, with: { features: ff } )
+          inst.param_class!( { Record: Record(), Dataset: Dataset() },
+                             with: { features: inst } )
         end
       end
 
@@ -57,7 +60,7 @@ class YPetri::Net::State
         tt = net.T_tt( transitions )
         new net.pp( places ).map { |p|
           Gradient( p, transitions: tt )
-        } 
+        }
       end
 
       def flux transitions=net.TS_tt
@@ -65,9 +68,9 @@ class YPetri::Net::State
       end
 
       def delta places=net.pp, transitions: net.tt
-        tt = net.tt( transitions )
+        transitions = net.tt( transitions )
         new net.pp( places ).map { |p|
-          Delta( p, transitions: tt )
+          Delta( p, transitions: transitions )
         }
       end
     end
@@ -112,6 +115,12 @@ class YPetri::Net::State
     # 
     def * other
       self.class.new( super )
+    end
+
+    # Feature labels.
+    # 
+    def labels
+      map &:label
     end
   end # class Features
 end # YPetri::Net::State

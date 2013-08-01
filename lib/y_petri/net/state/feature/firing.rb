@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 class YPetri::Net::State
   class Feature
     # Firing of a Petri net tS transition.
@@ -9,12 +9,17 @@ class YPetri::Net::State
       class << self
         def parametrize *args
           Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
-            Hash.new do |hsh, id|
-              case id
-              when Firing then hsh[ id.transition ]
-              when ç.net.Transition then hsh[ id ] = ç.__new__( id )
-              else hsh[ ç.net.transition( id ) ] end
-            end.tap { |ꜧ| ç.instance_variable_set :@instances, ꜧ }
+            ç.instance_variable_set( :@instances,
+                                     Hash.new do |hsh, id|
+                                       case id
+                                       when Firing then
+                                         hsh[ id.transition ]
+                                       when ç.net.Transition then
+                                         hsh[ id ] = ç.__new__( id )
+                                       else
+                                         hsh[ ç.net.transition( id ) ]
+                                       end
+                                     end )
           end
         end
 
@@ -42,6 +47,10 @@ class YPetri::Net::State
         else
           fail TypeError, "Argument type not supported!"
         end
+      end
+
+      def label
+        "f:#{transition.name}"
       end
     end # class Firing
   end # class Feature

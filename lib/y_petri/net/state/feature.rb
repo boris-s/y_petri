@@ -11,8 +11,11 @@ class YPetri::Net::State
     require_relative 'feature/delta'
 
     class << self
-      def parametrize **nn
-        super.tap do |ç|
+      def parametrize parameters
+        Class.new( self ).tap do |ç|
+          parameters.each_pair { |symbol, value|
+            ç.define_singleton_method symbol do value end
+          }
           sç = ç.State
           ç.instance_variable_set :@Marking, Marking.parametrize( State: sç )
           ç.instance_variable_set :@Firing, Firing.parametrize( State: sç )
@@ -41,13 +44,13 @@ class YPetri::Net::State
         else Firing().of( id ) end # assume it's a place
       end
 
-      def Gradient id=L!
+      def Gradient id=L!, transitions: net.T_tt
         return @Gradient if id.local_object?
         case id
         when Gradient() then id
         when Gradient then
           Gradient().of( id.place, transitions: id.transitions )
-        else Gradient().of( id ) end # assume it's a place
+        else Gradient().of( id, transitions: transitions ) end # assume it's a place
       end
 
       def Flux id=L!
@@ -58,13 +61,13 @@ class YPetri::Net::State
         else Flux().of( id ) end # assume it's a place
       end
 
-      def Delta id=L!
+      def Delta id=L!, transitions: net.tt
         return @Delta if id.local_object?
         case id
         when Delta() then id
         when Delta then
           Delta().of( id.place, transitions: id.transitions )
-        else Delta().of( id ) end # assume it's a place
+        else Delta().of( id, transitions: transitions ) end # assume it's a place
       end
     end # class << self
 

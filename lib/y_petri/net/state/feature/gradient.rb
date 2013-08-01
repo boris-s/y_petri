@@ -10,22 +10,28 @@ class YPetri::Net::State
       class << self
         def parametrize *args
           Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
-            Hash.new do |hsh, id|
+            # First, prepare the hash of instances.
+            hsh = Hash.new do |ꜧ, id|
               if id.is_a? Gradient then
-                hsh[ [ id.place, transitions: id.transitions.sort( &:object_id ) ] ]
+                ꜧ[ [ id.place, transitions: id.transitions.sort( &:object_id ) ] ]
               else
-                p, tt = id.fetch( 0 ), id.fetch( 1 ).fetch( :transitions )
+                p = id.fetch( 0 )
+                tt = id
+                  .fetch( 1 )
+                  .fetch( :transitions )
                 if p.is_a? ç.net.Place and tt.all? { |t| t.is_a? ç.net.Transition }
                   if tt == tt.sort then
-                    hsh[ id ] = ç.__new__( *id )
+                    ꜧ[ id ] = ç.__new__( *id )
                   else
-                    hsh[ [ p, transitions: tt.sort ] ]
+                    ꜧ[ [ p, transitions: tt.sort ] ]
                   end
                 else
-                  hsh[ [ ç.net.place( p ), transitions: ç.net.transitions( tt ) ] ]
+                  ꜧ[ [ ç.net.place( p ), transitions: ç.net.transitions( tt ) ] ]
                 end
               end
-            end.tap { |ꜧ| ç.instance_variable_set :@instances, ꜧ }
+            end
+            # And then, assign it to the :@instances variable.
+            ç.instance_variable_set :@instances, hsh
           end
         end
 
@@ -33,12 +39,13 @@ class YPetri::Net::State
 
         alias __new__ new
 
-        def new *id
-          instances[ id ]
+        def new *args
+          return instances[ *args ] if args.size == 1
+          instances[ args ]
         end
 
-        def of *id
-          new *id
+        def of *args
+          new *args
         end
       end
 
@@ -58,6 +65,10 @@ class YPetri::Net::State
 
       def to_s
         place.name
+      end
+
+      def label
+        "∂:#{place.name}:#{transitions.size}tt"
       end
     end # class Gradient
   end # class Feature
