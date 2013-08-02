@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class YPetri::Net
-  # Petri net state (marking of all its places).
+  # An array whose elements correspond to the full marking of the net's places.
   #
   class State < Array
     require_relative 'state/feature'
@@ -12,11 +12,11 @@ class YPetri::Net
       # dependents Feature and Features (ie. feature set) are also parametrized.
       # 
       def parametrize net: (fail ArgumentError, "No owning net!")
-        Class.new( self ).tap do |subclass|
-          subclass.define_singleton_method :net do net end
-          subclass.param_class( { Feature: Feature,
-                                  Features: Features },
-                                with: { State: subclass } )
+        Class.new( self ).tap do |ç|
+          ç.define_singleton_method :net do net end
+          ç.param_class( { Feature: Feature,
+                           Features: Features },
+                         with: { State: ç } )
         end
       end
 
@@ -29,7 +29,8 @@ class YPetri::Net
 
       alias __new__ new
 
-      # Revives a state from a record and a given set of marking clamps.
+      # Construct a state from a record and a set of marking clamps. The record
+      # and the marking clamps must be sufficient to infer the net's state.
       # 
       def new record, marking_clamps: {}
         cc = marking_clamps.with_keys { |k| net.place k }.with_values! do |v|
@@ -41,23 +42,26 @@ class YPetri::Net
 
         record = features( marking: net.pp - cc.keys ).load( record )
 
-        __new__ net.pp.map do |p|
+        markings = net.places.map do |p|
           begin; cc.fetch p; rescue IndexError
-            record.fetch Marking().of( p )
+            record
+              .fetch Marking().of( p )
           end
         end
+
+        __new_ markings_ 
       end
 
       # Returns the feature identified by the argument.
       # 
-      def feature id
-        case id
-        when Feature() then id
-        when Feature then id.class.new( id )
+      def feature *id
+        case id.first
+        when Feature() then id.first
+        when Feature then id.first.class.new( id.first )
         else
           features( id ).tap do |ff|
-            ff.size == 1 or fail ArgumentError, "Argument #{id} must identify " +
-                                 "exactly 1 feature!"
+            msg =  "Arguments must identify exactly 1 feature!"
+            ff.size == 1 or fail ArgumentError, msg
           end.first
         end
       end
@@ -109,13 +113,31 @@ class YPetri::Net
              :marking, :firing, :gradient, :flux, :delta,
              to: "self.class"
 
-    # Reconstructs a simulation from the current state instance, given marking
-    # clamps and other simulation settings.
+    # Given a set of clamped places,  this method outputs a Record instance
+    # containing the marking of the free places (complementary to the supplied
+    # set of clamped places). I no set of clamped places is supplied, it is
+    # considered empty.
     # 
-    def reconstruct marking_clamps: {}, **settings
-      net.simulation marking: to_hash,
-                     marking_clamps: marking_clamps,
-                     **settings
+    def to_record clamped_places=[]
+      free_places = case clamped_places
+                    when Hash then to_record( clamped_places.keys )
+                    else
+                      free_places = places - places( clamped_places )
+                    end
+      features( marking: free_places ).Record.load markings( free_places ) 
+    end
+
+    # Marking of a single given place in this state.
+    # 
+    def marking place_id
+      self[ places.index place( place_id ) ]
+    end
+
+    # Returns an array of markings of particular places in this state..
+    # 
+    def markings place_ids=nil
+      return markings( places ) if place_ids.nil?
+      place_ids.map &:marking
     end
   end # class State
 end # YPetri::Net

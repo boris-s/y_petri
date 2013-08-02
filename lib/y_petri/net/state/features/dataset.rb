@@ -24,6 +24,13 @@ class YPetri::Net::State
       delegate :net, to: :features
       delegate :State, to: :net
 
+      # Returns a Record instance corresponding to the given recorded event.
+      # 
+      def record( event )
+        features.load( fetch event )
+      end
+
+
       # Revives records from values.
       # 
       def records

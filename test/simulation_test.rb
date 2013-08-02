@@ -9,6 +9,7 @@ require_relative '../lib/y_petri'     # tested component itself
 
 describe YPetri::Simulation do
   before do
+    skip
     @w = YPetri::World.new
   end
 
@@ -270,7 +271,8 @@ describe YPetri::Simulation do
       s.core.must_be_kind_of YPetri::Core::Timeless::PseudoEuler
       s.recording.size.must_equal 6
       s.recording.events.must_equal [0, 1, 2, 3, 4, 5]
-      s.recording.reconstruct( event: 2 ).pm.must_equal( { U: 2.5, V: 4.5 } )
+      s.recording.reconstruct( event: 2 )
+        .pm.must_equal( { U: 2.5, V: 4.5 } )
       s.recording.marking.slice( 2..4 ).series
         .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
       s.recording.marking( slice: 2..4 )

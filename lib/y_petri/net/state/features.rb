@@ -33,7 +33,7 @@ class YPetri::Net::State
                :Delta,
                to: "Feature()"
 
-      delegate :load, to: :Record
+      delegate :load, to: "Record()"
 
       alias __new__ new
 
@@ -121,6 +121,47 @@ class YPetri::Net::State
     # 
     def labels
       map &:label
+    end
+
+    # Expects a hash identifying a set of features, that is a subset of the
+    # current set of features.
+    # 
+    def reduce_features features
+      net.State.features( features ).tap do |ff|
+        msg = "The argument must identify a subset of the current feature set!"
+        fail TypeError, msg unless ( ff - self ).empty?
+      end
+    end
+
+    # Returns the subset of marking features.
+    #
+    def marking place_ids=nil
+      return marking( select { |f| f.is_a? Marking() } ) if place_ids.nil?
+      reduce_features marking: place_ids
+    end
+
+    # Returns the subset of firing features.
+    #
+    def firing
+      fail NotImplementedError
+    end
+
+    # Returns the subset of flux features.
+    #
+    def flux
+      fail NotImplementedError
+    end
+
+    # Returns the subset of gradient features.
+    #
+    def gradient
+      fail NotImplementedError
+    end
+
+    # Returns the subset of delta features.
+    #
+    def delta
+      fail NotImplementedError
     end
   end # class Features
 end # YPetri::Net::State
