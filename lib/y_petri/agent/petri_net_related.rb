@@ -78,15 +78,35 @@ module YPetri::Agent::PetriNetRelated
   # world. Rate closure has to be supplied as a block.
   # 
   def T( *ordered, **named, &block )
+    fail ArgumentError, "Timed transition constructor requires a block " +
+      "defining the rate function!" unless block
     world.Transition.new *ordered, **named.update( rate: block )
   end
 
-  # Assignment transition constructor: Creates a new assignment transition in
-  # the current world. Assignment closure has to be supplied as a block.
+  # Timed stoichiometric transition constructor, that expects stoichiometry
+  # given directly as hash-collected arguments. Two special keys allowed are
+  # +:name+ (alias +:ɴ) and +:domain+. (Key +:codomain+ is not allowed.)
   # 
-  def A( *ordered, **named, &block )
-    world.Transition.new *ordered,
-                         **named.update( assignment: true, action: block )
+  def TS **stoichiometry, &block
+    args = { s: stoichiometry }
+    args.update name: stoichiometry.delete( :name ) if
+      stoichiometry.has? :name, syn!: :ɴ
+    args.update domain: stoichiometry.delete( :domain ) if
+      stoichiometry.has? :domain
+    T **args, &block
+  end
+
+  # Assignment transition constructor: Creates a new assignment transition in
+  # the current world. Ordered arguments are collected as codomain. Domain key
+  # (+:domain) is optional. Assignment closure must be supplied in a block.
+  # 
+  def A( *codomain, **nn, &block )
+    fail ArgumentError, "Assignment transition constructor requires a block " +
+      "defining the assignment function!" unless block
+    world.Transition.new codomain: codomain,
+                         assignment: true,
+                         action: block,
+                         **nn
   end
 
   # Net constructor: Creates a new Net instance in the current world.

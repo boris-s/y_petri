@@ -26,7 +26,7 @@ describe YPetri::Net do
       @net = @w.Net.new
     end
 
-    it "should work" do
+    it "should be able to include places" do
       p = @w.Place.new name: "A", quantum: 0.1, marking: 1.1
       @net.includes_place?( p ).must_equal false
       @net.include_place p
@@ -47,9 +47,6 @@ describe YPetri::Net do
 
     describe "net of 3 places and no transitions" do
       before do
-        # @p1.m = 1.1
-        # @p2.m = 2.2
-        # @p3.m = 3.3
         @net = @w.Net.of @p1, @p2, @p3
       end
 
@@ -59,27 +56,34 @@ describe YPetri::Net do
         assert_equal [], @net.transitions
       end
 
-      it "should expose transition groups" do
+      it "should allow only right transitions to be included in it" do
+        assert @net.include?( @p1 )
+        assert ! @net.include?( @p4 )
+        t = @w.Transition.new s: { @p4 => -1 }
+        -> { @net.include_transition t }.must_raise RuntimeError
+      end
+
+      it "should expose (thus far empty) transition groups" do
         assert_equal [], @net.S_transitions
         assert_equal [], @net.s_transitions
       end
 
-      it "should tell its qualities" do
-        assert_equal true, @net.functional?
+      it "should be able to tell its qualities" do
+        assert_equal false, @net.functional?
         assert_equal false, @net.timed?
         assert @net.include?( @p1 ) && !@net.include?( YPetri::Place.new )
       end
 
-      it "should have 'standard equipment' methods" do
+      it "should know its state and marking features" do
+        @net.state.must_equal [ @p1, @p2, @p3 ].map( &:marking )
+        @net.state.must_be_kind_of YPetri::Net::State
+        @net.marking.must_equal [ @p1, @p2, @p3 ].map( &:marking )
+        @net.marking.must_be_kind_of Array
+      end
+
+      it "should have standard equipment of a class" do
         assert @net == @net.dup
         assert @net.inspect.start_with? "#<Net:"
-        assert @net.include?( @p1 )
-        assert ! @net.include?( @p_not_included )
-        begin
-          @net.exclude_place! @p_not_included
-          @net.include_transition! YPetri::Transition.new( s: { @p_not_included => -1 } )
-          flunk "Attempt to include illegal transition fails to raise"
-        rescue; end
       end
 
       describe "plus 1 stoichio. transition with rate" do
@@ -123,6 +127,11 @@ describe YPetri::Net do
           @net.must_respond_to :simulation
         end
 
+        it "should know right flux, firing, gradient and delta features" do
+          @net.firing( [] ).must_equal []
+          -> { @net.firing }.must_raise TypeError
+        end
+
         it "should have other methods" do
           assert_equal [1.1, 2.2, 3.3], [@p1, @p2, @p3].map( &:marking ).map{ |n| n.round 6 }
           assert_equal 2.2 * 3.3 * 0.01, @t1.rate_closure.call( @p2.marking, @p3.marking )
@@ -164,7 +173,7 @@ describe YPetri::Net do
           end
 
           it "should tell its qualities" do
-            assert_equal false, @net.functional?
+            assert_equal true, @net.functional?
             assert_equal true, @net.timed?
             @net.exclude_transition @t2
             assert_equal true, @net.functional?
@@ -173,5 +182,21 @@ describe YPetri::Net do
         end
       end
     end
+  end
+end
+
+
+describe YPetri::Net::State do
+  before do
+    skip
+    @w = YPetri::World.new
+    @net = @w.Net.new
+  end
+
+  it "should be already parametrized on @w.Net" do
+    @St = @net.State
+    @St.net.must_equal @net
+    assert @St.Feature < YPetri::Net::State::Feature
+    -> { @St.feature( marking: :A ) }.must_raise ArgumentError
   end
 end

@@ -15,6 +15,7 @@ module YPetri::Simulation::Timed
     # 
     def initialize sampling: default_sampling, next_time: time, **nn
       super
+      recording.instance_variable_set @type, :timed
       @sampling = sampling
       @next_time = next_time
     end

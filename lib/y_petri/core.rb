@@ -1,5 +1,8 @@
 # encoding: utf-8
 
+require_relative 'core/timed'
+require_relative 'core/timeless'
+
 class YPetri::Core
   DEFAULT_METHOD = :pseudo_euler
 
@@ -95,6 +98,3 @@ class YPetri::Core
     simulation.A_assignment_closure.call
   end
 end # class YPetri::Core
-
-require_relative 'core/timed'
-require_relative 'core/timeless'

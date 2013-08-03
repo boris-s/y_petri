@@ -1,7 +1,9 @@
 #encoding: utf-8
 
-require_relative 'net/visualization'
 require_relative 'net/element_access'
+require_relative 'net/visualization'
+require_relative 'net/own_state'
+require_relative 'net/data_set'
 require_relative 'net/state'
 
 # Represents a _Petri net_: A collection of places and transitions. The
@@ -11,12 +13,13 @@ require_relative 'net/state'
 # neighbors of elements (places or transitions).
 # 
 class YPetri::Net
-  include NameMagic
-  include YPetri::World::Dependency # it is important for the Dependency
-  include ElementAccess             # to be below ElementAccess
+  ★ NameMagic                        # ★ means include
+  ★ ElementAccess                    # to be below ElementAccess
+  ★ Visualization
+  ★ OwnState
 
   class << self
-    include YPetri::World::Dependency
+    ★ YPetri::World::Dependency
 
     # Constructs a net containing a particular set of elements.
     # 
@@ -26,6 +29,7 @@ class YPetri::Net
   end
 
   delegate :world, to: "self.class"
+  delegate :Place, :Transition, :Net, to: :world
 
   # Takes 2 arguments (+:places+ and +:transitions+) and builds a net from them.
   # 
@@ -54,6 +58,8 @@ class YPetri::Net
   def include_transition id
     tr = Transition().instance( id )
     return false if includes_transition? tr
+    msg = "Transition #{tr} has arcs to places outside #{self}!"
+    fail msg unless tr.arcs.all? { |p| includes_place? p }
     true.tap { @transitions << tr }
   end
 
@@ -79,32 +85,31 @@ class YPetri::Net
   # Includes an element in the net.
   # 
   def << element_id
-    element_type, element = begin
-                              [ :place,
-                                self.class.place( element_id ) ]
-                            rescue NameError, TypeError
-                              begin
-                                [ :transition,
-                                  self.class.transition( element_id ) ]
-                              rescue NameError, TypeError => err
-                                msg = "Current world contains no place or" +
-                                  "transition identified by #{element_id}!"
-                                raise TypeError, "#{msg} (#{err})"
-                              end
-                            end
-    case element_type
-    when :place then include_place( element )
-    when :transition then include_transition( element )
-    else fail "Mangled method YPetri::Net#<<!" end
+    begin
+      element = self.class.place( element_id )
+      type = :place
+    rescue NameError, TypeError
+      begin
+        element = self.class.transition( element_id )
+        type = :transition
+      rescue NameError, TypeError => err
+        raise TypeError, "Current world contains no place or transition " +
+          "identified by #{element_id}! (#{err})"
+      end
+    end
+    # Separated to minimize the code inside rescue clause:
+    if type == :place then include_place element
+    elsif type == :transition then include_transition element
+    else fail "Implementation error in YPetri::Net#<<!" end
   end
 
   # Is the net _functional_?
   # 
   def functional?
-    transitions.all? { |t| t.functional? }
+    transitions.any? { |t| t.functional? }
   end
 
-  # Is the net <em>timed</em>?
+  # Is the net _timed_?
   # 
   def timed?
     transitions.any? { |t| t.timed? }

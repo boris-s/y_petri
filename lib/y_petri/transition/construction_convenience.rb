@@ -1,58 +1,11 @@
 # encoding: utf-8
 
-# Constructor syntax aspect of a transition. Large part of the functionality
-# of the Transition class is the convenient constructor syntax.
+# Given the four transition types (TS, Ts, tS, ts), transition construction
+# is not an easy task. Actually, having convenient constructor syntax is an
+# important part of the functionality of the Transition class. Construction
+# related functionality is thus gathered together in this mixin.
 # 
-class YPetri::Transition
-  # Transition class represents many different kinds of Petri net transitions.
-  # It makes the constructor syntax a bit more polymorphic. The type of the
-  # transition to construct is mostly inferred from the constructor arguments.
-  # 
-  # Mandatorily, the constructor will always need a way to determine the domain
-  # (upstream arcs) and codomain (downstream arcs) of the transition. Also, the
-  # constructor must have a way to determine the transition's action. This is
-  # best explained by examples -- let us have 3 places A, B, C, for whe we will
-  # create different kinds of transitions:
-  # 
-  # 
-  # ==== TS (timed stoichiometric)
-  #
-  # Rate closure and stoichiometry has to be supplied. Rate closure arity should
-  # correspond to the domain size. Return arity should be 1 (to be multiplied by
-  # the stoichiometry vector, as in all other stoichiometric transitions).
-  #
-  #   Transition.new stoichiometry: { A: -1, B: 1 },
-  #                  rate: -> a { a * 0.5 }
-  #                  
-  #
-  # ==== Ts (timed nonstoichiometric)
-  # 
-  # Rate closure has to be supplied, whose arity should match the domain, and
-  # output arity codomain.
-  # 
-  # ==== tS (timeless stoichiometric)
-  # 
-  # Stoichiometry has to be supplied, action closure is optional. If supplied,
-  # its return arity should be 1 (to be multiplied by the stoichiometry vector).
-  # 
-  # ==== ts transitions (timeless nonstoichiometric)
-  # 
-  # Action closure is expected with return arity equal to the codomain size:
-  # 
-  #   Transition.new upstream_arcs: [A, C], downstream_arcs: [A, B],
-  #                  action_closure: proc { |m, x|
-  #                                         if x > 0 then [-(m / 2), (m / 2)]
-  #                                         else [1, 0] end
-  #                                       }
-  # 
-  def initialize *args, &block
-    check_in_arguments *args, &block # the big job
-    extend timed? ? Timed : ( assignment? ? Assignment : OrdinaryTimeless )
-    inform_upstream_places         # that they have been connected
-    inform_downstream_places       # that they have been connected
-    uncock                         # transitions initialize uncocked
-  end
-
+module YPetri::Transition::ConstructionConvenience
   private
 
   # Checking in the arguments supplied to #initialize looks like a big job.
@@ -308,4 +261,4 @@ class YPetri::Transition
   def inform_downstream_places
     downstream_places.each { |p| p.send :register_upstream_transition, self }
   end
-end # class YPetri::Transition
+end # class YPetri::Transition::ConstructionConvenience

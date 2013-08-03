@@ -2,7 +2,7 @@
 
 # Own visualization capabilities of a Petri net.
 # 
-class YPetri::Net
+module YPetri::Net::Visualization
   # Visualizes the net with Graphviz.
   # 
   def visualize
@@ -64,4 +64,4 @@ class YPetri::Net
     system "sleep 0.2; kioclient exec 'file:%s'" %
       File.expand_path( '.', file_name )
   end
-end # class YPetri::Net
+end # module YPetri::Net::Visualization

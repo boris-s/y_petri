@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # Connectivity aspect of a transition.
 #
-class YPetri::Transition
+module YPetri::Transition::Arcs
   # Names of upstream places.
   # 
   def domain_pp; domain.map { |p| p.name || p.object_id } end
@@ -48,4 +48,4 @@ class YPetri::Transition
     downstream_places.each &:fire_downstream_recursively
     return true
   end
-end # class YPetri::Transition
+end # module YPetri::Transition::Arcs

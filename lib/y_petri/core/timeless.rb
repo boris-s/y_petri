@@ -2,11 +2,14 @@
 
 # Timeless simulation core.
 # 
-class YPetri::Core
-  class Timeless < YPetri::Core
-    require_relative 'timeless/pseudo_euler'
+class YPetri::Core::Timeless < YPetri::Core
+  require_relative 'timeless/pseudo_euler'
 
-    alias delta delta_timeless
-    alias Δ delta
-  end # class Timeless
-end # class YPetri::Core
+  def delta
+    delta_timeless
+  end
+
+  def Δ
+    delta
+  end
+end # class YPetri::Core::Timeless

@@ -228,8 +228,9 @@ describe YPetri::Simulation do
           end
 
           it "should behave" do
-            @sim.recording.must_be_kind_of YPetri::Net::State::Features::Dataset
-            @sim.recording.must_equal @net.State.marking.new_dataset.update( 0.0 => [1, 2] )
+            @sim.recording.must_be_kind_of YPetri::Net::DataSet
+            @sim.recording
+              .must_equal @net.State.marking.new_dataset.update( 0.0 => [1, 2] )
             @sim.recording.must_equal( { 0.0 => [1, 2] } )
             @sim.step! 1
             @sim.recording.must_equal( { 0.0 => [1, 2], 1.0 => [2, 1] } )
@@ -253,7 +254,7 @@ describe YPetri::Simulation do
 end
 
 
-describe YPetri::Simulation do
+describe "timeless simulation" do
   before do
     self.class.class_exec { include YPetri }
     U = Place m!: 2.5
@@ -266,37 +267,42 @@ describe YPetri::Simulation do
   end
 
   it "should behave" do
-    simulation.tap do |s|
-      assert ! s.timed?
-      s.core.must_be_kind_of YPetri::Core::Timeless::PseudoEuler
-      s.recording.size.must_equal 6
-      s.recording.events.must_equal [0, 1, 2, 3, 4, 5]
-      s.recording.reconstruct( event: 2 )
-        .pm.must_equal( { U: 2.5, V: 4.5 } )
-      s.recording.marking.slice( 2..4 ).series
-        .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
-      s.recording.marking( slice: 2..4 )
-        .must_equal( { 2 => [2.5, 4.5],
-                       3 => [2.5, 5.5],
-                       4 => [2.5, 6.5] } )
-      s.recording.firing_series( slice: 1..2 )
-        .must_equal [[1, 1]]
-      s.recording.firing_series( transitions: [:U2V] )
-        .must_equal [[1, 1, 1, 1, 1, 1]]
-      s.recording.delta_series( places: [:U], transitions: [:Uplus] )
-        .must_equal [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
-      tmp = s.recording.features( marking: [:U], firing: [:U2V] )
-      tmp.delete( :features )
-        .must_equal( { marking: [:U], firing: [:U2V],
-                       delta: { places: [], transitions: [] } } )
-      tmp.must_equal( { 0 => [2.5, 1], 1 => [2.5, 1], 2 => [2.5, 1],
-                        3 => [2.5, 1], 4 => [2.5, 1], 5 => [2.5, 1] } )
-    end
+    s = simulation
+    assert ! s.timed?
+    s.core.must_be_kind_of YPetri::Core::Timeless::PseudoEuler
+    ds = s.recording
+    ds.size.must_equal 6
+    ds.events.must_equal [0, 1, 2, 3, 4, 5]
+    ds.interpolate( 1 )
+      .must_equal [2.5, 3.5]
+    ds.interpolate( 2 )
+      .must_equal [2.5, 4.5]
+    -> { ds.interpolate( 1.5 ) }.must_raise TypeError
+    ds.reconstruct( event: 2 )
+      .pm.must_equal( { U: 2.5, V: 4.5 } )
+    ds.marking.slice( 2..4 ).series
+      .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
+    ds.marking( slice: 2..4 )
+      .must_equal( { 2 => [2.5, 4.5],
+                     3 => [2.5, 5.5],
+                     4 => [2.5, 6.5] } )
+    ds.firing_series( slice: 1..2 )
+      .must_equal [[1, 1]]
+    ds.firing_series( transitions: [:U2V] )
+      .must_equal [[1, 1, 1, 1, 1, 1]]
+    ds.delta_series( places: [:U], transitions: [:Uplus] )
+      .must_equal [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
+    tmp = ds.features( marking: [:U], firing: [:U2V] )
+    tmp.delete( :features )
+      .must_equal( { marking: [:U], firing: [:U2V],
+                     delta: { places: [], transitions: [] } } )
+    tmp.must_equal( { 0 => [2.5, 1], 1 => [2.5, 1], 2 => [2.5, 1],
+                      3 => [2.5, 1], 4 => [2.5, 1], 5 => [2.5, 1] } )
   end
 end
 
 
-describe YPetri::Simulation::Timed do
+describe "timed simulation" do
   before do
     skip
     self.class.class_exec { include YPetri }

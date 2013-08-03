@@ -2,7 +2,7 @@
 
 # Mixin for timed non-assignment timeless Petri net transitions.
 # 
-module YPetri::Transition::OrdinaryTimeless
+module YPetri::Transition::Type_t
   # Result of the transition's "function", regardless of the #enabled? status.
   # 
   def action
@@ -45,4 +45,4 @@ module YPetri::Transition::OrdinaryTimeless
       rescue YPetri::GuardError; false end
     end
   end
-end # class YPetri::Transition::OrdinaryTimeless
+end # class YPetri::Transition::Type_t

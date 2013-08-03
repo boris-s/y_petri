@@ -4,4 +4,12 @@
 # 
 module YPetri
   GuardError = Class.new TypeError
+
+  Place = Class.new
+  Transition = Class.new
+  Net = Class.new
+  Simulation = Class.new
+  Core = Class.new
+  World = Class.new
+  Agent = Class.new
 end # module YPetri

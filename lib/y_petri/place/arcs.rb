@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # Connectivity aspect of a Petri net place.
 # 
-class YPetri::Place
+module YPetri::Place::Arcs
   # Transitions that can directly add/remove tokens from this place. Aliased as
   # +#upstream_transitions+ and +#ϝ+. (Digamma resembles "f", meaning function,
   # well known from existing spreadsheet software.)
@@ -93,4 +93,4 @@ class YPetri::Place
   def register_downstream_transition( transition )
     @downstream_arcs << transition
   end
-end # class YPetri::Place
+end # class YPetri::Place::Arcs

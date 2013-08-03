@@ -1,8 +1,10 @@
+# encoding: utf-8
+
 # Manages the initial marking of a simulation.
 # 
 class YPetri::Simulation
   class PlaceMapping < Hash
-    include Dependency
+    ★ Dependency
 
     class << self
       # Initializes the initial marking from a hash.

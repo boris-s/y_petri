@@ -1,8 +1,10 @@
+# encoding: utf-8
+
 # Basic elements of a simulation, a mixin intended for YPetri::Simulation.
 #
 class YPetri::Simulation
   class Elements < Array
-    include Dependency
+    ★ Dependency
     
     class << self
       # New collection constructor

@@ -1,10 +1,12 @@
+# encoding: utf-8
+
 # Basic elements of a simulation, a mixin intended for YPetri::Simulation.
 #
 class YPetri::Simulation
   # Represents a set of features of a simulation state.
   # 
   class FeatureSet
-    include DependencyInjection
+    ★ DependencyInjection
 
     attr_reader :marking, :firing, :delta
 

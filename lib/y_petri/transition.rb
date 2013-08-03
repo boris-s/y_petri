@@ -2,10 +2,9 @@
 
 require_relative 'transition/arcs'
 require_relative 'transition/cocking'
-require_relative 'transition/init'
-require_relative 'transition/timed'
-require_relative 'transition/ordinary_timeless'
-require_relative 'transition/assignment'
+require_relative 'transition/construction_convenience'
+require_relative 'transition/types'
+require_relative 'transition/usable_without_world'
 
 # Transitions -- little boxes in Petri net drawings -- represent atomic
 # operations on the Petri net's marking.
@@ -92,59 +91,104 @@ require_relative 'transition/assignment'
 # closure as per C. A. Petri is automatically constructed for these.
 # 
 class YPetri::Transition
-  include NameMagic
-  include YPetri::World::Dependency
+  ★ NameMagic                        # ★ means include
+  ★ YPetri::World::Dependency
+  ★ UsableWithoutWorld
+  ★ Arcs
+  ★ Cocking
+  ★ ConstructionConvenience
+  ★ Types
 
   class << self
-    include YPetri::World::Dependency
+    ★ YPetri::World::Dependency
   end
 
-  delegate :world, to: "self.class"
-
-  BASIC_TRANSITION_TYPES = {
+  TYPES = {
+    T: "timed",
+    t: "timeless",
+    S: "stoichiometric",
+    s: "non-stoichiometric",
+    A: "assignment",
+    a: "non-assignment",
     TS: "timed stoichiometric",
     tS: "timeless stoichiometric",
     Ts: "timed nonstoichiometric",
     ts: "timeless nonstoichiometric"
   }
 
-  def TS?; type == :TS end
-  def Ts?; type == :Ts end
-  def tS?; type == :tS end
-  def ts?; type == :ts end
+  delegate :world, to: "self.class"
+
+  # Transition class represents many different kinds of Petri net transitions.
+  # It makes the constructor syntax a bit more polymorphic. The type of the
+  # transition to construct is mostly inferred from the constructor arguments.
+  # 
+  # Mandatorily, the constructor will always need a way to determine the domain
+  # (upstream arcs) and codomain (downstream arcs) of the transition. Also, the
+  # constructor must have a way to determine the transition's action. This is
+  # best explained by examples -- let us have 3 places A, B, C, for whe we will
+  # create different kinds of transitions:
+  # 
+  # 
+  # ==== TS (timed stoichiometric)
+  #
+  # Rate closure and stoichiometry has to be supplied. Rate closure arity should
+  # correspond to the domain size. Return arity should be 1 (to be multiplied by
+  # the stoichiometry vector, as in all other stoichiometric transitions).
+  #
+  #   Transition.new stoichiometry: { A: -1, B: 1 },
+  #                  rate: -> a { a * 0.5 }
+  #                  
+  #
+  # ==== Ts (timed nonstoichiometric)
+  # 
+  # Rate closure has to be supplied, whose arity should match the domain, and
+  # output arity codomain.
+  # 
+  # ==== tS (timeless stoichiometric)
+  # 
+  # Stoichiometry has to be supplied, action closure is optional. If supplied,
+  # its return arity should be 1 (to be multiplied by the stoichiometry vector).
+  # 
+  # ==== ts transitions (timeless nonstoichiometric)
+  # 
+  # Action closure is expected with return arity equal to the codomain size:
+  # 
+  #   Transition.new upstream_arcs: [A, C], downstream_arcs: [A, B],
+  #                  action_closure: proc { |m, x|
+  #                                         if x > 0 then [-(m / 2), (m / 2)]
+  #                                         else [1, 0] end
+  #                                       }
+  # 
+  def initialize *args, &block
+    check_in_arguments *args, &block # the big job
+    extend( if timed? then Type_T
+            elsif assignment_action? then Type_A
+            else Type_t end )
+    inform_upstream_places         # that they have been connected
+    inform_downstream_places       # that they have been connected
+    uncock                         # initialize in the uncocked state
+  end
 
   # Domain, or 'upstream arcs', is a collection of places, whose marking
   # directly affects the transition's action.
   # 
   attr_reader :domain
-  alias :domain_arcs :domain
-  alias :domain_places :domain
-  alias :upstream :domain
-  alias :upstream_arcs :domain
-  alias :upstream_places :domain
+  alias domain_arcs domain
+  alias domain_places domain
+  alias upstream domain
+  alias upstream_arcs domain
+  alias upstream_places domain
 
   # Codomain, 'downstream arcs', or 'action arcs', is a collection of places,
   # whose marking is directly changed by this transition's firing.
   # 
   attr_reader :codomain
-  alias :codomain_arcs :codomain
-  alias :codomain_places :codomain
-  alias :downstream :codomain
-  alias :downstream_arcs :codomain
-  alias :downstream_places :codomain
-  alias :action_arcs :codomain
-
-  # Is the transition stoichiometric?
-  # 
-  def stoichiometric?; @stoichiometric end
-  alias :S? :stoichiometric?
-
-  # Is the transition nonstoichiometric? (Opposite of #stoichiometric?)
-  # 
-  def nonstoichiometric?
-    not stoichiometric?
-  end
-  alias :s? :nonstoichiometric?
+  alias codomain_arcs codomain
+  alias codomain_places codomain
+  alias downstream codomain
+  alias downstream_arcs codomain
+  alias downstream_places codomain
+  alias action_arcs codomain
 
   # Stoichiometry (implies that the transition is stoichiometric).
   # 
@@ -170,76 +214,18 @@ class YPetri::Transition
   # Rate closure arity should correspond to the transition's domain.
   # 
   attr_reader :rate_closure
-  alias :rate :rate_closure
-  alias :flux_closure :rate_closure
-  alias :flux :rate_closure
-  alias :propensity_closure :rate_closure
-  alias :propensity :rate_closure
+  alias rate rate_closure
+  alias flux_closure rate_closure
+  alias flux rate_closure
+  alias propensity_closure rate_closure
+  alias propensity rate_closure
 
   # For rateless transition, action closure must be present. Action closure
   # input arguments must correspond to the domain places, and for timed
   # transitions, the first argument of the action closure must be Δtime.
   # 
   attr_reader :action_closure
-  alias :action :action_closure
-
-  # Does the transition's action depend on delta time?
-  # 
-  def timed?
-    @timed
-  end
-  alias T? timed?
-
-  # Is the transition timeless? (Opposite of #timed?)
-  # 
-  def timeless?
-    not timed?
-  end
-  alias t? timeless?
-
-  # Is the transition functional?
-  # Explanation: If rate or action closure is supplied, a transition is always
-  # considered 'functional'. Otherwise, it is considered not 'functional'.
-  # Note that even transitions that are not functional still have standard
-  # action acc. to Petri's definition. Also note that a timed transition is
-  # necessarily functional.
-  # 
-  def functional?
-    @functional
-  end
-
-  # Opposite of #functional?
-  # 
-  def functionless?
-    not functional?
-  end
-
-  # Reports the transition's membership in one of the 4 basic types:
-  # 
-  # 1. TS .... timed stoichiometric
-  # 2. tS .... timeless stoichiometric
-  # 3. Ts .... timed nonstoichiometric
-  # 4. ts .... timeless nonstoichiometric
-  #
-  # plus the fifth type
-  #
-  # 5. A .... assignment transitions
-  # 
-  def type
-    return :A if assignment_action?
-    timed? ? ( stoichiometric? ? :TS : :Ts ) : ( stoichiometric? ? :tS : :ts )
-  end
-
-  # Is it an assignment transition? (Transitions with 'assignment action'
-  # completely replace their codomain's marking.)
-  # 
-  def assignment_action?; @assignment_action end
-  alias :assignment? :assignment_action?
-  alias :A? :assignment_action?
-
-  # Is it a non-assignment transition? (Opposite of +#A?+)
-  # 
-  def a?; ! assignment_action? end
+  alias action action_closure
 
   # Zero action.
   # 

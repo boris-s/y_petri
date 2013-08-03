@@ -35,12 +35,12 @@ require_relative 'simulation/timed'
 # to be specified. Both come as hashes:
 # 
 class YPetri::Simulation
-  include Places::Access
-  include Transitions::Access
-  include Elements::Access
-  include InitialMarking::Access
-  include MarkingClamps::Access
-  include MarkingVector::Access
+  ★ Places::Access                   # ★ means include
+  ★ Transitions::Access
+  ★ Elements::Access
+  ★ InitialMarking::Access
+  ★ MarkingClamps::Access
+  ★ MarkingVector::Access
 
   DEFAULT_SETTINGS = -> do { method: :pseudo_euler, guarded: false } end
 

@@ -2,7 +2,7 @@
 
 # Mixin for timed Petri net transitions.
 # 
-module YPetri::Transition::Timed
+module YPetri::Transition::Type_T
   # Transition's action (before validation). Requires Δt as an argument.
   # 
   def action Δt
@@ -47,4 +47,4 @@ module YPetri::Transition::Timed
       rescue YPetri::GuardError; false end
     end
   end
-end # class YPetri::Transition::Timed
+end # class YPetri::Transition::Type_T

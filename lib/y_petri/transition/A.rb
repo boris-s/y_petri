@@ -2,7 +2,7 @@
 
 # Mixin for the transitions with assignment action.
 # 
-module YPetri::Transition::Assignment
+module YPetri::Transition::Type_A
   # Transition's action (before validation).
   # 
   def action
@@ -36,4 +36,4 @@ module YPetri::Transition::Assignment
   def enabled?
     true
   end
-end # class YPetri::Transition::Assignment
+end # class YPetri::Transition::Type_A

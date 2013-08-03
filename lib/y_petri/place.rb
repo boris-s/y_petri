@@ -1,16 +1,19 @@
 # encoding: utf-8
 
 require_relative 'place/guard'
+require_relative 'place/guarded'
 require_relative 'place/arcs'
 
 # Represents a Petri net place.
 # 
 class YPetri::Place
-  include NameMagic
-  include YPetri::World::Dependency
+  ★ NameMagic                        # ★ means include
+  ★ Arcs
+  ★ Guarded
+  ★ YPetri::World::Dependency
 
   class << self
-    include YPetri::World::Dependency
+    ★ YPetri::World::Dependency
   end
 
   delegate :world, to: "self.class"

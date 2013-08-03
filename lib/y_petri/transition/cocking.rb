@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # Cocking mechanics of a transition. A transition has to be cocked, before
 # it can succesfuly +#fire+. (+#fire!+ method disregards cocking.)
 # 
-class YPetri::Transition
+module YPetri::Transition::Cocking
   # Is the transition cocked?
   # 
   def cocked?
@@ -29,4 +29,4 @@ class YPetri::Transition
     @cocked = false
   end
   alias :uncock! :uncock
-end # class YPetri::Transition
+end # class YPetri::Transition::Cocking

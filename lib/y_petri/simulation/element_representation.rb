@@ -4,8 +4,8 @@
 #
 class YPetri::Simulation
   class ElementRepresentation
-    include NameMagic
-    include Dependency
+    ★ NameMagic
+    ★ Dependency
 
     attr_reader :source # source place
 

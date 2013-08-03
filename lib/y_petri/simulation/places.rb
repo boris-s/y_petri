@@ -7,7 +7,7 @@ require_relative 'places/clamped'
 # Place collection for YPetri::Simulation.
 #
 class YPetri::Simulation::Places
-  include Types
+  ★ Types
 
   # Pushes a place to the collection.
   # 
