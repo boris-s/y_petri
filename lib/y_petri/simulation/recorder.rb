@@ -20,10 +20,16 @@ class YPetri::Simulation::Recorder
   # initial state of the recording.
   # 
   def initialize features: net.State.marking( free_pp ),
-                 recording: features.new_dataset,
+                 recording: nil,
                  **nn
     @features = net.State.features( features )
-    reset! recording: recording
+    if recording then reset! recording: recording else reset! end
+  end
+
+  # Construct a new recording based on +features+.
+  # 
+  def new_recording
+    features.new_dataset
   end
 
   # Assigns to @recording a new Dataset instance. Without arguments, the new
@@ -32,7 +38,7 @@ class YPetri::Simulation::Recorder
   # 
   def reset! **nn
     @features = net.State.features( nn[:features] || @features )
-    @recording = features.new_dataset
+    @recording = new_recording
     @recording.update Hash[ nn[:recording] ] if nn[:recording]
   end
 

@@ -188,7 +188,6 @@ end
 
 describe YPetri::Net::State do
   before do
-    skip
     @w = YPetri::World.new
     @net = @w.Net.new
   end
@@ -197,6 +196,6 @@ describe YPetri::Net::State do
     @St = @net.State
     @St.net.must_equal @net
     assert @St.Feature < YPetri::Net::State::Feature
-    -> { @St.feature( marking: :A ) }.must_raise ArgumentError
+    -> { @St.feature( marking: :A ) }.must_raise NameError
   end
 end

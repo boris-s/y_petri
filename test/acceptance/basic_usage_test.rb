@@ -9,7 +9,7 @@ require_relative '../../lib/y_petri'     # tested component itself
 
 describe "Basic use of TimedSimulation" do
   before do
-    @m = YPetri::Manipulator.new
+    @m = YPetri::Agent.new
     @m.Place( name: "A", default_marking: 0.5 )
     @m.Place( name: "B", default_marking: 0.5 )
     @m.Transition( name: "A_pump",

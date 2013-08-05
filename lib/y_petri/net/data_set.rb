@@ -6,23 +6,32 @@ class YPetri::Net::DataSet < Hash
   class << self
     alias __new__ new
 
-    def new
+    def new type: nil
       __new__ do |hsh, missing|
         case missing
         when Float then nil
         else hsh[ missing.to_f ] end
-      end
+      end.tap { |inst|
+        inst.instance_variable_set :@type, type
+      }
     end
 
     private :__new__
+
+    delegate :net, to: :features
+    delegate :State, to: :net
+    delegate :Marking, :Firing, :Flux, :Gradient, :Delta,
+             to: "State()"
   end
 
   alias events keys
   alias records values
 
-  delegate :features, to: "self.class"
-  delegate :net, to: :features
-  delegate :State, to: :net
+  delegate :features,
+           :net,
+           :State,
+           :Marking, :Firing, :Flux, :Gradient, :Delta,
+           to: "self.class"
 
   attr_reader :type # more like event_type, idea not matured yet
 
@@ -46,9 +55,14 @@ class YPetri::Net::DataSet < Hash
 
   # Recreates the simulation at a given event label.
   # 
-  def reconstruct event: event, **settings # settings include marking clamps
-    interpolate( event )
-      .reconstruct **settings
+  def reconstruct event: (fail "No event given!"),
+    **settings # settings include marking clamps
+    rec = interpolate( event )
+    if timed? then
+      rec.reconstruct time: event, **settings
+    else
+      rec.reconstruct **settings
+    end
   end
 
   # Interpolates the recording an the given point (event). Return value is the
@@ -78,50 +92,113 @@ class YPetri::Net::DataSet < Hash
   # of tS transitions, :delta of places and/or transitions) and returns the
   # corresponding mapping of the recording.
   # 
-  def reduce_features features
-    rf = net.State.features( features )
-    rr_class = rf.Record
-    rf.new_dataset.tap do |ds|
-      ( events >> records ).each_pair { |event, record|
-        ds.update event => rr_class.load( rf.map { |f| record.fetch f } )
-      }
+  def reduce_features *args
+    Δt = if args.last.is_a? Hash then
+           args.last.may_have( :delta_time, syn!: :Δt )
+           args.last.delete( :delta_time )
+             .tap { args.delete_at( -1 ) if args.last.empty? }
+         end
+    reduced_features = net.State.features *args
+    rf_Record = reduced_features.Record
+    reduced_features.new_dataset( type: type ).tap do |dataset|
+      ( events >> records ).each_pair do |event, record|
+        absent_features = reduced_features - features()
+        if absent_features.empty? then # it is a subset
+          line = reduced_features.map { |feature| record.fetch feature }
+        else # it will require simulation reconstruction
+          sim = reconstruct event: event
+          if absent_features.any? { |f| f.timed? rescue false } then
+            fail ArgumentError, "Reconstruction of timed features requires " +
+              "the named arg :delta_time to be given!" unless Δt
+            line = reduced_features.map do |feature|
+              if absent_features.include? feature then
+                if ( feature.timed? rescue false ) then
+                  feature.extract_from( sim ).( Δt )
+                else
+                  feature.extract_from( sim )
+                end
+              else
+                record.fetch feature
+              end
+            end
+          else
+            line = reduced_features.map do |feature|
+              if absent_features.include? feature then
+                feature.extract_from( sim )
+              else
+                record.fetch feature
+              end
+            end
+          end
+        end
+        dataset.update event => rf_Record.load( line )
+      end
     end
   end
 
+  # Returns a subset of this dataset with only the specified marking features
+  # identified by the arguments retained. If no arguments are given, all the
+  # marking features from the receiver dataset are selected.
   # 
-  def marking *args
-    return reduce_features features.select { |f|
-      f.is_a? YPetri::Net::State::Feature::Marking
-    } if args.empty?
-    reduce_features marking: args.first
+  def marking ids=nil
+    return reduce_features net.State.marking if ids.nil?
+    reduce_features marking: ids
   end
 
+  # Returns a subset of this dataset with only the specified firing features
+  # identified by the arguments retained. If no arguments are given, all the
+  # firing features from the receiver dataset are selected.
+  # 
   def firing *args
-    return reduce_features features.select { |f|
-      f.is_a? YPetri::Net::State::Feature::Firing
-    } if args.empty?
-    reduce_features firing: args.first
+    Δt = if args.last.is_a? Hash then
+           args.last.may_have( :delta_time, syn!: :Δt )
+           args.last.delete( :delta_time )
+             .tap { args.delete_at( -1 ) if args.last.empty? }
+         end
+    if Δt then
+      return reduce_features net.State.firing, delta_time: Δt if args.empty?
+      reduce_features firing: args.first, delta_time: Δt
+    else
+      return reduce_features net.State.firing if args.empty?
+      reduce_features firing: args.first
+    end
   end
 
-  def flux *args
-    return reduce_features features.select { |f|
-      f.is_a? YPetri::Net::State::Feature::Flux
-    } if args.empty?
-    reduce_features flux: args.first
+  # Returns a subset of this dataset with only the specified flux features
+  # identified by the arguments retained. If no arguments are given, all the
+  # flux features from the receiver dataset are selected.
+  # 
+  def flux ids=nil
+    return reduce_features net.State.flux if ids.nil?
+    reduce_features flux: ids
   end
 
+  # Returns a subset of this dataset with only the specified gradient features
+  # identified by the arguments retained. If no arguments are given, all the
+  # gradient features from the receiver dataset are selected.
+  # 
   def gradient *args
-    return reduce_features features.select { |f|
-      f.is_a? YPetri::Net::State::Feature::Gradient
-    } if args.empty?
+    return reduce_features net.State.gradient if args.empty?
     reduce_features gradient: args
   end
 
+  # Returns a subset of this dataset with only the specified delta features
+  # identified by the arguments retained. If no arguments are given, all the
+  # delta features from the receiver dataset are selected.
+  # 
   def delta *args
-    return reduce_features features.select { |f|
-      f.is_a? YPetri::Net::State::Feature::Delta
-    } if args.empty?
-    reduce_features delta: args
+    Δt = if args.last.is_a? Hash then
+           args.last.may_have( :delta_time, syn!: :Δt )
+           args.last.delete( :delta_time )
+             .tap { args.delete_at( -1 ) if args.last.empty? }
+         end
+    if Δt then
+      return reduce_features net.State.delta, delta_time: Δt if args.empty?
+      reduce_features delta: args, delta_time: Δt
+    else
+      return reduce_features net.State.delta if args.empty?
+      reduce_features delta: args
+    end      
   end
 
   # Outputs the current recording in CSV format.

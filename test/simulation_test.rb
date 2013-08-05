@@ -9,7 +9,6 @@ require_relative '../lib/y_petri'     # tested component itself
 
 describe YPetri::Simulation do
   before do
-    skip
     @w = YPetri::World.new
   end
 
@@ -282,20 +281,19 @@ describe "timeless simulation" do
       .pm.must_equal( { U: 2.5, V: 4.5 } )
     ds.marking.slice( 2..4 ).series
       .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
-    ds.marking( slice: 2..4 )
+    ds.marking.slice( 2..4 )
       .must_equal( { 2 => [2.5, 4.5],
                      3 => [2.5, 5.5],
                      4 => [2.5, 6.5] } )
-    ds.firing_series( slice: 1..2 )
+    ds.firing.slice( 1..2 ).series
       .must_equal [[1, 1]]
-    ds.firing_series( transitions: [:U2V] )
+    ds.series( firing: [:U2V] )
       .must_equal [[1, 1, 1, 1, 1, 1]]
-    ds.delta_series( places: [:U], transitions: [:Uplus] )
+    ds.delta( [:U], transitions: [:Uplus] ).series
       .must_equal [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
-    tmp = ds.features( marking: [:U], firing: [:U2V] )
-    tmp.delete( :features )
-      .must_equal( { marking: [:U], firing: [:U2V],
-                     delta: { places: [], transitions: [] } } )
+    tmp = ds.reduce_features( marking: [:U], firing: [:U2V] )
+    tmp.features
+      .must_equal( ds.net.State.features marking: [:U], firing: [:U2V] )
     tmp.must_equal( { 0 => [2.5, 1], 1 => [2.5, 1], 2 => [2.5, 1],
                       3 => [2.5, 1], 4 => [2.5, 1], 5 => [2.5, 1] } )
   end
@@ -304,7 +302,6 @@ end
 
 describe "timed simulation" do
   before do
-    skip
     self.class.class_exec { include YPetri }
     A = Place m!: 0.5
     B = Place m!: 0.5
@@ -347,15 +344,10 @@ describe "timed simulation" do
         .must_equal []
       s.recording.firing
         .must_equal( [*0..12].map { |n| n * 5.0 } >> [[]] * 13 )
-      # It is obvious why this fails: Given delta feature is not in the
-      # recording. It has to be generated, and since the net is timed,
-      # it also requires Δt to be generated.
-
-      # I'll comment it out for a while to see what the plot is doing.
-=begin
-      s.recording.delta( [:A], transitions: [:A_pump] )
+      s.recording
+        .delta( [:A], transitions: [:A_pump], delta_time: 0.1 )
+        .series
         .must_equal [ [ -0.0005 ] * 13 ]
-=end
       plot_state
       sleep 5
     end

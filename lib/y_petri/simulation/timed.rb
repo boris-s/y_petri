@@ -104,7 +104,7 @@ module YPetri::Simulation::Timed
 
   # Resets the timed simulation.
   #
-  def reset!
+  def reset! **nn
     @time = initial_time || time_unit * 0
     super
   end
@@ -143,15 +143,22 @@ module YPetri::Simulation::Timed
   #
   def init **settings
     if settings.has? :time, syn!: :time_range then # time range given
-      time_range = settings[:time]
-      @initial_time, @target_time = time_range.begin, time_range.end
-      @time_unit = target_time / target_time.to_f
+      case settings[:time]
+      when Range then
+        time_range = settings[:time]
+        @initial_time, @target_time = time_range.begin, time_range.end
+        @time_unit = initial_time.class.one
+      else
+        @initial_time = settings[:time]
+        @time_unit = initial_time.class.one
+        @target_time = time_unit * Float::INFINITY
+      end
     else
       anything = settings[:step] || settings[:sampling]
       msg = "The simulation is timed, but the constructor lacks any of the " +
         "time-related arguments: :time, :step, or :sampling!"
       fail ArgumentError, msg unless anything
-      @time_unit = anything / anything.to_f
+      @time_unit = anything.class.one
       @initial_time, @target_time = time_unit * 0, time_unit * Float::INFINITY
     end
     init_core_and_recorder_subclasses

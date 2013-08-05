@@ -8,7 +8,7 @@ class YPetri::Net::State::Features::Record < Array
              :net,
              to: "Features()"
 
-    # Construcs a new Record object from a given collection of values.
+    # Constructs a new Record object from a given collection of values.
     # 
     def load values
       new( values.dup )
@@ -56,85 +56,101 @@ class YPetri::Net::State::Features::Record < Array
     end
   end
 
-  # Given a set of marking clamps complementary...
+  # Given a set of marking clamps complementary to the marking features of this
+  # record, reconstructs a Simulation instance with the corresponding state.
+  # If the net is timed, or if the construction of the simulation from the net
+  # has need for any special settings, these must be supplied to this method.
+  # (Timed nets eg. require +:time+ named argument for successful construction.)
   # 
   def reconstruct marking_clamps: {}, **settings
     net.simulation marking_clamps: {}, marking: marking, **settings
   end
 
-  # Returns the marking of a given place, or array of places (must be in the
-  # record). If no argument is given, marking of all the places in the record
-  # is returned.
+  # Expects a marking feature identifier (place identifier or Marking instance),
+  # and returns the value for that feature in this record. If an array of
+  # marking feature identifiers is supplied, it is mapped to the array of
+  # corresponding values. If no argument is given, values from this record for
+  # all the present marking features are returned.
   # 
-  def marking pl=nil
-    return marking( features.marking ) if pl.nil?
-    case pl
-    when Array then pl.map { |id| marking net.place( id ) }
-    else fetch( net.State.Marking.of pl ) end
+  def marking id=nil
+    return marking( features.marking ) if id.nil?
+    case id
+    when Array then id.map { |id| marking id }
+    else fetch( features.marking id ) end
   end
 
-  # Returns the flux of a given transition, or array of transitions (must be in
-  # the record). If no argument is given, flux of all the transitions in the
-  # record is returned.
+  # Expects a flux feature identifier (transition identifier or Flux instance),
+  # and returns the value for that feature in this record. If an array of flux
+  # feature identifiers is supplied, it is mapped to the array of corresponding
+  # values. If no argument is given, values from this record for all the present
+  # flux features are returned.
   # 
-  def flux tr=nil
-    return flux( features.flux ) if tr.nil?
-    case tr
-    when Array then tr.map { |id| flux net.transition( id ) }
-    else fetch( net.State.Flux.of tr ) end
+  def flux id=nil
+    return flux( features.flux ) if id.nil?
+    case id
+    when Array then id.map { |id| flux net.transition( id ) }
+    else fetch( features.flux id ) end
   end
 
-  # Returns the firing of a given transition, or array of transitions (must be
-  # in the record). If no argument is given, firing of all the transitions in
-  # the record is returned.
+  # Expects a firing feature identifier (transition identifier or Firing
+  # instance), and returns the value for that feature in this record. If an
+  # array of firing feature identifiers is supplied, it is mapped to the array
+  # of corresponding values. If no argument is given, values from this record
+  # for all the present flux features are returned.
   # 
-  def firing tr=nil
-    return firing( features.firing ) if tr.nil?
-    case tr
-    when Array then tr.map { |id| firing net.transition( id ) }
-    else fetch( net.State.Firing.of tr ) end
+  def firing id=nil
+    return firing( features.firing ) if id.nil?
+    case id
+    when Array then id.map { |id| firing net.transition( id ) }
+    else fetch( features.firing id ) end
   end
 
-  # Returns the gradient of a given place, or array of places, contributed by
-  # a given set of transitions (the feature must be in the record). If the
-  # place-specifying argument is not given, values for all the matching
-  # gradient features are returned.
+  # Expects a gradient feature identifier (place identifier, or Gradient
+  # instance), qualified by an array of transitions (named argument
+  # +:transitions+, defaults to all timed transitions in the net), and returns
+  # the value for that feature in this record. If an array of gradient feature
+  # identifiers is supplied, it is mapped to the array of corresponding values.
+  # If no gradient feature identifier is given, values from this record for all
+  # the present gradient features are returned.
   # 
-  def gradient pl=nil, transitions: nil
-    if pl.nil? then
+  def gradient id=nil, transitions: nil
+    if id.nil? then
       return gradient( features.gradient ) if transitions.nil?
       gradient( features.gradient.select do |f|
                   f.transitions == transitions.map { |t| net.transition t }
                 end )
     else
-      return gradient( pl, transitions: net.T_tt ) if transitions.nil?
-      case pl
+      return gradient( id, transitions: net.T_tt ) if transitions.nil?
+      case id
       when Array then
         pl.map { |id| gradient id, transitions: transitions }
       else
-        fetch( net.State.Gradient.of pl, transitions: net.T_tt( transitions ) )
+        fetch( features.gradient id, transitions: transitions )
       end
     end
   end
 
-  # Returns the delta of a given place, or array of places, contributed by a
-  # given set of transitions (the feature must be in the record). If the
-  # place-specifying argument is not given, values for all the matching delta
-  # features are returned.
+  # Expects a gradient feature identifier (place identifier, or Delta instance),
+  # qualified by an array of transitions (named argument +:transitions+,
+  # defaults to all timed transitions in the net), and returns the value for
+  # that feature in this record. If an array of delta feature identifiers is
+  # supplied, it is mapped to the array of corresponding values. If no delta
+  # feature identifier is given, values from this record for all the present
+  # delta features are returned.
   # 
   def delta pl=nil, transitions: nil
-    if pl.nil? then
+    if id.nil? then
       return delta( features.delta ) if transitions.nil?
       delta( features.delta.select do |f|
                f.transitions == transitions.map { |t| net.transition t }
              end )
     else
-      return delta( pl, transitions: net.tt ) if transitions.nil?
-      case pl
+      return delta( id, transitions: net.tt ) if transitions.nil?
+      case id
       when Array then
-        pl.map { |id| delta id, transitions: transitions }
+        id.map { |id| delta id, transitions: transitions }
       else
-        fetch( net.State.Delta.of pl, transitions: net.tt( transitions ) )
+        fetch( features.delta id, transitions: net.tt( transitions ) )
       end
     end
   end

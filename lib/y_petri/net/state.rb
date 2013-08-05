@@ -29,14 +29,27 @@ class YPetri::Net::State < Array
     # Returns the feature identified by the argument.
     # 
     def feature *id
+      fail ArgumentError, "No feature identifier!" if id.empty?
       case id.first
       when Feature() then id.first
       when Feature then id.first.class.new( id.first )
       else
-        features( id ).tap do |ff|
-          msg =  "Arguments must identify exactly 1 feature!"
-          ff.size == 1 or fail ArgumentError, msg
-        end.first
+        msg = "Malformed feature identifier!"
+        fail ArgumentError, msg unless id.size == 1 and id.first.is_a? Hash
+        ꜧ = id.first
+        fail ArgumentError, msg unless ꜧ.size == 1
+        key, val = ꜧ.keys.first, ꜧ.values.first
+        recognized = :marking, :firing, :gradient, :flux, :delta
+        msg = "Unrecognized feature: #{key}" 
+        fail ArgumentError, msg unless recognized.include? key
+        # And now, with everything clean...
+        case key
+        when :marking then Marking( val )
+        when :firing then Firing( val )
+        when :flux then Flux( val )
+        when :gradient then Gradient( *val )
+        when :delta then Delta( *val )
+        end
       end
     end
 

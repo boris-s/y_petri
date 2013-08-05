@@ -11,7 +11,7 @@ describe "Use of TimedSimulation with units" do
   before do
     require 'sy'
 
-    @m = YPetri::Manipulator.new
+    @m = YPetri::Agent.new
 
     # === General assumptions
     Cytoplasm_volume = 5.0e-11.l

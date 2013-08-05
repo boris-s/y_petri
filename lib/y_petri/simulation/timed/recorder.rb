@@ -15,9 +15,14 @@ module YPetri::Simulation::Timed
     # 
     def initialize sampling: default_sampling, next_time: time, **nn
       super
-      recording.instance_variable_set @type, :timed
       @sampling = sampling
       @next_time = next_time
+    end
+
+    # Construct a new recording based on +features+.
+    # 
+    def new_recording
+      features.new_dataset type: :timed
     end
 
     # Like +YPetri::Simulation::Recorder#reset+, but allowing for an additional
@@ -38,7 +43,12 @@ module YPetri::Simulation::Timed
       t2 = next_time.round( 9 )
       if t >= t2 then # it's time to sample
         sample!
-        @next_time += sampling
+        begin
+          @next_time += sampling
+        rescue NoMethodError => err
+          ( puts "Here go error #{err}"; Kernel::p @next_time; Kernel::p sampling )
+        end
+                                      
       end
     end
 

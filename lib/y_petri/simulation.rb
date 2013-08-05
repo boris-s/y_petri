@@ -94,6 +94,7 @@ class YPetri::Simulation
     method = settings[:method] # the simulation method
     @guarded = settings[:guarded] # guarding on / off
     m_clamps = settings[:marking_clamps] || {}
+    m = settings[:marking]
     init_m = settings[:initial_marking] || {}
     use_default_marking = if settings.has? :use_default_marking then
                             settings[:use_default_marking]
@@ -150,7 +151,7 @@ class YPetri::Simulation
     # Init the core.
     @core = Core().new( method: method, guarded: guarded  )
     # Reset.
-    reset!
+    if m then reset! marking: m else reset! end
   end
 
   # Simulation settings.
@@ -194,9 +195,10 @@ class YPetri::Simulation
 
   # Resets the simulation
   # 
-  def reset! **settings
+  def reset! **nn
+    m = nn[:marking]
     tap do
-      m_vector.reset!
+      if m then m_vector.reset! m else m_vector.reset! end
       recorder.reset!
       recorder.alert
     end

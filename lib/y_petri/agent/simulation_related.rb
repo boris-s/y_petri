@@ -191,7 +191,7 @@ module YPetri::Agent::SimulationRelated
   # collection).
   # 
   def set_step Δt
-    ssc.update step_size: Δt
+    ssc.update step: Δt
   end
   alias set_step_size set_step
 
@@ -212,7 +212,7 @@ module YPetri::Agent::SimulationRelated
   # settings collection).
   # 
   def set_sampling Δt
-    ssc.update sampling_period: Δt
+    ssc.update sampling: Δt
   end
 
   # Changes the simulation method of the current ssc (ssc = simulation
@@ -288,7 +288,7 @@ module YPetri::Agent::SimulationRelated
   def plot_state( place_ids=nil, except: [] )
     sim = simulation or return nil
     feat = sim.pp( place_ids || sim.pp ) - sim.pp( Array except )
-    gnuplot sim.record.marking( feat ), time: sim.target_time,
+    gnuplot sim.recording.marking( feat ), time: sim.target_time,
             title: "State plot", ylabel: "Marking"
   end
   alias plot_marking plot_state
