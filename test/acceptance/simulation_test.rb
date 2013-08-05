@@ -9,7 +9,7 @@ require_relative '../../lib/y_petri'     # tested component itself
 
 describe "Simplified dTTP pathway used for demo with Dr. Chang" do
   before do
-    @m = YPetri::Manipulator.new
+    @m = YPetri::Agent.new
     Cytoplasm_volume_in_litres = 5.0e-11
     NA = 6.022e23
     Pieces_per_micromolar = NA / 1_000_000 * Cytoplasm_volume_in_litres

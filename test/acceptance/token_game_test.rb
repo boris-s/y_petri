@@ -9,7 +9,7 @@ require_relative '../../lib/y_petri'     # tested component itself
 
 describe "Token game" do
   before do
-    @m = YPetri::Manipulator.new
+    @m = YPetri::Agent.new
     @m.Place name: "A"
     @m.Place name: "B"
     @m.Place name: "C", marking: 7.77

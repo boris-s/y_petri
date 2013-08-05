@@ -9,7 +9,7 @@ require_relative '../../lib/y_petri'     # tested component itself
 
 describe "Graphviz visualization" do
   before do
-    @m = YPetri::Manipulator.new
+    @m = YPetri::Agent.new
     @m.Place name: :A, m!: 1
     @m.Place name: :B, m!: 1.5
     @m.Place name: :C, m!: 2
