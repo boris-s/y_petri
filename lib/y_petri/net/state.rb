@@ -10,7 +10,7 @@ class YPetri::Net::State < Array
     # Customization of the parametrize method for the State class: Its
     # dependents Feature and Features (ie. feature set) are also parametrized.
     # 
-    def parametrize net: (fail ArgumentError, "No owning net!")
+    def parametrize net: ( fail ArgumentError, "No owning net!" )
       Class.new( self ).tap do |ç|
         ç.define_singleton_method :net do net end
         ç.param_class( { Feature: Feature,
@@ -40,7 +40,7 @@ class YPetri::Net::State < Array
         fail ArgumentError, msg unless ꜧ.size == 1
         key, val = ꜧ.keys.first, ꜧ.values.first
         recognized = :marking, :firing, :gradient, :flux, :delta
-        msg = "Unrecognized feature: #{key}" 
+        msg = "Unrecognized feature: #{key}"
         fail ArgumentError, msg unless recognized.include? key
         # And now, with everything clean...
         case key

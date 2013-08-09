@@ -90,7 +90,7 @@ module YPetri::Agent::PetriNetRelated
   def TS **stoichiometry, &block
     args = { s: stoichiometry }
     args.update name: stoichiometry.delete( :name ) if
-      stoichiometry.has? :name, syn!: :ɴ
+      stoichiometry.has? :name, syn!: :ɴn
     args.update domain: stoichiometry.delete( :domain ) if
       stoichiometry.has? :domain
     T **args, &block

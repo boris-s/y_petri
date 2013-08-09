@@ -258,11 +258,8 @@ module YPetri::Agent::SimulationRelated
     # --> delta feature ids
     # --> flux feature ids
     # --> firing feature ids
-
     # take these features together
-
     # construct the labels and the time series for each
-
     # plot them
 
     return nil unless sim = world.simulations.values[-1] # sim@point
@@ -287,63 +284,22 @@ module YPetri::Agent::SimulationRelated
   # 
   def plot_state( place_ids=nil, except: [] )
     sim = simulation or return nil
-    feat = sim.pp( place_ids || sim.pp ) - sim.pp( Array except )
-    gnuplot sim.recording.marking( feat ), time: sim.target_time,
-            title: "State plot", ylabel: "Marking"
+    rec = sim.recording
+    pp = sim.net.pp( place_ids.nil? ? net.pp : place_ids  ) -
+      sim.net.pp( except )
+    dataset = sim.recording.reduce_features( marking: pp )
+    dataset.plot
   end
   alias plot_marking plot_state
 
   # Plot the recorded flux (computed flux history at the sampling points).
   # 
-  def plot_flux( transition_ids=nil, **options )
-    sim = world.simulations.values[-1] or return nil # sim@point
-    tt = sim.TS_transitions( transition_ids ).sources
-    excluded = sim.transitions( Array options[:except] ).sources
-    tt -= excluded
-    flux = sim.recording.modify do |time, record|
-      [ time,
-        sim.at( time: time, marking: record ).TS_transitions( tt ).flux_vector ]
-    end
-    # Select a time series for each feature.
-    time_series = tt.map.with_index do |tr, i|
-      tr and flux.map { |time, flux| [ time, flux[i] ] }.transpose
-    end
-    # Time axis
-    time = sim.target_time
-    # Gnuplot call
-    gnuplot( time, tt.compact.names, time_series.compact,
-             title: "Flux plot", ylabel: "Flux [µMⁿ.s⁻¹]" )
-  end
-
-  private
-
-  # Gnuplots a recording. Target time or time range can be supplied as :time
-  # named argument.
-  # 
-  def gnuplot( dataset, time: nil, **nn )
-    event_vector = dataset.events
-    data_vectors = dataset.values.transpose
-    x_range = if time.is_a? Range then
-                "[#{time.begin}:#{time.end}]"
-              else
-                "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
-              end
-    labels = recording.features.labels
-
-    Gnuplot.open do |gp|
-      Gnuplot::Plot.new( gp ) do |plot|
-        plot.xrange x_range
-        plot.title nn[:title] || "Simulation plot"
-        plot.ylabel nn[:ylabel] || "Values"
-        plot.xlabel nn[:xlabel] || "Time [s]"
-
-        labels.zip( data_vectors ).each { |label, data_vector|
-          plot.data << Gnuplot::DataSet.new( [event_vector, data_vector] ) { |ds|
-            ds.with = "linespoints"
-            ds.title = lbl
-          }
-        }
-      end
-    end
+  def plot_flux( transition_ids=nil, except: [], **options )
+    sim = simulation or return nil
+    rec = sim.recording
+    tt = sim.net.tt( transition_ids.nil? ? net.tt : transition_ids ) -
+      sim.net.tt( except )
+    dataset = sim.recording.reduce_features( flux: tt )
+    dataset.plot( title: "Flux plot", ylabel: "Flux [µMⁿ.s⁻¹]" )
   end
 end # module YPetri::Agent::SimulationRelated

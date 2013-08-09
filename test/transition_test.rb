@@ -1,7 +1,7 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-require 'minitest/spec'
+gem 'minitest', '=4.7.4'
 require 'minitest/autorun'
 require 'y_support/typing'
 

@@ -209,7 +209,7 @@ class YPetri::Net::DataSet < Hash
 
   # Plots the dataset.
   # 
-  def plot time: nil, **nn
+  def plot( time: nil, **nn )
     events = events()
     data_ss = series
     x_range = if time.is_a? Range then
