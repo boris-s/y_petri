@@ -234,8 +234,8 @@ module YPetri::Agent::SimulationRelated
 
   # Create a new timed simulation and run it.
   # 
-  def run!
-    new_simulation.run!
+  def run! *args
+    new_simulation.run! *args
   end
 
   # Write the recorded samples in a file (csv).

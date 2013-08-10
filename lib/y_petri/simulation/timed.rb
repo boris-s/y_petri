@@ -38,7 +38,7 @@ module YPetri::Simulation::Timed
     initial_time..target_time
   end
 
-  # Returnst the settings pertaining to the Timed aspect of the simulation,
+  # Returns the settings pertaining to the Timed aspect of the simulation,
   # that is, +:step+, +:sampling+ and +:time+.
   #
   def settings all=false
@@ -48,7 +48,7 @@ module YPetri::Simulation::Timed
   end
 
   # Same as +#run!+, but guards against run upto infinity.
-  #
+  # 
   def run( upto: target_time, final_step: :exact )
     fail "Upto time equals infinity!" if upto == Float::INFINITY
     run!( upto: upto, final_step: final_step )
@@ -57,7 +57,7 @@ module YPetri::Simulation::Timed
   # Near alias for +#run_upto+. Accepts +:upto+ named argument, using
   # @target_time attribute as a default. The second optional argument,
   # +:final_step+, has the same options as in +#run_upto+ method.
-  #
+  # 
   def run!( upto: target_time, final_step: :exact )
     run_upto( upto, final_step: final_step )
   end
