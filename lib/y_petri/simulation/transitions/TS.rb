@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # Mixin for collections of TS transitions.
 #

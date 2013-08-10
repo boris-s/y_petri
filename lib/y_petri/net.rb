@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 require_relative 'net/element_access'
 require_relative 'net/visualization'

@@ -42,7 +42,7 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
-      arg.send( :TS_transitions, [ transition ] ).flux.first
+      arg.send( :TS_transitions, [ transition ] ).first.flux
     else
       fail TypeError, "Argument type not supported!"
     end
