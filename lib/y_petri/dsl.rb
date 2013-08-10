@@ -56,7 +56,7 @@ module YPetri
            :print_recording,
            :plot,
            :plot_selected,
-#          :plot_state,
+  #        :plot_state,
            :plot_flux,
            to: :y_petri_agent
 

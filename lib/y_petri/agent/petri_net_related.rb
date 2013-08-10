@@ -65,13 +65,13 @@ module YPetri::Agent::PetriNetRelated
     named_args.update( guard: block ) if block # use block as a guard
     named_args.may_have :default_marking, syn!: :m!
     named_args.may_have :marking, syn!: :m
-    world.Place.new *ordered_args, **named_args
+    world.Place.send( :new, *ordered_args, **named_args, &block )
   end
 
   # Transition constructor: Creates a new transition in the current world.
   # 
   def Transition( *ordered, **named, &block )
-    world.Transition.new *ordered, **named, &block
+    world.Transition.send( :new, *ordered, **named, &block )
   end
 
   # Timed transition constructor: Creates a new timed transition in the current
@@ -80,7 +80,7 @@ module YPetri::Agent::PetriNetRelated
   def T( *ordered, **named, &block )
     fail ArgumentError, "Timed transition constructor requires a block " +
       "defining the rate function!" unless block
-    world.Transition.new *ordered, **named.update( rate: block )
+    world.Transition.send( :new, *ordered, **named.update( rate: block ) )
   end
 
   # Timed stoichiometric transition constructor, that expects stoichiometry
@@ -103,16 +103,17 @@ module YPetri::Agent::PetriNetRelated
   def A( *codomain, **nn, &block )
     fail ArgumentError, "Assignment transition constructor requires a block " +
       "defining the assignment function!" unless block
-    world.Transition.new codomain: codomain,
-                         assignment: true,
-                         action: block,
-                         **nn
+    world.Transition.send( :new,
+                           codomain: codomain,
+                           assignment: true,
+                           action: block,
+                           **nn )
   end
 
   # Net constructor: Creates a new Net instance in the current world.
   # 
   def Net *ordered, **named, &block
-    world.Net.new *ordered, **named, &block
+    world.Net.send( :new, *ordered, **named, &block )
   end
 
   # Returns the net identified, or the net at point (if no argument given).

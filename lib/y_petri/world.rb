@@ -4,11 +4,10 @@ require_relative 'world/dependency'
 require_relative 'world/petri_net_related'
 require_relative 'world/simulation_related'
 
-
 # As the name suggests, represents the world. Holds places, transitions, nets
 # and other assets needed to set up and simulate Petri nets (settings, clamps,
-# initial markings etc.). Provides basic methods to do what is necessary.
-# More ergonomic and DSL-like methods are up to the YPetri::Agent.
+# initial markings etc.). Provides basic methods to do what is necessary. More
+# ergonomic and DSL-like methods are up to the YPetri::Agent.
 # 
 class YPetri::World
   ★ NameMagic                        # ★ means include

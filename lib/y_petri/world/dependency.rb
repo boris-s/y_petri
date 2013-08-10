@@ -1,8 +1,8 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # Provides basic skeleton for dependency injection for the triples of the
 # parametrized subclasses of Place, Transition and Net in different workspaces.
-#
+# 
 class YPetri::World
   module Dependency
     delegate :Place, :Transition, :Net, to: :world
