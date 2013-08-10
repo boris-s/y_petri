@@ -3,7 +3,7 @@
 # Flux of a Petri net TS transition.
 # 
 class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
-  attr_reader :transitionn
+  attr_reader :transition
 
   class << self
     def parametrize *args

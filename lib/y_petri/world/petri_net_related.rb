@@ -13,19 +13,19 @@ module YPetri::World::PetriNetRelated
 
   # Returns a place instance identified by the argument.
   # 
-  def place id
+  def place( id )
     Place().instance( id )
   end
 
   # Returns a transition instance identified by the argument.
   # 
-  def transition id
+  def transition( id )
     Transition().instance( id )
   end
 
   # Returns a net instance identified by the argument.
   # 
-  def net id
+  def net( id )
     Net().instance( id )
   end
 
