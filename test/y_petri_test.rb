@@ -3,7 +3,7 @@
 
 gem 'minitest', '=4.7.4'
 require 'minitest/autorun'
-require_relative '../lib/y_petri'     # tested component itself
+require_relative '../lib/y_petri' # tested component itself
 # require 'y_petri'
 # require 'sy'
 

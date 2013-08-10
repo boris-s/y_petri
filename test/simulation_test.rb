@@ -13,7 +13,7 @@ describe YPetri::Simulation do
   end
 
   it "should allow for creation of an empty simulation" do
-    net = @w.Net.new
+    net = @w.Net.send :new
     sim = net.simulation
     sim.pp.must_equal []
     sim.pp( *[] ).must_equal []
@@ -23,8 +23,8 @@ describe YPetri::Simulation do
 
   describe "simulation setup" do
     before do
-      @p = @w.Place.new name: :A, default_marking: 1
-      @q = @w.Place.new name: :B, default_marking: 2
+      @p = @w.Place.send :new, name: :A, default_marking: 1
+      @q = @w.Place.send :new, name: :B, default_marking: 2
       @net = @w.Net.of @p, @q
     end
 
@@ -80,10 +80,10 @@ describe YPetri::Simulation do
 
     describe "transition representation aspects" do
       before do
-        @ts = @w.Transition.new name: "T_ts", codomain: :A, action: -> { 1 }
-        @tS = @w.Transition.new name: "T_tS", s: { B: -1, A: 1 }, action: proc { 1 }
-        @Ts = @w.Transition.new name: "T_Ts", codomain: :A, rate: -> { 1 }
-        @TS = @w.Transition.new name: "T_TS", s: { B: -1, A: 1 }, rate: proc { 1 }
+        @ts = @w.Transition.send :new, name: "T_ts", codomain: :A, action: -> { 1 }
+        @tS = @w.Transition.send :new, name: "T_tS", s: { B: -1, A: 1 }, action: proc { 1 }
+        @Ts = @w.Transition.send :new, name: "T_Ts", codomain: :A, rate: -> { 1 }
+        @TS = @w.Transition.send :new, name: "T_TS", s: { B: -1, A: 1 }, rate: proc { 1 }
       end
 
       it "should be what intended" do

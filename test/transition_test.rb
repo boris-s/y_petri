@@ -25,33 +25,33 @@ describe ::YPetri::Transition do
         private :Place, :Transition
       }
     end
-    @p1 = pç.new default_marking: 1.0
-    @p2 = pç.new default_marking: 2.0
-    @p3 = pç.new default_marking: 3.0
-    @p4 = pç.new default_marking: 4.0
-    @p5 = pç.new default_marking: 5.0
+    @p1 = pç.send :new, default_marking: 1.0
+    @p2 = pç.send :new, default_marking: 2.0
+    @p3 = pç.send :new, default_marking: 3.0
+    @p4 = pç.send :new, default_marking: 4.0
+    @p5 = pç.send :new, default_marking: 5.0
   end
 
   describe "ts transitions (timeless nonstoichiometric)" do
     # Note: ts transitions require a function, and thus are always functional
     before do
-      @t1 = @ç.new codomain: [ @p1, @p3 ], domain: @p2, action: -> a { [ a, a ] }
-      @t2 = @ç.new codomain: [ @p1, @p3 ] do |t| [ t, t ] end
-      @t3 = @ç.new action: -> { [ 0.5, 0.5 ] }, codomain: [ @p1, @p3 ]
+      @t1 = @ç.send :new, codomain: [ @p1, @p3 ], domain: @p2, action: -> a { [ a, a ] }
+      @t2 = @ç.send :new, codomain: [ @p1, @p3 ] do |t| [ t, t ] end
+      @t3 = @ç.send :new, action: -> { [ 0.5, 0.5 ] }, codomain: [ @p1, @p3 ]
     end
 
     it "should raise errors for bad parameters" do
       # codomain omitted
-      -> { @ç.new domain: @p2, action: -> t { [ t, t ] } }
+      -> { @ç.send :new, domain: @p2, action: -> t { [ t, t ] } }
         .must_raise ArgumentError
       # mangled codomain
-      -> { @ç.new codomain: [ @p1, :a ], action: -> t { [ t, t ] } }
+      -> { @ç.send :new, codomain: [ @p1, :a ], action: -> t { [ t, t ] } }
         .must_raise TypeError
       # domain omitted
-      -> { @ç.new codomain: [ @p1, :a ], action: -> t { [ t, t ] } }
+      -> { @ç.send :new, codomain: [ @p1, :a ], action: -> t { [ t, t ] } }
         .must_raise TypeError
       # action closure arity greater than the domain
-      -> { @ç.new codomain: [ @p1, @p3 ], action: -> t { [ t, t ] }, domain: [] }
+      -> { @ç.send :new, codomain: [ @p1, @p3 ], action: -> t { [ t, t ] }, domain: [] }
         .must_raise TypeError
     end
 
@@ -77,8 +77,8 @@ describe ::YPetri::Transition do
 
   describe "tS transitions" do
     before do
-      @t1 = @ç.new s: { @p5 => -1, @p1 => 1 }, action: proc { 1 }
-      @t2 = @ç.new s: { @p5 => -1, @p1 => 1 } # should be "functionless"
+      @t1 = @ç.send :new, s: { @p5 => -1, @p1 => 1 }, action: proc { 1 }
+      @t2 = @ç.send :new, s: { @p5 => -1, @p1 => 1 } # should be "functionless"
     end
 
     it "should work" do
@@ -109,7 +109,7 @@ describe ::YPetri::Transition do
 
   describe "Ts transitions" do
     before do
-      @t1 = @ç.new domain: @p5, codomain: [@p5, @p1], rate: proc { [-1, 1] }
+      @t1 = @ç.send :new, domain: @p5, codomain: [@p5, @p1], rate: proc { [-1, 1] }
     end
 
     it "should work" do
@@ -128,12 +128,12 @@ describe ::YPetri::Transition do
   describe "TS transitions (timed stoichiometric)" do
     before do
       # This should give standard mass action by magic:
-      @TS1 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 }, rate: 0.1
+      @TS1 = @ç.send :new, s: { @p1 => -1, @p2 => -1, @p4 => 1 }, rate: 0.1
       # While this has custom closure:
-      @TS2 = @ç.new s: { @p1 => -1, @p3 => 1 }, rate: -> a { a * 0.5 }
+      @TS2 = @ç.send :new, s: { @p1 => -1, @p3 => 1 }, rate: -> a { a * 0.5 }
       # While this one even has domain explicitly specified:
-      @TS3 = @ç.new s: { @p1 => -1, @p2 => -1, @p4 => 1 },
-                    upstream_arcs: @p3, rate: -> a { a * 0.5 }
+      @TS3 = @ç.send :new, s: { @p1 => -1, @p2 => -1, @p4 => 1 },
+                     upstream_arcs: @p3, rate: -> a { a * 0.5 }
     end
 
     it "should init and work" do
@@ -178,14 +178,14 @@ describe "upstream and downstream reference mτs of places and transitions" do
         private :Place, :Transition
       }
     }
-    @a = @pç.new( default_marking: 1.0 )
-    @b = @pç.new( default_marking: 2.0 )
-    @c = @pç.new( default_marking: 3.0 )
+    @a = @pç.send :new, default_marking: 1.0
+    @b = @pç.send :new, default_marking: 2.0
+    @c = @pç.send :new, default_marking: 3.0
   end
 
   describe "Place" do
     it "should have #register_ustream/downstream_transition methods" do
-      @t1 = @tç.new s: {}
+      @t1 = @tç.send :new, s: {}
       @a.instance_variable_get( :@upstream_arcs ).must_equal []
       @a.instance_variable_get( :@downstream_arcs ).must_equal []
       @a.send :register_upstream_transition, @t1
@@ -195,7 +195,7 @@ describe "upstream and downstream reference mτs of places and transitions" do
 
   describe "upstream and downstream reference methods" do
     before do
-      @t1 = @tç.new s: { @a => -1, @b => 1 }, rate: 1
+      @t1 = @tç.send :new, s: { @a => -1, @b => 1 }, rate: 1
     end
 
     it "should show on the referencers" do
@@ -209,8 +209,8 @@ describe "upstream and downstream reference mτs of places and transitions" do
 
   describe "assignment action transitions" do
     before do
-      @p = @pç.new default_marking: 1.0
-      @t = @tç.new codomain: @p, action: -> { 1 }, assignment_action: true
+      @p = @pç.send :new, default_marking: 1.0
+      @t = @tç.send :new, codomain: @p, action: -> { 1 }, assignment_action: true
     end
 
     it "should work" do

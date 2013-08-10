@@ -14,7 +14,7 @@ describe YPetri::Net do
   end
 
   it "should initialize" do
-    net = @w.Net.new
+    net = @w.Net.send :new
     net.places.must_equal []
     net.transitions.must_equal []
     net.pp.must_equal []
@@ -23,11 +23,11 @@ describe YPetri::Net do
 
   describe "element access" do
     before do
-      @net = @w.Net.new
+      @net = @w.Net.send :new
     end
 
     it "should be able to include places" do
-      p = @w.Place.new name: "A", quantum: 0.1, marking: 1.1
+      p = @w.Place.send :new, name: "A", quantum: 0.1, marking: 1.1
       @net.includes_place?( p ).must_equal false
       @net.include_place p
       @net.places.must_equal [ p ]
@@ -39,10 +39,10 @@ describe YPetri::Net do
 
   describe "world with 3 places" do
     before do
-      @p1 = @w.Place.new name: "A", quantum: 0.1, marking: 1.1
-      @p2 = @w.Place.new name: "B", quantum: 0.1, marking: 2.2
-      @p3 = @w.Place.new name: "C", quantum: 0.1, marking: 3.3
-      @p4 = @w.Place.new name: "X", marking: 0
+      @p1 = @w.Place.send :new, name: "A", quantum: 0.1, marking: 1.1
+      @p2 = @w.Place.send :new, name: "B", quantum: 0.1, marking: 2.2
+      @p3 = @w.Place.send :new, name: "C", quantum: 0.1, marking: 3.3
+      @p4 = @w.Place.send :new, name: "X", marking: 0
     end
 
     describe "net of 3 places and no transitions" do
@@ -59,7 +59,7 @@ describe YPetri::Net do
       it "should allow only right transitions to be included in it" do
         assert @net.include?( @p1 )
         assert ! @net.include?( @p4 )
-        t = @w.Transition.new s: { @p4 => -1 }
+        t = @w.Transition.send :new, s: { @p4 => -1 }
         -> { @net.include_transition t }.must_raise RuntimeError
       end
 
@@ -71,7 +71,7 @@ describe YPetri::Net do
       it "should be able to tell its qualities" do
         assert_equal false, @net.functional?
         assert_equal false, @net.timed?
-        assert @net.include?( @p1 ) && !@net.include?( YPetri::Place.new )
+        assert @net.include?( @p1 ) && !@net.include?( YPetri::Place.send :new )
       end
 
       it "should know its state and marking features" do
@@ -142,7 +142,7 @@ describe YPetri::Net do
 
         describe "plus 1 more nameless timeless functionless transition" do
           before do
-            @t2 = @w.Transition.new s: { @p2 => -1, @p3 => 1 }
+            @t2 = @w.Transition.send :new, s: { @p2 => -1, @p3 => 1 }
             @net.include_transition @t2
           end
 
@@ -189,7 +189,7 @@ end
 describe YPetri::Net::State do
   before do
     @w = YPetri::World.new
-    @net = @w.Net.new
+    @net = @w.Net.send :new
   end
 
   it "should be already parametrized on @w.Net" do

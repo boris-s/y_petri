@@ -26,6 +26,8 @@ class YPetri::Net
     def of *elements
       new.tap { |inst| elements.each { |e| inst << e } }
     end
+
+    private :new
   end
 
   delegate :world, to: "self.class"

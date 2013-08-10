@@ -52,10 +52,10 @@ module YPetri::World::PetriNetRelated
   # Creates all-encompassing Net instance named :Top.
   # 
   def set_up_Top_net
-    Net().new name: :Top # all-encompassing :Top net
+    Net().send :new, name: :Top # all-encompassing :Top net
     # Hook new places to add themselves magically to the :Top net.
     Place().new_instance_closure { |new_inst| net( :Top ) << new_inst }
     # Hook new transitions to add themselves magically to the :Top net.
-    Transition().new_instance_closure { |new_inst| net( :Top ) << new_inst }    
+    Transition().new_instance_closure { |new_inst| net( :Top ) << new_inst }
   end
 end # module YPetri::World::PetriNetRelated

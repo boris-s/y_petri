@@ -14,6 +14,8 @@ class YPetri::Place
 
   class << self
     ★ YPetri::World::Dependency
+
+    private :new
   end
 
   delegate :world, to: "self.class"

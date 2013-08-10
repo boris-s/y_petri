@@ -101,6 +101,8 @@ class YPetri::Transition
 
   class << self
     ★ YPetri::World::Dependency
+
+    private :new
   end
 
   TYPES = {
