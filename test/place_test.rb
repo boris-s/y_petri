@@ -1,5 +1,5 @@
 #! /usr/bin/ruby
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 gem 'minitest', '=4.7.4'
 require 'minitest/autorun'
