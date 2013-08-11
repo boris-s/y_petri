@@ -101,9 +101,18 @@ module YPetri::Agent::SimulationRelated
            :set_clamp_collection, :ncc,
            :set_initial_marking_collection, :nimc,
            :set_simulation_settings_collection, :set_ssc,
-           :new_simulation,
-           :clamp_cc, :initial_marking_cc, :simulation_settings_cc,
+           :new_simulation, :clamp_cc,
+           :initial_marking_cc, :simulation_settings_cc,
            to: :world
+
+  delegate :pm, to: :simulation
+
+  # Pretty print the state.
+  # 
+  def state
+    pp pm
+    return nil
+  end
 
   # Returns the simulation identified by the argument, or one at simulation
   # point, if no argument given. The simulation is identified in the same way
@@ -341,7 +350,7 @@ module YPetri::Agent::SimulationRelated
     tt = transitions.nil? ? simulation.tt : tranisitions
     tt = simulation.tt( tt )
     tt -= simulation.ee( except )
-    rec.delta( pp, transitions: tt, delta_time: options[:delta_time] )
+    rec.delta( pp, transitions: tt, Δt: options[:delta_time] )
       .plot( title: title, ylabel: ylabel, **options )
   end
 end # module YPetri::Agent::SimulationRelated

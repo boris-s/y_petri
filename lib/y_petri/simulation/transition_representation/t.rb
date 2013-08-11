@@ -5,28 +5,28 @@
 class YPetri::Simulation::TransitionRepresentation
   module Type_t
     include Type_a
-    
+
     # False for timed transitions.
     # 
     def T?
       false
     end
     alias timed? T?
-    
+
     # True for timed transitions.
     # 
     def t?
       true
     end
     alias timeless? t?
-    
+
     # Initialization subroutine.
     # 
     def init
       super
       @function = source.action_closure
     end
-    
+
     # Change, as it would happen if the transition fired, returned as hash
     # codomain places >> change.
     # 

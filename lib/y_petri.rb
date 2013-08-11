@@ -8,6 +8,7 @@ require 'active_support/inflector'
 require 'gnuplot'                      # used for graph visualization
 require 'csv'                          # not used at the moment
 require 'graphviz'                     # used for Petri net visualization
+require 'pp'                           # usef for pretty
 
 # The following are the YSupport components used by YPetri:
 require 'y_support/local_object'       # object aware of its creation scope

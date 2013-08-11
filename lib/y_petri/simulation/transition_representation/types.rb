@@ -27,32 +27,32 @@ class YPetri::Simulation::TransitionRepresentation
              else fail TypeError, "Unknown tr. type #{source.type}!" end
       init
     end
-    
+
     # The transition's type.
     # 
     def type
       return :A if A?
       if T? then S? ? :TS : :Ts else S? ? :tS : :ts end
     end
-    
+
     # Is this a TS transition?
     # 
     def TS?
       type == :TS
     end
-    
+
     # Is this a Ts transition?
     # 
     def Ts?
       type == :Ts
     end
-    
+
     # Is this a tS transition?
     # 
     def tS?
       type == :tS
     end
-    
+
     # Is this a ts transition?
     # 
     def ts?

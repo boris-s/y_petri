@@ -14,7 +14,6 @@ class YPetri::Place
 
   class << self
     ★ YPetri::World::Dependency
-
     private :new
   end
 
@@ -79,7 +78,9 @@ class YPetri::Place
 
   # Getter of +@marking+ attribute.
   # 
-  def m; @marking end
+  def m
+    @marking
+  end
   alias value m
 
   # This method, which acts as a simple getter of +@marking+ attribute if no
@@ -108,11 +109,15 @@ class YPetri::Place
 
   # Alias for #marking=
   # 
-  def value=( marking ); self.marking = marking end
+  def value=( marking )
+    self.marking = marking
+  end
 
   # Alias for #marking=
   # 
-  def m=( marking ); self.marking = marking end
+  def m=( marking )
+    self.marking = marking
+  end
 
   # Adds tokens to the place.
   # 

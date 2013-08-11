@@ -22,7 +22,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_s }
         end ).load subset( &:s? )
     end
-    
+
     # Subset of S type transitions, if any.
     # 
     def S
@@ -30,7 +30,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_S }
         end ).load subset( &:S? )
     end
-    
+
     # Subset of t type transitions, if any.
     # 
     def t
@@ -38,7 +38,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_t }
         end ).load subset( &:t? )
     end
-    
+
     # Subset of T type transitions, if any.
     # 
     def T
@@ -46,7 +46,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_T }
         end ).load subset( &:T? )
     end
-    
+
     # Subset of ts type transitions, if any.
     # 
     def ts
@@ -54,7 +54,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_ts }
         end ).load subset( &:ts? )
     end
-    
+
     # Subset of tS type transitions, if any.
     # 
     def tS
@@ -62,7 +62,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_tS }
         end ).load subset( &:tS? )
     end
-    
+
     # Subset of Ts type transitions, if any.
     # 
     def Ts
@@ -70,7 +70,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_Ts }
         end ).load subset( &:Ts? )
     end
-    
+
     # Subset of TS type transitions, if any.
     # 
     def TS
@@ -78,7 +78,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_TS }
         end ).load subset( &:TS? )
     end
-    
+
     # Subset of A type transitions, if any.
     # 
     def A
@@ -86,7 +86,7 @@ class YPetri::Simulation::Transitions
           klass.class_exec { include Type_A }
         end ).load subset( &:A? )
     end
-    
+
     # Subset of a type transitions, if any.
     # 
     def a

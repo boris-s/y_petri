@@ -4,7 +4,7 @@
 # 
 module YPetri::Simulation::TransitionRepresentation::Type_A
   attr_reader :assignment_closure
-  
+
   # Assignment action -- true for A transitions.
   # 
   def A?
@@ -19,26 +19,58 @@ module YPetri::Simulation::TransitionRepresentation::Type_A
     false
   end
 
+  # Nil for assignment transitions. Though technically timeless, assignment
+  # transitions are considered outside the t/T types.
+  # 
+  def T?
+    nil
+  end
+  alias timed? T?
+
+  # Nil for assignment transitions. Though technically timeless, assignment
+  # transitions are considered outside the t/T types.
+  # 
+  def t?
+    nil
+  end
+  alias timeless? t?
+
+  # Nil for assignment transitions. Though technically timeless, assignment
+  # transitions are considered outside the s/S types.
+  # 
+  def S?
+    nil
+  end
+  alias timed? T?
+
+  # Nil for assignment transitions. Though technically timeless, assignment
+  # transitions are considered outside the s/S types.
+  # 
+  def s?
+    nil
+  end
+  alias timeless? t?
+
   # Initialization subroutine.
   # 
   def init
     @assignment_closure = to_assignment_closure
   end
-  
+
   # Returns the assignments, as they would happen if this A transition fired,
   # as hash places >> action.
   # 
   def action
     act.select { |pl, v| pl.free? }
   end
-  
+
   # Returns the assignments to all places, as they would happen if A transition
   # could change their values.
   # 
   def act
     codomain >> Array( function.( *domain_marking ) )
   end
-  
+
   # Builds an assignment closure, which, when called, directly affects the
   # simulation's marking vector (free places only).
   # 

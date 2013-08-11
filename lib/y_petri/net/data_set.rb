@@ -217,21 +217,18 @@ class YPetri::Net::DataSet < Hash
               else
                 "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
               end
-    
     Gnuplot.open do |gp|
       Gnuplot::Plot.new gp do |plot|
         plot.xrange x_range
         plot.title nn[:title] || "#{net} plot"
         plot.ylabel nn[:ylabel] || "Values"
         plot.xlabel nn[:xlabel] || "Time [s]"
-        
-        features.labels.zip( data_ss )
-          .each { |label, data_array|
+        features.labels.zip( data_ss ).each do |label, data_array|
           plot.data << Gnuplot::DataSet.new( [ events, data_array ] ) { |ds|
             ds.with = "linespoints"
             ds.title = label
           }
-        }
+        end
       end
     end
   end

@@ -27,6 +27,23 @@ class YPetri::Net::State::Features::Record < Array
     features.map { |f| fetch( f ).round( precision ) }
   end
 
+  # Pretty prints the record with feature names.
+  # 
+  def pretty_print gap: 20, precision: 4
+    hsh = features.labels >> dump
+    lmax = hsh.keys
+      .map( &:to_s ).map( &:size ).max
+    rmax = hsh.values
+      .map { |n| "%.#{precision}e" % n }
+      .map( &:to_s ).map( &:size ).max
+    lgap = gap / 2
+    rgap = gap - lgap
+    puts hsh.map do |key, val|
+      "%- #{lmax+lgap+1}s%#{rmax+rgap+1}.#{precision}e" % [ key, val ]
+    end
+    return nil
+  end
+
   # Returns an identified feature, or fails.
   # 
   def fetch feature

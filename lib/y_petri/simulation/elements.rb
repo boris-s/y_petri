@@ -5,7 +5,7 @@
 class YPetri::Simulation
   class Elements < Array
     ★ Dependency
-    
+
     class << self
       # New collection constructor
       #
@@ -15,13 +15,13 @@ class YPetri::Simulation
     end
 
     delegate :simulation, to: "self.class"
-    
+
     # Loads elements to this collection.
     #
     def load elements
       elements.each{ |e| push e }
     end
-    
+
     # Creates a subset of this collection (of the same class).
     #
     def subset element_ids=nil, &block
