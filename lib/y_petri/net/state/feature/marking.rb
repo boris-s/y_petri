@@ -14,6 +14,13 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
                                    when self then
                                      hsh[ id.place ]
                                    when ç.net.Place then
+                                     p = begin
+                                           ç.net.place id
+                                         rescue TypeError => err
+                                           msg = "Place #{id} not recognized " +
+                                             "a place in net #{ç.net}! (%s)"
+                                           raise TypeError, msg % err
+                                         end
                                      hsh[ id ] = ç.__new__( id )
                                    else
                                      hsh[ ç.net.place( id ) ]

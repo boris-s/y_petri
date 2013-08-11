@@ -11,12 +11,12 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
         # First, prepare the hash of instances.
         hsh = Hash.new do |ꜧ, id|
           if id.is_a? self then # missing key "id" is a Delta instance
-            ꜧ[ [ id.place, transitions: id.transitions.sort( &:object_id ) ] ]
+            ꜧ[ [ id.place, transitions: id.transitions.sort_by( &:object_id ) ] ]
           else
             p = id.fetch( 0 )
             tt = id.fetch( 1 ).fetch( :transitions ) # value of :transitions key
             if p.is_a? ç.net.Place and tt.all? { |t| t.is_a? ç.net.Transition }
-              if tt == tt.sort then
+              if tt == tt.sort_by( &:object_id ) then
                 # Cache the instance.
                 ꜧ[ id ] = if tt.all? &:timed? then
                             ç.timed( *id )
@@ -28,7 +28,7 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
                               "all timed, or all timeless!"
                           end
               else
-                ꜧ[ [ p, transitions: tt.sort ] ]
+                ꜧ[ [ p, transitions: tt.sort_by( &:object_id ) ] ]
               end
             else # convert place and transition ids to places and transitions
               ꜧ[ [ ç.net.place( p ), transitions: ç.net.transitions( tt ) ] ]
@@ -48,7 +48,14 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
     # transition identifiers supplied as +:transitions: parameter.
     # 
     def timed place, transitions: net.T_tt
-      __new__( place, transitions: net.T_tt( transitions ) )
+      tt = begin
+             net.T_tt( transitions )
+           rescue TypeError => err
+             msg = "Transitions #{transitions} not recognized as timed " +
+               "transitions in #{net}! (%s)"
+             raise TypeError, msg % err
+           end
+      __new__( place, transitions: tt )
         .tap { |inst| inst.instance_variable_set :@timed, true }
     end
 
@@ -56,6 +63,13 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
     # timeless transition identifiers as +:transitions: parameter.
     # 
     def timeless place, transitions: net.t_tt
+      tt = begin
+             net.t_tt( transitions )
+           rescue TypeError => err
+             msg = "Transitions #{transitions} not recognized as timed " +
+               "transitions in #{net}! (%s)"
+             raise TypeError, msg % err
+           end
       __new__( place, transitions: net.t_tt( transitions ) )
         .tap { |inst| inst.instance_variable_set :@timed, false }
     end

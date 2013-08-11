@@ -11,17 +11,25 @@ class YPetri::Net::State::Feature::Gradient < YPetri::Net::State::Feature
         # First, prepare the hash of instances.
         hsh = Hash.new do |ꜧ, id|
           if id.is_a? self then
-            ꜧ[ [ id.place, transitions: id.transitions.sort( &:object_id ) ] ]
+            ꜧ[ [ id.place, transitions: id.transitions.sort_by( &:object_id ) ] ]
           else
             p = id.fetch( 0 )
             tt = id
               .fetch( 1 )
               .fetch( :transitions )
             if p.is_a? ç.net.Place and tt.all? { |t| t.is_a? ç.net.Transition }
-              if tt == tt.sort then
+              tt_sorted = tt.sort_by &:object_id
+              if tt == tt_sorted then
+                tt = begin
+                       ç.net.T_transitions( tt )
+                     rescue TypeError => err
+                       msg = "Transitions #{tt} not recognized as T " +
+                         "transitions in net #{ç.net}! (%s)"
+                       raise TypeError, msg % err
+                     end
                 ꜧ[ id ] = ç.__new__( *id )
               else
-                ꜧ[ [ p, transitions: tt.sort ] ]
+                ꜧ[ [ p, transitions: tt.sort_by( &:object_id ) ] ]
               end
             else
               ꜧ[ [ ç.net.place( p ), transitions: ç.net.transitions( tt ) ] ]

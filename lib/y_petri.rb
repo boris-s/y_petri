@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/array/extract_options'

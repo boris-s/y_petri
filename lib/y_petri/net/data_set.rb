@@ -198,7 +198,7 @@ class YPetri::Net::DataSet < Hash
     else
       return reduce_features net.State.delta if args.empty?
       reduce_features delta: args
-    end      
+    end
   end
 
   # Outputs the current recording in CSV format.

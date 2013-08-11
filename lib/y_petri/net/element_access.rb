@@ -32,7 +32,7 @@ module YPetri::Net::ElementAccess
       fail TypeError, "No place #{id} in the net!" unless places.include? p
     end
   end
-  
+
   # Returns the net's transition identified by the argument.
   # 
   def transition id

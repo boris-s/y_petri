@@ -14,7 +14,15 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
                                    when self then
                                      hsh[ id.transition ]
                                    when ç.net.Transition then
-                                     hsh[ id ] = ç.__new__( id )
+                                     t = begin
+                                           ç.net.TS_transitions( [ id ] ).first
+                                         rescue TypeError => err
+                                           msg = "Transition #{id} not " +
+                                             "recognized as TS transition in " +
+                                             "net #{ç.net}! (%s)"
+                                           raise TypeError, msg % err
+                                         end
+                                     hsh[ id ] = ç.__new__( t )
                                    else
                                      hsh[ ç.net.transition( id ) ]
                                    end

@@ -22,7 +22,7 @@ class YPetri::Simulation::Elements
     # Elements of the simulation (belonging to the net).
     # 
     def ee( ids=nil )
-      elements( ids ).sources
+      elements( ids ).map &:source
     end
 
     # Names of the simulation's elements. Arguments, if any, are treated

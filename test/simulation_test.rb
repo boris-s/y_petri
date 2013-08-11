@@ -288,9 +288,9 @@ describe "timeless simulation" do
     ds.firing.slice( 1..2 ).series
       .must_equal [[1, 1]]
     ds.series( firing: [:U2V] )
-      .must_equal [[1, 1, 1, 1, 1, 1]]
+      .must_equal [ [ 1, 1, 1, 1, 1, 1 ] ]
     ds.delta( [:U], transitions: [:Uplus] ).series
-      .must_equal [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
+      .must_equal [ [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ] ]
     tmp = ds.reduce_features( marking: [:U], firing: [:U2V] )
     tmp.features
       .must_equal( ds.net.State.features marking: [:U], firing: [:U2V] )

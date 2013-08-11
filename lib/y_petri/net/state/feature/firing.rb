@@ -14,7 +14,15 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
                                    when self then
                                      hsh[ id.transition ]
                                    when ç.net.Transition then
-                                     hsh[ id ] = ç.__new__( id )
+                                     t = begin
+                                           ç.net.tS_transitions( [ id ] ).first
+                                         rescue TypeError => err
+                                           msg = "Transition #{id} not " +
+                                             "recognized as tS transition in " +
+                                             "net #{ç.net}! (%s)"
+                                           raise TypeError, msg % err
+                                         end
+                                     hsh[ id ] = ç.__new__( t )
                                    else
                                      hsh[ ç.net.transition( id ) ]
                                    end
@@ -42,7 +50,7 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
-      arg.send( :tS_transitions, [ transition ] ).firing.first
+      arg.send( :tS_transitions, [ transition ] ).first.firing
     else
       fail TypeError, "Argument type not supported!"
     end

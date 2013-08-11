@@ -1,5 +1,5 @@
 #! /usr/bin/ruby
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 gem 'minitest', '=4.7.4'
 require 'minitest/autorun'
@@ -11,7 +11,7 @@ describe YPetri::Agent do
   before do
     @m = YPetri::Agent.new
   end
-  
+
   it "has net basic points" do
     # --- net point related assets ---
     @m.net_point_reset
@@ -68,7 +68,7 @@ describe YPetri::Agent do
     @m.tn.must_equal []
     @m.nn.must_equal [ :Top ]       # ie. :Top net spanning whole workspace
   end
-  
+
   describe "slightly more complicated case" do
     before do
       @p = @m.Place ɴ: "P", default_marking: 1
@@ -81,7 +81,7 @@ describe YPetri::Agent do
       @m.set_sampling 1
       @m.set_time 0..30
     end
-    
+
     it "works" do
       @m.run!
       @m.simulation.send( :places ).map( &:source )
@@ -97,6 +97,15 @@ describe YPetri::Agent do
         .stoichiometry_matrix.row_size.must_equal 2
       @m.simulation.flux_vector.row_size.must_equal 2
       # @m.plot_recording
+      rec = @m.simulation.recording
+      rec.marking.plot
+      rec.flux.plot
+      rec.gradient.plot
+      rec.delta( Δt: 1 ).plot
+      @m.plot_marking
+      @m.plot_flux
+      @m.plot_gradient
+      @m.plot_delta( Δt: 1 )
     end
   end
 end

@@ -49,7 +49,9 @@ class YPetri::Net::State::Feature
       when Gradient() then id
       when Gradient then
         Gradient().of( id.place, transitions: id.transitions )
-      else Gradient().of( id, transitions: transitions ) end # assume it's a place
+      else
+        Gradient().of( id, transitions: transitions )
+      end # assume it's a place
     end
 
     def Flux id=L!
@@ -57,7 +59,9 @@ class YPetri::Net::State::Feature
       case id
       when Flux() then id
       when Flux then Flux().of( id.transition )
-      else Flux().of( id ) end # assume it's a place
+      else
+        Flux().of( id )
+      end # assume it's a place
     end
 
     def Delta id=L!, transitions: net.tt
