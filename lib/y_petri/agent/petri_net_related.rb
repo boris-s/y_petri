@@ -113,7 +113,7 @@ module YPetri::Agent::PetriNetRelated
   # Net constructor: Creates a new Net instance in the current world.
   # 
   def Net *args, &block
-    world.Net.send( :new, *ordered, **named, &block )
+    world.Net.send( :new, *args, &block )
   end
 
   # Returns the net identified, or the net at point (if no argument given).
