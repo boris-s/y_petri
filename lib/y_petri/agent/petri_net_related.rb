@@ -23,7 +23,7 @@ module YPetri::Agent::PetriNetRelated
 
   # Elements and selections:
   # 
-  delegate :place, :transition, :element, 
+  delegate :place, :transition, :element,
            :nets, :places, :transitions,
            to: :world
 
@@ -112,7 +112,7 @@ module YPetri::Agent::PetriNetRelated
 
   # Net constructor: Creates a new Net instance in the current world.
   # 
-  def Net *ordered, **named, &block
+  def Net *args, &block
     world.Net.send( :new, *ordered, **named, &block )
   end
 

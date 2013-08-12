@@ -212,7 +212,9 @@ class YPetri::Net::DataSet < Hash
   def plot( time: nil, **nn )
     events = events()
     data_ss = series
-    x_range = if time.is_a? Range then
+    x_range = if time.nil? then
+                "[#{events.first}:#{events.last}]"
+              elsif time.is_a? Range then
                 "[#{time.begin}:#{time.end}]"
               else
                 "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
