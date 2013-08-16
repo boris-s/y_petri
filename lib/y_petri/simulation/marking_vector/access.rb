@@ -33,6 +33,15 @@ class YPetri::Simulation::MarkingVector
       places( ids ).names( true ) >> m( ids )
     end
     alias pn_m p_m
+
+    # Pretty prints marking of all places as hash with place names as keys.
+    # Takes optional list of place ids (ordered argument no. 1), and optional
+    # 2 named arguments (+:gap+ and +:precision+) as in
+    # +#pretty_print_numeric_values+.
+    # 
+    def pm ids=nil, gap: 0, precision: 2
+      p_m( ids ).pretty_print_numeric_values gap: gap, precision: precision
+    end
     alias pm p_m
 
     # Modifies the marking vector. Takes one argument. If the argument is a hash
