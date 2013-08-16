@@ -7,12 +7,6 @@ class YPetri::Simulation::Transitions
     include Type_T
     include Type_S
 
-    # Rate vector closure accessor.
-    # 
-    def rate_closure
-      @rate_closure ||= to_rate_closure
-    end
-
     # Rate (flux, propensity) closures.
     # 
     def rate_closures
@@ -53,5 +47,6 @@ class YPetri::Simulation::Transitions
       rc = rate_closures
       -> { rc.map( &:call ).to_column_vector }
     end
+    alias rate_closure to_rate_closure
   end # module Type_TS
 end # class YPetri::Simulation::Transitions

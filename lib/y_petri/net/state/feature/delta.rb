@@ -124,6 +124,6 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
   end
 
   def label
-    "∂:#{place.name}:#{transitions.size}tt"
+    "Δ:#{place.name}:#{transitions.size}tt"
   end
 end # class YPetri::Net::State::Feature::Delta

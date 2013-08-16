@@ -57,6 +57,6 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
   end
 
   def label
-    "f:#{transition.name}"
+    "F:#{transition.name}"
   end
 end # YPetri::Net::State::Feature::Firing

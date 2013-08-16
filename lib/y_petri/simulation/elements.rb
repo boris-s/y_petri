@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 # Basic elements of a simulation, a mixin intended for YPetri::Simulation.
-#
+# 
 class YPetri::Simulation
   class Elements < Array
     ★ Dependency
@@ -23,7 +23,7 @@ class YPetri::Simulation
     end
 
     # Creates a subset of this collection (of the same class).
-    #
+    # 
     def subset element_ids=nil, &block
       if block_given? then
         msg = "If block is given, arguments are not allowed!"

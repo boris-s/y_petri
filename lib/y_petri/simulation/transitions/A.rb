@@ -4,10 +4,7 @@
 # 
 class YPetri::Simulation::Transitions
   module Type_A
-    attr_reader :assignment_closure
-    
     def initialize
-      @assignment_closure = to_assignment_closure
     end
 
     # Assignment closures that directly affect the marking when called.
@@ -36,5 +33,6 @@ class YPetri::Simulation::Transitions
       closures = assignment_closures
       -> { closures.each &:call }
     end
+    alias assignment_closure to_assignment_closure
   end # Type_A
 end # class YPetri::Simulation::Transitions

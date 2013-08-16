@@ -1,4 +1,4 @@
 module YPetri
-  VERSION = "2.1.12"
+  VERSION = "2.1.15"
   DEBUG = false
 end

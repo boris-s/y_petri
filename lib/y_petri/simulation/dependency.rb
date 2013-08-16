@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # Place / transition collection mixin for parametrized classes of
 # YPetri::Simulation. Expects the module where it is included to define

@@ -213,7 +213,10 @@ class YPetri::Net::DataSet < Hash
     events = events()
     data_ss = series
     x_range = if time.nil? then
-                "[#{events.first}:#{events.last}]"
+                from = events.first || 0
+                to = events.last && events.last > from ? events.last :
+                  events.first + 1
+                "[#{from}:#{to}]"
               elsif time.is_a? Range then
                 "[#{time.begin}:#{time.end}]"
               else

@@ -7,12 +7,6 @@ class YPetri::Simulation::Transitions
     include Type_T
     include Type_s
 
-    # gradient closure accessor.
-    # 
-    def gradient_closure
-      @gradient_closure ||= to_gradient_closure
-    end
-
     # Member gradient closures.
     # 
     def gradient_closures
@@ -56,5 +50,6 @@ class YPetri::Simulation::Transitions
       LAMBDA
       eval λ
     end
+    alias gradient_closure to_gradient_closure
   end # module Type_Ts
 end # class YPetri::Simulation::Transitions

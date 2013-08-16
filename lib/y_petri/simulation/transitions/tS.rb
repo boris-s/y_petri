@@ -7,12 +7,6 @@ class YPetri::Simulation::Transitions
     include Type_t
     include Type_S
 
-    # firing closure accessor.
-    # 
-    def firing_closure
-      @firing_closure ||= to_firing_closure
-    end
-
     # tS transitions have firing closures.
     # 
     def firing_closures
@@ -51,5 +45,6 @@ class YPetri::Simulation::Transitions
       closures = firing_closures
       -> { closures.map( &:call ).to_column_vector }
     end
+    alias firing_closure to_firing_closure
   end # module Type_tS
 end # class YPetri::Simulation::Transitions

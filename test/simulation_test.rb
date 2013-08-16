@@ -252,7 +252,6 @@ describe YPetri::Simulation do
   end
 end
 
-
 describe "timeless simulation" do
   before do
     self.class.class_exec { include YPetri }
@@ -298,7 +297,6 @@ describe "timeless simulation" do
                       3 => [2.5, 1], 4 => [2.5, 1], 5 => [2.5, 1] } )
   end
 end
-
 
 describe "timed simulation" do
   before do

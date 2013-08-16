@@ -7,12 +7,6 @@ class YPetri::Simulation::Transitions
     include Type_t
     include Type_s
 
-    # Delta closure accessor.
-    # 
-    def delta_closure
-      @delta_closure ||= to_delta_closure
-    end
-
     # ts transitions have action closures.
     # 
     def delta_closures
@@ -54,5 +48,6 @@ class YPetri::Simulation::Transitions
       LAMBDA
       eval λ
     end
+    alias delta_closure to_delta_closure
   end
 end # class YPetri::Simulation::Transitions

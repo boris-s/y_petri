@@ -172,8 +172,7 @@ module YPetri::Simulation::Timed
   # for timed simulations.
   # 
   def init_core_and_recorder_subclasses
-    param_class( { Core: YPetri::Core::Timed,
-                   Recorder: Recorder },
+    param_class( { Core: YPetri::Core::Timed, Recorder: Recorder },
                  with: { simulation: self } )
   end
 
