@@ -119,7 +119,7 @@ describe YPetri::Simulation do
             @sim.ts_tt.first.domain.names.must_equal []
             @sim.timed?.must_equal false
             @sim.m.must_equal [1, 2]
-            @sim.pm.must_equal( { A: 1, B: 2 } )
+            @sim.p_m.must_equal( { A: 1, B: 2 } )
             @sim.recording.must_equal( { 0 => [1, 2]} )
             @sim.simulation_method.must_equal :pseudo_euler
             @sim.core.must_be_kind_of YPetri::Core
@@ -133,7 +133,7 @@ describe YPetri::Simulation do
             cl = @sim.send( :transitions ).ts.delta_closure
             cl.call.must_equal Matrix[ [1], [0] ]
             @sim.step!
-            @sim.pm.must_equal( { A: 2, B: 2 } ) # marking of A goes up by 1
+            @sim.p_m.must_equal( { A: 2, B: 2 } ) # marking of A goes up by 1
             @sim.recording.must_equal( { 0 => [1, 2], 1 => [2, 2] } )
           end
         end
@@ -277,7 +277,8 @@ describe "timeless simulation" do
       .must_equal [2.5, 4.5]
     -> { ds.interpolate( 1.5 ) }.must_raise TypeError
     ds.reconstruct( event: 2 )
-      .pm.must_equal( { U: 2.5, V: 4.5 } )
+      .p_m.must_equal( { U: 2.5, V: 4.5 } )
+    ds.reconstruct( event: 2 ).must_respond_to( :pm )
     ds.marking.slice( 2..4 ).series
       .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
     ds.marking.slice( 2..4 )
