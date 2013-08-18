@@ -42,7 +42,6 @@ class YPetri::Simulation::MarkingVector
     def pm ids=nil, gap: 0, precision: 2
       p_m( ids ).pretty_print_numeric_values gap: gap, precision: precision
     end
-    alias pm p_m
 
     # Modifies the marking vector. Takes one argument. If the argument is a hash
     # of pairs { place => new value }, only the specified places' markings are
