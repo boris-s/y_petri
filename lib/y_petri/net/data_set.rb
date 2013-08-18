@@ -252,4 +252,11 @@ class YPetri::Net::DataSet < Hash
   def inspect
     to_s
   end
+
+  # Pretty print the dataset.
+  # 
+  def print precision: 4, gap: precision + 4
+    features.labels.print_as_line gap: gap
+    records.each.print_as_line gap: gap, precision: precision
+  end
 end # YPetri::Net::Dataset
