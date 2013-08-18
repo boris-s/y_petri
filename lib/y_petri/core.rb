@@ -54,13 +54,13 @@ class YPetri::Core
     end
   end
 
-  # Simlation is not guarded by default.
+  # Simulation is not guarded by default.
   # 
   def guarded?
     false
   end
 
-  # Delta for free places.
+  # Delta for free places from timeless transitions.
   # 
   def delta_timeless
     delta_ts + delta_tS
