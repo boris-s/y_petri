@@ -6,6 +6,8 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
   attr_reader :place, :transitions, :step
 
   class << self
+    # Customization of the Class#parametrize method.
+    # 
     def parametrize *args
       Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
         # First, prepare the hash of instances.
@@ -83,6 +85,11 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
     alias of new
   end
 
+  # The constructor of a delta feature takes one ordered argument (place
+  # identifier), and one named argument, +:transitions+, expecting an array
+  # of transition identifiers, whose contribution is taken into account in
+  # this delta feature.
+  # 
   def initialize place, transitions: net.tt
     @place = net.place( place )
     @transitions = net.transitions( transitions )
@@ -119,11 +126,21 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
     ! timed?
   end
 
+  # A string briefly describing this delta feature.
+  # 
   def to_s
     place.name
   end
 
+  # Label for the delta feature (to use in graphics etc.)
+  # 
   def label
     "Δ:#{place.name}:#{transitions.size}tt"
+  end
+
+  # Inspect string of the delta feature.
+  # 
+  def inspect
+    "<Feature::Delta Δ:#{place.name || place}:#{transitions.size}tt>"
   end
 end # class YPetri::Net::State::Feature::Delta

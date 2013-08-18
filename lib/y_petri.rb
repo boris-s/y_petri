@@ -1,15 +1,5 @@
 # encoding: utf-8
 
-require 'active_support/core_ext/module/delegation'
-require 'active_support/core_ext/array/extract_options'
-require 'active_support/inflector'
-
-# The following are the Ruby libraries used by YPetri:
-require 'gnuplot'                      # used for graph visualization
-require 'csv'                          # not used at the moment
-require 'graphviz'                     # used for Petri net visualization
-require 'pp'                           # usef for pretty
-
 # The following are the YSupport components used by YPetri:
 require 'y_support/local_object'       # object aware of its creation scope
 require 'y_support/respond_to'         # Symbol#~@ + RespondTo#===
@@ -21,6 +11,17 @@ require 'y_support/core_ext'           # core extensions
 require 'y_support/stdlib_ext/matrix'  # matrix extensions
 require 'y_support/abstract_algebra'   # 
 require 'y_support/kde'                # popup file with kioclient
+
+# ActiveSupport components:
+require 'active_support/core_ext/module/delegation'
+require 'active_support/core_ext/array/extract_options'
+require 'active_support/inflector'
+
+# The following are the Ruby libraries used by YPetri:
+require 'gnuplot'                      # used for graph visualization
+require 'csv'                          # not used at the moment
+require 'graphviz'                     # used for Petri net visualization
+require 'pp'                           # usef for pretty
 
 require_relative 'y_petri/version'
 require_relative 'y_petri/fixed_assets'

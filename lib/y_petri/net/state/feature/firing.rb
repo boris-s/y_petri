@@ -6,6 +6,8 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
   attr_reader :transition
 
   class << self
+    # Customization of the Class#parametrize method.
+    # 
     def parametrize *args
       Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
         ç.instance_variable_set( :@instances,
@@ -38,15 +40,23 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
       instances[ id ]
     end
 
+    # Alias of #new method.
+    # 
     def of id
       new id
     end
   end
 
+  # The constructor of a marking feature takes exactly one argument (transition
+  # identifier).
+  # 
   def initialize transition
     @transition = net.transition( transition )
   end
 
+  # Extracts the receiver marking feature from the argument. This can be
+  # typically a simulation instance.
+  # 
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
@@ -56,7 +66,21 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
     end
   end
 
+  # A string briefly describing the firing feature.
+  # 
+  def to_s
+    label
+  end
+
+  # Label for the firing feature (to use in the graphics etc.)
+  # 
   def label
     "F:#{transition.name}"
+  end
+
+  # Inspect string of the firing feature.
+  # 
+  def inspect
+    "<Feature::Firing of #{transition}>"
   end
 end # YPetri::Net::State::Feature::Firing

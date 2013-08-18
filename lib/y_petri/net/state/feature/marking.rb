@@ -6,6 +6,8 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
   attr_reader :place
 
   class << self
+    # Customization of the Class#parametrize method.
+    # 
     def parametrize *args
       Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
         ç.instance_variable_set( :@instances,
@@ -37,15 +39,23 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
       instances[ id ]
     end
 
+    # Alias of #new method.
+    # 
     def of id
       new id
     end
   end
 
+  # The constructor of a marking feature takes exactly one argument (place
+  # identifier).
+  # 
   def initialize place
     @place = net.place( place )
   end
 
+  # Extracts the receiver marking feature from the argument. This can be
+  # typically a simulation instance.
+  # 
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
@@ -55,11 +65,21 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
     end
   end
 
+  # A string briefly describing the marking feature.
+  # 
   def to_s
-    place.name
+    "m:#{label}"
   end
 
+  # Label for the marking feature (to use in graphics etc.)
+  # 
   def label
     ":#{place.name}"
+  end
+
+  # Inspect string of the marking feature.
+  # 
+  def inspect
+    "<Feature::Marking of #{place}>"
   end
 end # YPetri::Net::State::Feature::Marking

@@ -6,6 +6,8 @@ class YPetri::Net::State::Feature::Gradient < YPetri::Net::State::Feature
   attr_reader :place, :transitions
 
   class << self
+    # Customization of the Class#parametrize method.
+    # 
     def parametrize *args
       Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
         # First, prepare the hash of instances.
@@ -45,21 +47,28 @@ class YPetri::Net::State::Feature::Gradient < YPetri::Net::State::Feature
 
     alias __new__ new
 
+    # Constructor #new is redefined to use instance cache.
+    # 
     def new *args
       return instances[ *args ] if args.size == 1
       instances[ args ]
     end
-
-    def of *args
-      new *args
-    end
+    alias of new
   end
 
+  # The constructor of a gradient feature takes one ordered argument (place
+  # identifier), and one named argument, +:transitions+, expecting an array
+  # of transition identifiers, whose contribution is taken into account in
+  # this gradient feature.
+  # 
   def initialize *id
     @place = net.place id.fetch( 0 )
     @transitions = net.transitions id.fetch( 1 ).fetch( :transitions )
   end
 
+  # Extracts the receiver gradient feature from the argument. This can be
+  # typically a simulation instance.
+  # 
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
@@ -69,11 +78,21 @@ class YPetri::Net::State::Feature::Gradient < YPetri::Net::State::Feature
     end
   end
 
+  # A string briefly describing the gradient feature.
+  # 
   def to_s
-    place.name
+    label
   end
 
+  # Label for the gradient feature (to use in graphics etc.)
+  # 
   def label
     "∂:#{place.name}:#{transitions.size}tt"
+  end
+
+  # Inspect string of the gradient feature.
+  # 
+  def inspect
+    "<Feature::Gradient ∂:#{place.name || place}:#{transitions.size}tt>"
   end
 end # class YPetri::Net::State::Feature::Gradient

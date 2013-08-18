@@ -6,6 +6,8 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
   attr_reader :transition
 
   class << self
+    # Customization of the Class#parametrize method.
+    # 
     def parametrize *args
       Class.instance_method( :parametrize ).bind( self ).( *args ).tap do |ç|
         ç.instance_variable_set( :@instances,
@@ -38,15 +40,23 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
       instances[ id ]
     end
 
+    # Alias of #new method.
+    # 
     def of transition_id
       new transition_id
     end
   end
 
+  # The constructor of a marking feature takes exactly one argument (transition
+  # identifier).
+  # 
   def initialize id
     @transition = net.transition( id.is_a?( Flux ) ? id.transition : id )
   end
 
+  # Extracts the receiver marking feature from the argument. This can be
+  # typically a simulation instance.
+  # 
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
@@ -56,7 +66,21 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
     end
   end
 
+  # A string briefly describing the flux feature.
+  # 
+  def to_s
+    label
+  end
+
+  # Label for the flux feature (to use in the graphics etc.)
+  # 
   def label
     "Φ:#{transition.name}"
+  end
+
+  # Inspect string of the flux feature.
+  # 
+  def inspect
+    "<Feature::Flux of #{transition}>"
   end
 end # class YPetri::Net::State::Feature::Flux

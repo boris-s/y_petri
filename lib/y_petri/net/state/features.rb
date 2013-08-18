@@ -279,4 +279,18 @@ class YPetri::Net::State::Features < Array
       end
     end
   end
+
+  # Returns a string briefly describing the feature set.
+  # 
+  def to_s
+    group_by( &:type )
+      .map { |feature_type, ff| "#{feature_type}: #{ff.size}" }
+      .join ', '
+  end
+
+  # Inspect string of the instance.
+  # 
+  def inspect
+    "#<Features: #{to_s}>"
+  end
 end # YPetri::Net::State::Features

@@ -100,8 +100,8 @@ class YPetri::Net::DataSet < Hash
          end
     reduced_features = net.State.features *args
     rf_Record = reduced_features.Record
-    reduced_features.new_dataset( type: type ).tap do |dataset|
-      ( events >> records ).each_pair do |event, record|
+    reduced_features.new_dataset( type: type ).tap { |dataset|
+      ( events >> records ).each_pair { |event, record|
         absent_features = reduced_features - features()
         if absent_features.empty? then # it is a subset
           line = reduced_features.map { |feature| record.fetch feature }
@@ -132,8 +132,8 @@ class YPetri::Net::DataSet < Hash
           end
         end
         dataset.update event => rf_Record.load( line )
-      end
-    end
+      }
+    }
   end
 
   # Returns a subset of this dataset with only the specified marking features
@@ -236,5 +236,20 @@ class YPetri::Net::DataSet < Hash
         end
       end
     end
+  end
+
+  # Returns a string briefly discribing the dataset.
+  # 
+  def to_s
+    "#<DataSet: " +
+      "#{keys.size} records, " +
+      "#{features: #{features}" +
+      ">"
+  end
+
+  # Inspect string of the instance.
+  # 
+  def inspect
+    to_s
   end
 end # YPetri::Net::Dataset
