@@ -22,6 +22,7 @@ require 'gnuplot'                      # used for graph visualization
 require 'csv'                          # not used at the moment
 require 'graphviz'                     # used for Petri net visualization
 require 'pp'                           # usef for pretty
+require 'distribution'                 # used in the simulation core
 
 require_relative 'y_petri/version'
 require_relative 'y_petri/fixed_assets'
