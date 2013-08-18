@@ -255,8 +255,9 @@ class YPetri::Net::DataSet < Hash
 
   # Pretty print the dataset.
   # 
-  def print precision: 4, gap: precision + 4
-    features.labels.print_as_line gap: gap
-    records.each.print_as_line gap: gap, precision: precision
+  def print precision: 4, distance: precision + 4
+    features.labels.print_as_line precision: precision, distance: distance
+    puts '-' * features.size * distance
+    records.each.print_as_line precision: precision, distance: distance
   end
 end # YPetri::Net::Dataset
