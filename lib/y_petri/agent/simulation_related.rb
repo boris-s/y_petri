@@ -251,11 +251,9 @@ module YPetri::Agent::SimulationRelated
   # 
   def print_recording( filename=nil )
     if filename.nil? then
-      puts simulation.recording.to_csv
+      simulation.recording.print
     else
-      File.open( filename, "w" ) do |f|
-        f << simulation.recording.to_csv
-      end
+      File.open filename, "w" do |f| f << print_recording end
     end
   end
 
