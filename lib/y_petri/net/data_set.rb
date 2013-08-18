@@ -258,6 +258,8 @@ class YPetri::Net::DataSet < Hash
   def print precision: 4, distance: precision + 4
     features.labels.print_as_line precision: precision, distance: distance
     puts '-' * features.size * distance
-    records.each.print_as_line precision: precision, distance: distance
+    records.each { |record|
+      record.print_as_line precision: precision, distance: distance
+    }
   end
 end # YPetri::Net::Dataset

@@ -96,3 +96,4 @@ So much for the demo for now! Thanks for trying YPetri!
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+core_ext/array/
