@@ -243,7 +243,7 @@ class YPetri::Net::DataSet < Hash
   def to_s
     "#<DataSet: " +
       "#{keys.size} records, " +
-      "#{features: #{features}" +
+      "features: #{features}" +
       ">"
   end
 
