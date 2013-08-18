@@ -249,11 +249,11 @@ module YPetri::Agent::SimulationRelated
 
   # Write the recorded samples in a file (csv).
   # 
-  def print_recording( filename=nil )
+  def print_recording( filename=nil, **nn )
     if filename.nil? then
-      simulation.recording.print
+      simulation.recording.print **nn
     else
-      File.open filename, "w" do |f| f << print_recording end
+      File.open filename, "w" do |f| f << print_recording( **nn ) end
     end
   end
 

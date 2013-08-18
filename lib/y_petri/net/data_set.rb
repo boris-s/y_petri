@@ -261,5 +261,6 @@ class YPetri::Net::DataSet < Hash
     records.each { |record|
       record.print_as_line precision: precision, distance: distance
     }
+    return nil
   end
 end # YPetri::Net::Dataset
