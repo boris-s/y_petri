@@ -161,6 +161,7 @@ module YPetri::Agent::SimulationRelated
 
   # Returns or modifies current initial marking(s) as indicated by the argument
   # field:
+  # 
   # * No arguments: returns current imc
   # * Exactly one ordered argument: it is assumed to identify a place whose
   #   im in the current imc will be returned.
@@ -257,34 +258,11 @@ module YPetri::Agent::SimulationRelated
     end
   end
 
-  # Plot the recorded samples.
+  # Plot the recording reduced into the given feature set.
   # 
-  def plot **features
-    # --> state feature ids
-    # --> gradient feature ids
-    # --> delta feature ids
-    # --> flux feature ids
-    # --> firing feature ids
-    # take these features together
-    # construct the labels and the time series for each
-    # plot them
-
-    return nil unless sim = world.simulations.values[-1] # sim@point
-    # Decide abnout the features
-    features = sim.places.dup.map { |p|
-      collection.include?( p ) ? p : nil
-    }
-    # Get recording
-    rec = sim.recording
-    # Select a time series for each feature.
-    time_series = features.map.with_index do |feature, i|
-      feature and rec.map { |key, val| [ key, val[i] ] }.transpose
-    end
-    # Time axis
-    ᴛ = sim.target_time
-    # Gnuplot call
-    gnuplot( ᴛ, features.compact.map( &:name ), time_series.compact,
-             title: "Selected features plot", ylabel: "Marking" )
+  def plot features
+    ff = simulation.net.state.features( features )
+    simulation.recording.reduce_features( ff ).plot
   end
 
   # Plot system state history.

@@ -16,26 +16,46 @@ module YPetri::Core::Timed::Gillespie
     @rng = ::Random
   end
 
+  # Makes a stochastic number of Gillespie steps necessary to span the period Δt.
+  # 
+  def step! Δt=simulation.step
+    current_time = simulation.time
+    target_time = current_time + Δt
+    @gillespie_time = current_time
+    propensities = propensity_vector_TS
+    puts "Propensity vector TS is:"
+    Kernel::p propensities
+    gillespie_update_next_firing_time( propensities )
+    until ( @gillespie_next_firing_time > target_time )
+      gillespie_step!
+      propensities = propensity_vector_TS
+      gillespie_update_next_firing_time( propensities )
+    end
+  end
+
   # Name of this method.
   # 
   def simulation_method
     :gillespie
   end
 
+  # This method updates next firing time given propensities.
+  # 
+  def gillespie_update_next_firing_time( propensities )
+    @gillespie_next_firing_time =
+      @gillespie_time + gillespie_delta_time( propensities )
+  end
+
   # Step.
   # 
-  def step
-    propensities = propensity_vector_TS
-    puts "Propensity vector tS is:"
-    Kernel::p propensities
-    puts "of #{propensities.class} class"
-    Δt = delta_time( propensities )
+  def gillespie_step! propensities
     t = choose_TS_transition( propensities )
+    fire! t
   end
 
   # Computes Δ for the period of Δt.
   # 
-  def delta_time( propensities )
+  def gillespie_delta_time( propensities )
     sum = Σ propensities
     mean_period = 1 / sum
     Distribution::Exponential.p_value( rng.rand, sum )
@@ -53,7 +73,7 @@ module YPetri::Core::Timed::Gillespie
 
   # Fires a transition.
   # 
-  def fire( transition )
+  def fire!( transition )
     transition.∇.map { |place, change|
       mv = simulation.marking_vector
       mv.set( place, mv.fetch( place ) + change )

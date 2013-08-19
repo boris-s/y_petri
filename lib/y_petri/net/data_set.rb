@@ -253,7 +253,8 @@ class YPetri::Net::DataSet < Hash
     to_s
   end
 
-  # Pretty print the dataset.
+  # Pretty print the dataset. Takes +:precision+ and +:distance+ named arguments,
+  # that control the shape of the printed table.
   # 
   def print precision: 4, distance: precision + 4
     features.labels.print_as_line precision: precision, distance: distance
