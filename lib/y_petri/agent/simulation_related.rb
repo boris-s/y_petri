@@ -9,19 +9,19 @@ module YPetri::Agent::SimulationRelated
 
   # Simulation selection class.
   # 
-  SimulationSelection = YPetri::Agent::Selection.parametrize agent: self
+  SimulationSelection = YPetri::Agent::Selection.parametrize( agent: self )
 
   # Simulation settings collection selection class.
   # 
-  SscSelection = YPetri::Agent::Selection.parametrize agent: self
+  SscSelection = YPetri::Agent::Selection.parametrize( agent: self )
 
   # Clamp collection selection class.
   # 
-  CcSelection = YPetri::Agent::Selection.parametrize agent: self
+  CcSelection = YPetri::Agent::Selection.parametrize( agent: self )
 
   # Initial marking collection selection class.
   # 
-  ImcSelection = YPetri::Agent::Selection.parametrize agent: self
+  ImcSelection = YPetri::Agent::Selection.parametrize( agent: self )
 
   class SimulationPoint < YPetri::Agent::HashKeyPointer
     # Reset to the first simulation, or nil if that is absent.
@@ -49,15 +49,15 @@ module YPetri::Agent::SimulationRelated
 
   # Pointer to a collection of simulation settings.
   # 
-  SscPoint = YPetri::Agent::HashKeyPointer.parametrize agent: self
+  SscPoint = YPetri::Agent::HashKeyPointer.parametrize( agent: self )
 
   # Pointer to a clamp collection.
   # 
-  CcPoint = YPetri::Agent::HashKeyPointer.parametrize agent: self
+  CcPoint = YPetri::Agent::HashKeyPointer.parametrize( agent: self )
 
   # Pointer to a collection of initial markings.
   # 
-  ImcPoint = YPetri::Agent::HashKeyPointer.parametrize agent: self
+  ImcPoint = YPetri::Agent::HashKeyPointer.parametrize( agent: self )
 
   attr_reader :simulation_point,
               :ssc_point,
@@ -68,8 +68,10 @@ module YPetri::Agent::SimulationRelated
               :cc_selection,
               :imc_selection
 
+  # Agent initialziation method.
+  # 
   def initialize
-    # set up this manipulator's pointers
+    # set up this agent's pointers
     @simulation_point = SimulationPoint.new( hash: simulations,
                                              hash_value_is: "simulation" )
     @ssc_point = SscPoint.new( hash: simulation_settings_collections,
