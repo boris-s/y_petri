@@ -26,7 +26,7 @@ module YPetri::Core::Timed::Gillespie
     Kernel::p propensities
     update_next_gillespie_time( propensities )
     until ( @next_gillespie_time > target_time )
-      gillespie_step!
+      gillespie_step! propensities
       note_state_change
       propensities = propensity_vector_TS
       update_next_gillespie_time( propensities )
