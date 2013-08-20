@@ -64,11 +64,11 @@ module YPetri::Core::Timed::Gillespie
   # Chooses the transition to fire.
   # 
   def choose_TS_transition( propensities )
-    n = rng.rand
-    propensities.index do |propensity|
-      n -= propensity
-      n <= 0
-    end
+    n = rng.rand * Σ( propensities )
+    transitions[ propensities.index do |propensity|
+                   n -= propensity
+                   n <= 0
+                 end ]
   end
 
   # Fires a transition.
