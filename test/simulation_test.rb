@@ -56,6 +56,7 @@ describe YPetri::Simulation do
         @s.net.places.names.must_equal [:A, :B]
         @s.pn.must_equal [:A, :B]
         @s.send( :places ).free.size.must_equal 1
+        @s.send( :places ).first.quantum.must_equal 1
         @s.send( :free_places ).names.must_equal [:A]
         @s.send( :places ).clamped.size.must_equal 1
         @s.send( :clamped_places ).names.must_equal [:B]

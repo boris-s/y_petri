@@ -22,15 +22,14 @@ module YPetri::Core::Timed::Gillespie
     @gillespie_time = curr_time = simulation.time
     target_time = curr_time + Δt
     propensities = propensity_vector_TS.column_to_a
-    puts "Propensity vector TS is:"
-    Kernel::p propensities
     update_next_gillespie_time( propensities )
     until ( @next_gillespie_time > target_time )
       gillespie_step! propensities
       simulation.recorder.alert
-      propensities = propensity_vector_TS
+      propensities = propensity_vector_TS.column_to_a
       update_next_gillespie_time( propensities )
     end
+    simulation.increment_time! Δt
   end
 
   # Name of this method.
@@ -61,23 +60,31 @@ module YPetri::Core::Timed::Gillespie
     Distribution::Exponential.p_value( rng.rand, sum )
   end
 
+  # Given a discrete probability distributions, this function makes a random
+  # choice of a category.
+  # 
+  def choose_from_discrete_distribution( distribution )
+    sum = rng.rand * distribution.reduce( :+ )
+    distribution.index do |p|
+      sum -= p
+      sum <= 0
+    end
+  end
+
   # Chooses the transition to fire.
   # 
   def choose_TS_transition( propensities )
-    n = rng.rand * Σ( propensities )
-    idx = propensities.index do |propensity|
-      n -= propensity
-      n <= 0
-    end
-    transitions.fetch idx
+    transitions.fetch choose_from_discrete_distribution( propensities )
   end
 
-  # Fires a transition.
+  # Fires a transitions. More precisely, performs a single transition event with
+  # certain stoichiometry, adding / subtracting the number of quanta to / from
+  # the codomain places as indicated by the stoichiometry.
   # 
   def fire!( transition )
-    transition.∇.map { |place, change|
-      mv = simulation.marking_vector
-      mv.set( place, mv.fetch( place ) + change )
-    }
+    cd, sto = transition.codomain, transition.stoichiometry
+    mv = simulation.marking_vector
+    cd.each { |pl| mv.set( pl, mv.fetch( pl ) + pl.quantum ) }
+    @gillespie_time = @next_gillespie_time
   end
 end # YPetri::Core::Timed::Euler

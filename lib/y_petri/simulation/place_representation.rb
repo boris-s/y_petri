@@ -4,6 +4,8 @@
 # 
 class YPetri::Simulation
   class PlaceRepresentation < ElementRepresentation
+    attr_reader :quantum
+
     # Index
     def m_vector_index
       places.index( self )
@@ -13,6 +15,7 @@ class YPetri::Simulation
     # 
     def initialize net_place
       super
+      @quantum = source.quantum
     end
 
     # Setter of clamp.

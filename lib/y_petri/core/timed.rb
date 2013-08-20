@@ -18,7 +18,7 @@ class YPetri::Core::Timed < YPetri::Core
   # 
   def step! Δt=simulation.step
     increment_marking_vector Δ( Δt )
-    increment_time! Δt
+    simulation.increment_time! Δt
     simulation.recorder.alert
   end
 
