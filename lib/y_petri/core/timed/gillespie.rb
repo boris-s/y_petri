@@ -49,6 +49,8 @@ module YPetri::Core::Timed::Gillespie
   # 
   def gillespie_step! propensities
     t = choose_TS_transition( propensities )
+    puts "Next Gillespie time: #@next_gillespie_time"
+    puts "Transition chosen: #{t.name}"
     fire! t
   end
 
@@ -82,9 +84,14 @@ module YPetri::Core::Timed::Gillespie
   # the codomain places as indicated by the stoichiometry.
   # 
   def fire!( transition )
+    puts "About to fire #{transition.name}"
     cd, sto = transition.codomain, transition.stoichiometry
     mv = simulation.marking_vector
+    puts "Marking vector before:"
+    Kernel::p mv
     cd.each { |pl| mv.set( pl, mv.fetch( pl ) + pl.quantum ) }
+    puts "Marking vector after:"
+    Kernel::p mv
     @gillespie_time = @next_gillespie_time
   end
 end # YPetri::Core::Timed::Euler
