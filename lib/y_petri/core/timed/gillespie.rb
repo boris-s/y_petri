@@ -86,10 +86,12 @@ module YPetri::Core::Timed::Gillespie
   def fire!( transition )
     puts "About to fire #{transition.name}"
     cd, sto = transition.codomain, transition.stoichiometry
-    mv = simulation.marking_vector
+    mv = simulation.m_vector
     puts "Marking vector before:"
     Kernel::p mv
-    cd.each { |pl| mv.set( pl, mv.fetch( pl ) + pl.quantum ) }
+    cd.zip( sto ).each { |pl, coeff|
+      mv.set( pl, mv.fetch( pl ) + pl.quantum * coeff )
+    }
     puts "Marking vector after:"
     Kernel::p mv
     @gillespie_time = @next_gillespie_time

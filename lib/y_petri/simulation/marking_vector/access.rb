@@ -8,8 +8,7 @@ class YPetri::Simulation::MarkingVector
     # 
     def m_vector ids=nil
       if ids.nil? then
-        msg = "Marking vector not established yet!"
-        @m_vector or fail TypeError, msg
+        @m_vector or fail TypeError, "Marking vector not established yet!"
       else
         m_vector.select( ids )
       end
