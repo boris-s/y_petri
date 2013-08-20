@@ -19,17 +19,17 @@ module YPetri::Core::Timed::Gillespie
   # Makes a stochastic number of Gillespie steps necessary to span the period Δt.
   # 
   def step! Δt=simulation.step
-    current_time = simulation.time
-    target_time = current_time + Δt
-    @gillespie_time = current_time
+    @gillespie_time = curr_time = simulation.time
+    target_time = curr_time + Δt
     propensities = propensity_vector_TS
     puts "Propensity vector TS is:"
     Kernel::p propensities
-    gillespie_update_next_firing_time( propensities )
-    until ( @gillespie_next_firing_time > target_time )
+    update_next_gillespie_time( propensities )
+    until ( @next_gillespie_time > target_time )
       gillespie_step!
+      note_state_change
       propensities = propensity_vector_TS
-      gillespie_update_next_firing_time( propensities )
+      update_next_gillespie_time( propensities )
     end
   end
 
@@ -41,8 +41,8 @@ module YPetri::Core::Timed::Gillespie
 
   # This method updates next firing time given propensities.
   # 
-  def gillespie_update_next_firing_time( propensities )
-    @gillespie_next_firing_time =
+  def update_next_gillespie_time( propensities )
+    @next_gillespie_time =
       @gillespie_time + gillespie_delta_time( propensities )
   end
 

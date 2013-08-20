@@ -55,13 +55,11 @@ We can now play the _token_ _game_:
 ## Advanced usage
 
 A Petri net is mostly used as a wiring diagram of some real-world system. Such
-Petri net can then be used to generate (implicitly or explicitly) a more specific
-simulation of that real-world system. This is represented by `YPetri::Simulation`
-class. If a Petri net with only _timed_ transitions is considered, it can then
-be used to generate (implicitly or explicitly) a system of ordinary differential
-equations (ODE). A Simulation class instance generated from such Petri net can
-then be used to eg. solve the initial value problem by numeric integration of the
-ODE system using one of the available numerical methods:
+Petri net can then be used to generate its simulation -- represented by
+`YPetri::Simulation` class. A Petri net consisting of only _timed_ transitions
+can be used to generate (implicitly or explicitly) a system of ordinary
+differential equations (ODE). A simulation generated from such Petri net can
+then be used to solve (eg.) the initial value problem by numeric methods:
 ```ruby
   # Start a fresh irb session!
   require 'y_petri'
