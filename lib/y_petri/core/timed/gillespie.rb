@@ -30,6 +30,7 @@ module YPetri::Core::Timed::Gillespie
       update_next_gillespie_time( propensities )
     end
     simulation.increment_time! Δt
+    print '.'
   end
 
   # Name of this method.

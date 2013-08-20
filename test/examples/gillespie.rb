@@ -16,7 +16,7 @@ A2B = Transition s: { A: -1, B: 1 }, rate: 0.1
 B2A = Transition s: { A: 1, B: -1 }, rate: 0.05
 
 set_step 1 # in seconds
-set_target_time 10
+set_target_time 100
 set_sampling 1
 set_simulation_method :gillespie
 sim = new_simulation guarded: false
