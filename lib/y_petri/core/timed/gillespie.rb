@@ -21,13 +21,13 @@ module YPetri::Core::Timed::Gillespie
   def step! Δt=simulation.step
     @gillespie_time = curr_time = simulation.time
     target_time = curr_time + Δt
-    propensities = propensity_vector_TS
+    propensities = propensity_vector_TS.column_to_a
     puts "Propensity vector TS is:"
     Kernel::p propensities
     update_next_gillespie_time( propensities )
     until ( @next_gillespie_time > target_time )
       gillespie_step! propensities
-      note_state_change
+      simulation.recorder.alert
       propensities = propensity_vector_TS
       update_next_gillespie_time( propensities )
     end

@@ -19,7 +19,7 @@ class YPetri::Core::Timed < YPetri::Core
   def step! Δt=simulation.step
     increment_marking_vector Δ( Δt )
     increment_time! Δt
-    note_state_change
+    simulation.recorder.alert
   end
 
   # Gradient for free places.
