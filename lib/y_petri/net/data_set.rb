@@ -106,6 +106,21 @@ class YPetri::Net::DataSet < Hash
     end
   end
 
+  # Resamples the recording.
+  # 
+  def resample **nn
+    time_range = nn.may_have( :time_range, syn!: :time ) ||
+      events.first .. events.last
+    sampling = nn.must_have :sampling
+    t0, target_time = time_range.begin, time_range.end
+    t = t0
+    loop.with_object self.class.new do |o|
+      o.update t => interpolate( t )
+      t += sampling
+      return o if t > target_time
+    end
+  end
+
   # Computes the distance to another dataset.
   # 
   def distance( other )
