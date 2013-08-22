@@ -54,7 +54,7 @@ class YPetri::Net::DataSet < Hash
   # 
   def floor( event, equal_ok=true )
     e = events.ascending_floor( event, equal_ok )
-    return e, record( e ) unless e.nil?
+    e.nil? ? nil : e
   end
 
   # Returns the nearest event greater or equal to the supplied event-type
@@ -64,7 +64,7 @@ class YPetri::Net::DataSet < Hash
   # 
   def ceiling( event, equal_ok=true )
     e = events.ascending_ceiling( event, equal_ok )
-    return e, record( e ) unless e.nil?
+    e.nil? ? nil : e
   end
 
   # Revives records from values.
