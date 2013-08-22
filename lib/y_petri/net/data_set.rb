@@ -258,11 +258,15 @@ class YPetri::Net::DataSet < Hash
     map { |lbl, rec| [ lbl, *rec ].join ',' }.join "\n"
   end
 
-  # Plots the dataset.
+  # Plots the dataset. Takes several optional arguments: The list of features
+  # to plot as the first ordered argument, 
   # 
-  def plot( time: nil, **nn )
+  def plot( feature_ids=nil, time: nil, except: [], **nn )
+    time = nn.may_have :time, syn!: :time_range
     events = events()
-    data_ss = series
+    ff = feature_ids.nil? ? features : net.state.features( feature_ids )
+    ff -= net.state.features( except )
+    data_ss = series( ff )
     x_range = if time.nil? then
                 from = events.first || 0
                 to = events.last && events.last > from ? events.last :
