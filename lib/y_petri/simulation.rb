@@ -97,7 +97,7 @@ class YPetri::Simulation
     m = settings[:marking]
     init_m = settings[:initial_marking] || {}
     use_default_marking = if settings.has? :use_default_marking then
-                            settings[:use_default_marking]
+                            settings[ :use_default_marking ]
                           else true end
     # Time-independent simulation settings received, constructing param. classes
     param_class!( { Place: PlaceRepresentation,

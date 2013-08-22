@@ -41,10 +41,30 @@ class YPetri::Net::DataSet < Hash
     type == :timed
   end
 
-  # Returns a Record instance corresponding to the given recorded event.
+  # Returns the Record instance corresponding to the given recorded event.
   # 
   def record( event )
     features.load( fetch event )
+  end
+
+  # Returns the nearest event smaller or equal to the supplied event-type
+  # argument. The second optional ordered argument, true by default, controls
+  # whether equality is accepted. If set to false, then the nearest _smaller_
+  # event is sought.
+  # 
+  def floor( event, equal_ok=true )
+    e = events.ascending_floor( event, equal_ok )
+    return e, record( e ) unless e.nil?
+  end
+
+  # Returns the nearest event greater or equal to the supplied event-type
+  # argument. The second optional ordered argument, true by default, controls
+  # whether equality is accepted. If set to false, then the nearest _greater_
+  # event is sought.
+  # 
+  def ceiling( event, equal_ok=true )
+    e = events.ascending_ceiling( event, equal_ok )
+    return e, record( e ) unless e.nil?
   end
 
   # Revives records from values.
@@ -69,16 +89,30 @@ class YPetri::Net::DataSet < Hash
   # Record class instance.
   # 
   def interpolate( event )
-    # TODO: This whole interpolation thing is unfinished.
     begin
       record( event )
     rescue KeyError => msg
-      timed? or raise TypeError, "Event #{event} does not have a record! (%s)" %
+      timed? or raise TypeError, "Event #{event} not recorded! (%s)" %
         "simulation type: #{type.nil? ? 'nil' : type}"
-      f_time, floor = floor( event ) # timed datasets support floor, ceiling
-      c_time, ceiling = ceiling( time )
-      floor + ( ceiling - floor ) / ( c_time - f_time ) * ( time - f_time )
+      fe = floor( event ) # (#floor, #ceiling supported by timed datasets only)
+      fail "Event #{event} has no floor!" if fe.nil?
+      f = record( fe )
+      ce = ceiling( event )
+      fail "Event #{event} has no ceiling!" if ce.nil?
+      c = record( ce )
+      f + ( c - f ) / ( ce - fe ) * ( event - fe )
     end
+  end
+
+  # Computes the distance to another dataset.
+  # 
+  def distance( other )
+    sum_of_sq = events
+      .map { |e| [ e, other.interpolate( e ) ] }
+      .map { |rec1, rec2| rec1.euclidean_distance rec2 }
+      .map { |dist| dist * dist }
+      .reduce( :+ )
+    sum_of_sq ** 0.5
   end
 
   # Returns the data series for the specified features.

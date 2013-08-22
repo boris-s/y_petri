@@ -162,4 +162,12 @@ class YPetri::Net::State::Features::Record < Array
       end
     end
   end
+
+  # Computes the Euclidean distance from another record.
+  # 
+  def euclidean_distance other
+    sum_of_sq = features.map { |f|
+      fetch( f ) - other.fetch( f )
+    }.map { |dist| dist * dist }.reduce( :+ )
+  end
 end # class YPetri::Net::State::Features::Record
