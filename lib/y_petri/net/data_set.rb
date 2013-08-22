@@ -94,13 +94,15 @@ class YPetri::Net::DataSet < Hash
     rescue KeyError => msg
       timed? or raise TypeError, "Event #{event} not recorded! (%s)" %
         "simulation type: #{type.nil? ? 'nil' : type}"
-      fe = floor( event ) # (#floor, #ceiling supported by timed datasets only)
+      # (Remark: #floor, #ceiling supported by timed datasets only)
+      fe = floor( event )
       fail "Event #{event} has no floor!" if fe.nil?
-      f = record( fe )
+      f = Matrix.column_vector record( fe )
       ce = ceiling( event )
       fail "Event #{event} has no ceiling!" if ce.nil?
-      c = record( ce )
-      f + ( c - f ) / ( ce - fe ) * ( event - fe )
+      c = Matrix.column_vector record( ce )
+      rslt = f + ( c - f ) / ( ce - fe ) * ( event - fe )
+      features.load( rslt.column_to_a )
     end
   end
 

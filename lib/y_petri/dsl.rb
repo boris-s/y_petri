@@ -42,6 +42,8 @@ module YPetri
            :clamp_cc, :initial_marking_cc, :simulation_settings_cc,
            :simulation_point_position,
            :simulation,
+           :pm,                      # deleg. to simulation
+           :recording,               # deleg. to simulation
            :clamp_collection, :cc,
            :initial_marking_collection, :imc,
            :simulation_settings_collection, :ssc,

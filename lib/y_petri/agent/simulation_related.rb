@@ -107,7 +107,9 @@ module YPetri::Agent::SimulationRelated
            :initial_marking_cc, :simulation_settings_cc,
            to: :world
 
-  delegate :pm, to: :simulation
+  delegate :pm,
+           :recording,
+           to: :simulation
 
   # Pretty print the state.
   # 
