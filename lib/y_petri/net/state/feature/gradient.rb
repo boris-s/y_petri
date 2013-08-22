@@ -78,6 +78,12 @@ class YPetri::Net::State::Feature::Gradient < YPetri::Net::State::Feature
     end
   end
 
+  # Type of this feature.
+  # 
+  def type
+    :gradient
+  end
+
   # A string briefly describing the gradient feature.
   # 
   def to_s

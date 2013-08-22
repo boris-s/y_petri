@@ -51,7 +51,7 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
   # identifier).
   # 
   def initialize id
-    @transition = net.transition( id.is_a?( Flux ) ? id.transition : id )
+    @transition = net.transition id.is_a?( Flux ) ? id.transition : id
   end
 
   # Extracts the receiver marking feature from the argument. This can be
@@ -64,6 +64,12 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
     else
       fail TypeError, "Argument type not supported!"
     end
+  end
+
+  # Type of this feature.
+  # 
+  def type
+    :flux
   end
 
   # A string briefly describing the flux feature.

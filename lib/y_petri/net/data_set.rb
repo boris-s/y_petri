@@ -283,7 +283,7 @@ class YPetri::Net::DataSet < Hash
         plot.title nn[:title] || "#{net} plot"
         plot.ylabel nn[:ylabel] || "Values"
         plot.xlabel nn[:xlabel] || "Time [s]"
-        features.labels.zip( data_ss ).each do |label, data_array|
+        ff.labels.zip( data_ss ).each do |label, data_array|
           plot.data << Gnuplot::DataSet.new( [ events, data_array ] ) { |ds|
             ds.with = "linespoints"
             ds.title = label

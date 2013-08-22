@@ -126,6 +126,12 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
     ! timed?
   end
 
+  # Type of this feature.
+  # 
+  def type
+    :delta
+  end
+
   # A string briefly describing this delta feature.
   # 
   def to_s

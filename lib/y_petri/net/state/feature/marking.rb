@@ -65,6 +65,12 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
     end
   end
 
+  # Type of this feature.
+  # 
+  def type
+    :marking
+  end
+
   # A string briefly describing the marking feature.
   # 
   def to_s

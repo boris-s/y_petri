@@ -66,6 +66,12 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
     end
   end
 
+  # Type of this feature.
+  # 
+  def type
+    :flux
+  end
+
   # A string briefly describing the firing feature.
   # 
   def to_s
