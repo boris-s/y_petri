@@ -32,10 +32,20 @@ module YPetri::Simulation::Timed
 
   delegate :sampling, to: :recorder
 
-  # Reads the time range (initial_time..target_time) of the simulation.
+  # Reads the time range.
+  #
+  def flux ids_of_TS_transitions=nil
+    tt = TS_transitions()
+    return flux tt if ids_of_TS_transitions.nil?
+    TS_transitions( ids_of_TS_transitions ).map { |t|
+      flux_vector.column_to_a.fetch tt.index( t )
+    }
+  end
+
+  # Reads the time range (initial_time .. target_time) of the simulation.
   #
   def time_range
-    initial_time..target_time
+    initial_time .. target_time
   end
 
   # Returns the settings pertaining to the Timed aspect of the simulation,
