@@ -114,7 +114,7 @@ class YPetri::Net::DataSet < Hash
     sampling = nn.must_have :sampling
     t0, target_time = time_range.begin, time_range.end
     t = t0
-    o = self.class.new
+    o = self.class.new type: type
     loop do
       o.update t => interpolate( t )
       t += sampling

@@ -71,7 +71,9 @@ class YPetri::Net::State::Features::Record < Array
   # (Timed nets eg. require +:time+ named argument for successful construction.)
   # 
   def reconstruct marking_clamps: {}, **settings
-    net.simulation marking_clamps: {}, marking: marking, **settings
+    m = marking
+    Kernel::p m
+    net.simulation marking_clamps: {}, marking: m, **settings
   end
 
   # Expects a marking feature identifier (place identifier or Marking instance),
@@ -80,11 +82,11 @@ class YPetri::Net::State::Features::Record < Array
   # corresponding values. If no argument is given, values from this record for
   # all the present marking features are returned.
   # 
-  def marking id=nil
-    return marking( features.marking ) if id.nil?
-    case id
-    when Array then id.map { |id| marking id }
-    else fetch( features.marking id ) end
+  def marking arg=nil
+    return marking( features.marking ) if arg.nil?
+    case arg
+    when Array then arg.map { |id| marking id }
+    else fetch( features.marking arg ) end
   end
 
   # Expects a flux feature identifier (transition identifier or Flux instance),

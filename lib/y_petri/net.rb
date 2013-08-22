@@ -135,7 +135,8 @@ class YPetri::Net
   def to_s
     "#<Net: " +
       ( name.nil? ? "%s" : "name: #{name}, %s" ) %
-      "#{pp.size rescue '∅'} places, #{tt.size rescue '∅'} transitions" + ">"
+      "#{pp.size rescue '∅'} places, #{tt.size rescue '∅'} transitions" +
+      ">"
   end
 
   # Inspect string of the instance.

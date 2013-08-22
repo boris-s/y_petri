@@ -199,3 +199,53 @@ describe YPetri::Net::State do
     -> { @St.feature( marking: :A ) }.must_raise NameError
   end
 end
+
+
+describe YPetri::Net::DataSet do
+  before do
+    @w = YPetri::World.new
+    @net = @w.Net.send :new
+    @net << @w.Place.send( :new, ɴ: :A )
+    @net << @w.Place.send( :new, ɴ: :B )
+    @net << @w.Transition.send( :new, ɴ: :A2B, s: { A: -1, B: 1 }, rate: 0.01 )
+    @net << @w.Transition.send( :new, ɴ: :A_plus, s: { A: 1 }, rate: 0.001 )
+  end
+
+  it "should be constructible" do
+    ds = @net.State.marking( [:A, :B] ).new_dataset( type: :foobar )
+    ds.update foo: [ 42, 43 ]
+    ds.update bar: [ 43, 42 ]
+    ds.timed?.must_equal false
+    ds2 = @net.State.marking.new_dataset( type: :timed )
+    ds2.timed?.must_equal true
+    ds2.features.must_equal @net.State.marking( [:A, :B] )
+  end
+
+  describe "timed dataset" do
+    before do
+      @ds = @net.State.marking.new_dataset( type: :timed )
+      @ds.update 0.0 => [ 0, 0 ]
+      @ds.update 10.0 => [ 1, 0.5 ]
+      @ds.update 50.0 => [ 2, 3 ]
+      @ds.update 200.0 => [ 2.5, 7 ]
+    end
+
+    it "should give a nice plot" do
+      @ds.plot
+    end
+
+    describe "resampling" do
+      before do
+        @resampled_ds = @ds.resample sampling: 11
+      end
+
+      it "should give a nice plot" do
+        @resampled_ds.plot
+      end
+
+      it "should be able to reconstruct the flux" do
+        @resampled_ds.flux.plot
+      end
+    end
+  end
+end

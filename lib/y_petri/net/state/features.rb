@@ -15,7 +15,7 @@ class YPetri::Net::State::Features < Array
           ç.define_singleton_method symbol do value end
         }
         ç.param_class( { Record: Record,
-                         Dataset: YPetri::Net::DataSet },
+                         DataSet: YPetri::Net::DataSet },
                        with: { Features: ç } )
       end
     end
@@ -42,7 +42,7 @@ class YPetri::Net::State::Features < Array
         # Parametrize them <em>one more time</em> with Features instance.
         # Banged version of #param_class! ensures that #Record, #Dataset
         # methods are shadowed.
-        inst.param_class!( { Record: Record(), Dataset: Dataset() },
+        inst.param_class!( { Record: Record(), DataSet: DataSet() },
                            with: { features: inst } )
       end
     end
@@ -137,7 +137,7 @@ class YPetri::Net::State::Features < Array
   # Constructs a new dataset from these features.
   # 
   def new_dataset *args, &blk
-    Dataset().new *args, &blk
+    DataSet().new *args, &blk
   end
 
   # Feature summation -- of feature class.
@@ -183,14 +183,14 @@ class YPetri::Net::State::Features < Array
   # corresponding features from this feature set. If no argument is given, all
   # the marking features from this set are returned.
   #
-  def marking id=nil
-    return marking( select { |f| f.is_a? Marking() } ) if id.nil?
-    case id
-    when Array then self.class.new( id.map { |id| marking id } )
+  def marking arg=nil
+    return marking( select { |feat| feat.is_a? Marking() } ) if arg.nil?
+    case arg
+    when Array then self.class.new( arg.map { |id| marking id } )
     else
-      Marking( id ).tap do |feature|
+      Marking( arg ).tap do |feature|
         include? feature or
-          fail KeyError, "No marking feature '#{id}' in this feature set!"
+          fail KeyError, "No marking feature '#{arg}' in this feature set!"
       end
     end
   end
@@ -201,14 +201,14 @@ class YPetri::Net::State::Features < Array
   # array of corresponding features from this feature set. If no argument is
   # given, all the firing features from this set are returned.
   #
-  def firing id=nil
-    return firing( select { |f| f.is_a? Firing() } ) if id.nil?
-    case id
-    when Array then self.class.new( id.map { |id| firing id } )
+  def firing arg=nil
+    return firing( select { |feat| feat.is_a? Firing() } ) if arg.nil?
+    case arg
+    when Array then self.class.new( arg.map { |id| firing id } )
     else
-      Firing( id ).tap do |feature|
+      Firing( arg ).tap do |feature|
         include? feature or
-          fail KeyError, "No firing feature '#{id}' in this feature set!"
+          fail KeyError, "No firing feature '#{arg}' in this feature set!"
       end
     end
   end
@@ -219,14 +219,14 @@ class YPetri::Net::State::Features < Array
   # of corresponding features from this feature set. If no argument is given,
   # all the flux features from this set are returned.
   #
-  def flux id=nil
-    return flux( select { |f| f.is_a? Flux() } ) if id.nil?
-    case id
-    when Array then self.class.new( id.map { |id| flux id } )
+  def flux arg=nil
+    return flux( select { |feat| feat.is_a? Flux() } ) if arg.nil?
+    case arg
+    when Array then self.class.new( arg.map { |id| flux id } )
     else
-      Flux( id ).tap do |feature|
+      Flux( arg ).tap do |feature|
         include? feature or
-          fail KeyError, "No flux feature '#{id}' in this feature set!"
+          fail KeyError, "No flux feature '#{arg}' in this feature set!"
       end
     end
   end
@@ -239,18 +239,19 @@ class YPetri::Net::State::Features < Array
   # corresponding features from this feature set. If no argument is given,
   # all the gradient features from this feature set are returned.
   # 
-  def gradient id=nil, transitions: nil
-     if id.nil? then
-       return gradient( select { |f| f.is_a? Gradient() } ) if transitions.nil?
-       gradient.select { |f| f.transitions == net.tt( transitions ) }
+  def gradient arg=nil, transitions: nil
+     if arg.nil? then
+       return gradient( select { |feat| feat.is_a? Gradient() } ) if
+         transitions.nil?
+       gradient.select { |feat| feat.transitions == net.tt( transitions ) }
      else
-       case id
+       case arg
        when Array then
-         self.class.new( id.map { |id| gradient id, transitions: transitions } )
+         self.class.new( arg.map { |id| gradient id, transitions: transitions } )
        else
-         Gradient( id, transitions: transitions ).tap do |feature|
+         Gradient( arg, transitions: transitions ).tap do |feature|
            include? feature or
-             fail KeyError, "No gradient feature '#{id}' in this fature set!"
+             fail KeyError, "No gradient feature '#{arg}' in this fature set!"
          end
        end
      end
@@ -263,18 +264,19 @@ class YPetri::Net::State::Features < Array
   # identifiers is supplied, it is mapped to the array of corresponding features
   # from thie feature set.
   #
-  def delta
-    if id.nil? then
-      return delta( select { |f| f.is_a? Delta() } ) if transitions.nil?
-      delta.select { |f| f.transitions == net.tt( transitions ) }
+  def delta arg=nil, transitions: nil
+    if arg.nil? then
+      return delta( select { |feat| feat.is_a? Delta() } ) if
+        transitions.nil?
+      delta.select { |feat| feat.transitions == net.tt( transitions ) }
     else
-      case id
+      case arg
       when Array then
-        self.class.new( id.map { |id| delta id, transitions: transitions } )
+        self.class.new( arg.map { |id| delta id, transitions: transitions } )
       else
-        Delta( id, transitions: transitions ).tap do |feature|
+        Delta( arg, transitions: transitions ).tap do |feature|
           include? feature or
-            fail KeyError, "No delta feature '#{id}' in this feature set!"
+            fail KeyError, "No delta feature '#{arg}' in this feature set!"
         end
       end
     end
