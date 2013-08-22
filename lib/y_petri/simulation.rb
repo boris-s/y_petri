@@ -81,21 +81,29 @@ class YPetri::Simulation
 
   # The basic simulation parameter is :net – +YPetri::Net+ instance which to
   # simulate. Net implies the collection of places and transitions. Other
-  # required attributes are marking clamps and initial marking. These can be
-  # extracted from the Place and Transition instances if not given explicitly.
+  # required attributes are +:marking_clamps+ and +:initial_marking+
+  # (or +:marking -- if no +:initial_marking+ is supplied, +:marking+ will be
+  # used in its stead). There is a possibility to extract the initial marking
+  # from the net elements directly, controlled by the optional argument
+  # +:use_default_marking+, _true_ by default. It means that even if the caller
+  # does not supply required +:initial_marking+ values, the constructor will
+  # extract them from the places, so long as these have their initial markings
+  # set. Setting +:use_default_marking+ to _false_ will cause an error unless
+  # +:initial_marking+ and +:place_clamps+ are supplied explicitly. 
+  # 
   # Simulation method is controlled by the :method argument, guarding is
-  # switched on and off by the :guarded argument (true/false). If timed
-  # transitions are present, the simulation is considered timed. Timed
-  # simulation constructor has additional arguments :time, establishing time
-  # range, :step, controlling the simulation step size, and :sampling,
-  # controlling the sampling frequency.
+  # switched on and off by the :guarded argument (_true_ / _false_). Simulations
+  # of timed nets are timed. A timed simulation constructor may have +:time+
+  # (alias +:time_range+), +:step+, controlling the size of the simulation step,
+  # and +:sampling+, controlling the sampling period. At least one of these named
+  # arguments has to be set for timed simulations.
   # 
   def initialize **settings
     method = settings[:method] # the simulation method
     @guarded = settings[:guarded] # guarding on / off
     m_clamps = settings[:marking_clamps] || {}
     m = settings[:marking]
-    init_m = settings[:initial_marking] || {}
+    init_m = settings[:initial_marking] || m || {}
     use_default_marking = if settings.has? :use_default_marking then
                             settings[ :use_default_marking ]
                           else true end
@@ -193,7 +201,7 @@ class YPetri::Simulation
     "#<Simulation: pp: %s, tt: %s, oid: %s>" % [ pp.size, tt.size, object_id ]
   end
 
-  # Resets the simulation
+  # Resets the simulation.
   # 
   def reset! **nn
     m = nn[:marking]

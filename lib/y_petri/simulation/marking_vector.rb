@@ -92,7 +92,13 @@ class YPetri::Simulation
     # given, starting vector is used.
     # 
     def reset! arg=self.class.starting
-      arg.each.to_a.zip( annotation ).map { |value, place| set place, value }
+      case arg
+      when Hash then
+        mapping = simulation.PlaceMapping().load( arg )
+        reset! places.map { |pl| mapping[ pl ] }
+      else # array arg assumed
+        arg.each.to_a.zip( annotation ).map { |value, place| set place, value }
+      end
     end
 
     # Access of the vector elements.

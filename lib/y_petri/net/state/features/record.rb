@@ -71,9 +71,8 @@ class YPetri::Net::State::Features::Record < Array
   # (Timed nets eg. require +:time+ named argument for successful construction.)
   # 
   def reconstruct marking_clamps: {}, **settings
-    m = marking
-    Kernel::p m
-    net.simulation marking_clamps: {}, marking: m, **settings
+    m_hsh = features.marking.map { |feat| feat.place } >> marking
+    net.simulation marking_clamps: {}, marking: m_hsh, **settings
   end
 
   # Expects a marking feature identifier (place identifier or Marking instance),
