@@ -147,6 +147,7 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
   # Inspect string of the delta feature.
   # 
   def inspect
-    "<Feature::Delta Δ:#{place.name || place}:#{transitions.size}tt>"
+    "<Feature::Delta Δ:#{place.name || place}:[%s]>" %
+      transitions.names( true ).join( ', ' )
   end
 end # class YPetri::Net::State::Feature::Delta

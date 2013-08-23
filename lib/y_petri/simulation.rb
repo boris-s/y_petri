@@ -115,7 +115,8 @@ class YPetri::Simulation
                     PlaceMapping: PlaceMapping,
                     InitialMarking: InitialMarking,
                     MarkingClamps: MarkingClamps,
-                    MarkingVector: MarkingVector }, with: { simulation: self } )
+                    MarkingVector: MarkingVector },
+                  with: { simulation: self } )
     # Place and transition representation classes are their own namespaces.
     Place().namespace!
     Transition().namespace!
@@ -132,8 +133,8 @@ class YPetri::Simulation
     # Correspondence matrix clamped --> all
     @c2a = clamped_places.correspondence_matrix( places )
     # Conditionally extend self depending on net's timedness.
-    extend( settings[:time] || settings[:step] || settings[:sampling] ?
-            Timed : Timeless )
+    anything_time = settings[:time] || settings[:step] || settings[:sampling]
+    extend( anything_time ? Timed : Timeless )
     # Initialize the marking vector.
     @m_vector = MarkingVector().zero
     # Set up the transitions collection.

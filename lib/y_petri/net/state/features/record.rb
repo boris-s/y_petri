@@ -41,7 +41,8 @@ class YPetri::Net::State::Features::Record < Array
     super begin
             Integer( feature )
           rescue TypeError
-            features.index State().feature( feature )
+            feat = State().feature( feature )
+            features.index( feat )
           end
   end
 

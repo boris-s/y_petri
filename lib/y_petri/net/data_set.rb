@@ -259,14 +259,30 @@ class YPetri::Net::DataSet < Hash
     map { |lbl, rec| [ lbl, *rec ].join ',' }.join "\n"
   end
 
-  # Plots the dataset. Takes several optional arguments: The list of features
-  # to plot as the first ordered argument, 
+  # Plots the dataset. Takes several optional arguments: The list of elements
+  # can be supplied as optional first ordered argument, which are then converted
+  # into features using +Net::State::Features.infer_from_elements+ method.
+  # Similarly, the features to exclude can be specifies as a list of elements
+  # (or a feature-specifying hash) supplied under +except:+ keyword. Otherwise,
+  # feature specification can be passed to the method as named arguments. If
+  # no feature specification is explicitly provided, it is assumed that all the
+  # features of this dataset are meant to be plotted.
   # 
-  def plot( feature_ids=nil, time: nil, except: [], **nn )
+  def plot( element_ids=nil, time: nil, except: [], **nn )
     time = nn.may_have :time, syn!: :time_range
     events = events()
-    ff = feature_ids.nil? ? features : net.state.features( feature_ids )
-    ff -= net.state.features( except )
+    if element_ids.nil? then
+      ff = if nn.empty? then features else net.State.features( nn ) end
+    else
+      ff = net.State.Features.infer_from_elements( element_ids )
+    end
+    xff = case except
+          when Array then net.State.Features.infer_from_elements( except )
+          when Hash then net.State.features( except )
+          else
+            fail TypeError, "Wrong type of :except argument: #{except.class}"
+          end
+    ff -= xff
     data_ss = series( ff )
     x_range = if time.nil? then
                 from = events.first || 0

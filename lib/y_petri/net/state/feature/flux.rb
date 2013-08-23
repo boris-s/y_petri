@@ -87,6 +87,6 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
   # Inspect string of the flux feature.
   # 
   def inspect
-    "<Feature::Flux of #{transition}>"
+    "<Feature::Flux of #{transition.name ? transition.name : transition}>"
   end
 end # class YPetri::Net::State::Feature::Flux

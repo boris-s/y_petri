@@ -59,6 +59,7 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
+      # now we have to investigate the case when place.name is A_phase, why the heck does it fail
       arg.m( [ place ] ).first
     else
       fail TypeError, "Argument type not supported!"
@@ -86,6 +87,6 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
   # Inspect string of the marking feature.
   # 
   def inspect
-    "<Feature::Marking of #{place}>"
+    "<Feature::Marking of #{place.name ? place.name : place}>"
   end
 end # YPetri::Net::State::Feature::Marking

@@ -99,6 +99,7 @@ class YPetri::Net::State::Feature::Gradient < YPetri::Net::State::Feature
   # Inspect string of the gradient feature.
   # 
   def inspect
-    "<Feature::Gradient ∂:#{place.name || place}:#{transitions.size}tt>"
+    "<Feature::Gradient ∂:#{place.name || place}:[%s]>" %
+      transitions.names( true ).join( ', ' )
   end
 end # class YPetri::Net::State::Feature::Gradient

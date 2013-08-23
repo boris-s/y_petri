@@ -110,6 +110,29 @@ class YPetri::Net::State::Features < Array
         new arg.map { |id| Delta id, transitions: transitions }
       end
     end
+
+    # Takes an array of the net elements (places and/or transitions), and infers
+    # a feature set from them in the following way: Places or place ids are
+    # converted to marking features. The remaining array elements are treated
+    # as transition ids, and are converted to either flux features (if the
+    # transition is timed), or firing features (if the transition is timeless).
+    # 
+    def infer_from_elements( net_elements )
+      new net_elements.map { |e| net.element( e ) }.map { |e|
+        element, element_type = begin
+                                  [ net.place( e ), :place ]
+                                rescue TypeError, NameError
+                                  [ net.transition( e ), :transition ]
+                                end
+        case element_type
+        when :place then Marking( element )
+        when :transition then
+          fail TypeError, "Flux / firing features can only be auto-inferred " +
+            "from S transitions! (#{element} was given)" unless element.S?
+          element.timed? ? Flux( element ) : Firing( element )
+        end
+      }
+    end
   end
 
   delegate :State,
@@ -131,7 +154,14 @@ class YPetri::Net::State::Features < Array
   # Extracts the features from a given target
   # 
   def extract_from target, **nn
-    new_record( map { |feature| feature.extract_from( target, **nn ) } )
+    values = map { |feat| feat.extract_from( target, **nn ) }
+    new_record( values )
+  end
+
+  # Constructs a new record from these features.
+  # 
+  def new_record values
+    Record().load values
   end
 
   # Constructs a new dataset from these features.
@@ -175,7 +205,6 @@ class YPetri::Net::State::Features < Array
   end
 
   # Returns the subset of marking features.
-
 
   # Expects a marking feature identifier (place identifier or Marking instance),
   # and returns the corresponding feature from this feature set. If an array of

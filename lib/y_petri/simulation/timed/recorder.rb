@@ -43,12 +43,7 @@ module YPetri::Simulation::Timed
       t2 = next_time.round( 9 )
       if t >= t2 then # it's time to sample
         sample!
-        begin
-          @next_time += sampling
-        rescue NoMethodError => err
-          ( puts "Here go error #{err}"; Kernel::p @next_time; Kernel::p sampling )
-        end
-                                      
+        @next_time += sampling
       end
     end
 

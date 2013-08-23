@@ -87,6 +87,6 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
   # Inspect string of the firing feature.
   # 
   def inspect
-    "<Feature::Firing of #{transition}>"
+    "<Feature::Firing of #{transition.name ? transition.name : transition}>"
   end
 end # YPetri::Net::State::Feature::Firing

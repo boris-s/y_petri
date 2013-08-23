@@ -94,8 +94,11 @@ class YPetri::Simulation
     def reset! arg=self.class.starting
       case arg
       when Hash then
-        mapping = simulation.PlaceMapping().load( arg )
-        reset! places.map { |pl| mapping[ pl ] }
+        mp = simulation.PlaceMapping().load( arg )
+        updated = mp.each_with_object self.class.starting do |(place, value), mv|
+          mv.set place, value
+        end
+        reset! updated.column_to_a
       else # array arg assumed
         arg.each.to_a.zip( annotation ).map { |value, place| set place, value }
       end
