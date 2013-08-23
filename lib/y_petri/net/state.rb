@@ -29,8 +29,6 @@ class YPetri::Net::State < Array
     # Returns the feature identified by the argument.
     # 
     def feature *id
-      puts "Hello from Net::State.feature. id is:"
-      Kernel::p id
       fail ArgumentError, "No feature identifier!" if id.empty?
       case id.first
       when Feature() then id.first
