@@ -99,11 +99,10 @@ class YPetri::Simulation
   # arguments has to be set for timed simulations.
   # 
   def initialize **settings
-    method = settings[:method] # the simulation method
     @guarded = settings[:guarded] # guarding on / off
     m_clamps = settings[:marking_clamps] || {}
     m = settings[:marking]
-    init_m = settings[:initial_marking] || m || {}
+    init_m = settings[:initial_marking] || {}
     use_default_marking = if settings.has? :use_default_marking then
                             settings[ :use_default_marking ]
                           else true end
@@ -125,7 +124,17 @@ class YPetri::Simulation
     # Clamped places' mapping to the clamp values.
     @marking_clamps = MarkingClamps().load( m_clamps )
     # Free places' mapping to the initial marking values.
-    @initial_marking = InitialMarking().load( init_m )
+
+    # Use :marking as :initial_marking when possible.
+    if m then
+      init_m_from_init_m = PlaceMapping().load( init_m )
+      init_m_from_marking = PlaceMapping().load( m )
+      rslt = init_m_from_marking.merge init_m_from_init_m
+      @initial_marking = InitialMarking().load( rslt )
+    else
+      @initial_marking = InitialMarking().load( init_m )
+    end
+
     # Set up the place and transition collections.
     @places.complete_initial_marking( use_default_marking: use_default_marking )
     # Correspondence matrix free --> all
@@ -157,8 +166,6 @@ class YPetri::Simulation
       @Ts_gradient_closure = transitions.Ts.gradient_closure
       @TS_rate_closure = transitions.TS.rate_closure
     end
-    # Init the core.
-    @core = Core().new( method: method, guarded: guarded  )
     # Reset.
     if m then reset! marking: m else reset! end
   end

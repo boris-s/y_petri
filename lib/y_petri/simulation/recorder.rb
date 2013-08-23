@@ -11,7 +11,14 @@ class YPetri::Simulation::Recorder
 
   SAMPLING_DECIMAL_PLACES = 5
 
-  attr_reader :features, :recording
+  attr_reader :features
+
+  def recording
+    @recording.tap { |ds|
+      ds.instance_variable_set :@settings, simulation.settings( true )
+    }
+  end
+
   delegate :simulation, to: "self.class"
   delegate :reconstruct, :reduce, to: :recording
 
@@ -26,7 +33,7 @@ class YPetri::Simulation::Recorder
     if recording then reset! recording: recording else reset! end
   end
 
-  # Construct a new recording based on +features+.
+  # Construct a new recording based on the parametrized class Recording().
   # 
   def new_recording
     features.new_dataset

@@ -152,6 +152,7 @@ module YPetri::Simulation::Timed
   # +@recorder+ attribute.
   #
   def init **settings
+    method = settings[:method] # the simulation method
     if settings.has? :time, syn!: :time_range then # time range given
       case settings[:time]
       when Range then
@@ -175,6 +176,7 @@ module YPetri::Simulation::Timed
     reset_time!
     @step = settings[:step] || time_unit
     @default_sampling = settings[:sampling] || step
+    @core = Core().new( method: method, guarded: guarded )
     @recorder = Recorder().new sampling: settings[:sampling]
   end
 

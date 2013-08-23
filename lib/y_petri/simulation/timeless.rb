@@ -19,7 +19,9 @@ class YPetri::Simulation
     # and initializes the +@recorder+ attribute.
     # 
     def init **settings
+      method = settings[:method] # the simulation method
       init_core_and_recorder_subclasses
+      @core = Core().new( method: method, guarded: guarded )
       @recorder = Recorder().new # init the recorder
     end
 

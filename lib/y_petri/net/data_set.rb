@@ -33,7 +33,8 @@ class YPetri::Net::DataSet < Hash
            :Marking, :Firing, :Flux, :Gradient, :Delta,
            to: "self.class"
 
-  attr_reader :type # more like event_type, idea not matured yet
+  attr_reader :type, # more like event_type, idea not matured yet
+              :settings
 
   # Type of the dataset.
   # 
@@ -75,9 +76,10 @@ class YPetri::Net::DataSet < Hash
 
   # Recreates the simulation at a given event label.
   # 
-  def reconstruct event: (fail "No event given!"),
-    **settings # settings include marking clamps
+  def reconstruct event: (fail "No event given!"), **settings
+    # settings may include marking clamps, marking, inital marking...
     rec = interpolate( event )
+    settings = settings().merge settings if settings()
     if timed? then
       rec.reconstruct time: event, **settings
     else
@@ -136,6 +138,7 @@ class YPetri::Net::DataSet < Hash
   # Returns the data series for the specified features.
   # 
   def series arg=nil
+    
     return records.transpose if arg.nil?
     reduce_features( State().features( arg ) ).series
   end
@@ -174,12 +177,10 @@ class YPetri::Net::DataSet < Hash
               end
             end
           else
-            line = reduced_features.map do |feature|
-              if absent_features.include? feature then
-                feature.extract_from( sim )
-              else
-                record.fetch feature
-              end
+            line = reduced_features.map do |feat|
+              if absent_features.include? feat then
+                feat.extract_from( sim )
+              else record.fetch( feat ) end
             end
           end
         end
@@ -272,7 +273,8 @@ class YPetri::Net::DataSet < Hash
     time = nn.may_have :time, syn!: :time_range
     events = events()
     if element_ids.nil? then
-      ff = if nn.empty? then features else net.State.features( nn ) end
+      nn_ff = nn.slice [ :marking, :flux, :firing, :gradient, :delta ]
+      ff = nn_ff.empty? ? features : net.State.features( nn_ff )
     else
       ff = net.State.Features.infer_from_elements( element_ids )
     end
@@ -297,6 +299,11 @@ class YPetri::Net::DataSet < Hash
     Gnuplot.open do |gp|
       Gnuplot::Plot.new gp do |plot|
         plot.xrange x_range
+        if nn.has? :yrange, syn!: :y_range then
+          if nn[:yrange].is_a? Range then
+            plot.yrange "[#{nn[:yrange].begin}:#{nn[:yrange].end}]"
+          else fail TypeError, "Argument :yrange is not a range!" end
+        end
         plot.title nn[:title] || "#{net} plot"
         plot.ylabel nn[:ylabel] || "Values"
         plot.xlabel nn[:xlabel] || "Time [s]"
