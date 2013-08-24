@@ -73,7 +73,9 @@ class YPetri::Net::State::Features::Record < Array
   # 
   def reconstruct **settings
     marking_clamps = settings[:marking_clamps] || {}
-    m_hsh = features.marking.map { |feat| feat.place } >> marking
+    clamped_places = net.places( marking_clamps.keys )
+    ff = features.marking - net.State.marking( clamped_places )
+    m_hsh = ff.map { |feat| feat.place } >> marking
     net.simulation marking_clamps: marking_clamps, marking: m_hsh, **settings
   end
 

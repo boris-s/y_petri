@@ -79,6 +79,12 @@ class YPetri::Simulation
   delegate :recording,
            to: :recorder
 
+  alias r recording
+
+  delegate :plot,
+           :print,
+           to: :recording
+
   # The basic simulation parameter is :net – +YPetri::Net+ instance which to
   # simulate. Net implies the collection of places and transitions. Other
   # required attributes are +:marking_clamps+ and +:initial_marking+
