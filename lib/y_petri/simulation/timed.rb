@@ -54,7 +54,7 @@ module YPetri::Simulation::Timed
   # and optional 2 named arguments (+:gap+ and +:precision), as in
   # +#pretty_print_numeric_values+.
   # 
-  def pflux ids=nil, gap: 0, precision: 3
+  def pflux ids=nil, gap: 0, precision: 4
     t_flux( ids ).pretty_print_numeric_values( gap: gap, precision: precision )
   end
 

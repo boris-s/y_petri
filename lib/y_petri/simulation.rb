@@ -109,7 +109,7 @@ class YPetri::Simulation
   # and optional 2 named arguments (+:gap+ and +:precision+), as in
   # +#pretty_print_numeric_values+.
   # 
-  def pfiring
+  def pfiring ids=nil, gap: 0, precision: 4
     t_firing( ids ).pretty_print_numeric_values( gap: gap, precision: precision )
   end
 
