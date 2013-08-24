@@ -74,6 +74,7 @@ class YPetri::Simulation
   delegate :simulation_method,
            :guarded?,
            :step!,
+           :firing_vector_tS,
            to: :core
 
   delegate :recording,
@@ -84,6 +85,33 @@ class YPetri::Simulation
   delegate :plot,
            :print,
            to: :recording
+
+  # Returns the firing of the indicated tS transitions (all tS transitions,
+  # if no argument is given).
+  # 
+  def firing ids_of_tS_transitions=nil
+    tt = tS_transitions()
+    return firing tt if ids_of_tS_transitions.nil?
+    tS_transitions( ids_of_tS_transitions ).map { |t|
+      firing_vector_tS.column_to_a.fetch tt.index( t )
+    }
+  end
+
+  # Firing of the indicated tS transitions (as hash with transition names as
+  # keys).
+  # 
+  def t_firing ids=nil
+    tS_transitions( ids ).names( true ) >> firing( ids )
+  end
+
+  # Pretty prints firing of the indicated tS transitions as hash with transition
+  # names as keys. Takes optional list of tS transition ids (first ordered arg.),
+  # and optional 2 named arguments (+:gap+ and +:precision+), as in
+  # +#pretty_print_numeric_values+.
+  # 
+  def pfiring
+    t_firing( ids ).pretty_print_numeric_values( gap: gap, precision: precision )
+  end
 
   # The basic simulation parameter is :net – +YPetri::Net+ instance which to
   # simulate. Net implies the collection of places and transitions. Other

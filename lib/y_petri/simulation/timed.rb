@@ -32,7 +32,8 @@ module YPetri::Simulation::Timed
 
   delegate :sampling, to: :recorder
 
-  # Reads the time range.
+  # Returns the flux of the indicated TS transitions (all TS transitions,
+  # if no argument is given).
   #
   def flux ids_of_TS_transitions=nil
     tt = TS_transitions()
@@ -40,6 +41,21 @@ module YPetri::Simulation::Timed
     TS_transitions( ids_of_TS_transitions ).map { |t|
       flux_vector.column_to_a.fetch tt.index( t )
     }
+  end
+
+  # Flux of the indicated TS transitions (as hash with transition names as keys).
+  # 
+  def t_flux ids=nil
+    TS_transitions( ids ).names( true ) >> flux( ids )
+  end
+
+  # Pretty prints flux of the indicated TS transitions as hash with transition
+  # names as keys. Takes optional list of transition ids (first ordered arg.),
+  # and optional 2 named arguments (+:gap+ and +:precision), as in
+  # +#pretty_print_numeric_values+.
+  # 
+  def pflux ids=nil, gap: 0, precision: 3
+    t_flux( ids ).pretty_print_numeric_values( gap: gap, precision: precision )
   end
 
   # Reads the time range (initial_time .. target_time) of the simulation.

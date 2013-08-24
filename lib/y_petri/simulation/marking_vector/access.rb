@@ -26,19 +26,19 @@ class YPetri::Simulation::MarkingVector
       m_vector( ids ).to_hash
     end
   
-    # Marking of all places (as hash with place names as keys).
+    # Marking of the indicated places (as hash with place names as keys).
     # 
     def p_m ids=nil
       places( ids ).names( true ) >> m( ids )
     end
     alias pn_m p_m
 
-    # Pretty prints marking of all places as hash with place names as keys.
-    # Takes optional list of place ids (ordered argument no. 1), and optional
-    # 2 named arguments (+:gap+ and +:precision+) as in
+    # Pretty prints marking of the indicated places as hash with place names as
+    # keys. Takes optional list of place ids (ordered argument no. 1), and
+    # optional 2 named arguments (+:gap+ and +:precision+), as in
     # +#pretty_print_numeric_values+.
     # 
-    def pm ids=nil, gap: 0, precision: 2
+    def pm ids=nil, gap: 0, precision: 3
       p_m( ids ).pretty_print_numeric_values gap: gap, precision: precision
     end
 
