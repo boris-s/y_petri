@@ -124,17 +124,12 @@ class YPetri::Simulation
     # Clamped places' mapping to the clamp values.
     @marking_clamps = MarkingClamps().load( m_clamps )
     # Free places' mapping to the initial marking values.
-
-    # Use :marking as :initial_marking when possible.
-    if m then
-      init_m_from_init_m = PlaceMapping().load( init_m )
-      init_m_from_marking = PlaceMapping().load( m )
-      rslt = init_m_from_marking.merge init_m_from_init_m
-      @initial_marking = InitialMarking().load( rslt )
-    else
-      @initial_marking = InitialMarking().load( init_m )
-    end
-
+    @initial_marking = InitialMarking()
+      .load( if m then # use :marking as :initial_marking when possible
+               init_m_from_init_m = PlaceMapping().load( init_m )
+               init_m_from_marking = PlaceMapping().load( m )
+               init_m_from_marking.merge init_m_from_init_m
+             else init_m end )
     # Set up the place and transition collections.
     @places.complete_initial_marking( use_default_marking: use_default_marking )
     # Correspondence matrix free --> all

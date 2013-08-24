@@ -20,9 +20,22 @@ class YPetri::Simulation
     # 
     def init **settings
       method = settings[:method] # the simulation method
+      features_to_record = settings[:record]
       init_core_and_recorder_subclasses
       @core = Core().new( method: method, guarded: guarded )
-      @recorder = Recorder().new # init the recorder
+      @recorder = if features_to_record then 
+                    # we'll have to figure out features
+                    ff = case features_to_record
+                         when Array then
+                           net.State.Features
+                             .infer_from_elements( features_to_record )
+                         when Hash then
+                           net.State.features( features_to_record )
+                         end
+                    Recorder().new( features: ff )
+                  else
+                    Recorder().new # init the recorder
+                  end
     end
 
     # Sets up subclasses of +Core+ (the simulator) and +Recorder+ (the sampler)

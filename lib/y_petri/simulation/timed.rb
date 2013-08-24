@@ -153,6 +153,7 @@ module YPetri::Simulation::Timed
   #
   def init **settings
     method = settings[:method] # the simulation method
+    features_to_record = settings[:record]
     if settings.has? :time, syn!: :time_range then # time range given
       case settings[:time]
       when Range then
@@ -177,7 +178,19 @@ module YPetri::Simulation::Timed
     @step = settings[:step] || time_unit
     @default_sampling = settings[:sampling] || step
     @core = Core().new( method: method, guarded: guarded )
-    @recorder = Recorder().new sampling: settings[:sampling]
+    @recorder = if features_to_record then
+                  # we'll have to figure out features
+                  ff = case features_to_record
+                       when Array then
+                         net.State.Features
+                           .infer_from_elements( features_to_record )
+                       when Hash then
+                         net.State.features( features_to_record )
+                       end
+                  Recorder().new( sampling: settings[:sampling], features: ff )
+                else
+                  Recorder().new( sampling: settings[:sampling] )
+                end
   end
 
   # Sets up subclasses of +Core+ (the simulator) and +Recorder+ (the sampler)

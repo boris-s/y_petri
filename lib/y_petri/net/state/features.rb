@@ -119,12 +119,17 @@ class YPetri::Net::State::Features < Array
     # 
     def infer_from_elements( net_elements )
       new net_elements.map { |e| net.element( e ) }.map { |e|
-        element, element_type = begin
-                                  [ net.place( e ), :place ]
-                                rescue TypeError, NameError
-                                  [ net.transition( e ), :transition ]
+        element, element_type = case e
+                                when Feature() then [ e, :feature ]
+                                else
+                                  begin
+                                    [ net.place( e ), :place ]
+                                  rescue TypeError, NameError
+                                    [ net.transition( e ), :transition ]
+                                  end
                                 end
         case element_type
+        when :feature then element
         when :place then Marking( element )
         when :transition then
           fail TypeError, "Flux / firing features can only be auto-inferred " +
