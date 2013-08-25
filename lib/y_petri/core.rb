@@ -95,7 +95,6 @@ class YPetri::Core
   # Fires assignment transitions.
   # 
   def assignment_transitions_all_fire!
-    puts "Hello from Core#assignment_transitions_all_fire!"
     simulation.A_assignment_closure.call
   end
 end # class YPetri::Core
