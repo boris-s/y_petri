@@ -21,8 +21,9 @@ module YPetri::Core::Timed::PseudoEuler
   # Makes a single step by Δt.
   # 
   def step! Δt=simulation.step
-    increment_marking_vector Δ( Δt )
+    puts "Hello from Core::Timed#step!"
     assignment_transitions_all_fire!
+    increment_marking_vector Δ( Δt )
     simulation.increment_time! Δt
     alert
   end
