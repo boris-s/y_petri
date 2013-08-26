@@ -93,7 +93,7 @@ module YPetri::Agent::PetriNetRelated
       stoichiometry.has? :name, syn!: :ɴn
     args.update domain: stoichiometry.delete( :domain ) if
       stoichiometry.has? :domain
-    T **args, &block
+    TT **args, &block
   end
 
   # Assignment transition constructor: Creates a new assignment transition in
