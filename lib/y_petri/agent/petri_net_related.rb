@@ -77,7 +77,7 @@ module YPetri::Agent::PetriNetRelated
   # Timed transition constructor: Creates a new timed transition in the current
   # world. Rate closure has to be supplied as a block.
   # 
-  def T( *ordered, **named, &block )
+  def TT( *ordered, **named, &block )
     fail ArgumentError, "Timed transition constructor requires a block " +
       "defining the rate function!" unless block
     world.Transition.send( :new, *ordered, **named.update( rate: block ) )
@@ -100,7 +100,7 @@ module YPetri::Agent::PetriNetRelated
   # the current world. Ordered arguments are collected as codomain. Domain key
   # (+:domain) is optional. Assignment closure must be supplied in a block.
   # 
-  def A( *codomain, **nn, &block )
+  def AT( *codomain, **nn, &block )
     fail ArgumentError, "Assignment transition constructor requires a block " +
       "defining the assignment function!" unless block
     world.Transition.send( :new,

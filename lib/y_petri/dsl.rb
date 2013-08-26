@@ -12,7 +12,7 @@ module YPetri
 
   # Petri net aspect.
   delegate :Place,
-           :Transition, :T, :A,
+           :Transition, :TT, :TS, :AT,
            :Net,
            :place, :transition, :pl, :tr,
            :places, :transitions, :nets,
