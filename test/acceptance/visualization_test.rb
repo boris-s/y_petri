@@ -23,3 +23,18 @@ describe "Graphviz visualization" do
     @m.net.visualize
   end
 end
+
+describe "Another visualization" do
+  before do
+    class Object
+      include YPetri
+    end
+    A = Place()
+    B = Place()
+    A2B = Transition( s: { A: -1, B: 1 } )
+  end
+
+  it "should visualize as expected" do
+    net.visualize
+  end
+end

@@ -40,10 +40,30 @@ module YPetri::Net::Visualization
           if tr.stoichio[pl] > 0 then # producing arc
             γ.add_edges tr_node, place_nodes[pl], color: 'cyan'
           elsif tr.stoichio[pl] < 0 then # consuming arc
-            γ.add_edges place_nodes[pl], tr_node, color: 'cyan'
-          else
-            γ.add_edges place_nodes[pl], tr_node, color: 'grey', arrowhead: 'none'
+            γ.add_edges place_nodes[ pl ], tr_node, color: 'cyan'
+          else # zero stoichiometry => test arc
+            γ.add_edges place_nodes[ pl ], tr_node, color: 'grey', arrowhead: 'none'
           end
+        }
+        ( tr.domain - tr.codomain ).each { |pl| # remaining test arcs
+          γ.add_edges tr_node, place_nodes[pl], color: 'grey', arrowhead: 'none'
+        }
+      elsif tr.S?
+        tr.codomain.each { |pl|
+          if tr.stoichio[pl] > 0 then # producing arc
+            γ.add_edges tr_node, place_nodes[pl], color: 'cyan'
+          elsif tr.stoichio[pl] < 0 then # consuming arc
+            γ.add_edges place_nodes[ pl ], tr_node, color: 'cyan'
+          else # zero stoichiometry => test arc
+            γ.add_edges place_nodes[ pl ], tr_node, color: 'grey', arrowhead: 'none'
+          end
+        }
+        ( tr.domain - tr.codomain ).each { |pl| # remaining test arcs
+          γ.add_edges tr_node, place_nodes[pl], color: 'grey', arrowhead: 'none'
+        }
+      else
+        tr.codomain.each { |pl|
+          γ.add_edges tr_node, place_nodes[pl], color: 'cyan'
         }
         ( tr.domain - tr.codomain ).each { |pl|
           γ.add_edges tr_node, place_nodes[pl], color: 'grey', arrowhead: 'none'
