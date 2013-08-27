@@ -23,7 +23,7 @@ class YPetri::Net
 
     # Constructs a net containing a particular set of elements.
     # 
-    def of *elements
+    def of elements
       new.tap { |inst| elements.each { |e| inst << e } }
     end
 
