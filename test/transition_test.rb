@@ -210,7 +210,7 @@ describe "upstream and downstream reference mτs of places and transitions" do
   describe "assignment action transitions" do
     before do
       @p = @pç.send :new, default_marking: 1.0
-      @t = @tç.send :new, codomain: @p, action: -> { 1 }, assignment_action: true
+      @t = @tç.send :new, codomain: @p, assignment_closure: -> { 1 }
     end
 
     it "should work" do

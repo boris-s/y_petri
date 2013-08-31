@@ -25,7 +25,7 @@ describe YPetri::Simulation do
     before do
       @p = @w.Place.send :new, name: :A, default_marking: 1
       @q = @w.Place.send :new, name: :B, default_marking: 2
-      @net = @w.Net.of @p, @q
+      @net = @w.Net.of [ @p, @q ]
     end
 
     it "should allow to set up a simplistic simulation instance" do
@@ -104,7 +104,7 @@ describe YPetri::Simulation do
 
       describe "ts transition" do
         before do
-          @net = @w.Net.of @p, @q, @ts
+          @net = @w.Net.of [ @p, @q, @ts ]
         end
 
         describe "no clamps" do
@@ -154,7 +154,7 @@ describe YPetri::Simulation do
 
       describe "tS transition" do
         before do
-          @net = @w.Net.of @p, @q, @tS
+          @net = @w.Net.of [ @p, @q, @tS ]
         end
 
         describe "no clamps" do
@@ -184,7 +184,7 @@ describe YPetri::Simulation do
 
       describe "Ts transition" do
         before do
-          @net = @w.Net.of @p, @q, @Ts
+          @net = @w.Net.of [ @p, @q, @Ts ]
         end
 
         describe "no clamps" do
@@ -219,7 +219,7 @@ describe YPetri::Simulation do
 
       describe "TS transition" do
         before do
-          @net = @w.Net.of @p, @q, @TS
+          @net = @w.Net.of [ @p, @q, @TS ]
         end
 
         describe "no clamps" do
@@ -305,7 +305,7 @@ describe "timed simulation" do
     self.class.class_exec { include YPetri }
     A = Place m!: 0.5
     B = Place m!: 0.5
-    A_pump = T s: { A: -1 } do 0.005 end
+    A_pump = TT s: { A: -1 } do 0.005 end
     B_decay = Transition s: { B: -1 }, rate: 0.05
     run!
   end

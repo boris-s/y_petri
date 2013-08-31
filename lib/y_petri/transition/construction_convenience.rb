@@ -21,9 +21,11 @@ module YPetri::Transition::ConstructionConvenience
                                    :downstream,
                                    :downstream_arcs, :downstream_places,
                                    :action_arcs ]
-    nn.may_have :rate, syn!: [ :rate_closure, :propensity,
+    nn.may_have :rate, syn!: [ :rate_closure,
+                               :propensity,
                                :propensity_closure ]
     nn.may_have :action, syn!: :action_closure
+    nn.may_have :assignment, syn!: :assignment_closure
     nn.may_have :stoichiometry, syn!: [ :stoichio, :s ]
     nn.may_have :domain_guard
     nn.may_have :codomain_guard
@@ -33,6 +35,9 @@ module YPetri::Transition::ConstructionConvenience
 
     # If stoichiometry was given, the transition is stoichiometric:
     @stoichiometric = nn.has? :stoichiometry
+
+    # If the assignment closure was given, the transition is of A type:
+    @assignment_action = __assignment_action__( **nn )
 
     # Downstream description involves the codomain, and the stochiometry
     # (for stoichiometric transitions only):
@@ -52,11 +57,12 @@ module YPetri::Transition::ConstructionConvenience
     if timed? then
       @domain, @rate_closure, @functional = __upstream_for_T__( **nn )
     else
-      @domain, @action_closure, @functional = __upstream_for_t__( **nn )
+      if assignment_action? then
+        @domain, @action_closure, @functional = __upstream_for_A__( **nn )
+      else
+        @domain, @action_closure, @functional = __upstream_for_t__( **nn )
+      end
     end
-
-    # Optional assignment action:
-    @assignment_action = __assignment_action__( **nn )
 
     # Optional type guards for domain / codomain:
     @domain_guard, @codomain_guard = __guards__( **nn )
@@ -139,7 +145,7 @@ module YPetri::Transition::ConstructionConvenience
     funct = true                     # "functional?"
     # Was action given explicitly?
     if nn.has? :action then
-      λ = nn[:action].aT_is_a Proc, "supplied action named argument"
+      λ = nn[:action].aT_is_a Proc, "supplied :action argument"
       # Time to worry about the domain_missing, guess the user's intention:
       if dom == :missing then
         dom = λ.arity == 0 ? [] : codomain
@@ -153,6 +159,21 @@ module YPetri::Transition::ConstructionConvenience
       msg = "Stoichiometry is compulsory, if no rate/action was supplied!"
       fail ArgumentError, msg unless stoichiometric?
       dom = [] # in any case, the domain is empty
+    end
+    return dom, λ, funct
+  end
+
+  # Private method, part of the init process for assignment transitions.
+  # 
+  def __upstream_for_A__( **nn )
+    dom = domain
+    funct = true
+    λ = nn[:assignment].aT_is_a Proc, "supplied :assigmnent argument"
+    if dom == :missing then
+      dom = λ.arity == 0 ? [] : codomain
+    else
+      msg = "Assignment closure arity (#{λ.arity}) > domain (#{dom.size})!"
+      fail TypeError, msg if λ.arity.abs > dom.size
     end
     return dom, λ, funct
   end
@@ -214,13 +235,16 @@ module YPetri::Transition::ConstructionConvenience
   # Private method, part of #initialize argument checking-in.
   # 
   def __assignment_action__( **oo )
-    if oo.has? :assignment_action, syn!: [ :assignment, :assign, :A ] then
+    if oo.has? :assignment then
       if timed? then
         false.tap do
-          msg = "Timed transitions may not have assignment action!"
-          raise TypeError, msg if oo[:assignment_action]
+          fail TypeError, "Timed transitions may not have assignment action!"
         end
-      else oo[:assignment_action] end # only timeless transitions are eligible
+      elsif stoichiometric? then
+        false.tap do
+          fail TypeError, "S transitions may not have assignment action!"
+        end
+      else true end # ts transition with assignment keyword
     else false end # the default value
   end
 

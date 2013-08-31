@@ -47,7 +47,7 @@ describe YPetri::Net do
 
     describe "net of 3 places and no transitions" do
       before do
-        @net = @w.Net.of @p1, @p2, @p3
+        @net = @w.Net.of [ @p1, @p2, @p3 ]
       end
 
       it "should expose its elements" do
