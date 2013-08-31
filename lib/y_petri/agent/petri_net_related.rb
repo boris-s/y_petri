@@ -78,21 +78,33 @@ module YPetri::Agent::PetriNetRelated
   # world. Rate closure has to be supplied as a block.
   # 
   def TT( *ordered, **named, &block )
-    fail ArgumentError, "Timed transition constructor requires a block " +
-      "defining the rate function!" unless block
-    world.Transition.send( :new, *ordered, **named.update( rate: block ) )
+    if named.has? :rate then
+      fail ArgumentError, "Block must not be given if :rate named argument " +
+        "is given!" if block
+    else
+      fail ArgumentError, "Timed transition constructor requires either " +
+        "a :rate argument, or a block!" unless block
+      named.update rate: block
+    end
+    world.Transition.send( :new, *ordered, **named )
   end
 
   # Timed stoichiometric transition constructor, that expects stoichiometry
   # given directly as hash-collected arguments. Two special keys allowed are
   # +:name+ (alias +:ɴ) and +:domain+. (Key +:codomain+ is not allowed.)
   # 
-  def TS **stoichiometry, &block
-    args = { s: stoichiometry }
-    args.update name: stoichiometry.delete( :name ) if
-      stoichiometry.has? :name, syn!: :ɴn
-    args.update domain: stoichiometry.delete( :domain ) if
-      stoichiometry.has? :domain
+  def TS *domain, **stoichiometry, &block
+    nn = stoichiometry
+    args = { s: nn }
+    args.update name: nn.delete( :name ) if nn.has? :name, syn!: :ɴ
+    if domain.empty? then
+      args.update domain: nn.delete( :domain ) if nn.has? :domain
+    else
+      fail ArgumentError, "There must not be any ordered arguments if " +
+        "named argument :domain is given!" unless domain.empty?
+      args.update domain: domain
+    end
+    args.update rate: nn.delete( :rate ) if nn.has? :rate, syn!: :rate_closure
     TT **args, &block
   end
 
@@ -105,8 +117,7 @@ module YPetri::Agent::PetriNetRelated
       "defining the assignment function!" unless block
     world.Transition.send( :new,
                            codomain: codomain,
-                           assignment: true,
-                           action: block,
+                           assignment: block,
                            **nn )
   end
 
