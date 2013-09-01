@@ -277,9 +277,7 @@ class YPetri::Transition
   # 
   def to_s
     "#<Transition: %s>" %
-      "#{name.nil? ? '' : '%s ' % name }(#{type}%s)%s" %
-      [ "#{assignment_action? ? ' Assign.' : ''}",
-        "#{name.nil? ? ' id:%s' % object_id : ''}" ]
+      "#{'%s ' % name if name}(#{type})#{' id:%s' % object_id unless name}"
   end
 
   def place id
