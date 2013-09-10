@@ -132,7 +132,7 @@ class YPetri::Net
   # operands.
   # 
   def + other
-    self.class.new.tap do |net|
+    self.class.send( :new ).tap do |net|
       net.merge! self
       net.merge! other
     end
@@ -142,7 +142,7 @@ class YPetri::Net
   # after excluding the second operand.
   # 
   def - other
-    self.class.new.tap do |net|
+    self.class.send( :new ).tap do |net|
       net.merge! self
       net.exclude_net other
     end
