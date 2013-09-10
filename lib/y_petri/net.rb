@@ -44,8 +44,8 @@ class YPetri::Net
                  with: { net: self } )
   end
 
-  # Includes a place in the net. Returns _true_ if successful, _false_ if the
-  # place is already included in the net.
+  # Includes a place in the receiver. Returns _true_ if successful, _false_ if
+  # the place is already included in the receiver net. 
   # 
   def include_place id
     pl = Place().instance( id )
@@ -53,9 +53,9 @@ class YPetri::Net
     true.tap { @places << pl }
   end
 
-  # Includes a transition in the net. Returns _true_ if successful, _false_ if
-  # the transition is already included in the net. The arcs of the transition
-  # being included may only connect to the places already in the net.
+  # Includes a transition in the receiver. Returns _true_ if successful, _false_
+  # if the transition is already included in the net. The arcs of the transition
+  # being included may only connect to the places already in the receiver net.
   # 
   def include_transition id
     tr = Transition().instance( id )
@@ -65,9 +65,9 @@ class YPetri::Net
     true.tap { @transitions << tr }
   end
 
-  # Excludes a place from the net. Returns _true_ if successful, _false_ if the
-  # place was not found in the net. A place may not be excluded from the net so
-  # long as any transitions in the net connect to it.
+  # Excludes a place from the receiver. Returns _true_ if successful, _false_
+  # if the place was not found in the receiver net. A place may not be excluded
+  # from the receiver so long as any transitions therein connect to it.
   # 
   def exclude_place id
     pl = Place().instance( id )
@@ -76,12 +76,35 @@ class YPetri::Net
     false.tap { return true if @places.delete( pl ) }
   end
 
-  # Excludes a transition from the net. Returns _true_ if successful, _false_ if
-  # the transition was not found in the net.
+  # Excludes a transition from the receiver. Returns _true_ if successful,
+  # _false_ if the transition was not found in the receiver net.
   # 
   def exclude_transition id
     tr = Transition().instance( id )
     false.tap { return true if @transitions.delete( tr ) }
+  end
+
+  # Includes another net in the receiver net. Returns _true_ if successful
+  # (ie. if there was any change to the receiver net), _false_ if the receiver
+  # net already includes the argument net.
+  # 
+  def include_net id
+    net = Net().instance( id )
+    p_rslt = net.pp.map { |p| include_place p }.reduce :|
+    t_rslt = net.tt.map { |t| include_transition t }.reduce :|
+    p_rslt || t_rslt
+  end
+  alias merge! include_net
+
+  # Excludes another net from the receiver net. Returns _true_ if successful
+  # (ie. if there was any change to the receiver net), _false_ if the receiver
+  # net contained no element of the argument net.
+  # 
+  def exclude_net id
+    net = Net().instance( id )
+    t_rslt = net.tt.map { |t| exclude_transition t }.reduce :|
+    p_rslt = net.pp.map { |p| exclude_place p }.reduce :|
+    p_rslt || t_rslt
   end
 
   # Includes an element in the net.
@@ -103,6 +126,26 @@ class YPetri::Net
     if type == :place then include_place element
     elsif type == :transition then include_transition element
     else fail "Implementation error in YPetri::Net#<<!" end
+  end
+
+  # Creates a new net that contains all the places and transitions of both
+  # operands.
+  # 
+  def + other
+    self.class.new.tap do |net|
+      net.merge! self
+      net.merge! other
+    end
+  end
+
+  # Creates a new net that contains the places and transition of the receiver
+  # after excluding the second operand.
+  # 
+  def - other
+    self.class.new.tap do |net|
+      net.merge! self
+      net.exclude_net other
+    end
   end
 
   # Is the net _functional_?
