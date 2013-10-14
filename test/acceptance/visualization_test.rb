@@ -16,7 +16,7 @@ describe "Graphviz visualization" do
     @m.Place name: :D, m!: 2.5
     @m.Transition name: :A_pump, s: { A: -1 }, rate: proc { 0.005 }
     @m.Transition name: :B_decay, s: { B: -1 }, rate: 0.05
-    @m.Transition name: :C_guard, assignment: true, codomain: :C, action: -> { 2 }
+    @m.Transition name: :C_guard, codomain: :C, assignment: -> { 2 }
   end
 
   it "should work" do

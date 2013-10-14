@@ -1,7 +1,7 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
-gem 'minitest', '=4.7.4'
+# gem 'minitest', '=4.7.4' # try uncommenting this line if problems appear
 require 'minitest/autorun'
 require_relative '../lib/y_petri' # tested component itself
 # require 'y_petri'
