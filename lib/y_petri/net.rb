@@ -107,25 +107,24 @@ class YPetri::Net
     p_rslt || t_rslt
   end
 
-  # Includes an element in the net.
+  # Includes an element (place or transition) in the net.
   # 
   def << element_id
     begin
-      element = self.class.place( element_id )
-      type = :place
+      type, element = :place, self.class.place( element_id )
     rescue NameError, TypeError
       begin
-        element = self.class.transition( element_id )
-        type = :transition
+        type, element = :transition, self.class.transition( element_id )
       rescue NameError, TypeError => err
         raise TypeError, "Current world contains no place or transition " +
           "identified by #{element_id}! (#{err})"
       end
     end
-    # Separated to minimize the code inside rescue clause:
-    if type == :place then include_place element
-    elsif type == :transition then include_transition element
-    else fail "Implementation error in YPetri::Net#<<!" end
+    case type # Factored out to minimize the code inside the rescue clause.
+    when :place then include_place( element )
+    when :transition then include_transition( element )
+    else fail "Implementation error!" end
+    return self # important to enable chaining, eg. foo_net << p1 << p2 << t1
   end
 
   # Creates a new net that contains all the places and transitions of both
@@ -176,10 +175,10 @@ class YPetri::Net
   # Returns a string briefly describing the net.
   # 
   def to_s
-    "#<Net: " +
-      ( name.nil? ? "%s" : "name: #{name}, %s" ) %
-      "#{pp.size rescue '∅'} places, #{tt.size rescue '∅'} transitions" +
-      ">"
+    form = "#<Net: %s>"
+    content = ( name.nil? ? "%s" : "name: #{name}, %s" ) %
+      "#{pp.size rescue '∅'} places, #{tt.size rescue '∅'} transitions"
+    form % content
   end
 
   # Inspect string of the instance.
