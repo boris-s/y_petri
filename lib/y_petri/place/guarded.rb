@@ -37,7 +37,7 @@ module YPetri::Place::Guarded
   # 
   def guard *args, &block
     if block then
-      @guards << YPetri::Place::Guard.new( *args, place: name || self, &block )
+      @guards << YPetri::Place::Guard.new( *args, place: self, &block )
     elsif args.size == 1 then
       federated_guard_closure.( args[0] )
     elsif args.empty? then

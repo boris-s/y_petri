@@ -7,15 +7,6 @@ require_relative '../lib/y_petri' # tested component itself
 # require 'y_petri'
 # require 'sy'
 
-# Unit tests for the YPetri module.
-# 
-describe YPetri do
-  it "should have basic classes" do
-    [ :Place, :Transition, :Net, :Simulation, :World, :Agent ]
-      .each { |ß| YPetri.const_get( ß ).must_be_kind_of Module }
-  end
-end
-
 # Run all other unit tests.
 # 
 require_relative 'place_test'

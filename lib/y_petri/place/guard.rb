@@ -4,8 +4,8 @@
 # 
 class YPetri::Place::Guard
   ERRMSG = -> m, of, assert do
-    "Marking #{m}:#{m.class}" +
-      if of then " of #{of.name || of rescue of}" else '' end +
+    "Marking #{m.insp}" +
+      if of then " of #{of.name || of}" else '' end +
       " #{assert}!"
   end
 
