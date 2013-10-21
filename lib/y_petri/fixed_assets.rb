@@ -7,7 +7,7 @@ module YPetri
 
   Place = Class.new
   Transition = Class.new
-  Net = Class.new
+  Net = Class.new Module
   Simulation = Class.new
   Core = Class.new
   World = Class.new
