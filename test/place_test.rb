@@ -60,7 +60,7 @@ describe YPetri::Place do
     -> { g2.validate Complex( 1, 1 ) }.must_raise YPetri::GuardError
     p.marking "must be in 0..10" do |m| fail unless ( 0..10 ) === m end
     p.guards.size.must_equal 4
-    g = p.federated_guard_closure
+    g = p.common_guard_closure
     -> { g.( 11.1 ) }.must_raise YPetri::GuardError
     begin; p.marking = -1.11; rescue YPetri::GuardError => err
       err.message.must_equal 'Marking -1.11:Float of P1 should not be negative!'
