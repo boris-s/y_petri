@@ -23,38 +23,30 @@ class YPetri::Place
   attr_reader :guards
   attr_accessor :default_marking
 
-  # Named parameters supplied upon place initialization may include:
+  # Arguments supplied upon place initialization may include:
   # 
-  # * :marking
-  # * :default_marking
-  # * :quantum
-  # * :guard
+  # * +:marking+
+  # * +:default_marking+
+  # * +:quantum+
+  # * +:guard+
   # 
-  # Those familiar with Petri nets need no introduction into _marking_
-  # attribute of a Petri net place. However, _quantum_ is a relatively uncommon
-  # concept in the context of Petri nets. +YPetri+ introduces quantum as a
-  # replacement for the hybrid-ness of Hybrid Functional Petri Nets (HFPNs).
-  # Formally, +YPetri+ is a discrete functional Petri net (FPN). The quantum
-  # is a numeric representation of a token: The smallest number by which the
-  # numeric representation of the place's marking can change. This is intended
-  # to enable smooth transition between continuous and stochastic simulation
-  # depending on pre-defined statistical settings.
-  #
-  # The :guard named argument and optional block specification allows to specify
-  # one marking guard already upon place initialization. This is done by putting
-  # the NL assertion string of the guard  under the :guard named argument, and
-  # supplying the guard block to the constructor. More guards can be defined
-  # later for the place using its +#guard+ method.
+  # +Marking+ is a standard attribute of a Petri net place, +default_marking+
+  # is marking upon calling the reset method. Default marking may also be used
+  # as the initial value in the simulations involving the place in question.
+  # +Quantum+ attribute is not in use presently. In the future, it will be used
+  # to decide when to switch between continuous and discrete stochastic modeling
+  # of a place value. +Guard+ means a restriction of the place marking. (For
+  # example, the place could only admit non-negative numbers, or numbers smaller
+  # than 1, or odd numbers etc.) Named argument :guard along with a block
+  # supplied to the constructor allow one to specify a single marking guard
+  # upon place initialization by putting an NL assertion (a string) under
+  # +:guard+ argument, along with a block expressing the same meaning in code.
+  # More guards, if necessary, can be specified later using +Place#guard+ method.
   # 
   # If no guard block is supplied, default guards are constructed based on the
-  # type of the marking or default marking supplied upon initialization. For
-  # numeric marking except complex numbers, the default type guard allows all
-  # +Numeric+ types except complex numbers, and the default value guard prohibits
-  # negative values. For all other classes, there is just one guard enforcing
-  # the class compliance of the marking.
-  #
-  # To construct a place with no guards whatsoever, set :guard named argument
-  # to _false_.
+  # data type of the +:marking+ or +:default_marking+ argument. If it is wished
+  # that the place has no guards whatsoever, +:guard+ argumend should be set to
+  # _false_.
   # 
   def initialize quantum: 1,
                  default_marking: nil,
@@ -64,32 +56,31 @@ class YPetri::Place
     @upstream_arcs, @downstream_arcs, @guards = [], [], [] # init to empty
     @quantum, @default_marking = quantum, default_marking
     self.marking = marking || default_marking
-
-    # Check in :guard named argument and &block.
+    # Check in :guard value and the corresponding &block.
     if guard.ℓ? then # guard NL assertion not given, use block or default guards
       block ? guard( &block ) : add_default_guards!( @marking )
     elsif guard then # guard NL assertion given
       fail ArgumentError, "No guard block given!" unless block
       guard( guard, &block )
     else
-      fail ArgumentError, "Block given, but :guard set to falsey!" if block
+      fail ArgumentError, "Block given, but :guard argument is falsey!" if block
     end
   end
 
-  # Getter of +@marking+ attribute.
+  # Getter of the place's +@marking+ attribute.
   # 
   def m
     @marking
   end
   alias value m
 
-  # This method, which acts as a simple getter of +@marking+ attribute if no
-  # block is supplied to it, is overloaded to act as +#guard+ method frontend
-  # if a guard block is supplied. The reason is because this
+  # Used without arguments, it is a getter of the place's +@marking+ attribute,
+  # just like the +Place#m+ method. However, if a string and a block is supplied
+  # to it, it acts as an alias of the +Place#guard+ method. This is because this:
   #
   #   marking "should be a number" do |m| fail unless m.is_a? Numeric end
   # 
-  # reads better than
+  # reads better than this:
   # 
   #   guard "should be a number" do |m| fail unless m.is_a? Numeric end
   #
@@ -119,32 +110,33 @@ class YPetri::Place
     self.marking = marking
   end
 
-  # Adds tokens to the place.
+  # Adds tokens to the place's +@marking+ instance variable.
   # 
   def add( amount )
     @marking = guard.( @marking + amount )
   end
 
-  # Subtracts tokens from the place.
+  # Subtracts tokens from the place's +@marking+ instance variable.
   # 
   def subtract( amount )
     @marking = guard.( @marking - amount )
   end
 
-  # Resets place marking back to its default marking.
+  # Resets the place's marking back to its default value (+@default_marking
+  # instance variable).
   # 
   def reset_marking
     @marking = guard.( @default_marking )
   end
 
-  # Produces the inspect string of the place.
+  # Builds an inspect string of the place.
   # 
   def inspect
     n, m, d, q = instance_description_strings
     "#<Place: #{ ( [n, m, d, q].compact ).join ', ' }>"
   end
 
-  # Returns a string briefly describing the place.
+  # Returns a string representing the place.
   # 
   def to_s
     n, m = name, marking

@@ -156,44 +156,45 @@ class YPetri::Net::State::Features < Array
 
   alias new_record load
 
-  # Extracts the features from a given target
+  # Extracts the features from a given target, returning a +Record+ instance.
   # 
   def extract_from target, **nn
     values = map { |feat| feat.extract_from( target, **nn ) }
     new_record( values )
   end
 
-  # Constructs a new record from these features.
+  # Constructs a new +Record+ instance from the supplied values array. The
+  # values in the array must correspond to the receiver feature set.
   # 
   def new_record values
     Record().load values
   end
 
-  # Constructs a new dataset from these features.
+  # Constructs a new dataset based on the receiver feature set.
   # 
   def new_dataset *args, &blk
     DataSet().new *args, &blk
   end
 
-  # Feature summation -- of feature class.
+  # Summation of feature sets.
   # 
   def + other
     self.class.new( super )
   end
 
-  # Feature summation -- of feature class.
+  # Subtraction of feature sets.
   # 
   def - other
     self.class.new( super )
   end
 
-  # Feature summation -- of feature class.
+  # Multiplication (like in arrays).
   # 
   def * other
     self.class.new( super )
   end
 
-  # Feature labels.
+  # Labels of the features of the receiver feature set.
   # 
   def labels
     map &:label

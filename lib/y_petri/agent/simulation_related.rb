@@ -271,14 +271,14 @@ module YPetri::Agent::SimulationRelated
 
   # Plot system state history.
   # 
-  def plot_state( place_ids=nil, except: [],
+  def plot_marking( place_ids=nil, except: [],
                   title: "State plot", ylabel: "Marking [µM]",
                   **options )
     rec = simulation.recording
     pp = simulation.pp( place_ids ) - simulation.pp( except )
     rec.marking( pp ).plot( title: title, ylabel: ylabel, **options )
   end
-  alias plot_marking plot_state
+  alias plot_state plot_marking
 
   # Plot flux history of TS transitions.
   # 
@@ -327,10 +327,44 @@ module YPetri::Agent::SimulationRelated
     options.may_have :delta_time, syn!: :Δt
     rec = simulation.recording
     pp = simulation.pp( place_ids ) - simulation.ee( except )
-    tt = transitions.nil? ? simulation.tt : tranisitions
+    tt = transitions.nil? ? simulation.tt : transitions
     tt = simulation.tt( tt )
     tt -= simulation.ee( except )
     rec.delta( pp, transitions: tt, Δt: options[:delta_time] )
       .plot( title: title, ylabel: ylabel, **options )
   end
+
+  # # Pretty print marking of the current simulation.
+  # # 
+  # def marking
+    
+  # end
+  # alias state marking
+
+  # # Pretty print the flux for the current simulation state.
+  # # 
+  # def flux
+    
+  # end
+
+  # # Pretty print the firing for the current simulation state.
+  # # 
+  # def firing
+    
+  # end
+
+  # # Pretty print the gradient for the current simulation state.
+  # # 
+  # def gradient
+    
+  # end
+
+  # # Pretty print deltas for the current simulation state.
+  # # 
+  # def delta( place_ids=nil, except: [], transitions: nil, **options )
+  #   Δt = options.must_have :delta_time, syn!: :Δt
+  #   pp = simulation.pp( place_ids )
+  #   tt = transitions.nil? ? simulation.tt : transitions
+  #   simulation.delta( place_id, except: except, transitions: transitions )
+  # end
 end # module YPetri::Agent::SimulationRelated

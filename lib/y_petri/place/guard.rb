@@ -3,6 +3,8 @@
 # Marking guard of a place.
 # 
 class YPetri::Place::Guard
+  # Error message template.
+  # 
   ERRMSG = -> m, of, assert do
     "Marking #{m.insp}" +
       if of then " of #{of.name || of}" else '' end +
@@ -11,16 +13,24 @@ class YPetri::Place::Guard
 
   attr_reader :place, :assertion, :block
 
-  # Requires a NL guard assertion (used in GuardError messages), and a guard
-  # block expressing the same assertion formally, in code.  Attention: *Only
-  # _false_ result is considered a failure! If the block returns _nil_, the
-  # guard has passed!* When +YPetri::Guard+ is in action (typically via its
-  # +#validate+ method), it raises +YPetri::GuardError+ if the guard block
-  # returns _false_. However, the guard block is welcome to raise +GuardError+
-  # on its own, and for this purpose, it is evaluated inside a special "Lab"
-  # object, with +#fail+ method redefined so as to accept no arguments, and
-  # automatically raise appropriately worded +GuardError+. See also:
-  # {+YPetri#guard+ method}[rdoc-ref:YPetri::guard].
+  # Expects a guard assetion in natural language, and a guard block. Guard block
+  # is a unary block that validates marking. A validation fails when:
+  #
+  # 1. The block returns _false_.
+  # 2. The block raises +YPetri::GuardError+.
+  #
+  # In all other cases, including when the block returns _nil_ (beware!),
+  # the marking is considered valid. Inside the block, +#fail+ keyword is
+  # redefined, so that it can (and must) be called without arguments, and it
+  # raises an appropriately worded +GuardError+. (Other exceptions can still be
+  # raised using +#raise+ keyword.) Practical example:
+  # 
+  #   YPetri::Place::Guard.new "should be a number" do |m|
+  #     fail unless m.is_a? Numeric
+  #   end
+  #
+  # Then <code>guard! :foobar</code> raises +GuardError+ with a message "Marking
+  # foobar:Symbol should be a number!"
   # 
   def initialize( assertion_NL_string, place: nil, &block )
     @place, @assertion, @block = place, assertion_NL_string, block
@@ -30,8 +40,7 @@ class YPetri::Place::Guard
     end
   end
 
-  # Validates a supplied marking value against the guard block. Raises
-  # +YPetri::GuardError+ if the guard fails, otherwise returns _true_.
+  # Validates a marking value. Raises +YPetri::GuardError+ upon failure.
   # 
   def validate( marking )
     λ = __fail__( marking, assertion )
@@ -43,7 +52,7 @@ class YPetri::Place::Guard
 
   # Constructs the fail closure.
   # 
-  def __fail__ marking, assertion
+  def __fail__ marking, assertionq
     pl = place
     -> { fail YPetri::GuardError, ERRMSG.( marking, pl, assertion ) }
   end

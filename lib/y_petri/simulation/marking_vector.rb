@@ -163,5 +163,12 @@ class YPetri::Simulation
       indices_of_free_places = annotation.free.map { |p| annotation.index p }
       increment_at_indices_closure( indices: indices_of_free_places )
     end
+
+    # Pretty-prints the marking vector.
+    # 
+    def pretty_print
+      to_h.pretty_print_numeric_values
+    end
+    alias pp pretty_print
   end
 end

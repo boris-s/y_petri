@@ -8,7 +8,7 @@ class YPetri::Net::State < Array
 
   class << self
     # Customization of the parametrize method for the State class: Its
-    # dependents Feature and Features (ie. feature set) are also parametrized.
+    # dependents Feature and Features (feature set class) are also parametrized.
     # 
     def parametrize net: ( fail ArgumentError, "No owning net!" )
       Class.new( self ).tap do |ç|

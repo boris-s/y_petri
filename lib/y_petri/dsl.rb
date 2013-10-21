@@ -58,10 +58,17 @@ module YPetri
            :print_recording,
            :plot,
            :plot_selected,
+           :plot_marking,
            :plot_state,
            :plot_flux,
            :plot_firing,
            :plot_gradient,
            :plot_delta,
+           :_marking,
+           :_state,
+           :_flux,
+           :_firing,
+           :_gradient,
+           :_delta,
            to: :y_petri_agent
 end
