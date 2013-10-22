@@ -76,12 +76,12 @@ class YPetri::Net::DataSet < Hash
 
   # Recreates the simulation at a given event label.
   # 
-  def reconstruct event: (fail "No event given!"), **settings
+  def reconstruct at: (fail "No event given!"), **settings
     # settings may include marking clamps, marking, inital marking...
-    rec = interpolate( event )
+    rec = interpolate( at )
     settings = settings().merge settings if settings()
     if timed? then
-      rec.reconstruct time: event, **settings
+      rec.reconstruct time: at, **settings
     else
       rec.reconstruct **settings
     end
@@ -161,7 +161,7 @@ class YPetri::Net::DataSet < Hash
         if absent_features.empty? then # it is a subset
           line = reduced_features.map { |feature| record.fetch feature }
         else # it will require simulation reconstruction
-          sim = reconstruct event: event
+          sim = reconstruct at: event
           if absent_features.any? { |f| f.timed? rescue false } then
             fail ArgumentError, "Reconstruction of timed features requires " +
               "the named arg :delta_time to be given!" unless Δt
