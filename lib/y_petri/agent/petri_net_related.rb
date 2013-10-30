@@ -101,7 +101,7 @@ module YPetri::Agent::PetriNetRelated
       args.update domain: nn.delete( :domain ) if nn.has? :domain
     else
       fail ArgumentError, "There must not be any ordered arguments if " +
-        "named argument :domain is given!" unless domain.empty?
+        "named argument :domain is given!" if nn.has? :domain
       args.update domain: domain
     end
     args.update rate: nn.delete( :rate ) if nn.has? :rate, syn!: :rate_closure
