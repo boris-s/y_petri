@@ -52,7 +52,7 @@ class YPetri::Simulation
     end
   end
 
-  # Parametrized subclasses:
+  # Parametrized subclasses.
   attr_reader :core,
               :recorder,
               :guarded,
@@ -99,7 +99,7 @@ class YPetri::Simulation
 
   # Firing of the indicated tS transitions (as hash with transition names as
   # keys).
-  # 
+  #
   def t_firing ids=nil
     tS_transitions( ids ).names( true ) >> firing( ids )
   end
@@ -113,24 +113,22 @@ class YPetri::Simulation
     t_firing( ids ).pretty_print_numeric_values( gap: gap, precision: precision )
   end
 
-  # The basic simulation parameter is :net – +YPetri::Net+ instance which to
-  # simulate. Net implies the collection of places and transitions. Other
-  # required attributes are +:marking_clamps+ and +:initial_marking+
+  # The basic simulation parameter is +:net+ – a collection of places and
+  # transitions (a <tt>YPetri::Net</tt> instance) that is simulated. Other
+  # required arguments are +:marking_clamps+ and +:initial_marking+
   # (or +:marking -- if no +:initial_marking+ is supplied, +:marking+ will be
-  # used in its stead). There is a possibility to extract the initial marking
-  # from the net elements directly, controlled by the optional argument
-  # +:use_default_marking+, _true_ by default. It means that even if the caller
-  # does not supply required +:initial_marking+ values, the constructor will
-  # extract them from the places, so long as these have their initial markings
-  # set. Setting +:use_default_marking+ to _false_ will cause an error unless
-  # +:initial_marking+ and +:place_clamps+ are supplied explicitly. 
+  # used in its stead). Even when the caller did not provide all the
+  # +:initial_marking+, there is an option of extracting them from the place
+  # instances themselves. This option, controlled by the named argument
+  # +use_default_marking+, is normally set to _true_, to turn it off, change
+  # it to _false_.
   # 
-  # Simulation method is controlled by the :method argument, guarding is
-  # switched on and off by the :guarded argument (_true_ / _false_). Simulations
-  # of timed nets are timed. A timed simulation constructor may have +:time+
-  # (alias +:time_range+), +:step+, controlling the size of the simulation step,
-  # and +:sampling+, controlling the sampling period. At least one of these named
-  # arguments has to be set for timed simulations.
+  # Simulation method is set by +:method+ named argument, guarding is controlled
+  # by +:guarded+ named argument (_true_/_false_). Simulations of timed nets are
+  # also timed. For a timed simulation, the constructor permits named arguments
+  # +:time+ (alias +:time_range+), +:step+ (simulation step size), and
+  # +:sampling+ (sampling period), and requires that at least one of these named
+  # arguments be supplied.
   # 
   def initialize **settings
     @guarded = settings[:guarded] # guarding on / off

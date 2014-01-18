@@ -17,7 +17,7 @@ class YPetri::Simulation::Transitions
     # Net's transition.
     # 
     def t( id )
-      transitions( id ).source
+      transition( id ).source
     end
 
     # Net's transitions.
