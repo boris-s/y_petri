@@ -101,6 +101,7 @@ class YPetri::Simulation::MarkingVector
       else # convert it with #each
         update_marking( new_m.each.to_a )
       end
+      return nil
     end
 
     # Expects a Δ marking vector for free places and performs the specified
@@ -108,6 +109,7 @@ class YPetri::Simulation::MarkingVector
     # 
     def increment_marking Δ_free
       @m_vector += f2a * Δ_free
+      return nil
     end
   end # module Access
 end # class YPetri::Simulation::MarkingVector
