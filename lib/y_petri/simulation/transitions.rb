@@ -1,11 +1,11 @@
 # encoding: utf-8
 
-# Transition collection for YPetri::Simulation.
-#
 class YPetri::Simulation
+  # Transition collection for YPetri::Simulation.
+  #
   class Transitions < Elements
     require_relative 'transitions/types'
-    include Types
+    ★ Types # ★ means include
 
     # Pushes a transition to the collection.
     # 

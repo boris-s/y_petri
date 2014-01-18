@@ -92,7 +92,7 @@ class YPetri::Simulation::MarkingVector
     def update_marking new_m
       case new_m
       when Hash then # assume { place => marking } hash
-        ( free_places( *new_m.keys ) >> new_m.values )
+        ( free_places( new_m.keys ) >> new_m.values )
           .each_pair { |id, val| m_vector.set( id, val ) }
       when Array then
         msg = "T be a collection with size == number of net's free places!"

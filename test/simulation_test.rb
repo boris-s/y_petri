@@ -276,9 +276,9 @@ describe "timeless simulation" do
     ds.interpolate( 2 )
       .must_equal [2.5, 4.5]
     -> { ds.interpolate( 1.5 ) }.must_raise TypeError
-    ds.reconstruct( event: 2 )
+    ds.reconstruct( at: 2 )
       .p_m.must_equal( { U: 2.5, V: 4.5 } )
-    ds.reconstruct( event: 2 ).must_respond_to( :pm )
+    ds.reconstruct( at: 2 ).must_respond_to( :pm )
     ds.marking.slice( 2..4 ).series
       .must_equal [[2.5, 2.5, 2.5], [4.5, 5.5, 6.5]]
     ds.marking.slice( 2..4 )

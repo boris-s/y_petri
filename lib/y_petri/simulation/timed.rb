@@ -49,9 +49,9 @@ module YPetri::Simulation::Timed
     TS_transitions( ids ).names( true ) >> flux( ids )
   end
 
-  # Pretty prints flux of the indicated TS transitions as hash with transition
+  # Pretty prints flux of the indicated TS transitions as a hash with transition
   # names as keys. Takes optional list of transition ids (first ordered arg.),
-  # and optional 2 named arguments (+:gap+ and +:precision), as in
+  # and optional 2 named arguments (+:gap+ and +:precision+), as in
   # +#pretty_print_numeric_values+.
   # 
   def pflux ids=nil, gap: 0, precision: 4
