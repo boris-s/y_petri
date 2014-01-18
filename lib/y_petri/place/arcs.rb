@@ -23,6 +23,13 @@ module YPetri::Place::Arcs
     upstream_arcs | downstream_arcs
   end
 
+  # Names of the (transitions connected to) the place's arcs.
+  # 
+  def aa
+    # For anonymous arcs, true causes instances themselves to be returned.
+    arcs.names true
+  end
+
   # Union of the domains of the upstream transitions.
   # 
   def precedents

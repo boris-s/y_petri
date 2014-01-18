@@ -15,11 +15,16 @@ module YPetri::Transition::Arcs
 
   # Union of action arcs and test arcs.
   # 
-  def arcs; domain | codomain end
+  def arcs
+    domain | codomain
+  end
 
-  # Returns names of the (places connected to) the transition's arcs.
+  # Names of the (places connected to) the transition's arcs.
   # 
-  def aa; arcs.map { |p| p.name || p.object_id } end
+  def aa
+    # For anonymous arcs, true causes instances themselves to be returned.
+    arcs.names true
+  end
 
   # Marking of the domain places.
   # 
