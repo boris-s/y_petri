@@ -58,7 +58,9 @@ class YPetri::Simulation::MarkingVector
       else # convert it with #each
         update_m( new_m.each.to_a )
       end
+      return nil
     end
+    alias set_m update_m
 
     # Marking vector of free places.
     # 
@@ -103,6 +105,7 @@ class YPetri::Simulation::MarkingVector
       end
       return nil
     end
+    alias set_marking update_marking
 
     # Expects a Δ marking vector for free places and performs the specified
     # change on the marking vector of the simulation.
