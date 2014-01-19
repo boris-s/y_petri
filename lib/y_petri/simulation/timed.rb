@@ -141,7 +141,12 @@ module YPetri::Simulation::Timed
   def dup time: time, **nn
     super( **nn ).tap { |i| i.reset_time! time }
   end
-  alias at dup
+
+  # Alias for +#dup+ for timed simulations.
+  # 
+  def at *args
+    dup *args
+  end
 
   # Returns the zero gradient. Optionally, places can be specified, for which
   # the zero vector is returned.
@@ -154,6 +159,14 @@ module YPetri::Simulation::Timed
     }.to_column_vector
   end
   alias zero_∇ zero_gradient
+
+  protected
+
+  # Resets the time to initial time, or to the argument (if provided).
+  #
+  def reset_time! time=nil
+    @time = time.nil? ? initial_time : time
+  end
 
   private
 
@@ -215,11 +228,5 @@ module YPetri::Simulation::Timed
   def init_core_and_recorder_subclasses
     param_class( { Core: YPetri::Core::Timed, Recorder: Recorder },
                  with: { simulation: self } )
-  end
-
-  # Resets the time to initial time, or to the argument (if provided).
-  #
-  def reset_time! time=nil
-    @time = time.nil? ? initial_time : time
   end
 end # module YPetri::Simulation::Timed

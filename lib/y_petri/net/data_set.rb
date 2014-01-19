@@ -138,7 +138,6 @@ class YPetri::Net::DataSet < Hash
   # Returns the data series for the specified features.
   # 
   def series arg=nil
-    
     return records.transpose if arg.nil?
     reduce_features( State().features( arg ) ).series
   end

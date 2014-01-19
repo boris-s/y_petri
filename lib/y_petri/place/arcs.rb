@@ -23,11 +23,14 @@ module YPetri::Place::Arcs
     upstream_arcs | downstream_arcs
   end
 
-  # Names of the (transitions connected to) the place's arcs.
+  # Names of the transitions connected to the place. The optional argument
+  # controls what is returned for unnamed instances, and works just like in
+  # <tt>Array#names</tt> method from <tt>y_support/name_magic</tt>:
+  # The default value (_nil_) returns _nil_, _true_ returns the instance itself,
+  # and _false_ drops the unnamed instances from the list altogether.
   # 
-  def aa
-    # For anonymous arcs, true causes instances themselves to be returned.
-    arcs.names true
+  def aa arg=nil
+    arcs.names arg
   end
 
   # Union of the domains of the upstream transitions.

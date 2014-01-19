@@ -212,15 +212,16 @@ class YPetri::Simulation
   # wholly modify the attributes of the duplicate.
   # 
   def dup( marking: marking, recording: recording, **nn )
-    self.class.new( nn.reverse_merge! settings( true ) ).tap do |dup|
-      dup.recording.reset! recording: recording
-      dup.m_vector.reset! case marking
-                          when Hash then
-                            m_vector.to_hash_with_source_places
-                              .update( PlaceMapping().load( marking ) )
-                              .to_marking_vector
-                          when Matrix, Array then marking
-                          else marking.each.to_a end
+    self.class.new( nn.reverse_merge! settings( true ) ).tap do |d|
+      d.recorder.reset! recording: recording
+      d.m_vector.reset! case marking
+                        when Hash then
+                          m_vector.to_hash_with_source_places
+                            .update( PlaceMapping().load( marking )
+                                       .to_marking_vector
+                                       .to_hash_with_source_places )
+                        when Matrix, Array then marking
+                        else marking.each.to_a end
     end
   end
 
