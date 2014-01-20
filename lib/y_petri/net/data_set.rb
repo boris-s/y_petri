@@ -268,7 +268,7 @@ class YPetri::Net::DataSet < Hash
   # no feature specification is explicitly provided, it is assumed that all the
   # features of this dataset are meant to be plotted.
   # 
-  def plot( element_ids=nil, time: nil, except: [], **nn )
+  def plot( element_ids=nil, except: [], **nn )
     time = nn.may_have :time, syn!: :time_range
     events = events()
     if element_ids.nil? then
@@ -285,15 +285,17 @@ class YPetri::Net::DataSet < Hash
           end
     ff -= xff
     data_ss = series( ff )
-    x_range = if time.nil? then
+    x_range = if nn.has? :time then
+                if time.is_a? Range then
+                  "[#{time.begin}:#{time.end}]"
+                else
+                  "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
+                end
+              else
                 from = events.first || 0
                 to = events.last && events.last > from ? events.last :
                   events.first + 1
                 "[#{from}:#{to}]"
-              elsif time.is_a? Range then
-                "[#{time.begin}:#{time.end}]"
-              else
-                "[-0:#{SY::Time.magnitude( time ).amount rescue time}]"
               end
     Gnuplot.open do |gp|
       Gnuplot::Plot.new gp do |plot|

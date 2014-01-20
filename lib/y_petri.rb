@@ -35,7 +35,7 @@ require_relative 'y_petri/core'
 require_relative 'y_petri/agent'
 require_relative 'y_petri/dsl'
 
-# YPetri represents Petri net (PN) formalims.
+# YPetri represents Petri net (PN) formalisms.
 #
 # A PN consists of places and transitions. There are also arcs, "arrows"
 # connecting places and transitions, but these are not considered first class
