@@ -86,11 +86,11 @@ class YPetri::Net
   # (ie. if there was any change to the receiver net), _false_ if the receiver
   # net already includes the argument net.
   # 
-  def include_net id
-    net = Net().instance( id )
-    p_rslt = net.pp.map { |p| include_place p }.reduce :|
-    t_rslt = net.tt.map { |t| include_transition t }.reduce :|
-    p_rslt || t_rslt
+  def include_net net
+    net = Net().instance( net )
+    p_results = net.pp.map &method( :include_place )
+    t_results = net.tt.map &method( :include_transition )
+    ( p_results + t_results ).reduce :|
   end
   alias merge! include_net
 

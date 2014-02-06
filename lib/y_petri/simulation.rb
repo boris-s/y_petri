@@ -22,17 +22,17 @@ require_relative 'simulation/recorder'
 require_relative 'simulation/timeless'
 require_relative 'simulation/timed'
 
-# Represents a Petri net simulation. The concerns of this class include the
-# simulation method, simulation settings, initial values, marking clamps used
-# during the simulation, guards etc. The concerns of the Simulation class do
-# not include the Petri net domain model as such (places, transitions, their
-# connectivity, transition functions...), although for convenience, places
-# and transitions may carry their own default simultion-related attributes
-# (initial values, clamps, guards and such).
+# Represents a Petri net simulation. Its concerns include the simulation method,
+# simulation settings, initial values, marking clamps used during the simulation,
+# guards etc. Its concerns do not include the Petri net domain model as such
+# (places, transitions, arcs, transition functions...)
 # 
-# In a simulation, there is a distinction between free and clamped places. For
-# free places, initial marking must be specified. For clamped places, marking
-# clamps must be specified.
+# In a simulation, some places are designated as free (ie. their marking is free
+# to be changed by firing of the net's transitions), while others are clamped
+# (their marking is clamped by the simulation rather than changed by the
+# transitions). For free places, initial marking has to be specified. For
+# clamped places, marking clamps have to be specified. (For convenience, places
+# may carry their own initial marking.)
 # 
 class YPetri::Simulation
   ★ Places::Access                   # ★ means include

@@ -1,3 +1,5 @@
+#encoding: utf-8
+
 # A mixin catering to the net's own state (ie. marking owned by the place
 # instances themselves) and its features.
 # 
@@ -28,7 +30,7 @@ module YPetri::Net::OwnState
     if transition_ids.nil? then
       fail TypeError, "Method #firing with no arguments is ambiguous for " +
         "nets with TS transitions!" if timed?
-      firing( tS_tt )
+      firing tS_tt
     else
       transition_ids.map { |id| tS_transition( id ).firing }
     end

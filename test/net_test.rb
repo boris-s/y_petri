@@ -50,9 +50,9 @@ describe YPetri::Net do
       end
 
       it "should expose its elements" do
-        assert_equal [@p1, @p2, @p3], @net.places
-        assert_equal [:A, :B, :C], @net.pn
-        assert_equal [], @net.transitions
+        @net.places.must_equal [ @p1, @p2, @p3 ]
+        @net.pn.must_equal [ :A, :B, :C ]
+        @net.transitions.must_equal []
       end
 
       it "should allow only right transitions to be included in it" do
@@ -73,14 +73,14 @@ describe YPetri::Net do
         assert @net.include?( @p1 ) && !@net.include?( YPetri::Place.send :new )
       end
 
-      it "should know its state and marking features" do
+      it "should know its state (marking owned by the places)" do
         @net.state.must_equal [ @p1, @p2, @p3 ].map( &:marking )
         @net.state.must_be_kind_of YPetri::Net::State
         @net.marking.must_equal [ @p1, @p2, @p3 ].map( &:marking )
         @net.marking.must_be_kind_of Array
       end
 
-      it "should have standard equipment of a class" do
+      it "should have standard equipment expected of a class" do
         assert @net == @net.dup
         assert @net.inspect.start_with? "#<Net:"
       end
