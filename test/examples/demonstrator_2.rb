@@ -1,5 +1,10 @@
 #encoding: utf-8
 
+# This file demonstrates execution with values of SY::Magnitude type
+# (ie. values with assigned physical units). It works, but the execution
+# is slow and the recording is not fully adapted to the use of physical
+# units yet.
+
 require 'y_petri'
 include YPetri
 require 'sy'

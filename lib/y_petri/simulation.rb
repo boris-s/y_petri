@@ -130,16 +130,13 @@ class YPetri::Simulation
   # +:sampling+ (sampling period), and requires that at least one of these named
   # arguments be supplied.
   # 
-  def initialize **settings
-    @guarded = settings[:guarded] # guarding on / off
-    m_clamps = settings[:marking_clamps] || {}
-    m = settings[:marking]
-    init_m = settings[:initial_marking] || {}
-    use_default_marking = if settings.has? :use_default_marking then
-                            settings[ :use_default_marking ]
-                          else true end
-    # Time-independent simulation settings received, constructing param. classes
-    param_class!( { Place: PlaceRepresentation,
+  def initialize use_default_marking: true,
+                 guarded: false,
+                 marking_clamps: {},
+                 initial_marking: {},
+                 marking: nil,
+                 **settings
+    param_class!( { Place: PlaceRepresentation, # parametrized subclasses
                     Places: Places,
                     Transition: TransitionRepresentation,
                     Transitions: Transitions,
@@ -148,32 +145,30 @@ class YPetri::Simulation
                     MarkingClamps: MarkingClamps,
                     MarkingVector: MarkingVector },
                   with: { simulation: self } )
-    # Place and transition representation classes are their own namespaces.
-    Place().namespace!
-    Transition().namespace!
-    # Set up the places collection.
+    [ Place(), Transition() ].each &:namespace! # each serves as its namespace
+    @guarded = guarded # TODO: Not operable as of now.
     @places = Places().load( net.places )
-    # Clamped places' mapping to the clamp values.
-    @marking_clamps = MarkingClamps().load( m_clamps )
-    # Free places' mapping to the initial marking values.
-    @initial_marking = InitialMarking()
-      .load( if m then # use :marking as :initial_marking when possible
-               init_m_from_init_m = PlaceMapping().load( init_m )
-               init_m_from_marking = PlaceMapping().load( m )
-               init_m_from_marking.merge init_m_from_init_m
-             else init_m end )
-    # Set up the place and transition collections.
-    @places.complete_initial_marking( use_default_marking: use_default_marking )
-    # Correspondence matrix free --> all
+    @marking_clamps = MarkingClamps().load( marking_clamps )
+    @initial_marking = if marking then
+                         m = PlaceMapping().load( marking )
+                         im = PlaceMapping().load( initial_marking )
+                         InitialMarking().load( m.merge im )
+                       else
+                         InitialMarking().load( initial_marking )
+                       end
+    # Fill in the missing initial marking from the places' default marking.
+    @places.send( :complete_initial_marking,
+                  use_default_marking: use_default_marking )
+    # Correspondence matrix free places --> all places
     @f2a = free_places.correspondence_matrix( places )
-    # Correspondence matrix clamped --> all
+    # Correspondence matrix clamped places --> all places
     @c2a = clamped_places.correspondence_matrix( places )
     # Conditionally extend self depending on net's timedness.
-    anything_time = settings[:time] || settings[:step] || settings[:sampling]
-    extend( anything_time ? Timed : Timeless )
+    time_mentioned = settings[:time] || settings[:step] || settings[:sampling]
+    if time_mentioned then extend Timed else extend Timeless end
     # Initialize the marking vector.
     @m_vector = MarkingVector().zero
-    # Set up the transitions collection.
+    # Set up the collection of transitions.
     @transitions = Transitions().load( net.transitions )
     # Set up stoichiometry matrices relative to free places.
     @tS_stoichiometry_matrix = transitions.tS.stoichiometry_matrix
@@ -181,47 +176,48 @@ class YPetri::Simulation
     # Set up stoichiometry matrices relative to all places.
     @tS_SM = transitions.tS.SM
     @TS_SM = transitions.TS.SM
-    # Call timedness-dependent initialization.
+    # Call timedness-dependent #init subroutine.
     init **settings
-    # Make timeless closures.
+    # Make time-independent closures.
     @ts_delta_closure = transitions.ts.delta_closure
     @tS_firing_closure = transitions.tS.firing_closure
     @A_assignment_closure = transitions.A.assignment_closure
     @increment_marking_vector_closure = m_vector.increment_closure
-    # Make timed closures.
+    # Make timed-only closures.
     if timed? then
       @Ts_gradient_closure = transitions.Ts.gradient_closure
       @TS_rate_closure = transitions.TS.rate_closure
     end
     # Reset.
-    if m then reset! marking: m else reset! end
+    if marking then reset! marking: marking else reset! end
   end
 
   # Simulation settings.
   # 
   def settings all=false
     return { method: simulation_method, guarded: guarded? } unless all == true
-    settings( false )
-      .update( net: net,
-               marking_clamps: marking_clamps.keys_to_source_places,
-               initial_marking: initial_marking.keys_to_source_places )
+    { net: net,
+      marking_clamps: marking_clamps.keys_to_source_places,
+      initial_marking: initial_marking.keys_to_source_places
+    }.update( settings )
   end
 
   # Returns a new simulation instance. Unless modified by arguments, the state
   # of the new instance is the same as the creator's. Arguments can partially or
   # wholly modify the attributes of the duplicate.
   # 
-  def dup( marking: marking, recording: recording, **nn )
-    self.class.new( nn.reverse_merge! settings( true ) ).tap do |d|
-      d.recorder.reset! recording: recording
-      d.m_vector.reset! case marking
-                        when Hash then
-                          m_vector.to_hash_with_source_places
-                            .update( PlaceMapping().load( marking )
-                                       .to_marking_vector
-                                       .to_hash_with_source_places )
-                        when Matrix, Array then marking
-                        else marking.each.to_a end
+  def dup( marking: marking, recording: recording, **named_args )
+    named_args.reverse_merge! settings( true )
+    self.class.new( named_args ).tap do |duplicate|
+      duplicate.recorder.reset! recording: recording
+      duplicate.m_vector.reset! case marking
+                                when Hash then
+                                  m_vector.to_hash_with_source_places
+                                    .update( PlaceMapping().load( marking )
+                                               .to_marking_vector
+                                               .to_hash_with_source_places )
+                                when Matrix, Array then marking
+                                else marking.each.to_a end
     end
   end
 
@@ -239,12 +235,10 @@ class YPetri::Simulation
 
   # Resets the simulation.
   # 
-  def reset! **nn
-    m = nn[:marking]
+  def reset! marking: nil, **named_args
     tap do
-      if m then m_vector.reset! m else m_vector.reset! end
-      recorder.reset!
-      recorder.alert
+      marking ? m_vector.reset!( marking ) : m_vector.reset!
+      recorder.reset!.alert!
     end
   end
 

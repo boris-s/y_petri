@@ -30,15 +30,13 @@ module YPetri::Simulation::Timed
     # +:sampling:, resetting the sampling period.
     # 
     def reset! sampling: default_sampling, next_time: time, **nn
-      super
-      @sampling = sampling
-      @next_time = next_time
+      super.tap{ @sampling, @next_time = sampling, next_time }
     end
 
-    # Hook to be called by simulators whenever the state changes (every time
-    # that simulation +time+ is incremented).
+    # To be called by simulators whenever the state changes (every time that
+    # simulation +time+ is incremented).
     # 
-    def alert
+    def alert!
       t = time.round( 9 )
       t2 = next_time.round( 9 )
       if t >= t2 then # it's time to sample

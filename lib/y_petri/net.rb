@@ -107,20 +107,22 @@ class YPetri::Net
 
   # Includes an element (place or transition) in the net.
   # 
-  def << element_id
+  def << element
     begin
-      type, element = :place, self.class.place( element_id )
+      type = :place
+      place = self.class.place element
     rescue NameError, TypeError
       begin
-        type, element = :transition, self.class.transition( element_id )
+        type = :transition
+        transition = self.class.transition element
       rescue NameError, TypeError => err
-        raise TypeError, "Current world contains no place or transition " +
-          "identified by #{element_id}! (#{err})"
+        raise TypeError, "Current world contains no place or " +
+          "transition #{element}! (#{err})"
       end
     end
     case type # Factored out to minimize the code inside the rescue clause.
-    when :place then include_place( element )
-    when :transition then include_transition( element )
+    when :place then include_place( place )
+    when :transition then include_transition( transition )
     else fail "Implementation error!" end
     return self # important to enable chaining, eg. foo_net << p1 << p2 << t1
   end
@@ -135,12 +137,12 @@ class YPetri::Net
     end
   end
 
-  # Creates a new net that contains the places and transition of the receiver
-  # after excluding the second operand.
+  # Returns a new net that is the result of subtraction of the net given as
+  # argument from this net.
   # 
   def - other
     self.class.send( :new ).tap do |net|
-      net.merge! self
+      net.include_net self
       net.exclude_net other
     end
   end
@@ -148,13 +150,13 @@ class YPetri::Net
   # Is the net _functional_?
   # 
   def functional?
-    transitions.any? { |t| t.functional? }
+    transitions.any? &:functional?
   end
 
   # Is the net _timed_?
   # 
   def timed?
-    transitions.any? { |t| t.timed? }
+    transitions.any? &:timed?
   end
 
   # Creates a new simulation from the net.

@@ -10,9 +10,7 @@ class YPetri::Simulation
     # Pushes a transition to the collection.
     # 
     def push transition
-      t = begin
-            net.transition( transition )
-          rescue NameError, TypeError
+      t = begin; net.transition( transition ); rescue NameError, TypeError
             return super transition( transition )
           end
       super t.name ? Transition().new( t, name: t.name ) : Transition().new( t )

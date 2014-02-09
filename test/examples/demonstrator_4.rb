@@ -1,5 +1,7 @@
 #encoding: utf-8
 
+# Unfinished demonstration of TTP pathway simulation, search for FIXME.
+
 require 'y_petri'
 include YPetri
 require 'sy'
@@ -46,10 +48,11 @@ DeoxyUMP = Place m!: 2.70                # Traut1994pcp
 DeoxyUDP = Place m!: 0.5                 # Traut1994pcp
 DeoxyUTP = Place m!: 0.7                 # Traut1994pcp
 
-DeoxyThymidine = Place m!: 0.5           # Traut1994pcp
+Thymidine = Place m!: 0.5                # Traut1994pcp
 DeoxyTMP = Place m!: 0.0                 # in situ
 DeoxyTDP = Place m!: 2.4                 # Traut1994pcp
 DeoxyTTP = Place m!: 17.0                # Traut1994pcp
+DeoxyT23P = Place m!: 2.4 + 17.0
 
 # === Empirical places (in arbitrary units)
 
@@ -75,19 +78,17 @@ TK1tetra = Place m!: 0                   # TK1 in the tetramer form (phosphoryla
 
 # Assignment transition keeping TK1_di level based on total TK1 monomer
 Transition name: :TK1_di_ϝ,
-           assignment: true,
            domain: TK1,
            codomain: TK1di,
-           action: lambda { |monomer|    # solution of a quadratic equation for dimer / tetramer balance
+           assignment: lambda { |monomer|    # solution of a quadratic equation for dimer / tetramer balance
                      TK1_4mer_Kd / 4 * ( ( 1 + 4 / TK1_4mer_Kd * monomer ) ** 0.5 - 1 )
                    }
 
 # Assignment transition keeping TK1_tetra level based on total TK1 tetramer
 Transition name: :TK1_tetra_ϝ,
-           assignment: true,
            domain: [ TK1, TK1di ],
            codomain: TK1tetra,
-           action: lambda { |monomer, dimer| # based on equation monomer = dimer * 2 + tetramer * 4
+           assignment: lambda { |monomer, dimer| # based on equation monomer = dimer * 2 + tetramer * 4
              monomer / 4 - dimer / 2
 }
 

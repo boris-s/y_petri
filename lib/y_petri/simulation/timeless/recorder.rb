@@ -9,8 +9,7 @@ module YPetri::Simulation::Timeless
     # the next sample.
     # 
     def reset! **nn
-      super
-      @next_event = nn[:next_event] || 0
+      super.tap { @next_event = nn[:next_event] || 0 }
     end
 
     private

@@ -125,7 +125,7 @@ module YPetri::Simulation::Timed
   #
   def increment_time! Δt=step
     @time += Δt
-    recorder.alert
+    recorder.alert!
   end
 
   # Resets the timed simulation.

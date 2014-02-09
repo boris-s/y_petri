@@ -25,7 +25,7 @@ module YPetri::Core::Timed::Gillespie
     update_next_gillespie_time( propensities )
     until ( @next_gillespie_time > target_time )
       gillespie_step! propensities
-      simulation.recorder.alert
+      simulation.recorder.alert!
       propensities = propensity_vector_TS.column_to_a
       update_next_gillespie_time( propensities )
     end

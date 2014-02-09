@@ -1,5 +1,8 @@
 #encoding: utf-8
 
+# A working demonstration of the simulation functionality, but
+# the resulting curve looks weird (too straight), look into it.
+
 require 'y_petri'
 include YPetri
 
@@ -161,4 +164,4 @@ Transition name: :TMPK_DeoxyTMP_DeoxyTDP,
 
 # execution
 run!
-plot_recording
+recording.plot

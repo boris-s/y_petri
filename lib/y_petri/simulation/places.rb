@@ -12,13 +12,13 @@ class YPetri::Simulation::Places
   # Pushes a place to the collection.
   # 
   def push place
-    p = begin
-          net.place( place )
-        rescue NameError, TypeError
+    p = begin; net.place( place ); rescue NameError, TypeError
           return super place( place )
         end
     super p.name ? Place().new( p, name: p.name ) : Place().new( p )
   end
+
+  private
 
   # Ensures that all the places that are not clamped have their initial marking
   # set. Optional argument :use_default_marking is set to _true_ by default, in
@@ -27,15 +27,13 @@ class YPetri::Simulation::Places
   # of places with missing initial marking simply raises errors.
   # 
   def complete_initial_marking( use_default_marking: true )
-    missing = reject { |pl| ( free + clamped ).include? pl }
-    unless use_default_marking
-      fail TypeError, "All places must have default marking or clamp!" unless
-        missing.empty?
-    end
-    missing.each { |pl|
-      dflt = pl.source.default_marking
-      fail TypeError, "Source's default marking is missing (nil)!" if dflt.nil?
-      simulation.send :set_initial_marking, { of: pl, to: dflt }
+    offenders = reject { |place| ( free + clamped ).include? place }
+    fail TypeError, "All places must have default marking or clamp!" unless
+      use_default_marking unless offenders.empty?
+    offenders.each { |place|
+      dm = place.source.default_marking
+      fail TypeError, "#{place.source} has no default marking!" if dm.nil?
+      simulation.send :set_initial_marking, { of: place, to: dm }
     }
   end
 end # class YPetri::Simulation::Places

@@ -13,6 +13,6 @@ module YPetri::Core::Timeless::PseudoEuler
   def step!
     increment_marking_vector Δ
     assignment_transitions_all_fire!
-    alert
+    alert!
   end
 end # module YPetri::Core::Timeless::PseudoEuler

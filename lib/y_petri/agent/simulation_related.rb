@@ -118,9 +118,8 @@ module YPetri::Agent::SimulationRelated
     return nil
   end
 
-  # Returns the simulation identified by the argument, or one at simulation
-  # point, if no argument given. The simulation is identified in the same way
-  # as for #simulation_point_to method.
+  # Returns the simulation identified by the argument. If no argument is given,
+  # returns the simulation at point.
   # 
   def simulation *args
     return simulation_point.get if args.empty?
@@ -321,16 +320,15 @@ module YPetri::Agent::SimulationRelated
 
   # Plot delta history of selected places with respect to a set of transitions.
   # 
-  def plot_delta( place_ids=nil, except: [], transitions: nil,
+  def plot_delta( places=nil, except: [], transitions: nil,
                   title: "Delta plot", ylabel: "Delta [µM]",
                   **options )
     options.may_have :delta_time, syn!: :Δt
     rec = simulation.recording
-    pp = simulation.pp( place_ids ) - simulation.ee( except )
+    pp = simulation.pp( places ) - simulation.ee( except )
     tt = transitions.nil? ? simulation.tt : transitions
-    tt = simulation.tt( tt )
-    tt -= simulation.ee( except )
-    rec.delta( pp, transitions: tt, Δt: options[:delta_time] )
+    tt = simulation.tt( tt ) - simulation.ee( except )
+    simulation.recording.delta( pp, transitions: tt, Δt: options[:delta_time] )
       .plot( title: title, ylabel: ylabel, **options )
   end
 

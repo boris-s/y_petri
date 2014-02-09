@@ -3,6 +3,8 @@
 require_relative 'core/timed'
 require_relative 'core/timeless'
 
+# This class represents a simulator.
+# 
 class YPetri::Core
   DEFAULT_METHOD = :pseudo_euler
 
@@ -36,7 +38,7 @@ class YPetri::Core
   include YPetri::Simulation::Dependency
 
   delegate :simulation, to: "self.class"
-  delegate :alert, to: :recorder
+  delegate :alert!, to: :recorder
 
   class << self
     alias __new__ new

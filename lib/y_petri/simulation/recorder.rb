@@ -47,12 +47,13 @@ class YPetri::Simulation::Recorder
     @features = net.State.features( nn[:features] || @features )
     @recording = new_recording
     @recording.update Hash[ nn[:recording] ] if nn[:recording]
+    return self
   end
 
   # Hook to be called by simulators whenever there is a state change. The
   # decision to sample is then the business of the recorder.
   # 
-  def alert
+  def alert!
     sample! # vanilla recorder samples at every occasion
   end
 

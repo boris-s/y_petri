@@ -1,5 +1,7 @@
 #encoding: utf-8
 
+# A minimalistic demonstration of the simulation capability.
+
 require 'y_petri'
 include YPetri
 

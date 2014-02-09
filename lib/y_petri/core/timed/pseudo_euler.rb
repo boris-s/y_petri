@@ -24,6 +24,6 @@ module YPetri::Core::Timed::PseudoEuler
     increment_marking_vector Δ( Δt )
     assignment_transitions_all_fire!
     simulation.increment_time! Δt
-    alert
+    alert!
   end
 end # YPetri::Core::Timed::PseudoEuler
