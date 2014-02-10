@@ -1,9 +1,9 @@
 # encoding: utf-8
 
 # Given the four transition types (TS, Ts, tS, ts), transition construction
-# is not an easy task. Actually, having convenient constructor syntax is an
-# important part of the functionality of the Transition class. Construction
-# related functionality is thus gathered together in this mixin.
+# is not an easy task. Having convenient constructor syntax is an important
+# part of the functionality of the Transition class. Construction related
+# functionality is thus gathered together in this mixin.
 # 
 module YPetri::Transition::ConstructionConvenience
   private
@@ -116,8 +116,8 @@ module YPetri::Transition::ConstructionConvenience
       end
     else # not a Proc, must guess user's intent
       λ = if stoichiometric? then # standard mass action
-            msg = "With numeric rate, domain must not be given!"
-            fail TypeError, msg if nn.has? :domain
+            fail TypeError, "With numeric rate, domain must not be given!" if
+              nn.has? :domain
             __standard_mass_action__( λ )
           else # constant closure
             msg = "With numeric rate and no stoichio., codomain size must be 1!"
@@ -126,8 +126,8 @@ module YPetri::Transition::ConstructionConvenience
               if dom == :missing then
                 dom = [] # Missing domain is natural here
               else # but should it was supplied explicitly, it must be empty.
-                msg = "Rate is a number, but domain is non-empty!"
-                fail TypeError, msg unless domain.empty? if nn.has? :domain
+                fail TypeError, "Rate is a number, but domain non-empty!" unless
+                  domain.empty? if nn.has? :domain
               end
             end
           end
@@ -191,8 +191,9 @@ module YPetri::Transition::ConstructionConvenience
         # plain factors, assuming that if these places were not involved
         # in the transition at all, the user would not be mentioning them.
         case coeff
-        when 0, -1 then marking * acc
-        else marking ** -coeff end
+        when 0 then marking * acc # coefficient 0 indicates plain factor
+        when -1 then marking * acc # for speed, 1 gets special treatment
+        else marking ** -coeff * acc end
       end
     end
   end

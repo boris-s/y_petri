@@ -58,6 +58,7 @@ module YPetri::Core::Timed::Gillespie
   def gillespie_delta_time( propensities )
     sum = Σ propensities
     # mean_period = 1 / sum # TODO: This line seem to be useless
+    # Exponential distribution
     Distribution::Exponential.p_value( rng.rand, sum )
   end
 

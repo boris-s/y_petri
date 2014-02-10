@@ -53,6 +53,7 @@ require_relative 'transition/usable_without_world'
 # 2. *Stoichiometricity*: _stoichiometric_ (*S*) / _nonstoichiometric_ (*s*)
 # 
 # ==== Timedness
+
 # 
 # * Timed transitions have _rate_ _closure_, whose result is to be multiplied
 #   by +Δtime+.
@@ -168,7 +169,7 @@ class YPetri::Transition
             else Type_t end )
     inform_upstream_places         # that they have been connected
     inform_downstream_places       # that they have been connected
-    uncock                         # initialize in the uncocked state
+    uncock                         # initialize in uncocked state
   end
 
   # Domain, or 'upstream arcs', is a collection of places, whose marking
