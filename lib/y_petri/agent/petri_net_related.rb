@@ -75,16 +75,15 @@ module YPetri::Agent::PetriNetRelated
   end
 
   # Timed transition constructor: Creates a new timed transition in the current
-  # world. Rate closure has to be supplied as a block.
+  # world. Rate can be supplied either as +:rate+ named argument, or as a block.
+  # If none is supplied, rate argument defaults to 1.
   # 
   def TT( *ordered, **named, &block )
     if named.has? :rate then
       fail ArgumentError, "Block must not be given if :rate named argument " +
         "is given!" if block
     else
-      fail ArgumentError, "Timed transition constructor requires either " +
-        "a :rate argument, or a block!" unless block
-      named.update rate: block
+      named.update rate: block || 1 # default rate is 1
     end
     world.Transition.send( :new, *ordered, **named )
   end
