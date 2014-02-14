@@ -74,25 +74,6 @@ module YPetri::Agent::PetriNetRelated
     world.Transition.send( :new, *ordered, **named, &block )
   end
 
-  # Constructor of a place governed by an assignment transition. The transition
-  # is named by adding "_ϝ" (digamma, resembles mathematical f used to denote
-  # functions) suffix to the place's name. For example,
-  #
-  # Fred = PAT Joe do |joe| joe * 2 end
-  #
-  # creates a place named "Fred" and an assignment transition named "Fred_ϝ"
-  # that keeps Fred equal to 2 times Joe.
-  #
-  def PAT *domain, **named_args, &block
-    Place().tap do |place|
-      transition = AT place, domain: domain, &block
-      # Rig the hook to name the transition as soon as the place is named.
-      place.name_set_hook do |name| transition.name = "#{name}_ϝ" end
-      place.name = named_args.delete :name if named_args.has? :name, syn!: :ɴ
-    end
-  end
-  alias ϝ PAT
-
   # Place constructor: Creates a new place in the current world.
   # 
   def Place( *ordered_args, **named_args, &block )

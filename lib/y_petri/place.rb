@@ -21,7 +21,19 @@ class YPetri::Place
 
   attr_reader :quantum
   attr_reader :guards
-  attr_accessor :default_marking
+  attr_reader :has_default_marking
+  alias has_default_marking? has_default_marking
+ 
+  def default_marking
+    fail "No default marking was specified for #{self}!" unless
+      has_default_marking?
+    @default_marking
+  end
+
+  def default_marking= marking
+    @has_default_marking = true
+    @default_marking = marking
+  end
 
   # Arguments supplied upon place initialization may include:
   # 
@@ -48,14 +60,18 @@ class YPetri::Place
   # that the place has no guards whatsoever, +:guard+ argumend should be set to
   # _false_.
   # 
-  def initialize quantum: 1,
-                 default_marking: nil,
-                 marking: nil,
-                 guard: L!,
-                 &block
+  def initialize guard: L!, **named_args, &block
     @upstream_arcs, @downstream_arcs, @guards = [], [], [] # init to empty
-    @quantum, @default_marking = quantum, default_marking
-    self.marking = marking || default_marking
+    @quantum = named_args.has?( :quantum ) ? named_args[:quantum] : 1
+    if named_args.has? :default_marking then
+      @has_default_marking = true
+      @default_marking = named_args[:default_marking]
+    else
+      @has_default_marking = false
+    end
+    if named_args.has? :marking then @marking = named_args[:marking] else
+      @marking = default_marking if has_default_marking?
+    end
     # Check in :guard value and the corresponding &block.
     if guard.ℓ? then # guard NL assertion not given, use block or default guards
       block ? guard( &block ) : add_default_guards!( @marking )
@@ -146,11 +162,11 @@ class YPetri::Place
   private
 
   def instance_description_strings
-    m, n, d, q = marking, name, default_marking, quantum
-    nς = "name: #{n.nil? ? '∅' : n}"
+    m, n, q = marking, name, quantum
     mς = "marking: #{m.nil? ? 'nil' : m}"
-    dς = "default_marking: #{d.nil? ? '∅' : d}"
+    nς = "name: #{n.nil? ? '∅' : n}"
     qς = q == 1 ? nil : "quantum: #{q.nil? ? '∅' : q}"
+    dς = "default_marking: #{has_default_marking ? default_marking : '∅'}"
     return nς, mς, dς, qς
   end
 end # class YPetri::Place
