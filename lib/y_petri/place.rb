@@ -25,7 +25,7 @@ class YPetri::Place
   alias has_default_marking? has_default_marking
  
   def default_marking
-    fail "No default marking was specified for #{self}!" unless
+    fail TypeError, "No default marking was specified for #{self}!" unless
       has_default_marking?
     @default_marking
   end
