@@ -74,6 +74,51 @@ module YPetri::Agent::PetriNetRelated
     world.Transition.send( :new, *ordered, **named, &block )
   end
 
+  # Constructor of a place governed by an assignment transition. The transition
+  # is named by adding "_ϝ" (digamma, resembles mathematical f used to denote
+  # functions) suffix to the place's name. For example,
+  #
+  # Fred = PAT Joe do |joe| joe * 2 end
+  #
+  # creates a place named "Fred" and an assignment transition named "Fred_ϝ"
+  # that keeps Fred equal to 2 times Joe.
+  #
+  def PAT *domain, **named_args, &block
+    Place().tap do |place|
+      transition = AT place, domain: domain, &block
+      # Rig the hook to name the transition as soon as the place is named.
+      place.name_set_hook do |name| transition.name = "#{name}_ϝ" end
+      place.name = named_args.delete :name if named_args.has? :name, syn!: :ɴ
+    end
+  end
+  alias ϝ PAT
+
+  # Place constructor: Creates a new place in the current world.
+  # 
+  def Place( *ordered_args, **named_args, &block )
+    fail ArgumentError, "If block is given, :guard named argument " +
+      "must not be given!" if named_args.has? :guard if block
+    named_args.update( guard: block ) if block # use block as a guard
+    named_args.may_have :default_marking, syn!: :m!
+    named_args.may_have :marking, syn!: :m
+    world.Place.send( :new, *ordered_args, **named_args, &block )
+  end
+
+
+  # Assignment transition constructor: Creates a new assignment transition in
+  # the current world. Ordered arguments are collected as codomain. Domain key
+  # (+:domain) is optional. Assignment closure must be supplied in a block.
+  # 
+  def AT( *codomain, **nn, &block )
+    fail ArgumentError, "Assignment transition constructor requires a block " +
+      "defining the assignment function!" unless block
+    world.Transition.send( :new,
+                           codomain: codomain,
+                           assignment: block,
+                           **nn )
+  end
+
+
   # Timed transition constructor: Creates a new timed transition in the current
   # world. Rate can be supplied either as +:rate+ named argument, or as a block.
   # If none is supplied, rate argument defaults to 1.
