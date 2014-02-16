@@ -68,7 +68,7 @@ module YPetri::Simulation::TransitionRepresentation::Type_A
   # could change their values.
   # 
   def act
-    codomain >> Array( function.( *domain_marking ) )
+    codomain >> Array( function.( *domain.marking ) )
   end
 
   # Builds an assignment closure, which, when called, directly affects the

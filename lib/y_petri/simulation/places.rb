@@ -1,12 +1,13 @@
 #encoding: utf-8
 
-require_relative 'places/types'
-require_relative 'places/free'
-require_relative 'places/clamped'
-
 # Place collection for YPetri::Simulation.
 #
-class YPetri::Simulation::Places
+class YPetri::Simulation::Places < YPetri::Simulation::Elements
+
+  require_relative 'places/types'
+  require_relative 'places/free'
+  require_relative 'places/clamped'
+
   ★ Types
 
   # Pushes a place to the collection.
@@ -16,6 +17,12 @@ class YPetri::Simulation::Places
           return super place( place )
         end
     super p.name ? Place().new( p, name: p.name ) : Place().new( p )
+  end
+
+  # Marking of the place collection in the current simulation.
+  # 
+  def marking
+    simulation.m self
   end
 
   private

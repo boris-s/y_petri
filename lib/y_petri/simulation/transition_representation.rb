@@ -5,7 +5,8 @@
 class YPetri::Simulation
   class TransitionRepresentation < ElementRepresentation
     require_relative 'transition_representation/types'
-    include Types
+
+    ★ Types
 
     attr_reader :domain, :codomain
     attr_reader :function # source transition function
