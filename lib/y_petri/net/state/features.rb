@@ -30,6 +30,7 @@ class YPetri::Net::State::Features < Array
              :Gradient,
              :Flux,
              :Delta,
+             :Assignment,
              to: "Feature()"
 
     delegate :load, to: "Record()"
@@ -111,6 +112,16 @@ class YPetri::Net::State::Features < Array
       end
     end
 
+    # Takes an array of assignment feature identifiesr (transitions, Assignment
+    # feature instances) and returns the corresponding array of assignment
+    # features valid for the current net. If no argument is given, an array of
+    # all the assignment features of the current net is returned.
+    # 
+    def assignment arg=nil
+      return assignment net.A_tt if arg.nil?
+      new arg.map { |t| Assignment t }
+    end
+
     # Takes an array of the net elements (places and/or transitions), and infers
     # a feature set from them in the following way: Places or place ids are
     # converted to marking features. The remaining array elements are treated
@@ -149,6 +160,7 @@ class YPetri::Net::State::Features < Array
            :Gradient,
            :Flux,
            :Delta,
+           :Assignment,
            to: "self.class"
 
   delegate :load,
@@ -313,6 +325,25 @@ class YPetri::Net::State::Features < Array
           include? feature or
             fail KeyError, "No delta feature '#{arg}' in this feature set!"
         end
+      end
+    end
+  end
+
+  # Expects an assignment feature identifier (tS transition identifier, or
+  # Assignment instance), and returns the corresponding feature from this
+  # feature set. If an array of firing feature identifiers is supplied, it
+  # is mapped to the array of corresponding features from this feature set.
+  # If no argument is given, all the assignment features from this set are
+  # returned.
+  #
+  def assignment arg=nil
+    return assignment( select { |feat| feat.is_a? Assignment() } ) if arg.nil?
+    case arg
+    when Array then self.class.new( arg.map { |id| assignment id } )
+    else
+      Assignment( arg ).tap do |feature|
+        include? feature or
+          fail KeyError, "No assignment feature '#{arg}' in this feature set!"
       end
     end
   end

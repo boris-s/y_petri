@@ -24,6 +24,7 @@ class YPetri::Net::State < Array
              :Gradient,
              :Flux,
              :Delta,
+             :Assignment,
              to: "Feature()"
 
     # Returns the feature identified by the argument.
@@ -39,7 +40,7 @@ class YPetri::Net::State < Array
         ꜧ = id.first
         fail ArgumentError, msg unless ꜧ.size == 1
         key, val = ꜧ.keys.first, ꜧ.values.first
-        recognized = :marking, :firing, :gradient, :flux, :delta
+        recognized = :marking, :firing, :gradient, :flux, :delta, :assignment
         msg = "Unrecognized feature: #{key}"
         fail ArgumentError, msg unless recognized.include? key
         # And now, with everything clean...
@@ -49,6 +50,7 @@ class YPetri::Net::State < Array
         when :flux then Flux( val )
         when :gradient then Gradient( *val )
         when :delta then Delta( *val )
+        when :assignment then Assignment( *val )
         end
       end
     end
@@ -56,17 +58,16 @@ class YPetri::Net::State < Array
     # If the argument is an array of features, or another Features instance,
     # a feature set based on this array is returned. But the real purpose of
     # this method is to allow hash-type argument, with keys +:marking+,
-    # +:firing+, +:gradient+, +:flux+ and +:delta+, specifying the respective
-    # features. For +:marking+, an array of places (or Marking features) is
-    # expected. For +:firing+ and +:flux+, an array of transitions (or Firing
-    # / Flux features) is expected. For +:gradient+ and +:delta+, a hash value
-    # is expected, containing keys +:places+ and +:transitions+, specifying
-    # for which place set / transition set should gradient / delta features
-    # be constructed. More in detail, values supplied under keys +:marking+,
-    # +:firing+, +:gradient+, +:flux+ and +:delta+ are delegated to
-    # +Features.marking+, +Features.firing+, +Features.gradient+ and
-    # +Features.flux+ methods, and their results are joined into a single
-    # feature set.
+    # +:firing+, +:gradient+, +:flux+, +:delta+ and +:assignment+ specifying
+    # the respective features. For +:marking+, an array of places (or Marking
+    # features) is expected. For +:firing+ and +:flux+, an array of transitions
+    # (or Firing / Flux features) is expected. For +:gradient+ and +:delta+,
+    # a hash value is expected, containing keys +:places+ and +:transitions+,
+    # specifying for which place set / transition set should gradient / delta
+    # features be constructed. More in detail, values supplied under keys
+    # +:marking+, +:firing+, +:gradient+, +:flux+, +:delta+ and +:assignment+
+    # are delegated to +Features+ class methods of the same name, and their
+    # results are joined into a single feature set.
     # 
     def features arg
       case arg
@@ -77,15 +78,18 @@ class YPetri::Net::State < Array
         gradient = arg[:gradient] || [ [], transitions: [] ]
         flux = arg[:flux] || [] # array of TS transitions
         delta = arg[:delta] || [ [], transitions: [] ]
+        assignment = arg[:assignment] # array of A transitions
         [ Features().marking( marking ),
           Features().firing( firing ),
           Features().gradient( *gradient ),
           Features().flux( flux ),
-          Features().delta( *delta ) ].reduce :+
+          Features().delta( *delta ),
+          Features().assignment( assignment ) ].reduce :+
       end
     end
 
-    delegate :marking, :firing, :gradient, :flux, :delta, to: "Features()"
+    delegate :marking, :firing, :gradient, :flux, :delta, :assignment,
+             to: "Features()"
   end
 
   # For non-parametrized vesion of the class, the class instance variables
@@ -97,7 +101,7 @@ class YPetri::Net::State < Array
            :Feature,
            :Features,
            :features,
-           :marking, :firing, :gradient, :flux, :delta,
+           :marking, :firing, :gradient, :flux, :delta, :assignment
            to: "self.class"
 
   # Given a set of clamped places,  this method outputs a Record instance

@@ -8,6 +8,7 @@ class YPetri::Net::State::Feature
   require_relative 'feature/gradient'
   require_relative 'feature/flux'
   require_relative 'feature/delta'
+  require_relative 'feature/assignment'
 
   class << self
     def parametrize parameters
@@ -21,6 +22,7 @@ class YPetri::Net::State::Feature
         ç.instance_variable_set :@Gradient, Gradient.parametrize( State: sç )
         ç.instance_variable_set :@Flux, Flux.parametrize( State: sç )
         ç.instance_variable_set :@Delta, Delta.parametrize( State: sç )
+        ç.instance_variable_set :@Assignment, Assignment.parametrize( State: sç )
       end
     end
 
@@ -32,7 +34,7 @@ class YPetri::Net::State::Feature
       case id
       when Marking() then id
       when Marking then Marking().of( id.place )
-      else Marking().of( id ) end # assume it's a place
+      else Marking().of( id ) end # assume place
     end
 
     def Firing id=L!
@@ -40,7 +42,7 @@ class YPetri::Net::State::Feature
       case id
       when Firing() then id
       when Firing then Firing().of( id.transition )
-      else Firing().of( id ) end # assume it's a place
+      else Firing().of( id ) end # assume transition
     end
 
     def Gradient id=L!, transitions: net.T_tt
@@ -50,8 +52,8 @@ class YPetri::Net::State::Feature
       when Gradient then
         Gradient().of( id.place, transitions: id.transitions )
       else
-        Gradient().of( id, transitions: transitions )
-      end # assume it's a place
+        Gradient().of( id, transitions: transitions ) # assume place
+      end
     end
 
     def Flux id=L!
@@ -59,9 +61,7 @@ class YPetri::Net::State::Feature
       case id
       when Flux() then id
       when Flux then Flux().of( id.transition )
-      else
-        Flux().of( id )
-      end # assume it's a place
+      else Flux().of( id ) end # assume transition
     end
 
     def Delta id=L!, transitions: net.tt
@@ -70,12 +70,20 @@ class YPetri::Net::State::Feature
       when Delta() then id
       when Delta then
         Delta().of( id.place, transitions: id.transitions )
-      else Delta().of( id, transitions: transitions ) end # assume it's a place
+      else Delta().of( id, transitions: transitions ) end # assume place
+    end
+
+    def Assignment id=L!
+      return @Firing if id.local_object?
+      case id
+      when Assignment() then id
+      when Assignment then Assignment().of( id.transition )
+      else Assignment().of( id ) end # assume transition
     end
   end # class << self
 
   delegate :net,
            :State,
-           :Marking, :Firing, :Gradient, :Flux, :Delta,
+           :Marking, :Firing, :Gradient, :Flux, :Delta, :Assignment,
            to: "self.class"
 end # class YPetri::Net::State::Feature

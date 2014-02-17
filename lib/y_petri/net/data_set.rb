@@ -20,7 +20,7 @@ class YPetri::Net::DataSet < Hash
 
     delegate :net, to: :features
     delegate :State, to: :net
-    delegate :Marking, :Firing, :Flux, :Gradient, :Delta,
+    delegate :Marking, :Firing, :Flux, :Gradient, :Delta, :Assignment,
              to: "State()"
   end
 
@@ -30,7 +30,7 @@ class YPetri::Net::DataSet < Hash
   delegate :features,
            :net,
            :State,
-           :Marking, :Firing, :Flux, :Gradient, :Delta,
+           :Marking, :Firing, :Flux, :Gradient, :Delta, :Assignment,
            to: "self.class"
 
   attr_reader :type, # more like event_type, idea not matured yet
@@ -143,8 +143,8 @@ class YPetri::Net::DataSet < Hash
   end
 
   # Expects a hash of features (:marking (alias :state) of places, :firing
-  # of tS transitions, :delta of places and/or transitions) and returns the
-  # corresponding mapping of the recording.
+  # of tS transitions, :delta of places and/or transitions, :assignment of
+  # A transitions) and returns the corresponding mapping of the recording.
   # 
   def reduce_features *args
     Δt = if args.last.is_a? Hash then
@@ -253,6 +253,16 @@ class YPetri::Net::DataSet < Hash
     end
   end
 
+  # Returns a subset of this dataset with only the specified assignment features
+  # identified by the arguments retained. If no arguments are given, all the
+  # assignment features from the receiver dataset are selected.
+  # 
+  def assignment *args
+    return reduce_features net.State.assignment if args.empty?
+      reduce_features assignment: args.first
+    end
+  end
+
   # Outputs the current recording in CSV format.
   # 
   def to_csv
@@ -274,7 +284,8 @@ class YPetri::Net::DataSet < Hash
     events = events()
     # Figure out features.
     ff = if elements.nil? then
-           nn_ff = nn.slice [ :marking, :flux, :firing, :gradient, :delta ]
+           nn_ff = nn.slice [ :marking, :flux, :firing,
+                              :gradient, :delta, :assignment ]
            nn_ff.empty? ? features : net.State.features( nn_ff )
          else
            net.State.Features.infer_from_elements( element_ids )
