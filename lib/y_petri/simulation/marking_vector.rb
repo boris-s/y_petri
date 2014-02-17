@@ -166,8 +166,8 @@ class YPetri::Simulation
 
     # Pretty-prints the marking vector.
     # 
-    def pretty_print
-      to_h.pretty_print_numeric_values
+    def pretty_print *args
+      to_h.pretty_print_numeric_values *args
     end
     alias pp pretty_print
   end

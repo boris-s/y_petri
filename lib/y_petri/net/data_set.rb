@@ -268,23 +268,29 @@ class YPetri::Net::DataSet < Hash
   # no feature specification is explicitly provided, it is assumed that all the
   # features of this dataset are meant to be plotted.
   # 
-  def plot( element_ids=nil, except: [], **nn )
+  def plot( elements=nil, except: [], **named_args )
+    nn = named_args
     time = nn.may_have :time, syn!: :time_range
     events = events()
-    if element_ids.nil? then
-      nn_ff = nn.slice [ :marking, :flux, :firing, :gradient, :delta ]
-      ff = nn_ff.empty? ? features : net.State.features( nn_ff )
-    else
-      ff = net.State.Features.infer_from_elements( element_ids )
-    end
+    # Figure out features.
+    ff = if elements.nil? then
+           nn_ff = nn.slice [ :marking, :flux, :firing, :gradient, :delta ]
+           nn_ff.empty? ? features : net.State.features( nn_ff )
+         else
+           net.State.Features.infer_from_elements( element_ids )
+         end
+    # Figure out the features not to plot ("except" features).
     xff = case except
           when Array then net.State.Features.infer_from_elements( except )
           when Hash then net.State.features( except )
           else
             fail TypeError, "Wrong type of :except argument: #{except.class}"
           end
+    # Subtract the "except" features from features to plot.
     ff -= xff
-    data_ss = series( ff )
+    # Convert the feature set into a set of data arrays.
+    data_arrays = series( ff )
+    # Figure out the x axis range for plotting.
     x_range = if nn.has? :time then
                 if time.is_a? Range then
                   "[#{time.begin}:#{time.end}]"
@@ -293,10 +299,11 @@ class YPetri::Net::DataSet < Hash
                 end
               else
                 from = events.first || 0
-                to = events.last && events.last > from ? events.last :
-                  events.first + 1
+                to = if events.last and events.last > from then events.last
+                     else events.first + 1 end
                 "[#{from}:#{to}]"
               end
+    # Invoke Gnuplot.
     Gnuplot.open do |gp|
       Gnuplot::Plot.new gp do |plot|
         plot.xrange x_range
@@ -308,10 +315,23 @@ class YPetri::Net::DataSet < Hash
         plot.title nn[:title] || "#{net} plot"
         plot.ylabel nn[:ylabel] || "Values"
         plot.xlabel nn[:xlabel] || "Time [s]"
-        ff.labels.zip( data_ss ).each do |label, data_array|
-          plot.data << Gnuplot::DataSet.new( [ events, data_array ] ) { |ds|
-            ds.with = "linespoints"
-            ds.title = label
+        ff.labels.zip( data_arrays ).each do |label, array|
+          # Replace NaN and Infinity with 0.0 and warn about it.
+          nan, inf = 0, 0
+          array = array.map { |v|
+            if v.infinite? then inf += 1; 0.0
+            elsif v.nan? then nan += 1; 0.0
+            else v end
+          }
+          # Warn.
+          nan = nan > 0 ? "#{nan} NaN values" : nil
+          inf = inf > 0 ? "#{inf} infinite values" : nil
+          msg = "Warning: column #{label} contains %s plotted as 0!"
+          warn msg % [ nan, inf ].compact.join( ' and ' ) if nan or inf
+          # Finally, plot.
+          plot.data << Gnuplot::DataSet.new( [ events, array ] ) { |set|
+            set.with = "linespoints"
+            set.title = label
           }
         end
       end

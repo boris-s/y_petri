@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-# Firing of a Petri net tS transition.
+# Firing of a Petri net A transition.
 # 
-class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
+class YPetri::Net::State::Feature::Assignment < YPetri::Net::State::Feature
   attr_reader :transition
 
   class << self
@@ -17,10 +17,10 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
                                      hsh[ id.transition ]
                                    when ç.net.Transition then
                                      t = begin
-                                           ç.net.tS_transitions( [ id ] ).first
+                                           ç.net.A_transitions( [ id ] ).first
                                          rescue TypeError => err
                                            msg = "Transition #{id} not " +
-                                             "recognized as tS transition in " +
+                                             "recognized as A transition in " +
                                              "net #{ç.net}! (%s)"
                                            raise TypeError, msg % err
                                          end
@@ -60,7 +60,7 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
-      arg.send( :tS_transitions, [ transition ] ).first.firing
+      arg.send( :A_transitions, [ transition ] ).first.firing
     else
       fail TypeError, "Argument type not supported!"
     end
@@ -69,10 +69,10 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
   # Type of this feature.
   # 
   def type
-    :firing
+    :assignment
   end
 
-  # A string briefly describing the firing feature.
+  # A string briefly describing the assignment feature.
   # 
   def to_s
     label
@@ -81,12 +81,12 @@ class YPetri::Net::State::Feature::Firing < YPetri::Net::State::Feature
   # Label for the firing feature (to use in the graphics etc.)
   # 
   def label
-    "F:#{transition.name}"
+    "A:#{transition.name}"
   end
 
   # Inspect string of the firing feature.
   # 
   def inspect
-    "<Feature::Firing of #{transition.name ? transition.name : transition}>"
+    "<Feature::Assignment of #{transition.name ? transition.name : transition}>"
   end
-end # YPetri::Net::State::Feature::Firing
+end # YPetri::Net::State::Feature::Assignment
