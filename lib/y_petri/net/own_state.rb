@@ -62,4 +62,13 @@ module YPetri::Net::OwnState
   def delta place_ids=nil, transitions: tt
     fail NotImplementedError
   end
+
+  # Takes an array of A transition identifiers as an optional argument, and
+  # returns the array of their actions under current net state. If no argument
+  # is supplied, the array of assignments of all net's A transitions is returned.
+  #
+  def assignment transition_ids=nil
+    return assigment A_tt() if transition_ids.nil?
+    transition_ids.map { |id| A_transition( id ).action }
+  end
 end # module YPetri::Net::OwnState

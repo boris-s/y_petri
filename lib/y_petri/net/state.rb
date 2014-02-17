@@ -101,7 +101,7 @@ class YPetri::Net::State < Array
            :Feature,
            :Features,
            :features,
-           :marking, :firing, :gradient, :flux, :delta, :assignment
+           :marking, :firing, :gradient, :flux, :delta, :assignment,
            to: "self.class"
 
   # Given a set of clamped places,  this method outputs a Record instance

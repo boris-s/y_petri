@@ -259,8 +259,7 @@ class YPetri::Net::DataSet < Hash
   # 
   def assignment *args
     return reduce_features net.State.assignment if args.empty?
-      reduce_features assignment: args.first
-    end
+    reduce_features assignment: args.first
   end
 
   # Outputs the current recording in CSV format.
