@@ -287,7 +287,7 @@ class YPetri::Net::DataSet < Hash
                               :gradient, :delta, :assignment ]
            nn_ff.empty? ? features : net.State.features( nn_ff )
          else
-           net.State.Features.infer_from_elements( element_ids )
+           net.State.Features.infer_from_elements( elements )
          end
     # Figure out the features not to plot ("except" features).
     xff = case except

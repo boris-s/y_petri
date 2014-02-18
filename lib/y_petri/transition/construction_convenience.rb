@@ -215,7 +215,7 @@ module YPetri::Transition::ConstructionConvenience
       else
         # array of stoichiometry coefficients
         msg = "With array-type stoichiometry, :codomain must be given!"
-        fail ArgumentError unless oo.has? :codomain
+        fail ArgumentError, msg unless oo.has? :codomain
         [ oo[:codomain], Array( oo[:stoichiometry] ) ]
       end
     # enforce that stoichiometry is a collection of numbers
