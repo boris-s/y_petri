@@ -78,7 +78,7 @@ class YPetri::Net::State < Array
         gradient = arg[:gradient] || [ [], transitions: [] ]
         flux = arg[:flux] || [] # array of TS transitions
         delta = arg[:delta] || [ [], transitions: [] ]
-        assignment = arg[:assignment] # array of A transitions
+        assignment = arg[:assignment] || [] # array of A transitions
         [ Features().marking( marking ),
           Features().firing( firing ),
           Features().gradient( *gradient ),
