@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 # A machine that receives alerts during simulation and records a recording
-# according to its implementation. Alerts are received via +#alert+ method.
-# The recording bein recorded is stored in @recording instance variable.
+# according to its implementation. Alerts are received via +#alert!+ method.
+# The recording being recorded is stored in +@recording+ instance variable.
 # This can be reset by +#reset!+ method, which also accepts arguments to
 # change the recorder settings and/or insert another recording.
 #

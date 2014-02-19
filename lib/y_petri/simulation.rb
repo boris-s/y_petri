@@ -84,6 +84,7 @@ class YPetri::Simulation
 
   delegate :plot,
            :print,
+           :back!,
            to: :recording
 
   # Returns the firing of the indicated tS transitions (all tS transitions,

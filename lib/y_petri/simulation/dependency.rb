@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 # Place / transition collection mixin for parametrized classes of
-# YPetri::Simulation. Expects the module where it is included to define
-# +#simulation+ method returning the current simulation instance.
+# YPetri::Simulation. Expects the includer to provide +#simulation+
+# method returning current +Simulation+ instance.
 #
 class YPetri::Simulation
   module Dependency

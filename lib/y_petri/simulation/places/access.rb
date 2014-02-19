@@ -94,11 +94,19 @@ class YPetri::Simulation::Places
       end
     end
 
+    # Constructs a @Places instance. Note that the includer of the
+    # +Places::Access+ module overloads :Places message without arguments
+    # with the getter of the @Places parametrized subclass itself.
+    # 
+    def Places places
+      Places().load places.map &method( :place )
+    end
+
     # Without arguments, returns all the places. If arguments are given, they
     # are converted to places before being returned.
     # 
     def places( places=nil )
-      places.nil? ? @places : Places().load( places.map &method( :place ) )
+      places.nil? ? @places : Places( places )
     end
 
     # Free places. If arguments are given, they must be identify free places,
@@ -115,5 +123,21 @@ class YPetri::Simulation::Places
       clamped_places.nil? ? places.clamped :
         places.clamped.subset( clamped_places )
     end
+
+    # # TODO: This is my new concept of how #places vs. #Places should work. Won't
+    # # develop it now, but later, there will be 2 kinds of convenience constructors:
+    # # Places( [ p1, p2, p3 ] ) and places( p1, p2, p3 ), where Places() is overloaded
+    # # with getting the @Places parametrized subclass itself, while places() is
+    # # overloaded with getting the complete set of simulation's places. This is
+    # # convenient, but programatically inconsistent, since the method does something
+    # # completely else when the set of places happens to be empty. For programmatically
+    # # consistent way of construction a collection of places, use Places( [ *collection ] ).
+
+    # # Without arguments, returns all the places. If arguments are given, they
+    # # are converted to places before being returned.
+    # # 
+    # def places( *places )
+    #   places.empty? ? @places : Places( places )
+    # end
   end # module Access
 end # class YPetri::Simulation::Places

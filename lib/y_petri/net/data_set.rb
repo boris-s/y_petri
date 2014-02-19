@@ -353,8 +353,8 @@ class YPetri::Net::DataSet < Hash
           # Replace NaN and Infinity with 0.0 and warn about it.
           nan, inf = 0, 0
           array = array.map { |v|
-            if v.infinite? then inf += 1; 0.0
-            elsif v.nan? then nan += 1; 0.0
+            if v.to_f.infinite? then inf += 1; 0.0
+            elsif v.to_f.nan? then nan += 1; 0.0
             else v end
           }
           # Warn.
