@@ -47,6 +47,28 @@ module YPetri::Place::Arcs
   end
   alias :downstream_places :dependents
 
+  # A net containing all the upstream transitions and their connected places.
+  # 
+  def upstream_net
+    upstream_transitions.each_with_object world.Net() do |t, rslt|
+      [ *t.arcs, t ].each { |place| rslt << place }
+    end
+  end
+
+  # A net containing all the upstream transitions and their connected places.
+  # 
+  def downstream_net
+    downstream_transitions.each_with_object world.Net() do |t, rslt|
+      [ *t.arcs, t ].each { |place| rslt << place }
+    end
+  end
+
+  # A union of upstream local net and downstream local net.
+  # 
+  def local_net
+    downstream_net + upstream_net
+  end
+
   # Fires the upstream transitions.
   # 
   def fire_upstream

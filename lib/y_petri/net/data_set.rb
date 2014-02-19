@@ -1,6 +1,29 @@
 # encoding: utf-8
 
-# Dataset is a collection of labeled state records.
+# +DataSet+ is a collection of labeled state records. It is a subclass of +Hash+
+# class, whose keys are known as _events_, and values are data points (arrays)
+# that correspond to saved records (+YPetri::Net::State::Features::Record+) under
+# a given feature set (+YPetri::Net::State::Features+). +DataSet+ class is
+# intended to be parametrized with a specific feature set. Apart from the methods
+# inherited from +Hash+, +YPetri::Net::DataSet+ can load a record at a given
+# event (+#record+ method), reconstruct a simulation at a given event
+# (+#reconstruct+ method), return columns corresponding to features (+#series+
+# method) and perform feature selection (+#marking+, +#firing+, +#flux+,
+# +#gradient+, +#delta+, +#assignment+, and +#reduced_features+ for mixed feature
+# sets). Apart from standard inspection methods, +DataSet+ has methods +#print+
+# and +#plot+ for visual presentation. Also, +DataSet+ has methods specially
+# geared towards records of timed simulations, whose events are points in time.
+# Method +#interpolate+ uses linear interpolation to find the approximate state
+# of the system at some exact time using linear interpolation between the nearest
+# earlier and later data points (which can be accessed respectively by +#floor+
+# and +#ceiling+ methods). Interpolation is used for resampling the set
+# (+#resample+ method).
+#
+# Finally, it is possible that especially professional statisticians have
+# written, or are planning to write, a +DataSet+ class better than this one.
+# If I discover a good +DataSet+ class in the future, I would like to inherit
+# from it or otherwise integrate with it for the purposes of
+# +YPetri::Net::DataSet+.
 # 
 class YPetri::Net::DataSet < Hash
   class << self
@@ -107,6 +130,7 @@ class YPetri::Net::DataSet < Hash
       features.load( rslt.column_to_a )
     end
   end
+  alias at interpolate
 
   # Resamples the recording.
   # 
