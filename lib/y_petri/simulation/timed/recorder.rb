@@ -45,6 +45,16 @@ module YPetri::Simulation::Timed
       end
     end
 
+    # Steps the simulation back. This prototype version of the method simply
+    # reconstructs a new simulation at a given time (1 simulation step by
+    # default) before the current time.
+    # 
+    def back! by=simulation.step
+      time = simulation.time - by
+      simulation.recording.record( simulation.recording.floor( time ) )
+        .reconstruct.tap { |sim| sim.run! upto: time }
+    end
+
     private
 
     # Records the current state as a pair { sampling_time => system_state }.

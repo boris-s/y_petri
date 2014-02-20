@@ -12,6 +12,12 @@ class YPetri::Simulation
       false
     end
 
+    # Changing the simulation method on the fly not supported.
+    # 
+    def set_simulation_method
+      fail NoMethodError, "Changing simulation method on the fly not supported!"
+    end
+
     private
 
     # Initialization subroutine for timeless simulations. Sets up the

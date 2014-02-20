@@ -12,6 +12,12 @@ module YPetri::Simulation::Timeless
       super.tap { @next_event = nn[:next_event] || 0 }
     end
 
+    # Backsteps the simulation.
+    # 
+    def back!
+      fail NotImplementedError, "Backstep for timeless simulation not done yet!"
+    end
+    
     private
 
     # Records the current system state under a numbered sample.
@@ -20,5 +26,5 @@ module YPetri::Simulation::Timeless
       super next_event
       @next_event = @next_event.next # "event" shoud implement next method
     end
-  end # Recorder
+  end # class Recorder
 end # YPetri::Simulation::Timeless

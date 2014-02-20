@@ -20,6 +20,32 @@ module YPetri::Simulation::Timed
               :step,
               :default_sampling
 
+  # Sets the @step attribute of the simulation.
+  # 
+  def set_step n
+    @step = n
+  end
+  alias set_step_size set_step
+
+  # Sets the @target_time attribute of the simulation.
+  # 
+  def set_time target_time
+    @target_time = target_time
+  end
+  alias set_target_time set_time
+
+  # Sets sampling of the simulation's data recorder.
+  # 
+  def set_sampling sampling
+    recorder.sampling = sampling
+  end 
+
+  # Changing the simulation method on the fly not supported.
+  # 
+  def set_simulation_method
+    fail NoMethodError, "Changing simulation method on the fly not supported!"
+  end
+
   alias starting_time initial_time
   alias ending_time target_time
 
