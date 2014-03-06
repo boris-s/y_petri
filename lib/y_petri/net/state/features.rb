@@ -109,9 +109,10 @@ class YPetri::Net::State::Features < Array
     def Gradient array, transitions: nil
       return new array.map &net.State.Feature.method( :Gradient ) if
         transitions.nil?
-      new array.map { |id|
+      ary = array.map { |id|
         net.State.Feature.Gradient id, transitions: transitions
       }
+      new ary
     end
 
     # Expects an arbitrary number of gradient feature identifiers and constructs

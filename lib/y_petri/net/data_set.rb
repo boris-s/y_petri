@@ -261,7 +261,7 @@ class YPetri::Net::DataSet < Hash
     if transitions.nil? then
       reduce_features gradient: array
     else
-      reduce_features gradient [ *array, transitions: transitions ]
+      reduce_features gradient: [ *array, transitions: transitions ]
     end
   end
 
@@ -303,8 +303,16 @@ class YPetri::Net::DataSet < Hash
   def delta *ordered_args, transitions: nil, **named_args
     return Delta( ordered_args, transitions: transitions, **named_args ) unless
       ordered_args.empty?
-    return Delta( net.State.Features.delta, **named_args ) if transitions.nil?
-    Delta( net.State.Features.delta, transitions: transitions, **named_args )
+    return Delta( net.places, **named_args ) if transitions.nil?
+    Delta( net.places, transitions: transitions, **named_args )
+  end
+
+  def delta_timed *ordered_args, **named_args
+    delta *ordered_args, transitions: net.T_transitions, **named_args
+  end
+
+  def delta_timeless *ordered_args, **named_args
+    delta *ordered_args, transitions: net.t_transitions, **named_args
   end
 
   # Expects an array of assignment feature identifiers. Returns a subset of this

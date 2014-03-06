@@ -136,11 +136,12 @@ class YPetri::Net::State::Feature
       when Marking then return Marking().of( arg.place )
       when Firing then return Firing().of( arg.transition )
       when Gradient then
-        return Gradient().of( arg.place, transition: arg.transitions )
+        return Gradient().of( arg.place, transitions: arg.transitions )
       when Flux then return Flux().of( arg.transition )
       when Delta then
         return Delta().of( arg.place, transitions: arg.transitions )
-      when Assignment then return Assignment().of( arg.transition )
+      when Assignment then
+        return Assignment().to( arg.place, transitions: arg.transition )
       else # treated as a place or transition id
         e, type = begin
                     [ net.place( arg ), :place ]

@@ -100,7 +100,8 @@ describe YPetri::Agent do
       rec.marking.plot
       rec.flux.plot
       rec.gradient.plot
-      rec.delta( Δt: 1 ).plot
+      rec.delta_timed( Δt: 1 ).plot
+      rec.delta_timeless( Δt: 1 ).plot
       @m.plot_marking
       @m.plot_flux
       @m.plot_gradient

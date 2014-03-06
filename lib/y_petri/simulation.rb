@@ -72,7 +72,6 @@ class YPetri::Simulation
   delegate :net, to: "self.class"
 
   delegate :simulation_method,
-           :guarded?,
            :step!,
            :firing_vector_tS,
            to: :core
