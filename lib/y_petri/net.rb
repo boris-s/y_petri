@@ -174,6 +174,7 @@ class YPetri::Net
   def simulation( **settings )
     Simulation().__new__ **settings
   end
+  alias new_simulation simulation
 
   # Networks are equal when their places and transitions are equal.
   # 
