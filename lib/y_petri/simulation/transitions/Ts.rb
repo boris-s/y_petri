@@ -31,10 +31,11 @@ class YPetri::Simulation::Transitions
     # in this collection.
     # 
     def to_gradient_closure
-      fp = free_places
-      closures = gradient_closures
+      fp = free_places #.tap { |fp| puts; print "fp: "; Kernel::p fp }
+      closures = gradient_closures #.tap { |cl| puts; print "closures: "; Kernel::p cl }
       sMV = simulation.MarkingVector
       stu = simulation.time_unit
+      zero = ( sMV.zero( fp ) / stu ) #.tap { |z| puts; print "zero mv: "; Kernel::p z }
 
       code_sections = map.with_index do |t, i|
         "a = closures[ #{i} ].call\n" +
@@ -43,12 +44,12 @@ class YPetri::Simulation::Transitions
       body = code_sections.join( "\n" )
       λ = <<-LAMBDA
         -> do
-        g = sMV.zero( fp ) / stu
+        g = zero
         #{body}
         return g
         end
       LAMBDA
-      eval λ
+      eval λ #.tap { |l| puts; puts "eval code: "; puts l }
     end
     alias gradient_closure to_gradient_closure
   end # module Type_Ts

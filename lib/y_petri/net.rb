@@ -13,6 +13,16 @@ require_relative 'net/state'
 # neighbors of elements (places or transitions).
 # 
 class YPetri::Net
+  # ===========================================================================
+  # !!! TODO !!!
+  #
+  # Refactoring plans for Net class
+  #
+  # Make it a subclass of Module class, so places and transitions can simply
+  # be defined as its constants.
+  #
+  # ===========================================================================
+
   ★ NameMagic                        # ★ means include
   ★ ElementAccess                    # to be below ElementAccess
   ★ Visualization
@@ -34,52 +44,52 @@ class YPetri::Net
   # Takes 2 arguments (+:places+ and +:transitions+) and builds a net from them.
   # 
   def initialize( places: [], transitions: [] )
-    param_class( { State: State }, with: { net: self } )
+    param_class!( { State: State,
+                    Simulation: YPetri::Simulation },
+                  with: { net: self } )
     @places, @transitions = [], []
     places.each &method( :include_place )
     transitions.each &method( :include_transition )
-    param_class( { Simulation: YPetri::Simulation },
-                 with: { net: self } )
   end
 
   # Includes a place in the receiver. Returns _true_ if successful, _false_ if
   # the place is already included in the receiver net. 
   # 
-  def include_place id
-    pl = Place().instance( id )
-    return false if includes_place? pl
-    true.tap { @places << pl }
+  def include_place place
+    place = Place().instance( place )
+    return false if includes_place? place
+    true.tap { @places << place }
   end
 
   # Includes a transition in the receiver. Returns _true_ if successful, _false_
   # if the transition is already included in the net. The arcs of the transition
   # being included may only connect to the places already in the receiver net.
   # 
-  def include_transition id
-    tr = Transition().instance( id )
-    return false if includes_transition? tr
-    msg = "Transition #{tr} has arcs to places outside #{self}!"
-    fail msg unless tr.arcs.all? { |p| includes_place? p }
-    true.tap { @transitions << tr }
+  def include_transition transition
+    transition = Transition().instance( transition )
+    return false if includes_transition? transition
+    fail "Transition #{transition} has arcs to places outside #{self}!" unless
+      transition.arcs.all? { |place| includes_place? place }
+    true.tap { @transitions << transition }
   end
 
   # Excludes a place from the receiver. Returns _true_ if successful, _false_
   # if the place was not found in the receiver net. A place may not be excluded
   # from the receiver so long as any transitions therein connect to it.
   # 
-  def exclude_place id
-    pl = Place().instance( id )
-    msg = "Unable to exclude #{pl} from #{self}: Transition(s) depend on it!"
-    fail msg if transitions.any? { |tr| tr.arcs.include? pl }
-    false.tap { return true if @places.delete( pl ) }
+  def exclude_place place
+    place = Place().instance( place )
+    fail "Unable to exclude #{place} from #{self}: Transitions depend on it!" if
+      transitions.any? { |transition| transition.arcs.include? place }
+    false.tap { return true if @places.delete( place ) }
   end
 
   # Excludes a transition from the receiver. Returns _true_ if successful,
   # _false_ if the transition was not found in the receiver net.
   # 
-  def exclude_transition id
-    tr = Transition().instance( id )
-    false.tap { return true if @transitions.delete( tr ) }
+  def exclude_transition transition
+    transition = Transition().instance( transition )
+    false.tap { return true if @transitions.delete( transition ) }
   end
 
   # Includes another net in the receiver net. Returns _true_ if successful

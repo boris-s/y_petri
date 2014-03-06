@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-# Basic elements of a simulation, a mixin intended for YPetri::Simulation.
-#
 class YPetri::Simulation
+  # The class in which places' marking is stored insid a simulation.
+  #
   class MarkingVector < Matrix
     ★ Dependency
 
@@ -20,10 +20,10 @@ class YPetri::Simulation
         when Hash then annotated_with( arg.keys )[ arg.values ]
         when Array then
           if annotation then
-            msg = "The size of the argument (#{arg.size}) does not " +
-              "correspond to the annotation size (#{annotation.size})!"
-            fail ArgumentError, msg unless arg.size == annotation.size
-            column_vector arg
+            fail ArgumentError, "The size of the argument (#{arg.size}) does " +
+              "not match the annotation size (#{annotation.size})!" unless
+              msg unless arg.size == annotation.size
+            column_vector( arg )
           else
             annotated_with( places )[ args ]
           end
@@ -32,51 +32,49 @@ class YPetri::Simulation
         end
       end
 
-      # Returns a subclass of self annotated with the supplied places.
+      # Returns a subclass of self annotated with the supplied array of places.
       # 
-      def annotated_with place_ids
-        annot = if annotation then
-                  annotation.subset place_ids
-                else
-                  places( place_ids )
-                end
+      def annotated_with places
+        annot = annotation ? annotation.subset( places ) : Places( places )
         Class.new self do @annotation = annot end
       end
 
-      # Without arguments, constructs the starting marking vector for all places,
-      # using either initial values, or clamp values. Optionally, places can be
-      # specified, for which the starting vector is returned.
+      # Without arguments, constructs the starting marking vector for all the
+      # places, using either initial values, or clamp values. Optionally, an
+      # array of places or place ids can be supplied, for which the starting
+      # vector is returned.
       # 
-      def starting place_ids=nil
-        st = -> p { p.free? ? p.initial_marking : p.clamp } # starting value
-        if place_ids.nil? then
-          return starting places if annotation.nil?
-          self[ annotation.map &st ]
+      def starting places=nil
+        if places.nil? then
+          return starting places() if annotation.nil?
+          self[ annotation.map { |p| p.free? ? p.initial_marking : p.clamp } ]
         else
-          annotated_with( place_ids ).starting
+          annotated_with( places ).starting
         end
       end
 
-      # Without arguments, constructs a zero marking vector for all places.
-      # Optionally, places can be specified, for which the zero vector is
-      # returned.
+      # Without arguments, constructs a zero marking vector for all the places.
+      # Optionally, an array of places or places ids can be supplied, for which
+      # the zero vector is returned.
       # 
-      def zero( place_ids=nil )
-        starting( place_ids ) * 0
+      def zero places=nil
+        starting( places ) * 0
       end
     end
 
     delegate :simulation, to: "self.class"
 
-    # Creates a subset of this marking vector.
+    # Expects an array of places or place ids, and creates a subset of this
+    # marking vector. Alternatively, a block can be supplied that performs
+    # the places selection similarly to +Enumerable#select+.
     # 
-    def select place_ids, &block
+    def select places, &block
       if block_given? then
-        msg = "If block is given, arguments are not allowed!"
-        fail ArgumentError, msg unless place_ids.empty?
-        select annotation.select( &block )
+        fail ArgumentError, "Arguments not allowed if block given!" unless
+          place_ids.empty?
+        select annotation.select &block
       else
-        pp = places( place_ids )
+        pp = places( *places )
         annotated_subcl = self.class.annotated_with( pp )
         annotated_subcl[ pp.map { |p| fetch p } ]
       end

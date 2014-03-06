@@ -19,127 +19,47 @@ class YPetri::Simulation::Transitions
       transition( transition ).source
     end
 
-    # Net's transitions.
+    # Makes it so that when "transitions" is abbreviated to "tt", transitions
+    # of the underlying net are returned rather than simulation's transition
+    # representations.
     # 
-    def tt( transitions=nil )
-      transitions( transitions ).sources
-    end
+    map! Tt: :Transitions,
+         tt: :transitions,
+         ts_Tt: :ts_Transitions,
+         ts_tt: :ts_transitions,
+         tS_Tt: :tS_Transitions,
+         tS_tt: :tS_transitions,
+         Ts_Tt: :Ts_Transitions,
+         Ts_tt: :Ts_transitions,
+         TS_Tt: :TS_Transitions,
+         TS_tt: :TS_transitions,
+         A_Tt: :A_Transitions,
+         A_tt: :A_transitions,
+         S_Tt: :S_Transitions,
+         S_tt: :S_transitions,
+         s_Tt: :S_Transitions,
+         s_tt: :S_transitions,
+         T_Tt: :T_Transitions,
+         T_tt: :T_transitions,
+         t_Tt: :t_Transitions,
+         t_tt: :t_transitions,
+         &:sources
 
-    # Net's *ts* transitions.
+    # Makes it so that +Tn+/+tn+ means "names of transitions", and that when
+    # message "n" + transition_type is sent to the simulation, it returns names
+    # of the trasitions of the specified type.
     # 
-    def ts_tt( transitions=nil )
-      ts_transitions( transitions ).sources
-    end
-
-    # Net's *tS* transitions.
-    # 
-    def tS_tt( transitions=nil )
-      tS_transitions( transitions ).sources
-    end
-
-
-    # Net's *Ts* transitions.
-    # 
-    def Ts_tt( transitions=nil )
-      Ts_transitions( transitions ).sources
-    end
-
-    # Net's *TS* transitions.
-    # 
-    def TS_tt( transitions=nil )
-      TS_transitions( transitions ).sources
-    end
-
-    # Net's *A* transitions.
-    # 
-    def A_tt( transitions=nil )
-      A_transitions( transitions ).sources
-    end
-
-    # Net's *S* transitions.
-    # 
-    def S_tt( transitions=nil )
-      S_transitions( transitions ).sources
-    end
-
-    # Net's *s* (non-stoichiometric) transitions.
-    # 
-    def s_tt( transitions=nil )
-      s_transitions( transitions ).sources
-    end
-
-    # Net's *T* transitions.
-    # 
-    def T_tt( transitions=nil )
-      T_transitions( transitions ).sources
-    end
-
-    # Net's *t* (timeless) transitions.
-    # 
-    def t_tt transitions=nil
-      return transitions.t if transitions.nil?
-      transitions.t.subset( transitions )
-    end
-
-    # Names of specified transitions.
-    # 
-    def tn transitions=nil
-      tt( transitions ).names( true )
-    end
-
-    # Names of specified *ts* transitions.
-    # 
-    def nts transitions=nil
-      ts_tt( transitions ).names( true )
-    end
-
-    # Names of specified *tS* transitions.
-    # 
-    def ntS transitions=nil
-      tS_tt( transitions ).names( true )
-    end
-
-    # Names of specified *Ts* transitions.
-    # 
-    def nTs transitions=nil
-      Ts_tt( transitions ).names( true )
-    end
-
-    # Names of specified *TS* transitions.
-    # 
-    def nTS transitions=nil
-      TS_tt( transitions ).names( true )
-    end
-
-    # Names of specified *A* transitions.
-    # 
-    def nA transitions=nil
-      A_tt( transitions ).names( true )
-    end
-
-    # Names of specified *S* transitions.
-    # 
-    def nS transitions=nil
-      S_tt( transitions ).names( true )
-    end
-
-    # Names of specified *s* transitions.
-    # 
-    def ns transitions=nil
-      s_tt( transitions ).names( true )
-    end
-
-    # Names of specified *T* transitions.
-    # 
-    def nT transitions=nil
-      T_tt( transitions ).names( true )
-    end
-
-    # Names of specified *t* transitions.
-    # 
-    def nt transitions=nil
-      t_tt( transitions ).names( true )
-    end
+    map! Tn: :Tt,
+         tn: :tt,
+         nts: :ts_tt,
+         ntS: :tS_tt,
+         nTs: :Ts_tt,
+         nTS: :TS_tt,
+         nA: :A_tt,
+         nS: :S_tt,
+         ns: :s_tt,
+         nT: :T_tt,
+         nt: :t_tt do |r| r.names( true ) end
 
     protected
 
@@ -157,94 +77,205 @@ class YPetri::Simulation::Transitions
       end
     end
 
-    # Without arguments, returns all the transitions. If arguments are given,
-    # they are converted to transitions before being returned.
+    # Constructs an instance of @Transitions parametrized subclass. Expects a
+    # single array of transitions or transition ids and returns an array of
+    # corresponding transition representations in the simulation. Note that the
+    # includer of the +Transitions::Access+ module normally overloads
+    # :Transitions message in such way, that even without an argument, it does
+    # not fil, but returns @Transitions parametrized subclass itself.
     # 
-    def transitions transitions=nil
-      transitions.nil? ? @transitions :
-        Transitions().load( transitions.map &method( :transition ) )
+    def Transitions( array )
+      Transitions().load array.map &method( :transition )
     end
 
-    # Simulation's *ts* transtitions. If arguments are given, they must identify
-    # *ts* transitions, and are treated as in +#transitions+ method. Note that *A*
-    # transitions are not considered eligible *ts* tranisitions for the purposes
-    # of this method
+    # Without arguments, returns all the transition representations in the
+    # simulation. Otherwise, it accepts an arbitrary number of elements or
+    # element ids as arguments, and returns an array of the corresponding
+    # transition representations.
     # 
-    def ts_transitions transitions=nil
-      transitions.nil? ? transitions().ts :
-        transitions().ts.subset( transitions transitions )
+    def transitions( *transitions )
+      return @transitions if transitions.empty?
+      Transitions( transitions )
     end
 
-    # Simulation's *tS* transitions. If arguments are given, they must identify
-    # *tS* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *ts* transitions. Expects a single array of +ts+ transitions
+    # or their ids and returns an array of the corresponding ts transition
+    # representations.
     # 
-    def tS_transitions transitions=nil
-      transitions.nil? ? transitions().tS :
-        transitions().tS.subset( transitions transitions )
+    def ts_Transitions( array )
+      transitions.ts.subset( array )
     end
 
-    # Simulation's *Ts* transitions. If arguments are given, they must identify
-    # *Ts* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *ts* transitions. Without arguments, returns all the ts
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of ts transitions or transition ids as arguments, and returns an array of
+    # the corresponding ts transitions of the simulation.
     # 
-    def Ts_transitions transitions=nil
-      transitions.nil? ? transitions().Ts :
-        transitions().Ts.subset( transitions transitions )
+    def ts_transitions( *transitions )
+      return transitions().ts if transitions.empty?
+      ts_Transitions( transitions )
     end
 
-    # Simulation's *TS* transitions. If arguments are given, they must identify
-    # *TS* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *tS* transitions. Expects a single array of +tS+ transitions
+    # or their ids and returns an array of the corresponding tS transition
+    # representations.
     # 
-    def TS_transitions transitions=nil
-      transitions.nil? ? transitions().TS :
-        transitions().TS.subset( transitions transitions )
+    def tS_Transitions( array )
+      transitions.tS.subset( array )
     end
 
-    # Simulation's *A* transitions. If arguments are given, they must identify
-    # *A* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *tS* transitions. Without arguments, returns all the tS
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of tS transitions or transition ids as arguments, and returns an array of
+    # the corresponding tS transitions of the simulation.
     # 
-    def A_transitions transitions=nil
-      transitions.nil? ? transitions().A :
-      transitions().A.subset( transitions transitions )
+    def tS_transitions( *transitions )
+      return transitions().tS if transitions.empty?
+      tS_Transitions( transitions )
     end
 
-    # Simulation's *a* transitions. If argument are given, they must identify
-    # *a* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *Ts* transitions. Expects a single array of +Ts+ transitions
+    # or their ids and returns an array of the corresponding Ts transition
+    # representations.
     # 
-    def a_transitions transitions=nil
-      transitions.nil? ? transitions().a :
-        transitions().a.subset( transitions transitions )
+    def Ts_Transitions( array )
+      transitions.Ts.subset( array )
     end
 
-    # Simulation's *S* transitions. If arguments are given, they must identify
-    # *S* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *Ts* transitions. Without arguments, returns all the Ts
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of Ts transitions or transition ids as arguments, and returns an array of
+    # the corresponding Ts transitions of the simulation.
     # 
-    def S_transitions transitions=nil
-      transitions.nil? ? transitions().S :
-        transitions().S.subset( transitions transitions )
+    def Ts_transitions( *transitions )
+      return transitions().Ts if transitions.empty?
+      Ts_Transitions( transitions )
     end
 
-    # Simulation's *s* transitions. If arguments are given, they must identify
-    # *s* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *TS* transitions. Expects a single array of +TS+ transitions
+    # or their ids and returns an array of the corresponding TS transition
+    # representations.
     # 
-    def s_transitions transitions=nil
-      transitions.nil? ? transitions().s :
-        transitions().s.subset( transitions transitions )
+    def TS_Transitions( array )
+      transitions.TS.subset( array )
     end
 
-    # Simulation's *T* transitions. If arguments are given, they must identify
-    # *T* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *TS* transitions. Without arguments, returns all the TS
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of TS transitions or transition ids as arguments, and returns an array of
+    # the corresponding TS transitions of the simulation.
     # 
-    def T_transitions transitions=nil
-      transitions.nil? ? transitions().T :
-        transitions().T.subset( transitions transitions )
+    def TS_transitions( *transitions )
+      return transitions().TS if transitions.empty?
+      TS_Transitions( transitions )
     end
 
-    # Simulation's *t* transitions. If arguments are given, they must identify
-    # *t* transitions, and are treated as in +#transitions+ method.
+    # Simulation's *A* transitions. Expects a single array of +A+ transitions
+    # or their ids and returns an array of the corresponding A transition
+    # representations.
     # 
-    def t_transitions transitions=nil
-      transitions.nil? ? transitions().t :
-        transitions().t.subset( transitions transitions )
+    def A_Transitions( array )
+      transitions.A.subset( array )
+    end
+
+    # Simulation's *A* transitions. Without arguments, returns all the A
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of A transitions or transition ids as arguments, and returns an array of
+    # the corresponding A transitions of the simulation.
+    # 
+    def A_transitions( *transitions )
+      return transitions().A if transitions.empty?
+      A_Transitions( transitions )
+    end
+
+    # Simulation's *a* transitions. Expects a single array of +a+ transitions
+    # or their ids and returns an array of the corresponding a transition
+    # representations.
+    # 
+    def a_Transitions( array )
+      transitions.a.subset( array )
+    end
+
+    # Simulation's *a* transitions. Without arguments, returns all the a
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of a transitions or transition ids as arguments, and returns an array of
+    # the corresponding a transitions of the simulation.
+    # 
+    def a_transitions( *transitions )
+      return transitions().a if transitions.empty?
+      a_Transitions( transitions )
+    end
+
+    # Simulation's *S* transitions. Expects a single array of +S+ transitions
+    # or their ids and returns an array of the corresponding S transition
+    # representations.
+    # 
+    def S_Transitions( array )
+      transitions.S.subset( array )
+    end
+
+    # Simulation's *S* transitions. Without arguments, returns all the S
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of S transitions or transition ids as arguments, and returns an array of
+    # the corresponding S transitions of the simulation.
+    # 
+    def S_transitions( *transitions )
+      return transitions().S if transitions.empty?
+      S_Transitions( transitions )
+    end
+
+    # Simulation's *s* transitions. Expects a single array of +s+ transitions
+    # or their ids and returns an array of the corresponding s transition
+    # representations.
+    # 
+    def s_Transitions( array )
+      transitions.s.subset( array )
+    end
+
+    # Simulation's *s* transitions. Without arguments, returns all the s
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of s transitions or transition ids as arguments, and returns an array of
+    # the corresponding s transitions of the simulation.
+    # 
+    def s_transitions( *transitions )
+      return transitions().s if transitions.empty?
+      s_Transitions( transitions )
+    end
+
+    # Simulation's *T* transitions. Expects a single array of +T+ transitions
+    # or their ids and returns an array of the corresponding T transition
+    # representations.
+    # 
+    def T_Transitions( array )
+      transitions.T.subset( array )
+    end
+
+    # Simulation's *T* transitions. Without arguments, returns all the T
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of T transitions or transition ids as arguments, and returns an array of
+    # the corresponding T transitions of the simulation.
+    # 
+    def T_transitions( *transitions )
+      return transitions().T if transitions.empty?
+      T_Transitions( transitions )
+    end
+
+    # Simulation's *t* transitions. Expects a single array of +t+ transitions
+    # or their ids and returns an array of the corresponding t transition
+    # representations.
+    # 
+    def t_Transitions( array )
+      transitions.t.subset( array )
+    end
+
+    # Simulation's *t* transitions. Without arguments, returns all the t
+    # transitions of the simulation. Otherwise, it accepts an arbitrary number
+    # of t transitions or transition ids as arguments, and returns an array of
+    # the corresponding t transitions of the simulation.
+    # 
+    def t_transitions( *transitions )
+      return transitions().t if transitions.empty?
+      t_Transitions( transitions )
     end
   end # Access
 end # class YPetri::Simulation::Transitions

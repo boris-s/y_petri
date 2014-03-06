@@ -19,9 +19,8 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
                                      p = begin
                                            ç.net.place id
                                          rescue TypeError => err
-                                           msg = "Place #{id} not recognized " +
-                                             "a place in net #{ç.net}! (%s)"
-                                           raise TypeError, msg % err
+                                           raise TypeError, "Place #{id} not " +
+                                             "present in net #{ç.net}! (#{err})"
                                          end
                                      hsh[ id ] = ç.__new__( id )
                                    else
@@ -59,8 +58,7 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
-      # now we have to investigate the case when place.name is A_phase, why the heck does it fail
-      arg.m( [ place ] ).first
+      arg.m( place ).first
     else
       fail TypeError, "Argument type not supported!"
     end
@@ -88,5 +86,12 @@ class YPetri::Net::State::Feature::Marking < YPetri::Net::State::Feature
   # 
   def inspect
     "<Feature::Marking of #{place.name ? place.name : place}>"
+  end
+
+  # Marking features are equal if they are of equal PS and refer
+  # to the same place.
+  # 
+  def == other
+    other.is_a? net.State.Feature.Marking and place == other.place
   end
 end # YPetri::Net::State::Feature::Marking

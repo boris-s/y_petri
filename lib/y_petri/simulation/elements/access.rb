@@ -13,45 +13,68 @@ class YPetri::Simulation::Elements
     end
     alias include? includes?
 
-    # Element of the simulation (belonging to the net).
+    # Element of the simulation belonging to the net. Each simulation has its
+    # representations of places and transitions, which are based on the places
+    # and transitions of the underlying net. This method takes one argument,
+    # which (place, place name, transition, or transition name) and returns the
+    # corresponding element of the underlying net.
     # 
-    def e( id )
-      element( id ).source
+    def e( place_or_transition )
+      element( place_or_transition ).source
     end
 
-    # Elements of the simulation (belonging to the net).
+    # Elements of the simulation (belonging to the net). Expects a single array
+    # of elements (places & transitions) or element ids and returns an array of
+    # the corresponding elements in the underlying net.
     # 
-    def ee( ids=nil )
-      elements( ids ).map &:source
+    def Ee( array )
+      Elements( array ).sources
+    end
+
+    # Without arguments, returns all the places and transitions of the underlying
+    # net. Otherwise, it accepts an arbitrary number of elements or element ids
+    # as arguments, and returns an array of the corresponding places and
+    # transitions of the underlying net.
+    # 
+    def ee( *elements )
+      elements( *elements ).sources
     end
 
     # Names of the simulation's elements. Arguments, if any, are treated
     # analogically to the +#elements+ method.
     # 
-    def en ids=nil
-      elements( ids ).names
+    def en *elements
+      ee( *elements ).names
     end
 
     protected
 
     # Element instance identification.
     # 
-    def element( id )
-      if include_place? id
-        return place( id )
-      end
-      if include_transition? id
-        return transition( id )
-      end
-      fail TypeError, "No element #{id} in the simulation!"
+    def element( element )
+      return place element if include_place? element
+      return transition element if include_transition? element
+      fail TypeError, "No element #{element} in the simulation!"
     end
 
-    # Without arguments, returns all the elements (places + transitions). If
-    # arguments are given, they are converted into elements.
+    # Expects a single array of elements (places & transitions) or element
+    # ids and returns an array of the corresponding places and transitions.
     # 
-    def elements ids=nil
-      return places + transitions if ids.nil?
-      ids.map { |id| element id }
+    def Elements( array )
+      # NOTE: At the moment, the Simulation instance does not have a
+      # parametrized sublclass of Simulation::Elements class, the followin
+      # statement is thus made to return a plain array of elements.
+      Elements().load array.map &method( :element )
+    end
+
+    # Without arguments, returns all the elements (places and transitions) of
+    # the simulation. Otherwise, it accepts an arbitrary number of elements
+    # or element ids as arguments, and returns an array of the corresponding
+    # places and transitions of the simulation.
+    # 
+    def elements( *elements )
+      return places + transitions if elements.empty?
+      Elements( elements )
     end
   end # module Access
 end # class YPetri::Simulation::Elements

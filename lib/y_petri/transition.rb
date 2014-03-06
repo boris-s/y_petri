@@ -268,18 +268,14 @@ class YPetri::Transition
   #   return self
   # end
 
-  # Inspect string for a transition.
-  # 
-  def inspect
-    to_s
-  end
+  # Let's just leave this to NameMagic
 
-  # Conversion to a string.
-  # 
-  def to_s
-    "#<Transition: %s>" %
-      "#{'%s ' % name if name}(#{type})#{' id:%s' % object_id unless name}"
-  end
+  # # Conversion to a string.
+  # # 
+  # def to_s
+  #   "#<Transition: %s>" %
+  #     "#{'%s ' % name if name}(#{type})#{' id:%s' % object_id unless name}"
+  # end
 
   def place id
     super rescue Place().instance( id )

@@ -1,10 +1,10 @@
 # encoding: utf-8
 
-# Instance methods of the World class related to simulation (initial marking
-# collections, clamp collections, inital marking collections, management of
-# simulations...)
+# Workspace instance methods related to the Simulation aspect of YPetri
+# (stored marking collections, clamp collections, inital marking collections,
+# management of simulations...)
 # 
-module YPetri::World::SimulationRelated
+module YPetri::World::SimulationAspect
   # Collections of clamps, initial marking vectors, and simulation settings.
   # 
   attr_reader :clamp_collections,
@@ -173,4 +173,4 @@ module YPetri::World::SimulationRelated
                                                     ).merge( nn )
     @simulations[ key ] = sim
   end
-end # module YPetri::World::SimulationRelated
+end # module YPetri::World::SimulationAspect

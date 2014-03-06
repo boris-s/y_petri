@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-# Basic elements of a simulation, a mixin intended for YPetri::Simulation.
-# 
 class YPetri::Simulation
+  # An array of simulation owned places and/or transitions.
+  # 
   class Elements < Array
     ★ Dependency
 
@@ -24,13 +24,14 @@ class YPetri::Simulation
 
     # Creates a subset of this collection (of the same class).
     # 
-    def subset element_ids=nil, &block
+    def subset elements=nil, &block
       if block_given? then
-        msg = "If block is given, arguments are not allowed!"
-        fail ArgumentError, msg unless element_ids.nil?
+        fail ArgumentError, "If block given, arguments not allowed!" unless
+          elements.nil?
         self.class.load select( &block )
       else
-        ee = elements( element_ids )
+        fail ArgumentError, "A collection or a block expected!" if elements.nil?
+        ee = Elements( elements )
         ee.all? { |e| include? e } or
           fail TypeError, "All subset elements must be in the collection."
         self.class.load( ee )

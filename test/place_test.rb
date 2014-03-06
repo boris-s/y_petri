@@ -15,8 +15,8 @@ describe YPetri::Place do
                name: "P1"
     p.namespace.must_equal YPetri::Place
     p.name.must_equal :P1
-    p.inspect[0..7].must_equal "#<Place:"
-    p.to_s[0..2].must_equal 'P1['
+    p.inspect[0..7].must_equal "P1"
+    p.to_s[0..1].must_equal 'P1'
     p.marking.must_equal 1.1 # Attention, #marking overloaded with guard setup!
     p.quantum.must_equal 0.1
     p.add 1

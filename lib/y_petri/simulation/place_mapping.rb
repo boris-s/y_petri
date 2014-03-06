@@ -44,8 +44,8 @@ class YPetri::Simulation
 
     # Fetches the value for a place.
     # 
-    def of place_id
-      fetch place( place_id )
+    def fetch place_id
+      super place( place_id )
     end
 
     # Deletes the value for a place.

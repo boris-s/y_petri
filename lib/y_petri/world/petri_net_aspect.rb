@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# Workspace instance methods related to Petri net itsef (places, transitions,
-# net instances).
+# Workspace instance methods related to the Petri net aspect of YPetri
+# (places, transitions, net instances).
 # 
-module YPetri::World::PetriNetRelated
+module YPetri::World::PetriNetAspect
   # Instance initialization.
   # 
   def initialize
@@ -58,4 +58,4 @@ module YPetri::World::PetriNetRelated
     # Hook new transitions to add themselves magically to the :Top net.
     Transition().new_instance_hook { |new_inst| net( :Top ) << new_inst }
   end
-end # module YPetri::World::PetriNetRelated
+end # module YPetri::World::PetriNetAspect

@@ -15,7 +15,7 @@ class YPetri::Simulation
     # 
     def initialize net_transition
       super
-      @domain, @codomain = places( source.domain ), places( source.codomain )
+      @domain, @codomain = Places( source.domain ), Places( source.codomain )
       type_init
     end
 
@@ -41,14 +41,6 @@ class YPetri::Simulation
     # 
     def free_codomain_indices
       codomain.map { |p| free_places.index p }
-    end
-
-    # Builds the transition's function into a closure.
-    # 
-    def build_closure
-      mv, f = simulation.m_vector, function
-      λ = "-> { f.( %s ) }" % domain_access_code( vector: :mv )
-      eval λ
     end
 
     # Builds a code string for accessing the domain directly from a marking

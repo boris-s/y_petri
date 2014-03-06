@@ -46,194 +46,241 @@ module YPetri::Net::ElementAccess
   def element id
     begin; place( id ); rescue NameError, TypeError
       begin; transition( id ); rescue NameError, TypeError
+        puts "Hello from failed #element, id is:"
+        puts id
+        p id
         raise TypeError, "The net does not include place/transition #{id}!"
       end
     end
   end
 
-  # Returns the net's elements identified by the argument's elements.
+  # Expects an array of elements (places/transitions) or element ids, and
+  # returns an array of corresponding element instances.
   # 
-  def elements ids=nil
-    return @places + @transitions if ids.nil?
-    ids.map { |id| element id }
+  def Elements array
+    array.map &method( :element )
   end
 
-  # Returns the names of the net's elements identified by the array.
+  # Expects an arbitrary number of elements (places/transitions) or element
+  # ids and returns an array of corresponding element instances. If no arguments
+  # are supplied, returns all net's places and transitions.
   # 
-  def en ids=nil
-    elements( ids ).names
+  def elements *elements
+    return @places + @transitions if elements.empty?
+    Elements( elements )
+  end
+  alias ee elements
+
+  # Expects an array of places or place ids, and returns an array of
+  # corresponding element instances.
+  # 
+  def Places array
+    array.map &method( :place )
   end
 
-  # Returns the net's places identified by the argument's elements.
+  # Expects an arbitrary number of places or place ids and returns an array of
+  # corresponding place instances. If no arguments are supplied, returns all
+  # net's places.
   # 
-  def places ids=nil
-    return @places.dup if ids.nil?
-    ids.map { |id| place id }
+  def places *places
+    return @places.dup if places.empty?
+    Places( places )
   end
   alias pp places
 
-  # Returns the net's transitions identified by the argument's elements.
+  # Expects an array of transitions or transition ids, and returns an array of
+  # corresponding transition instances.
   # 
-  def transitions ids=nil
-    return @transitions.dup if ids.nil?
-    ids.map { |id| transition id }
+  def Transitions array
+    array.map &method( :transition )
+  end
+
+  # Expects an arbitrary number of transitions or transition ids and returns
+  # an array of corresponding transition instances. If no arguments are supplied,
+  # returns all net's transitions.
+  # 
+  def transitions *transitions
+    return @transitions.dup if transitions.empty?
+    Transitions( transitions )
   end
   alias tt transitions
 
-  # Names of places in the net.
+  # Expects an array of *ts* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def pn ids=nil
-    places( ids ).names
+  def ts_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be ts", &:ts?
   end
 
-  # Names of transitions in the net.
+  # Expects an arbitrary number of *ts* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def tn ids=nil
-    transitions( ids ).names
-  end
-
-  # *ts* transitions.
-  # 
-  def ts_transitions ids=nil
-    return transitions.select &:ts? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers", "be ts", &:ts?
+  def ts_transitions *transitions
+    return transitions().select &:ts? if transitions.empty?
+    ts_Transitions( transitions )
   end
   alias ts_tt ts_transitions
 
-  # Names of *ts* transitions.
+  # Expects an array of *tS* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def nts ids=nil
-    ts_transitions( ids ).names
+  def tS_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be tS", &:tS?
   end
 
-  # *tS* transitions.
+  # Expects an arbitrary number of *tS* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def tS_transitions ids=nil
-    return transitions.select &:tS? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers", "be tS", &:tS?
+  def tS_transitions *transitions
+    return transitions().select &:tS? if transitions.empty?
+    tS_Transitions( transitions )
   end
   alias tS_tt tS_transitions
 
-  # Names of *tS* transitions.
+  # Expects an array of *Ts* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def ntS ids=nil
-    tS_transitions( ids ).names
+  def Ts_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be Ts", &:Ts?
   end
 
-  # *Ts* transitions.
+  # Expects an arbitrary number of *Ts* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def Ts_transitions ids=nil
-    return transitions.select &:Ts? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers", "be Ts", &:Ts?
+  def Ts_transitions *transitions
+    return transitions().select &:Ts? if transitions.empty?
+    Ts_Transitions( transitions )
   end
   alias Ts_tt Ts_transitions
 
-  # Names of *Ts* transitions.
+  # Expects an array of *TS* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def nTs ids=nil
-    Ts_transitions( ids ).names
+  def TS_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be TS", &:TS?
   end
 
-  # *TS* transitions.
+  # Expects an arbitrary number of *TS* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def TS_transitions ids=nil
-    return transitions.select &:TS? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers", "be TS", &:TS?
+  def TS_transitions *transitions
+    return transitions().select &:TS? if transitions.empty?
+    TS_Transitions( transitions )
   end
   alias TS_tt TS_transitions
 
-  # Names of *TS* transitions.
+  # Expects an array of *A* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def nTS ids=nil
-    TS_transitions( ids ).names
+  def A_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be A", &:A?
   end
 
-  # *A* transitions.
+  # Expects an arbitrary number of *A* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def A_transitions ids=nil
-    return transitions.select &:A? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers", "be A", &:A?
+  def A_transitions *transitions
+    return transitions().select &:A? if transitions.empty?
+    A_Transitions( transitions )
   end
   alias A_tt A_transitions
 
-  # Names of *A* transitions.
+  # Expects an array of *a* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def nA ids=nil
-    A_transitions( ids ).names
+  def a_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be a", &:a?
   end
 
-  # *a* transitions.
+  # Expects an arbitrary number of *a* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def a_transitions ids=nil
-    return transitions.select &:a? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers",
-                              "be a (non-assignment)", &:a?
+  def a_transitions *transitions
+    return transitions().select &:a? if transitions.empty?
+    a_Transitions( transitions )
   end
   alias a_tt a_transitions
 
-  # Names of *a* transitions.
+  # Expects an array of *S* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def na ids=nil
-    A_transitions( ids ).names
+  def S_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be S", &:S?
   end
 
-  # *S* transitions.
+  # Expects an arbitrary number of *S* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def S_transitions ids=nil
-    return transitions.select &:S? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers",
-                              "be S (stoichiometric)", &:S?
+  def S_transitions *transitions
+    return transitions().select &:S? if transitions.empty?
+    S_Transitions( transitions )
   end
   alias S_tt S_transitions
 
-  # Names of *S* transitions.
+  # Expects an array of *s* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def nS ids=nil
-    S_transitions( ids ).names
+  def s_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be s", &:s?
   end
 
-  # *s* transitions.
+  # Expects an arbitrary number of *s* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def s_transitions ids=nil
-    return transitions.select &:s? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers",
-                              "be s (non-stoichiometric)", &:s?
+  def s_transitions *transitions
+    return transitions().select &:s? if transitions.empty?
+    s_Transitions( transitions )
   end
   alias s_tt s_transitions
 
-  # Names of *s* transitions.
+  # Expects an array of *T* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def ns ids=nil
-    s_transitions( ids ).names
+  def T_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be T", &:T?
   end
 
-  # *T* transitions.
-  #
-  def T_transitions ids=nil
-    return transitions.select &:T? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers",
-                              "be T (timed)", &:T?
+  # Expects an arbitrary number of *T* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
+  # 
+  def T_transitions *transitions
+    return transitions().select &:T? if transitions.empty?
+    T_Transitions( transitions )
   end
   alias T_tt T_transitions
 
-  # Names of *T* transitions.
+  # Expects an array of *t* transitions or transition ids, and returns an array
+  # of corresponding transition instances.
   # 
-  def nT ids=nil
-    T_transitions( ids ).names
+  def t_Transitions array
+    Transitions( array ).aT_all "transition identifiers", "be t", &:t?
   end
 
-  # *t* transitions.
+  # Expects an arbitrary number of *t* transitions or transition ids as
+  # arguments, and returns an array of corresponding transition instances.
   # 
-  def t_transitions ids=nil
-    return transitions.select &:t? if ids.nil?
-    transitions( ids ).aT_all "transition identifiers",
-                              "be t (timeless)", &:t?
+  def t_transitions *transitions
+    return transitions().select &:t? if transitions.empty?
+    t_Transitions( transitions )
   end
   alias t_tt t_transitions
 
-  # Names of *t* transitions.
+  # Name-returning versions of the element access methods.
   # 
-  def nt ids=nil
-    t_transitions( ids ).names
-  end  
+  map! En: :Elements,
+       en: :elements,
+       Pn: :Places,
+       pn: :places,
+       Tn: :Transitions,
+       tn: :transitions,
+       nts: :ts_transitions,
+       ntS: :tS_transitions,
+       nTs: :Ts_transitions,
+       nTS: :TS_transitions,
+       nA: :A_transitions,
+       na: :a_transitions,
+       nS: :S_transitions,
+       ns: :s_transitions,
+       nT: :T_transitions,
+       nt: :t_transitions do |elements| elements.names end
 end # class YPetri::Net::ElementAccess

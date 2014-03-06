@@ -20,19 +20,28 @@ module YPetri::Simulation::Timed
               :step,
               :default_sampling
 
-  # Sets the @step attribute of the simulation.
+  alias starting_time initial_time
+  alias ending_time target_time
+
+  attr_accessor :step, :target_time
+
+  # Explicit alias for +#step=+ method. Deprecated, use +#step=+ instead.
   # 
   def set_step n
-    @step = n
+    step=( n )
   end
   alias set_step_size set_step
 
-  # Sets the @target_time attribute of the simulation.
+  # Explicit alias for +#target_time=+ method. Deprecated, use +#target_time=+
+  # instead.
   # 
   def set_time target_time
-    @target_time = target_time
+    target_time=( target_time )
   end
   alias set_target_time set_time
+
+  delegate :sampling,
+           :sampling=, to: :recorder
 
   # Sets sampling of the simulation's data recorder.
   # 
@@ -43,11 +52,9 @@ module YPetri::Simulation::Timed
   # Changing the simulation method on the fly not supported.
   # 
   def set_simulation_method
-    fail NoMethodError, "Changing simulation method on the fly not supported!"
+    fail NotImplementedError,
+         "Changing simulation method on the fly not supported!"
   end
-
-  alias starting_time initial_time
-  alias ending_time target_time
 
   delegate :flux_vector_TS,
            :gradient_TS,
@@ -56,33 +63,52 @@ module YPetri::Simulation::Timed
            :flux_vector,
            to: :core
 
-  delegate :sampling, to: :recorder
-
-  # Returns the flux of the indicated TS transitions (all TS transitions,
-  # if no argument is given).
+  # Expects a single array of TS transitions or transition ids and returns an
+  # array of their fluxes under current marking.
   #
-  def flux ids_of_TS_transitions=nil
+  def Fluxes( array )
     tt = TS_transitions()
-    return flux tt if ids_of_TS_transitions.nil?
-    TS_transitions( ids_of_TS_transitions ).map { |t|
-      flux_vector.column_to_a.fetch tt.index( t )
-    }
+    TS_Transitions( array )
+      .map { |t| flux_vector.column_to_a.fetch tt.index( t ) }
   end
 
-  # Flux of the indicated TS transitions (as hash with transition names as keys).
-  # 
-  def t_flux ids=nil
-    TS_transitions( ids ).names( true ) >> flux( ids )
+  # Expects an arbitrary number of arguments identifying TS transitions, and
+  # retuns an array of their fluxes. Returns fluxes of all the TS transitions
+  # if no argument is given.
+  #
+  def fluxes( *transitions )
+    return Fluxes TS_transitions() if transitions.empty?
+    Fluxes( transitions )
   end
+  alias flux fluxes
+
+  # Fluxes of the indicated TS transitions. Expects a single array argument,
+  # and returns a hash with transition names as keys.
+  # 
+  def T_fluxes( array )
+    TS_Transitions( array ).names( true ) >> Fluxes( array )
+  end
+  alias t_Fluxes T_fluxes
+
+  # Fluxes of the indicated TS transitions. Expects an arbitrary number of
+  # TS transitions or their ids, returns a hash with transition names as keys.
+  # 
+  def t_fluxes( *transitions )
+    return T_fluxes TS_transitions() if transitions.empty?
+    T_fluxes( transitions )
+  end
+  alias t_flux t_fluxes
 
   # Pretty prints flux of the indicated TS transitions as a hash with transition
   # names as keys. Takes optional list of transition ids (first ordered arg.),
   # and optional 2 named arguments (+:gap+ and +:precision+), as in
   # +#pretty_print_numeric_values+.
   # 
-  def pflux ids=nil, gap: 0, precision: 4
-    t_flux( ids ).pretty_print_numeric_values( gap: gap, precision: precision )
+  def pflux( *transitions, gap: 0, precision: 4 )
+    t_flux( *transitions )
+      .pretty_print_numeric_values( gap: gap, precision: precision )
   end
+  alias pfluxes pflux
 
   # Reads the time range (initial_time .. target_time) of the simulation.
   #
@@ -164,8 +190,8 @@ module YPetri::Simulation::Timed
   # Customized dup method that allows to modify the attributes of
   # the duplicate upon creation.
   #
-  def dup time: time, **nn
-    super( **nn ).tap { |i| i.reset_time! time }
+  def dup time: time, **named_args
+    super( **named_args ).tap { |instance| instance.reset_time! time }
   end
 
   # Alias for +#dup+ for timed simulations.
@@ -232,7 +258,11 @@ module YPetri::Simulation::Timed
     reset_time!
     @step = settings[:step] || time_unit
     @default_sampling = settings[:sampling] || step
-    @core = Core().new( method: method, guarded: guarded )
+    @core = if @guarded then
+              Core().guarded.new( method: method )
+            else
+              Core().new( method: method )
+            end
     @recorder = if features_to_record then
                   # we'll have to figure out features
                   ff = case features_to_record
@@ -252,7 +282,8 @@ module YPetri::Simulation::Timed
   # for timed simulations.
   # 
   def init_core_and_recorder_subclasses
-    param_class( { Core: YPetri::Core::Timed, Recorder: Recorder },
+    param_class( { Core: YPetri::Core.timed,
+                   Recorder: Recorder },
                  with: { simulation: self } )
   end
 end # module YPetri::Simulation::Timed

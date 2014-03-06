@@ -17,7 +17,7 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
                                      hsh[ id.transition ]
                                    when ç.net.Transition then
                                      t = begin
-                                           ç.net.TS_transitions( [ id ] ).first
+                                           ç.net.TS_transitions( id ).first
                                          rescue TypeError => err
                                            msg = "Transition #{id} not " +
                                              "recognized as TS transition in " +
@@ -60,7 +60,7 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
   def extract_from arg, **nn
     case arg
     when YPetri::Simulation then
-      arg.send( :TS_transitions, [ transition ] ).first.flux
+      arg.send( :TS_transitions, transition ).first.flux
     else
       fail TypeError, "Argument type not supported!"
     end
@@ -88,5 +88,12 @@ class YPetri::Net::State::Feature::Flux < YPetri::Net::State::Feature
   # 
   def inspect
     "<Feature::Flux of #{transition.name ? transition.name : transition}>"
+  end
+
+  # Flux features are equal if they are of equal PS and refer to the
+  # same transition.
+  #
+  def == other
+    other.is_a? net.State.Feature.Flux and transition == other.transition
   end
 end # class YPetri::Net::State::Feature::Flux

@@ -15,4 +15,11 @@ class YPetri::Simulation::ElementRepresentation
   def initialize net_element_id
     @source = net.element( net_element_id )
   end
+
+  # Tweak the #to_s method to give the element representations the inspect
+  # string of type #<Name>.
+  # 
+  def to_s
+    "#<#{super}>"
+  end
 end # class YPetri::Simulation::ElementRepresentation

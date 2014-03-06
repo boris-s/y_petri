@@ -20,106 +20,223 @@ class YPetri::Net::State::Features < Array
       end
     end
 
-    delegate :net,
-             :Feature,
-             :feature,
-             to: "State()"
-
-    delegate :Marking,
-             :Firing,
-             :Gradient,
-             :Flux,
-             :Delta,
-             :Assignment,
-             to: "Feature()"
-
+    delegate :net, to: "State()"
     delegate :load, to: "Record()"
 
     alias __new__ new
 
     def new features
-      array = features.map &method( :feature )
-      __new__( array ).tap do |inst|
+      features = features.map &State().method( :Feature )
+      __new__( features ).tap do |inst|
         # Parametrize them <em>one more time</em> with Features instance.
         # Banged version of #param_class! ensures that #Record, #Dataset
         # methods are shadowed.
-        inst.param_class!( { Record: Record(), DataSet: DataSet() },
+        inst.param_class!( { Record: Record(),
+                             DataSet: DataSet() },
                            with: { features: inst } )
       end
     end
 
-    # Takes an array of marking feature identifiers (places, Marking instances),
-    # and returns the corresponding array of marking features valid for the
-    # current net. If no argument is given, an array of all the marking features
-    # of the current net is returned.
+    # Takes an arbitrary number of ordered arguments identifying features, or
+    # named arguments +:marking+, +:firing+, +:gradient+, +:flux+, +:delta+,
+    # +:assignment+ containing arrays identifying the corresponding type of
+    # features.
     # 
-    def marking arg=nil
-      return marking net.pp if arg.nil?
-      new arg.map { |id| Marking id }
+    def [] *ordered_args, **named_args
+      unless ordered_args.empty?
+        fail ArgumentError, "Named arguments must not be given if ordered " +
+          "arguments are given!" unless named_args.empty?
+        return infer_from_elements( ordered_args )
+      end
+      a = []
+      a << Marking( Array named_args[ :marking ] ) if named_args[ :marking ]
+      a << Firing( Array named_args[ :firing ] ) if named_args[ :firing ]
+      a << Flux( Array named_args[ :flux ] ) if named_args[ :flux ]
+      if named_args[ :gradient ] then
+        ordered = Array( named_args[ :gradient ] )
+        named = ordered.extract_options!
+        a << Gradient( ordered, **named )
+      end
+      if named_args[ :delta ] then
+        ordered = Array( named_args[ :delta ] )
+        named = ordered.extract_options!
+        a << Delta( ordered, **named )
+      end
+      if named_args[ :assignment ] then
+        ordered = Array( named_args[ :assignment ] )
+        named = ordered.extract_options!
+        a << Assignment( ordered, **named )
+      end
+      a.size == 1 ? a.first : a.reduce( new( [] ), :+ )
     end
 
-    # Takes an array of firing feature identifiers (transitions, Firing
-    # instances), and returns the corresponding array of firing features valid
-    # for the current net. If no argument is given, an array of all the firing
-    # features of the current net is returned.
+    # Constructs a set of marking features from an array of marking feature
+    # identifiers.
     # 
-    def firing arg=nil
-      return firing net.tS_tt if arg.nil?
-      new arg.map { |id| Firing id }
+    def Marking array
+      new array.map &net.State.Feature.method( :Marking )
     end
 
-    # Takes an array of gradient feature identifiers (places, Marking instances),
-    # qualified by an array of transitions (named argument +:transitions+,
-    # defaults to all the timed transitions in the net), and returns the
-    # corresponding array of gradient features valid for the current net. If no
-    # argument is given, an array of all the gradient features qualified by the
-    # +:transitions+ argument is returned.
+    # Expects an arbitrary number of marking feature identifiers and constructs
+    # a feature set out of them. Without arguments, full marking feature set
+    # for the underlying net is returned.
     # 
-    def gradient arg=nil, transitions: nil
-      if arg.nil? then
-        return gradient net.pp, transitions: net.T_tt if transitions.nil?
-        gradient net.pp, transitions: transitions
+    def marking *marking_feature_identifiers
+      return Marking net.pp if marking_feature_identifiers.empty?
+      Marking marking_feature_identifiers
+    end
+
+    # Constructs a set of firing features from an array of firing feature
+    # identifiers.
+    # 
+    def Firing array, **named_args
+      new array.map &net.State.Feature.method( :Firing )
+    end
+
+    # Expects an arbitrary number of firing feature identifiers and constructs
+    # a feature set out of them. Without arguments, full firing feature set
+    # (all S transitions) for the underlying net is returned.
+    # 
+    def firing *firing_feature_identifiers
+      return Firing net.S_tt if firing_feature_identifiers.empty?
+      Firing firing_feature_identifiers
+    end
+
+    # Constructs a set of gradient features from an array of gradient feature
+    # identifiers, optionally qualified by an array of transitions supplied via
+    # the named argument +:transitions+.
+    # 
+    def Gradient array, transitions: nil
+      return new array.map &net.State.Feature.method( :Gradient ) if
+        transitions.nil?
+      new array.map { |id|
+        net.State.Feature.Gradient id, transitions: transitions
+      }
+    end
+
+    # Expects an arbitrary number of gradient feature identifiers and constructs
+    # a feature set out of them, optionally qualified by an array of transitions
+    # supplied via the named argument +:transitions+. Returns the corresponding
+    # feature set. Without ordered arguments, full gradient feature set for the
+    # underlying net is returned.
+    # 
+    def gradient *args, transitions: nil
+      return Gradient args, transitions: transitions unless args.empty?
+      return Gradient net.pp, transitions: net.T_tt if transitions.nil?
+      Gradient net.pp, transitions: transitions
+    end
+
+    # Constructs a set of flux features from an array of flux feature
+    # identifiers.
+    # 
+    def Flux array
+      new array.map &net.State.Feature.method( :Flux )
+    end
+
+    # Expects an arbitrary number of flux feature identifiers and constructs
+    # a feature set out of them. Without arguments, full flux feature set for
+    # the underlying net is returned.
+    # 
+    def flux *flux_feature_identifiers
+      return Flux net.TS_tt if flux_feature_identifiers.empty?
+      Flux flux_feature_identifiers
+    end
+
+    # Constructs a set of delta features from an array of delta feature
+    # identifiers, optionally qualified by an array of transitions supplied via
+    # the named argument +:transitions+.
+    # 
+    def Delta array, transitions: nil
+      return new array.map &net.State.Feature.method( :Delta ) if
+        transitions.nil?
+      new array.map { |id|
+        net.State.Feature.Delta id, transitions: transitions
+      }
+    end
+
+    # Expects an arbitrary number of delta feature identifiers and constructs
+    # a feature set out of them, optionally qualified by an array of transitions
+    # supplied via the named argument +:transitions+. Returns the corresponding
+    # feature set. Without ordered arguments, full delta feature set for the
+    # underlying net is returned.
+    # 
+    def delta *args, transitions: L!
+      return Delta args, transitions: transitions unless args.empty?
+      fail ArgumentError, "Sorry, but feature set constructor Features.delta " +
+        "cannot be used without :transitions named argument, because it is " +
+        "ambiguous whether the transition set should default to the timed or " +
+        "timeless transitions (they cannot be mixed together when " +
+        "constructing a delta feature). Please specify the transitions, or " + 
+        "disambiguate timedness by using either .delta_timed or " +
+        ".delta_timeless method " if transitions.local_object?
+      Delta net.pp, transitions: transitions
+    end
+
+    # Expects an arbitrary number of place idetifiers and constructs a feature
+    # set out of them, optionally qualified by an array of T transitions supplied
+    # via the named argument +:transitions+. Returns the corresponding feature
+    # set. Without ordered arguments, full delta feature set for the underlying
+    # net is returned. If no transitions are supplied, full set of T transitions
+    # is assumed.
+    # 
+    def delta_timed *args, transitions: L!
+      return delta *args, transitions: net.T_transitions if
+        transitions.local_object?
+      delta *args, transitions: net.T_Transitions( Array( transitions ) )
+    end
+
+    # Expects an arbitrary number of place idetifiers and constructs a feature
+    # set out of them, optionally qualified by an array of t (timeless)
+    # transitions supplied via the named argument +:transitions+. Returns the
+    # corresponding feature set. Without ordered arguments, full delta feature
+    # set for the underlying net is returned. If no transitions are supplied,
+    # full set of t (timeless) transitions is assumed.
+    # 
+    def delta_timeless *args, transitions: L!
+      return delta *args, transitions: net.t_transitions if
+        transitions.local_object?
+      delta *args, transitions: net.t_Transitions( Array( transitions ) )
+    end
+
+    # Constructs a set of assignment features from an array of assignment feature
+    # identifiers.
+    # 
+    def Assignment array, transition: L!
+      if transition.local_object? then
+        new array.map &net.State.Feature.method( :Assignment )
       else
-        return new arg.map { |id| Gradient id } if transitions.nil?
-        new arg.map { |id| Gradient id, transitions: transitions }
+        new array.map { |id|
+          net.State.Feature.Assignment id, transition: transition
+        }
       end
     end
 
-    # Takes an array of flux feature identifiers (transitions, Flux instances),
-    # and returns the corresponding array of flux features valid for the current
-    # net. If no argument is given, an array of all the flux features of the
-    # current net is returned.
+    # Expects an arbitrary number of assignment feature identifiers and
+    # constructs a feature set out of them.
     # 
-    def flux arg=nil
-      return flux net.TS_tt if arg.nil?
-      new arg.map { |t| Flux t }
-    end
-
-    # Takes an array of delta feature identifiers (places, Delta instances),
-    # qualified by an array of transitions (named argument +:transitions+,
-    # defaults to all the transitions in the net), and returns the corresponding
-    # array of delta features valid for the current net. If no argument is
-    # given, an array of all the delta features qualified by the +:transitions+
-    # argument is returned.
-    # 
-    def delta arg=nil, transitions: nil
-      if arg.nil? then
-        return delta net.pp, transitions: net.tt if transitions.nil?
-        delta net.pp, transitions: transitions
+    def assignment *ids, transition: L!
+      if transition.local_object? then
+        fail ArgumentError, "Sorry, but Features.assignment method cannot " +
+          "be called without arguments. There is a convenience method " +
+          "Features.aa available, returning all the assignment features " +
+          "for the places with exactly one A transition upstream, if that." +
+          "is what you mean." if ids.empty?
+        Assignment( ids )
       else
-        return new arg.map { |id| Delta id } if transitions.nil?
-        new arg.map { |id| Delta id, transitions: transitions }
+        return Assignment( ids, transition: transition ) unless ids.empty?
+        Assignment net.transition( transition ).codomain, transition: transition
       end
     end
 
-    # Takes an array of assignment feature identifiesr (transitions, Assignment
-    # feature instances) and returns the corresponding array of assignment
-    # features valid for the current net. If no argument is given, an array of
-    # all the assignment features of the current net is returned.
+    # Convenience method that returns the full set of assignment features
+    # for those places, which have exactly one A transition in their upstream
+    # arcs.
     # 
-    def assignment arg=nil
-      return assignment net.A_tt if arg.nil?
-      new arg.map { |t| Assignment t }
+    def aa
+      Assignment net.places.select { |p|
+        upstream = p.upstream_arcs
+        upstream.size == 1 && upstream.first.A?
+      }
     end
 
     # Takes an array of the net elements (places and/or transitions), and infers
@@ -128,64 +245,27 @@ class YPetri::Net::State::Features < Array
     # as transition ids, and are converted to either flux features (if the
     # transition is timed), or firing features (if the transition is timeless).
     # 
-    def infer_from_elements( net_elements )
-      new net_elements.map { |e| net.element( e ) }.map { |e|
-        element, element_type = case e
-                                when Feature() then [ e, :feature ]
-                                else
-                                  begin
-                                    [ net.place( e ), :place ]
-                                  rescue TypeError, NameError
-                                    [ net.transition( e ), :transition ]
-                                  end
-                                end
-        case element_type
-        when :feature then element
-        when :place then Marking( element )
-        when :transition then
-          fail TypeError, "Flux / firing features can only be auto-inferred " +
-            "from S transitions! (#{element} was given)" unless element.S?
-          element.timed? ? Flux( element ) : Firing( element )
-        end
-      }
+    def infer_from_elements( elements )
+      new elements.map &net.State.Feature.method( :infer_from_element )
     end
   end
 
-  delegate :State,
-           :net,
-           :Feature,
-           :feature,
-           :Marking,
-           :Firing,
-           :Gradient,
-           :Flux,
-           :Delta,
-           :Assignment,
-           to: "self.class"
+  delegate :net, to: "self.class"
 
-  delegate :load,
-           to: "Record()"
+  delegate :load, to: "Record()" # Beware! #Record instance method returns
+                                 # a double parametrized subclass not identical
+                                 # to the one available via #Record class method.
 
-  alias new_record load
+  # Note that this method expects a single array argument. Message +:Record+
+  # without arguments is intercepted by a singleton method.
+  # 
+  alias Record load
 
-  # Extracts the features from a given target, returning a +Record+ instance.
+  # Extracts the features from a given target, returning a record.
   # 
   def extract_from target, **nn
-    values = map { |feat| feat.extract_from( target, **nn ) }
-    new_record( values )
-  end
-
-  # Constructs a new +Record+ instance from the supplied values array. The
-  # values in the array must correspond to the receiver feature set.
-  # 
-  def new_record values
-    Record().load values
-  end
-
-  # Constructs a new dataset based on the receiver feature set.
-  # 
-  def new_dataset *args, &blk
-    DataSet().new *args, &blk
+    values = map { |feature| feature.extract_from( target, **nn ) }
+    Record( values )
   end
 
   # Summation of feature sets.
@@ -222,130 +302,135 @@ class YPetri::Net::State::Features < Array
     end
   end
 
-  # Returns the subset of marking features.
-
-  # Expects a marking feature identifier (place identifier or Marking instance),
-  # and returns the corresponding feature from this feature set. If an array of
-  # marking feature identifiers is supplied, it is mapped to the array of
-  # corresponding features from this feature set. If no argument is given, all
-  # the marking features from this set are returned.
-  #
-  def marking arg=nil
-    return marking( select { |feat| feat.is_a? Marking() } ) if arg.nil?
-    case arg
-    when Array then self.class.new( arg.map { |id| marking id } )
-    else
-      Marking( arg ).tap do |feature|
-        include? feature or
-          fail KeyError, "No marking feature '#{arg}' in this feature set!"
-      end
-    end
-  end
-
-  # Expects a firing feature idenfier (tS transition identifier, or Firing
-  # instance), and returns the corresponding feature from this feature set. If
-  # an array of firing feature identifiers is supplied, it is mapped to the
-  # array of corresponding features from this feature set. If no argument is
-  # given, all the firing features from this set are returned.
-  #
-  def firing arg=nil
-    return firing( select { |feat| feat.is_a? Firing() } ) if arg.nil?
-    case arg
-    when Array then self.class.new( arg.map { |id| firing id } )
-    else
-      Firing( arg ).tap do |feature|
-        include? feature or
-          fail KeyError, "No firing feature '#{arg}' in this feature set!"
-      end
-    end
-  end
-
-  # Expects a flux feature identifier (TS transition identifier, or Flux
-  # instance), and returns the corresponding feature from this feature set. If
-  # an array of flux feature identifiers is supplied, it is mapped to the array
-  # of corresponding features from this feature set. If no argument is given,
-  # all the flux features from this set are returned.
-  #
-  def flux arg=nil
-    return flux( select { |feat| feat.is_a? Flux() } ) if arg.nil?
-    case arg
-    when Array then self.class.new( arg.map { |id| flux id } )
-    else
-      Flux( arg ).tap do |feature|
-        include? feature or
-          fail KeyError, "No flux feature '#{arg}' in this feature set!"
-      end
-    end
-  end
-
-  # Expects a gradient feature identifier (place identifier, or Gradient
-  # instance), qualified by an array of transitions (named argument
-  # +:transitions+, defaults to all timed transitions in the net), and
-  # returns the corresponding feature from this feature set. If an array of
-  # gradient feature identifiers is supplied, it is mapped to the array of
-  # corresponding features from this feature set. If no argument is given,
-  # all the gradient features from this feature set are returned.
+  # Returns a subset of marking features selected from this feature set. Expects
+  # a single array argument.
   # 
-  def gradient arg=nil, transitions: nil
-     if arg.nil? then
-       return gradient( select { |feat| feat.is_a? Gradient() } ) if
-         transitions.nil?
-       gradient.select { |feat| feat.transitions == net.tt( transitions ) }
-     else
-       case arg
-       when Array then
-         self.class.new( arg.map { |id| gradient id, transitions: transitions } )
-       else
-         Gradient( arg, transitions: transitions ).tap do |feature|
-           include? feature or
-             fail KeyError, "No gradient feature '#{arg}' in this fature set!"
-         end
-       end
-     end
+  def Marking array
+    array = array.map do |id|
+      net.State.Feature.Marking( id ).tap do |f|
+        include? f or fail KeyError, "No marking feature '#{f}' in this set!"
+      end
+    end
+    self.class.new array
   end
 
-  # Expects a delta feature identifier (place identifier, or Gradient instance),
-  # qualified by an array of transitions (named argument +:transitions+,
-  # defaulting to all the transtitions in the net), and returns the
-  # corresponding feature from this feature set. If an array of delta feature
-  # identifiers is supplied, it is mapped to the array of corresponding features
-  # from thie feature set.
-  #
-  def delta arg=nil, transitions: nil
-    if arg.nil? then
-      return delta( select { |feat| feat.is_a? Delta() } ) if
-        transitions.nil?
-      delta.select { |feat| feat.transitions == net.tt( transitions ) }
-    else
-      case arg
-      when Array then
-        self.class.new( arg.map { |id| delta id, transitions: transitions } )
-      else
-        Delta( arg, transitions: transitions ).tap do |feature|
-          include? feature or
-            fail KeyError, "No delta feature '#{arg}' in this feature set!"
-        end
+  # Returns a subset of marking features selected from this feature set. Expects
+  # an arbitrary number of arguments. Without arguments, selects all of them.
+  # 
+  def marking *ids
+    return Marking ids unless ids.empty?
+    self.class.new select { |f| f.is_a? net.State.Feature.Marking }
+  end
+
+  # Returns a subset of firing features selected from this feature set. Expects
+  # a single array argument.
+  # 
+  def Firing array
+    self.class.new array.map { |id|
+      net.State.Feature.Firing( id ).tap do |f|
+        include? f or fail KeyError, "No firing feature '#{f}' in this set!"
       end
+    }
+  end
+
+  # Returns a subset of firing features selected from this feature set. Expects
+  # an arbitrary number of arguments. Without arguments, selects all of them.
+  # 
+  def firing *ids
+    return Firing ids unless ids.empty?
+    self.class.new select { |f| f.is_a? net.State.Feature.Firing }
+  end
+
+  # Returns a subset of flux features selected from this feature set. Expects
+  # a single array argument.
+  # 
+  def Flux array
+    self.class.new array.map { |id|
+      net.State.Feature.Flux( id ).tap do |f|
+        include? f or fail KeyError, "No flux feature '#{f}' in this set!"
+      end
+    }
+  end
+
+  # Returns a subset of flux features selected from this feature set. Expects
+  # an arbitrary number of arguments. Without arguments, selects all of them.
+  # 
+  def flux *ids
+    return Flux ids unless ids.empty?
+    self.class.new select { |f| f.is_a? net.State.Feature.Flux }
+  end
+
+  # Returns a subset of gradient features selected from this feature set.
+  # Expects a single array argument, optionally qualified by +:transitions+
+  # named argument, defaulting to all T transitions in the net.
+  # 
+  def Gradient array, transitions: nil
+    self.class.new array.map { |id|
+      net.State.Feature.Gradient( id, transitions: transitions ).tap do |f|
+        include? f or fail KeyError, "No flux feature '#{f}' in this set!"
+      end
+    }
+  end
+
+  # Returns a subset of gradient features selected from this feature set.
+  # Expects an arbitrary number of arguments, optionally qualified by
+  # +:transitions+ named argument, defaulting to all T transitions in the
+  # net. Without arguments, selects all of them.
+  # 
+  def gradient *ids, transitions: L!
+    return Gradient ids, transitions: transitions unless ids.empty?
+    if transitions.local_object? then
+      self.class.new select { |f| f.is_a? net.State.Feature.Gradient }
+    else
+      self.class.new select { |f| f.transitions == net.tt( Array transitions ) }
     end
   end
 
-  # Expects an assignment feature identifier (tS transition identifier, or
-  # Assignment instance), and returns the corresponding feature from this
-  # feature set. If an array of firing feature identifiers is supplied, it
-  # is mapped to the array of corresponding features from this feature set.
-  # If no argument is given, all the assignment features from this set are
-  # returned.
-  #
-  def assignment arg=nil
-    return assignment( select { |feat| feat.is_a? Assignment() } ) if arg.nil?
-    case arg
-    when Array then self.class.new( arg.map { |id| assignment id } )
-    else
-      Assignment( arg ).tap do |feature|
-        include? feature or
-          fail KeyError, "No assignment feature '#{arg}' in this feature set!"
+  # Returns a subset of delta features selected from this feature set.
+  # Expects a single array argument, optionally qualified by +:transitions+
+  # named argument, defaulting to all the transitions in the net.
+  # 
+  def Delta array, transitions: nil
+    self.class.new array.map { |id|
+      net.State.Feature.Delta( id, transitions: transitions ).tap do |f|
+        include? f or
+          fail KeyError, "No delta feature '#{f}' in this feature set!"
       end
+    }
+  end
+
+  # Returns a subset of delta features selected from this feature set.
+  # Expects an arbitrary number of arguments, optionally qualified by
+  # +:transitions+ named argument, defaulting to all the transitions in the
+  # net. Without arguments, selects all the delta features.
+  #
+  def delta *ids, transitions: L!
+    return Delta ids, transitions: transitions unless ids.empty?
+    if transitions.local_object? then
+      self.class.new select { |f| f.is_a? net.State.Feature.Delta }
+    else
+      self.class.new select { |f| f.transitions == net.tt( Array transitions ) }
     end
+  end
+
+  # Returns a subset of assignment features selected from this feature set.
+  # Expects a single array argument.
+  # 
+  def Assignment array
+    self.class.new array.map { |id|
+      net.State.Feature.Assignment( id ).tap do |f|
+        include? f or fail KeyError, "No flux feature '#{f}' in this set!"
+      end
+    }
+  end
+
+  # Returns a subset of assignment features selected from this feature set.
+  # Expects an arbitrary number of arguments. Without arguments, selects all
+  # of them.
+  # 
+  def assignment *ids
+    return Assignment ids unless ids.empty?
+    self.class.new select { |f| f.is_a? net.State.Feature.Assignment }
   end
 
   # Returns a string briefly describing the feature set.

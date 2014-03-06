@@ -1,22 +1,14 @@
 # encoding: utf-8
 
-# Gillespie method.
+# Runge-Kutta method. Like vanilla Euler method, assumes that only T transitions are in the net.
 # 
-module YPetri::Core::Timed::Euler
-  # Name of this method.
-  # 
-  def simulation_method
-    :runge_kutta
+module YPetri::Core::Timed::RungeKutta
+  def delta Δt
+    fail NotImplementedError, "RungeKutta not implemented yet!"
+    # Of course, the following line is from Euler method.
+    # The formula of Runge-Kutta is more complicated.
+    # 
+    gradient * Δt
   end
-
-  # FIXME
-
-  # This is from Euler:
-
-  # # Computes Δ for the period of Δt.
-  # # 
-  # def delta Δt
-  #   gradient * Δt
-  # end
-  # alias Δ delta
-end # YPetri::Core::Timed::Euler
+  alias Δ delta
+end # YPetri::Core::Timed::RungeKutta

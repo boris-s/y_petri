@@ -1,15 +1,20 @@
 # encoding: utf-8
 
-# Timeless simulation core.
+# Timeless simulator mixin.
 # 
-class YPetri::Core::Timeless < YPetri::Core
-  require_relative 'timeless/pseudo_euler'
+module YPetri::Core::Timeless
+  require_relative 'timeless/methods'
+  ★ Methods
 
+  # Makes a single step.
+  # 
   def delta
     delta_timeless
   end
 
+  # Computes the system state delta.
+  # 
   def Δ
     delta
   end
-end # class YPetri::Core::Timeless
+end # module YPetri::Core::Timeless

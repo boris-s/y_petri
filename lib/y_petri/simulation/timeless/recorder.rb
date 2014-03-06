@@ -1,15 +1,15 @@
 module YPetri::Simulation::Timeless
-  # A timeless recorder.
+  # Timeless recorder.
   # 
   class Recorder < YPetri::Simulation::Recorder
     attr_reader :next_event
 
     # Like +YPetri::Simulation::Recording#reset+, but allowing for additional
-    # named argument +:next_sample+ that sets the event (label, hash key) of
+    # named argument +:next_event+ that sets the event (label, hash key) of
     # the next sample.
     # 
-    def reset! **nn
-      super.tap { @next_event = nn[:next_event] || 0 }
+    def reset! next_event: 0, **named_args
+      super.tap { @next_event = next_event }
     end
 
     # Backsteps the simulation.

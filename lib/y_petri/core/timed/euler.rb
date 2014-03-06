@@ -1,15 +1,11 @@
 # encoding: utf-8
 
-# Euler method.
+# Euler method. Assumes that only T transitions are in the net.
 # 
 module YPetri::Core::Timed::Euler
-  # Name of this method.
-  # 
-  def simulation_method
-    :euler
-  end
-
-  # Computes Δ for the period of Δt.
+  # Computes Δ for the period of Δt. Since this method assumes that only
+  # timed transitions are in the net, delta state is computed simply bu
+  # multiplying the gradient by Δt.
   # 
   def delta Δt
     gradient * Δt

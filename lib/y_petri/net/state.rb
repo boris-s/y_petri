@@ -1,133 +1,95 @@
 # encoding: utf-8
 
 # An array whose elements correspond to the full marking of the net's places.
-#
+# 
 class YPetri::Net::State < Array
   require_relative 'state/feature'
   require_relative 'state/features'
 
   class << self
-    # Customization of the parametrize method for the State class: Its
-    # dependents Feature and Features (feature set class) are also parametrized.
+    # Customization of the parametrize method for the State class: Its dependents
+    # Feature and Features (feature set class) are also parametrized.
     # 
     def parametrize net: ( fail ArgumentError, "No owning net!" )
       Class.new( self ).tap do |ç|
         ç.define_singleton_method :net do net end
-        ç.param_class( { Feature: Feature,
-                         Features: Features },
-                       with: { State: ç } )
+        ç.param_class!( { Feature: Feature,
+                          Features: Features },
+                        with: { State: ç } )
       end
     end
-
-    delegate :Marking,
-             :Firing,
-             :Gradient,
-             :Flux,
-             :Delta,
-             :Assignment,
-             to: "Feature()"
 
     # Returns the feature identified by the argument.
-    # 
-    def feature *id
-      fail ArgumentError, "No feature identifier!" if id.empty?
-      case id.first
-      when Feature() then id.first
-      when Feature then id.first.class.new( id.first )
-      else
-        msg = "Malformed feature identifier!"
-        fail ArgumentError, msg unless id.size == 1 and id.first.is_a? Hash
-        ꜧ = id.first
-        fail ArgumentError, msg unless ꜧ.size == 1
-        key, val = ꜧ.keys.first, ꜧ.values.first
-        recognized = :marking, :firing, :gradient, :flux, :delta, :assignment
-        msg = "Unrecognized feature: #{key}"
-        fail ArgumentError, msg unless recognized.include? key
-        # And now, with everything clean...
-        case key
-        when :marking then Marking( val )
-        when :firing then Firing( val )
-        when :flux then Flux( val )
-        when :gradient then Gradient( *val )
-        when :delta then Delta( *val )
-        when :assignment then Assignment( *val )
-        end
-      end
-    end
-
-    # If the argument is an array of features, or another Features instance,
-    # a feature set based on this array is returned. But the real purpose of
-    # this method is to allow hash-type argument, with keys +:marking+,
-    # +:firing+, +:gradient+, +:flux+, +:delta+ and +:assignment+ specifying
-    # the respective features. For +:marking+, an array of places (or Marking
-    # features) is expected. For +:firing+ and +:flux+, an array of transitions
-    # (or Firing / Flux features) is expected. For +:gradient+ and +:delta+,
-    # a hash value is expected, containing keys +:places+ and +:transitions+,
-    # specifying for which place set / transition set should gradient / delta
-    # features be constructed. More in detail, values supplied under keys
-    # +:marking+, +:firing+, +:gradient+, +:flux+, +:delta+ and +:assignment+
-    # are delegated to +Features+ class methods of the same name, and their
-    # results are joined into a single feature set.
-    # 
-    def features arg
+    #
+    def Feature arg=nil, **named_args
       case arg
-      when Features(), Array then Features().new( arg )
-      else # the real job of the method
-        marking = arg[:marking] || []
-        firing = arg[:firing] || [] # array of tS transitions
-        gradient = arg[:gradient] || [ [], transitions: [] ]
-        flux = arg[:flux] || [] # array of TS transitions
-        delta = arg[:delta] || [ [], transitions: [] ]
-        assignment = arg[:assignment] || [] # array of A transitions
-        [ Features().marking( marking ),
-          Features().firing( firing ),
-          Features().gradient( *gradient ),
-          Features().flux( flux ),
-          Features().delta( *delta ),
-          Features().assignment( assignment ) ].reduce :+
+      when Feature() then arg
+      when Feature then arg.class.new( arg )
+      when nil then
+        key, val = named_args.first
+        case key
+        when :marking then Feature().Marking( val )
+        when :firing then Feature().Firing( val )
+        when :flux then Feature().Flux( val )
+        when :gradient then Feature().Gradient( *val )
+        when :delta then Feature().Delta( *val )
+        when :assignment then Feature().Assignment( val )
+        else fail ArgumentError, "Unrecognized feature: #{key}!"
+        end
+      else
+        Feature().infer_from_element( arg )
       end
     end
 
-    delegate :marking, :firing, :gradient, :flux, :delta, :assignment,
-             to: "Features()"
-  end
+    # A constructor of a +Features+ instance. Note that the message +:Features+
+    # called without arguments is intercepted by a singleton method and returns
+    # the parametrized subclass of +State::Features+ owned by this class.
+    # 
+    # This method may accept a single array-type argument, constructing a feature
+    # set out of it. Alternatively, the method may accept named arguments:
+    # +:marking+, +:firing+, +:gradient+, +:flux+, +:delta+, and +:assignment+,
+    # specifying the a single (possibly mixed) feature set.
+    # 
+    def Features array=nil, **named_args
+      Features()[ *array, **named_args ]
+    end
+  end # class << self
 
-  # For non-parametrized vesion of the class, the class instance variables
-  # hold the non-parametrized dependent classes.
+  # For non-parametrized vesion of the class, should it ever be used in such way,
+  # the class instance variables hold the non-parametrized dependent classes.
   # 
   @Feature, @Features = Feature, Features
 
   delegate :net,
-           :Feature,
-           :Features,
-           :features,
-           :marking, :firing, :gradient, :flux, :delta, :assignment,
+           :Feature,             # Note that as syntactic salt, specific methods
+           :Features,            # #marking, #firing, #gradient, #flux etc. are
+           :features,            # not delegated to self.class.
            to: "self.class"
 
-  # Given a set of clamped places,  this method outputs a Record instance
+  # Given a set of clamped places, this method outputs a +Record+ instance
   # containing the marking of the free places (complementary to the supplied
   # set of clamped places). I no set of clamped places is supplied, it is
   # considered empty.
   # 
-  def to_record clamped_places=[]
+  def to_record clamped_places
     free_places = case clamped_places
                   when Hash then to_record( clamped_places.keys )
                   else
-                    free_places = places - places( clamped_places )
+                    places - places( clamped_places )
                   end
     features( marking: free_places ).Record.load markings( free_places ) 
   end
 
   # Marking of a single given place in this state.
   # 
-  def marking place_id
-    self[ places.index place( place_id ) ]
+  def marking place
+    self[ net.places.index net.place( place ) ]
   end
 
-  # Returns an array of markings of particular places in this state..
+  # Expects an arbitrary number of places or place ids, and returns an array
+  # of their markings as per the receiver +State+ instance.
   # 
-  def markings place_ids=nil
-    return markings( places ) if place_ids.nil?
-    place_ids.map &:marking
+  def markings *places
+    places.map &method( :marking )
   end
 end # YPetri::Net::State

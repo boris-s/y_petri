@@ -2,18 +2,19 @@
 
 # Plain Gillespie algorithm.
 #
-# The characteristic of the Gillespie method is, that it does not work starting
-# from Δt towards Δstate. Instead, it makes a random choice weighted by the
-# transition propensities, and the random choice determines both the next timed
-# transition to fire, and the size of Δt to slice off from the time axis.
+# The distinguishing quality of Gillespie method is, that it does not work from
+# from Δt towards Δstate. Instead, it makes a random choice of the transition to
+# fire (weighted by the transition propensities) and a random choice of Δt. Both
+# next transition to fire, and the size of Δt to slice off from the time axis are
+# thus stochastically determined.
 # 
 module YPetri::Core::Timed::Gillespie
-  attr_reader :rng
+  attr_reader :rng # random number generator
 
   # Gillespie method initialization.
   # 
   def initialize
-    @rng = ::Random
+    @rng = ::Random # initialize the random number generator
   end
 
   # Makes a stochastic number of Gillespie steps necessary to span the period Δt.
@@ -31,12 +32,6 @@ module YPetri::Core::Timed::Gillespie
     end
     simulation.increment_time! Δt
     print '.'
-  end
-
-  # Name of this method.
-  # 
-  def simulation_method
-    :gillespie
   end
 
   # This method updates next firing time given propensities.

@@ -41,5 +41,15 @@ class YPetri::Simulation::TransitionRepresentation
       @sparse_sv = Matrix.correspondence_matrix( codomain, places ) *
         stoichiometry.to_column_vector
     end
+
+    # Builds the S transition's function into a closure. Functions of
+    # S transitions return only a single number (flux for TS, firing for
+    # tS).
+    # 
+    def build_closure
+      mv, f = simulation.m_vector, function
+      λ = "-> { f.( %s ) }" % domain_access_code( vector: :mv )
+      eval λ
+    end
   end # module Type_S
 end # class YPetri::Simulation::TransitionRepresentation

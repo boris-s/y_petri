@@ -40,7 +40,7 @@ class YPetri::Simulation::Places < YPetri::Simulation::Elements
     offenders.each { |place|
       dm = place.source.default_marking
       fail TypeError, "#{place.source} has no default marking!" if dm.nil?
-      simulation.send :set_initial_marking, { of: place, to: dm }
+      simulation.send( :set_initial_marking, place, to: dm )
     }
   end
 end # class YPetri::Simulation::Places

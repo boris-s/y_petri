@@ -14,39 +14,43 @@ class YPetri::Simulation::Recorder
   attr_reader :features
 
   def recording
-    @recording.tap { |ds|
-      ds.instance_variable_set :@settings, simulation.settings( true )
+    @recording.tap { |dataset|
+      dataset.instance_variable_set :@settings, simulation.settings( true )
     }
   end
 
-  delegate :simulation, to: "self.class"
-  delegate :reconstruct, :reduce, to: :recording
+  delegate :simulation,
+           to: "self.class"
+
+  delegate :reconstruct,
+           :reduce,
+           to: :recording
 
   # Initializes the recorder. Takes 2 arguments: +:features+ expecting the
   # feature set to record during simulation, and +:recording+, expecting the
   # initial state of the recording.
   # 
-  def initialize features: net.State.marking( free_pp ),
+  def initialize features: net.State.Features.Marking( free_pp ),
                  recording: nil,
                  **nn
-    @features = net.State.features( features )
-    if recording then reset! recording: recording else reset! end
+    @features = net.State.Features( features )
+    recording ? reset!( recording: recording ) : reset!
   end
 
-  # Construct a new recording based on the parametrized class Recording().
+  # Construct a new recording based on the Recording() class.
   # 
   def new_recording
-    features.new_dataset
+    @features.DataSet.new
   end
 
-  # Assigns to @recording a new Dataset instance. Without arguments, the new
-  # recording is empty. With +:recording+ named argument supplied, the new
-  # recording is filled with the prescribed contents.
+  # Assigns to +@recording+ a new +DataSet+ instance. If no arguments are
+  # supplied to this method, the new recording will stay empty. A recording
+  # can be optionally supplied via +:recording+ named argument.
   # 
-  def reset! **nn
-    @features = net.State.features( nn[:features] || @features )
+  def reset! features: nil, recording: nil, **named_args
+    @features = net.State.Features( features ) if features
     @recording = new_recording
-    @recording.update Hash[ nn[:recording] ] if nn[:recording]
+    @recording.update Hash[ recording ] if recording
     return self
   end
 

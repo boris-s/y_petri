@@ -2,18 +2,10 @@
 
 # Timed simulation core.
 # 
-class YPetri::Core::Timed < YPetri::Core
-  # Euler method.
-  require_relative 'timed/euler'
-  # Euler with timeless transitions firing after each step.
-  require_relative 'timed/pseudo_euler'
-  # Euler with timeless transitions firing each time tick.
-  require_relative 'timed/quasi_euler'
-  # Gillespie stochastic method.
-  require_relative 'timed/gillespie'
-  # Runge-Kutta fifth-order method.
-  require_relative 'timed/runge_kutta'
-  
+module YPetri::Core::Timed
+  require_relative 'timed/methods'
+  ★ Methods
+
   # Makes a single step by Δt.
   # 
   def step! Δt=simulation.step
@@ -57,7 +49,7 @@ class YPetri::Core::Timed < YPetri::Core
     simulation.TS_rate_closure.call
   end
   alias propensity_vector_TS flux_vector_TS
-end # class YPetri::Core::Timed
+end # module YPetri::Core::Timed
 
 # In general, it is not required that all net elements are simulated with the
 # same method. Practically, ODE systems have many good simulation methods

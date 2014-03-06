@@ -25,5 +25,16 @@ class YPetri::Simulation::TransitionRepresentation
     def init
       super
     end
+
+    # Builds the s transition's function into a closure. Functions for s
+    # transitions (nonstoichiometric transitions) have return value arity
+    # equal to the codomain size. The returned closure here ensures that
+    # the return value is always of Array type.
+    # 
+    def build_closure
+      mv, f = simulation.m_vector, function
+      λ = "-> { Array f.( %s ) }" % domain_access_code( vector: :mv )
+      eval λ
+    end
   end # module Type_s
 end # class YPetri::Simulation::TransitionRepresentation

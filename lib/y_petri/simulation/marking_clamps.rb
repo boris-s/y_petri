@@ -2,8 +2,6 @@
 #
 class YPetri::Simulation
   class MarkingClamps < PlaceMapping
-    alias clamp_of of
-
     # Sets the clamp for a given place to a given value.
     # 
     def set place_id, to: (fail ArgumentError, "No :to value!")

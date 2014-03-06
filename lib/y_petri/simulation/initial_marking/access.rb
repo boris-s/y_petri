@@ -4,29 +4,46 @@
 #
 class YPetri::Simulation::InitialMarking
   module Access
-    # Without arguments, acts as a getter of @initial_marking. If arguments are
-    # supplied, they must identify free places, and are mapped to their initial
-    # marking.
+    # Expects a single array of free places or place ids, and returns an array
+    # of their initial markings.
     # 
-    def initial_marking ids=nil
-      if ids.nil? then
-        @initial_marking or
-          fail TypeError, "InitialMarking object not instantiated yet!"
-      else
-        free_places( ids ).map { |pl| initial_marking[ place( pl ) ] }
-      end
+    def Initial_markings array
+      Free_places( array ).map { |place| initial_marking[ place place ] }
+    end
+    alias initial_Markings Initial_markings
+
+    # Expects an arbitrary number of arguments identifying free places, whose
+    # initial markings are then returned. If no arguments are given, acts as
+    # a getter of +@initial_marking+ instance variable.
+    # 
+    def initial_markings *free_places
+      return initial_marking if free_places.empty?
+      Initial_markings( free_places )
     end
 
-    # Without arguments, returns the marking of all the simulation's places
-    # (both free and clamped) as it appears after reset. If arguments are
-    # supplied, they must identify places, and are converted to either their
-    # initial marking (free places), or their clamp value (clamped places).
+    # Expects a single free place and returns the value of its initial marking.
     # 
-    def im ids=nil
-      return im( places ) if ids.nil?
-      places( ids ).map { |pl|
-        pl.free? ? initial_marking( of: pl ) : marking_clamp( of: pl )
+    def initial_marking arg=L!
+      return initial_markings( arg ).first unless arg.local_object?
+      @initial_marking or fail TypeError, "+@initial_marking+ not present yet!"
+    end
+
+    # Expects a single array of places, and returns their marking as it would
+    # appear right after the simulation reset.
+    # 
+    def Im array
+      places( array ).map { |place|
+        place.free? ? initial_marking( place ) : marking_clamp( place )
       }
+    end
+
+    # Expects an arbitrary number of places or place identifiers, and returns
+    # their marking as it would appear right after the simulation reset. If no
+    # arguments are given, returns all of them.
+    # 
+    def im *places
+      return Im places() if places.empty?
+      Im( places )
     end
 
     # Returns initial marking vector for free places. Like +#initial_marking+,
@@ -47,9 +64,8 @@ class YPetri::Simulation::InitialMarking
 
     # Sets the initial marking of a place (frontend of +InitialMarking#set+).
     # 
-    def set_initial_marking( of: (fail ArgumentError), to: (fail ArgumentError) )
-      initial_marking.set( of, to: to )
+    def set_initial_marking( place, to: (fail ArgumentError) )
+      initial_marking.set( place, to: to )
     end
   end # module Access
 end # class YPetri::Simulation::InitialMarking
-

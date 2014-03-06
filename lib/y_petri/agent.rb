@@ -2,14 +2,14 @@
 
 require_relative 'agent/selection'
 require_relative 'agent/hash_key_pointer'
-require_relative 'agent/petri_net_related'
-require_relative 'agent/simulation_related'
+require_relative 'agent/petri_net_aspect'
+require_relative 'agent/simulation_aspect'
 
 # Public command interface of YPetri.
 # 
 class YPetri::Agent
-  ★ PetriNetRelated                  # ★ means include
-  ★ SimulationRelated
+  ★ PetriNetAspect                  # ★ means include
+  ★ SimulationAspect
 
   attr_reader :world
 

@@ -1,4 +1,4 @@
-# encoding: utf-8
+  # encoding: utf-8
 
 require_relative 'place/guard'
 require_relative 'place/guarded'
@@ -63,6 +63,7 @@ class YPetri::Place
   def initialize guard: L!, **named_args, &block
     @upstream_arcs, @downstream_arcs, @guards = [], [], [] # init to empty
     @quantum = named_args.has?( :quantum ) ? named_args[:quantum] : 1
+    named_args.may_have :default_marking, syn!: :m!
     if named_args.has? :default_marking then
       @has_default_marking = true
       @default_marking = named_args[:default_marking]
@@ -145,19 +146,22 @@ class YPetri::Place
     @marking = guard.( @default_marking )
   end
 
-  # Builds an inspect string of the place.
-  # 
-  def inspect
-    n, m, d, q = instance_description_strings
-    "#<Place: #{ ( [n, m, d, q].compact ).join ', ' }>"
-  end
 
-  # Returns a string representing the place.
-  # 
-  def to_s
-    n, m = name, marking
-    "#{n.nil? ? 'Place' : n}[#{m.nil? ? 'nil' : m}]"
-  end
+  # Let's try leave these to NameMagic
+
+  # # Builds an inspect string of the place.
+  # # 
+  # def inspect
+  #   n, m, d, q = instance_description_strings
+  #   "#<Place: #{ ( [n, m, d, q].compact ).join ', ' }>"
+  # end
+
+  # # Returns a string representing the place.
+  # # 
+  # def to_s
+  #   n, m = name, marking
+  #   "#{n.nil? ? 'Place' : n}[#{m.nil? ? 'nil' : m}]"
+  # end
 
   private
 

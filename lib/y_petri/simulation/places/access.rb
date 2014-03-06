@@ -29,48 +29,36 @@ class YPetri::Simulation::Places
     end
     alias include_place? includes_place?
 
-    # Place of the simulation (belonging to the net).
+    # Net's place.
     # 
     def p( place )
       place( place ).source
     end
 
-    # Places of the simulation (belonging to the net).
+    # Makes it so that when "places" is abbreviated to "pp", places of the
+    # underlying net are returned rather than simulation's place representations.
     # 
-    def pp( places=nil )
-      places( places ).sources
-    end
+    map! Pp: :Places,
+         pp: :places,
+         Free_pp: :Free_places,
+         free_pp: :free_places,
+         Clamped_pp: :Clamped_places,
+         clamped_pp: :clamped_places,
+         &:sources
 
-    # Free places of the simulation (belonging to the net).
-    # 
-    def free_pp( free_places=nil )
-      free_places( free_places ).sources
-    end
+    alias free_Pp Free_pp
+    alias clamped_Pp Clamped_pp
 
-    # Clamped places of the simulation (belonging to the net).
+    # Makes it so that +Pn+/+pn+ means "names of places", and that when message
+    # "n" + place_type is sent to the simulation, it returns names of the places
+    # of the specified type.
     # 
-    def clamped_pp( clamped_places=nil )
-      clamped_places( clamped_places ).sources
-    end
+    map! Pn: :Pt,
+         pn: :pp,
+         nfree: :free_places,
+         nclamped: :clamped_places do |r| r.names( true ) end
 
-    # Names of specified places.
-    # 
-    def pn( places=nil )
-      places( places ).names( true )
-    end
-
-    # Names of specified free places.
-    # 
-    def nfree free_places=nil
-      free_places( free_places ).names( true )
-    end
     alias free_pn nfree
-
-    # Names of specified clamped places.
-    # 
-    def nclamped clamped_places=nil
-      clamped_places( clamped_places ).names( true )
-    end
     alias clamped_pn nclamped
 
     protected
@@ -94,50 +82,59 @@ class YPetri::Simulation::Places
       end
     end
 
-    # Constructs a @Places instance. Note that the includer of the
-    # +Places::Access+ module overloads :Places message without arguments
-    # with the getter of the @Places parametrized subclass itself.
+    # Constructs an instance of @Places parametrized subclass. Expects a single
+    # array of places or place ids and returns an array of corresponding place
+    # representations in the simulation. Note that the includer of the
+    # +Places::Access+ module normally overloads :Places message in such way,
+    # that even without an argument, it does not fail, but returns the @Places
+    # parametrized subclass itself.
     # 
-    def Places places
-      Places().load places.map &method( :place )
+    def Places( array )
+      # Kernel.p array
+      Places().load array.map &method( :place )
     end
 
-    # Without arguments, returns all the places. If arguments are given, they
-    # are converted to places before being returned.
+    # Without arguments, returns all the place representations in the simulation.
+    # Otherwise, it accepts an arbitrary number of elements or element ids as
+    # arguments, and returns an array of the corresponding place representations.
     # 
-    def places( places=nil )
-      places.nil? ? @places : Places( places )
+    def places( *places )
+      return @places if places.empty?
+      Places( places )
     end
 
-    # Free places. If arguments are given, they must be identify free places,
-    # and are converted to them.
+    # Expects a single array of free places or place ids and returns an array of
+    # the corresponding free place representations in the simulation.
     # 
-    def free_places free_places=nil
-      free_places.nil? ? places.free : places.free.subset( free_places )
+    def Free_places( array )
+      places.free.subset( array )
+    end
+    alias free_Places Free_places
+
+    # Without arguments, returns all free places of the simulation. Otherwise, it
+    # accepts an arbitrary number of free places or place ids as arguments, and
+    # returns an array of the corresponding free places of the simulation.
+    # 
+    def free_places( *free_places )
+      return places.free if free_places.empty?
+      Free_places( free_places )
     end
 
-    # Clamped places. If arguments are given, they must be identify clamped
-    # places, and are converted to them.
+    # Expects a single array of clamped places or place ids and returns an array
+    # of the corresponding clamped place representations in the simulation.
     # 
-    def clamped_places clamped_places=nil
-      clamped_places.nil? ? places.clamped :
-        places.clamped.subset( clamped_places )
+    def Clamped_places( array )
+      places.clamped.subset( array )
     end
+    alias clamped_Places Clamped_places
 
-    # # TODO: This is my new concept of how #places vs. #Places should work. Won't
-    # # develop it now, but later, there will be 2 kinds of convenience constructors:
-    # # Places( [ p1, p2, p3 ] ) and places( p1, p2, p3 ), where Places() is overloaded
-    # # with getting the @Places parametrized subclass itself, while places() is
-    # # overloaded with getting the complete set of simulation's places. This is
-    # # convenient, but programatically inconsistent, since the method does something
-    # # completely else when the set of places happens to be empty. For programmatically
-    # # consistent way of construction a collection of places, use Places( [ *collection ] ).
-
-    # # Without arguments, returns all the places. If arguments are given, they
-    # # are converted to places before being returned.
-    # # 
-    # def places( *places )
-    #   places.empty? ? @places : Places( places )
-    # end
+    # Withoud arguments, returns all clamped places of the simulation. Otherwise,
+    # it accepts an arbitrary number of clamped places or place ids as arguments,
+    # and returns and array of the correspondingg clamped places.
+    # 
+    def clamped_places( *clamped_places )
+      return places.clamped if clamped_places.empty?
+      Clamped_places( clamped_places )
+    end
   end # module Access
 end # class YPetri::Simulation::Places

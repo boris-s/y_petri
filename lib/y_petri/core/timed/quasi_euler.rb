@@ -1,20 +1,21 @@
 # encoding: utf-8
 
-# Euler method with timeless transitions firing every time tick.
+# Adaptation of Euler method for the systems possibly with timeless transitions
+# and assignment transitions. Unlike +pseudo_euler+, which fires every step,
+# +quasi_euler+ fires every time tick. Not implemented yet.
 # 
 module YPetri::Core::Timed::QuasiEuler
-  include YPetri::Core::Timed::Euler
-
-  # Name of this method.
+  # Computes Δ for the period of Δt. Not mplemented yet.
   # 
-  def simulation_method
-    :quasi_euler
+  def delta Δt
+    fail NotImplementedError, "QuasiEuler not implemented yet!"
   end
 
-  # Makes a single step by Δt.
+
+  # Makes a single step by Δt. Not implemented yet.
   # 
   def step! Δt=simulation.step_size
-    fail NotImplementedError
+    fail NotImplementedError, "QuasiEuler not implemented yet!"
     # Now one would have to compare whichever comes first, time tick or the
     # end of Δt, and then again and again, until Δt is fired...
   end

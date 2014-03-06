@@ -36,72 +36,36 @@ class YPetri::Simulation
       end
     end
 
-    def element *args, &block
-      simulation.send :element, *args, &block
-    end
+    # Necessary to overcoming the protected character of the listed methods.
+    # 
+    [ :element,
+      :place,
+      :transition
+    ].each { |sym| define_method sym do |e| simulation.send sym, e end }
 
-    def place *args, &block
-      simulation.send :place, *args, &block
-    end
+    # Necessary to overcoming the protected character of the listed methods.
+    # 
+    [ :Elements,
+      :Places,
+      :Transitions
+    ].each { |sym| define_method sym do |array| simulation.send sym, array end }
 
-    def transition *args, &block
-      simulation.send :transition, *args, &block
-    end
-
-    def elements *args, &block
-      simulation.send :elements, *args, &block
-    end
-
-    def places *args, &block
-      simulation.send :places, *args, &block
-    end
-
-    def transitions *args, &block
-      simulation.send :transitions, *args, &block
-    end
-
-    def free_places *args, &block
-      simulation.send :free_places, *args, &block
-    end
-
-    def clamped_places *args, &block
-      simulation.send :clamped_places, *args, &block
-    end
-
-    def ts_transitions *args, &block
-      simulation.send :ts_transitions, *args, &block
-    end
-
-    def tS_transitions *args, &block
-      simulation.send :tS_transitions, *args, &block
-    end
-
-    def Ts_transitions *args, &block
-      simulation.send :Ts_transitions, *args, &block
-    end
-
-    def TS_transitions *args, &block
-      simulation.send :TS_transitions, *args, &block
-    end
-
-    def t_transitions *args, &block
-      simulation.send :t_transitions, *args, &block
-    end
-
-    def T_transitions *args, &block
-      simulation.send :T_transitions, *args, &block
-    end
-
-    def s_transitions *args, &block
-      simulation.send :s_transitions, *args, &block
-    end
-
-    def S_transitions *args, &block
-      simulation.send :S_transitions, *args, &block
-    end
-
-    def A_transitions *args, &block
-      simulation.send :A_transitions, *args, &block
-    end
+    # Necessary to overcoming the protected character of the listed methods.
+    # 
+    [ :elements,
+      :places,
+      :free_places,
+      :clamped_places,
+      :transitions,
+      :ts_transitions,
+      :tS_transitions,
+      :Ts_transitions,
+      :TS_transitions,
+      :t_transitions,
+      :T_transitions,
+      :s_transitions,
+      :S_transitions,
+      :A_transitions
+    ].each { |sym| define_method sym do |*e| simulation.send sym, *e end }
   end # class Dependency
 end # class YPetri::Simulation

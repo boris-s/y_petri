@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 require_relative 'world/dependency'
-require_relative 'world/petri_net_related'
-require_relative 'world/simulation_related'
+require_relative 'world/petri_net_aspect'
+require_relative 'world/simulation_aspect'
 
 # As the name suggests, represents the world. Holds places, transitions, nets
 # and other assets needed to set up and simulate Petri nets (settings, clamps,
@@ -11,8 +11,8 @@ require_relative 'world/simulation_related'
 # 
 class YPetri::World
   ★ NameMagic                        # ★ means include
-  ★ PetriNetRelated
-  ★ SimulationRelated
+  ★ PetriNetAspect
+  ★ SimulationAspect
 
   def initialize
     # Parametrize the Place / Transition / Net classes.

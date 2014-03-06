@@ -41,9 +41,13 @@ module YPetri::Transition::Types
   end
   alias s? nonstoichiometric?
 
-  # Does the transition's action depend on delta time?
+  # Does the transition's action depend on delta time? (Note that although A
+  # transitions are technically timeless, for pragmatic reasons, they are
+  # excluded from T/t classification, because they are generally handled
+  # differently in Petri net execution.)
   # 
   def timed?
+    return nil if A?
     @timed
   end
   alias T? timed?
@@ -51,6 +55,7 @@ module YPetri::Transition::Types
   # Is the transition timeless? (Opposite of #timed?)
   # 
   def timeless?
+    return nil if A?
     not timed?
   end
   alias t? timeless?

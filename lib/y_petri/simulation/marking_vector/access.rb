@@ -1,45 +1,90 @@
 #encoding: utf-8
 
-# A mixin.
+# A mixin to +YPetri::Simulation+.
 # 
 class YPetri::Simulation::MarkingVector
   module Access
-    # Marking of all places (as a column vector).
+    # Marking of the selected places as a column vector. Expects a single array
+    # argument.
     # 
-    def m_vector ids=nil
-      if ids.nil? then
-        @m_vector or fail TypeError, "Marking vector not established yet!"
-      else
-        m_vector.select( ids )
+    def M_vector array
+      m_vector.select( array )
+    end
+    alias m_Vector M_vector
+
+    # Acts as a getter of the simulation's state vector, instance variable
+    # +@m_vector+.
+    # 
+    def state
+      @m_vector or fail TypeError, "State not constructed yet!"
+    end
+
+    # Convenience method that accepts any number of places or place ids as
+    # arguments, and returns their marking as a column vector. If no arguments
+    # are supplied, the method returns the simulation's state vector.
+    # 
+    def m_vector *places
+      begin
+      return state if places.empty?
+      m_vector.select( places )
       end
     end
 
-    # Marking of all places (as array).
+    # Array-returning equivalents of +#M_vector+ and +m_vector+.
     # 
-    def m ids=nil
-      m_vector( ids ).to_a
-    end
+    def M *args; M_vector( *args ).to_a end
+    def m *args; m_vector( *args ).to_a end
 
-    # Marking of all places (as hash).
+
+    # map! M: :M_vector,
+    #      m: :m_vector,
+    #      &:column_to_a
+
+    # Hash-returning { place => marking } equivalents Marking of all places
+    # (as hash).
     # 
-    def place_m ids=nil
-      m_vector( ids ).to_hash
+    map! Place_m: :M_vector,
+         place_m: :m_vector,
+         &:to_hash
+    alias place_M Place_m
+
+    # Marking of the indicated places as a hash of { place name => marking }
+    # pairs. Expects a single array of places or place ids as an argument.
+    # 
+    def P_m places
+      Places( places ).names( true ) >> M( places )
     end
-  
-    # Marking of the indicated places (as hash with place names as keys).
+    alias p_M P_m
+    alias Pn_m P_m
+
+    # Marking of the indicated places as a hash of { place name => marking }
+    # pairs. Expects and arbitrary number of places or place ids and arguments.
+    # If no arguments are given, marking of all the places is returned.
     # 
-    def p_m ids=nil
-      places( ids ).names( true ) >> m( ids )
+    def p_m *places
+      places( *places ).names( true ) >> m( *places )
     end
     alias pn_m p_m
 
-    # Pretty prints marking of the indicated places as hash with place names as
-    # keys. Takes optional list of place ids (ordered argument no. 1), and
-    # optional 2 named arguments (+:gap+ and +:precision+), as in
-    # +#pretty_print_numeric_values+.
+    # Pretty prints marking of the indicated places. Expects an array of places
+    # or place ids as an argument. In addition, accepts 2 optional named
+    # arguments, +:gap+ and +:precision+ (alias +:p+), that control the layout
+    # of the printed table, like in +#pretty_print_numeric_values+ method.
     # 
-    def pm ids=nil, gap: 0, precision: 3
-      p_m( ids ).pretty_print_numeric_values gap: gap, precision: precision
+    def Pm places, **named_args
+      gap = named_args[:gap] || 0
+      precision = named_args.may_have( :precision, syn!: :p ) || 3
+      P_m( places ).pretty_print_numeric_values gap: gap, precision: precision
+    end
+
+    # Pretty prints marking of the indicated places. Expects an arbitrary number
+    # of places or place ids, and 2 optional named arguments, +:gap+ and
+    # +:precision+ (alias +:p+), that control the layout of the printed table,
+    # like in +#pretty_print_numeric_values+ method.
+    # 
+    def pm *places, **named_args
+      return Pm places() if places.empty?
+      Pm( places, **named_args )
     end
 
     # Modifies the marking vector. Takes one argument. If the argument is a hash
@@ -62,29 +107,40 @@ class YPetri::Simulation::MarkingVector
     end
     alias set_m update_m
 
-    # Marking vector of free places.
+    # Marking vector of free places. Expects an array of places or place ids, for
+    # which the marking vectro is returned.
     # 
-    def marking_vector ids=nil
-      m_vector free_places( ids )
+    def Marking_vector array
+      M_vector Free_places( array )
     end
 
-    # Marking of free places (as array).
+    # Marking vector of free places. Expects an arbitrary number of free places
+    # or place ids and returns the marking vector for them.
     # 
-    def marking ids=nil
-      marking_vector( ids ).to_a
+    def marking_vector *places
+      m_vector *free_places( *places )
     end
 
-    # Marking of free places (as hash).
+    # Array-returning versions of +#Marking_vector+ and +#marking_vector+.
     # 
-    def place_marking ids=nil
-      marking_vector( ids ).to_hash
-    end
+    map! Marking: :Marking_vector,
+         marking: :marking_vector,
+         &:to_a
 
-    # Marking of free places (as hash with place names as keys).
+    # Versions of +#Marking_vector+ and +#marking_vector+ that return hash of
+    # { place => marking } pairs.
     # 
-    def p_marking ids=nil
-      marking_vector( ids ).to_h
-    end
+    map! Place_marking: :Marking_vector,
+         place_marking: :marking_vector,
+         &:to_hash
+
+    # Versions of +#Marking_vector+ and +#marking_vector+ that return hash of
+    # { place name => marking } pairs.
+    # 
+    map! P_marking: :Marking_vector,
+         p_marking: :marking_vector,
+         &:to_h
+    alias Pn_marking P_marking
     alias pn_marking p_marking
 
     # Modifies the marking vector. Like +#update_m+, but the places must be

@@ -6,7 +6,8 @@ class YPetri::Simulation
   class PlaceRepresentation < ElementRepresentation
     attr_reader :quantum
 
-    # Index
+    # Index.
+    # 
     def m_vector_index
       places.index( self )
     end
@@ -21,32 +22,32 @@ class YPetri::Simulation
     # Setter of clamp.
     # 
     def clamp=( value )
-      simulation.set_marking_clamp( of: self, to: value )
+      simulation.set_marking_clamp( self, to: value )
     end
 
     # Setter of initial marking.
     # 
     def initial_marking=( value )
-      simulation.set_initial_marking( of: self, to: value )
+      simulation.set_initial_marking( self, to: value )
     end
 
     # Marking clamp value (or nil, if the place is clamped).
     # 
     def marking_clamp
-      simulation.marking_clamp of: self if clamped?
+      simulation.marking_clamp( self ) if clamped?
     end
     alias clamp marking_clamp
 
     # Initial marking value (or nil, if the place is free).
     # 
     def initial_marking
-      simulation.initial_marking[ self ] if free?
+      simulation.initial_marking( self ) if free?
     end
 
     # Is the place free in the current simulation?
     # 
     def free?
-      simulation.initial_marking.places.include? self
+      simulation.initial_markings.places.include? self
     end
 
     # Is the place clamped in the current simulation?

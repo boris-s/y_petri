@@ -28,7 +28,11 @@ class YPetri::Simulation
       method = settings[:method] # the simulation method
       features_to_record = settings[:record]
       init_core_and_recorder_subclasses
-      @core = Core().new( method: method, guarded: guarded )
+      @core = if @guarded then
+                Core().guarded.new( method: method )
+              else
+                Core().new( method: method )
+              end
       @recorder = if features_to_record then 
                     # we'll have to figure out features
                     ff = case features_to_record
@@ -48,7 +52,7 @@ class YPetri::Simulation
     # for timeless simulations.
     # 
     def init_core_and_recorder_subclasses
-      param_class( { Core: YPetri::Core::Timeless,
+      param_class( { Core: YPetri::Core.timeless,
                      Recorder: Recorder },
                    with: { simulation: self } )
     end

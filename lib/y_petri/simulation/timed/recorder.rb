@@ -6,6 +6,7 @@ module YPetri::Simulation::Timed
 
     attr_reader :next_time
     attr_accessor :sampling
+
     delegate :time,
              :default_sampling,
              to: :simulation
@@ -13,23 +14,22 @@ module YPetri::Simulation::Timed
     # Apart from the vanilla version arguments, timed recorder takes +:sampling+
     # argument.
     # 
-    def initialize sampling: default_sampling, next_time: time, **nn
+    def initialize( sampling: default_sampling, next_time: time, **named_args )
       super
-      @sampling = sampling
-      @next_time = next_time
+      @sampling, @next_time = sampling, next_time
     end
 
     # Construct a new recording based on +features+.
     # 
     def new_recording
-      features.new_dataset type: :timed
+      features.DataSet.new type: :timed
     end
 
     # Like +YPetri::Simulation::Recorder#reset+, but allowing for an additional
     # named argument +:next_time+ that sets the next sampling time, and
     # +:sampling:, resetting the sampling period.
     # 
-    def reset! sampling: default_sampling, next_time: time, **nn
+    def reset! sampling: default_sampling, next_time: time, **named_args
       super.tap{ @sampling, @next_time = sampling, next_time }
     end
 
@@ -51,8 +51,8 @@ module YPetri::Simulation::Timed
     # 
     def back! by=simulation.step
       time = simulation.time - by
-      simulation.recording.record( simulation.recording.floor( time ) )
-        .reconstruct.tap { |sim| sim.run! upto: time }
+      simulation.recording.reconstruct( at: simulation.recording.floor( time ) )
+        .tap { |sim| sim.run! upto: time }
     end
 
     private

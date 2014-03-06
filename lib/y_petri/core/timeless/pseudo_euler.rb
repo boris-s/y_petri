@@ -1,15 +1,11 @@
 # encoding: utf-8
 
-# Implicit Euler for timeless nets. Simply, timeless transitions
-# fire simultaneously, after which A transitions (if any) fire.
+# Implicit Euler for timeless nets.
 #
 module YPetri::Core::Timeless::PseudoEuler
-  # Name of this method.
+  # Method #step! for timeless +pseudo_euler+ method. Simply, timeless
+  # transitions fire simultaneously, after which, A transitions (if any) fire.
   # 
-  def simulation_method
-    :pseudo_euler
-  end
-
   def step!
     increment_marking_vector Δ
     assignment_transitions_all_fire!

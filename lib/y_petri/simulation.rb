@@ -64,7 +64,7 @@ class YPetri::Simulation
               :Ts_gradient_closure,
               :tS_firing_closure,
               :TS_rate_closure,
-              :A_assignment_closure,
+              :A_direct_assignment_closure,
               :increment_marking_vector_closure
 
   alias guarded? guarded
@@ -141,6 +141,7 @@ class YPetri::Simulation
                     Places: Places,
                     Transition: TransitionRepresentation,
                     Transitions: Transitions,
+                    Elements: Elements,
                     PlaceMapping: PlaceMapping,
                     InitialMarking: InitialMarking,
                     MarkingClamps: MarkingClamps,
@@ -182,7 +183,7 @@ class YPetri::Simulation
     # Make time-independent closures.
     @ts_delta_closure = transitions.ts.delta_closure
     @tS_firing_closure = transitions.tS.firing_closure
-    @A_assignment_closure = transitions.A.assignment_closure
+    @A_direct_assignment_closure = transitions.A.direct_assignment_closure
     @increment_marking_vector_closure = m_vector.increment_closure
     # Make timed-only closures.
     if timed? then
@@ -199,7 +200,7 @@ class YPetri::Simulation
     return { method: simulation_method, guarded: guarded? } unless all == true
     { net: net,
       marking_clamps: marking_clamps.keys_to_source_places,
-      initial_marking: initial_marking.keys_to_source_places
+      initial_marking: initial_markings.keys_to_source_places
     }.update( settings )
   end
 
@@ -252,7 +253,7 @@ class YPetri::Simulation
 
   # Extract a prescribed set of features.
   # 
-  def get_features arg
-    net.State.features( arg ).extract_from( self )
+  def get_features *args
+    net.State.Features( *args ).extract_from( self )
   end
 end # class YPetri::Simulation

@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-# Public command interface of YPetri.
+# Petri net aspect of +YPetri::Agent+.
 # 
-module YPetri::Agent::PetriNetRelated
+module YPetri::Agent::PetriNetAspect
   # Net selection class.
   # 
   NetSelection = Class.new YPetri::Agent::Selection
@@ -99,7 +99,6 @@ module YPetri::Agent::PetriNetRelated
                            **nn )
   end
 
-
   # Timed transition constructor: Creates a new timed transition in the current
   # world. Rate can be supplied either as +:rate+ named argument, or as a block.
   # If none is supplied, rate argument defaults to 1.
@@ -173,4 +172,4 @@ module YPetri::Agent::PetriNetRelated
   def net_point= id
     net_point_reset id
   end
-end # module YPetri::Agent::PetriNetRelated
+end # module YPetri::Agent::PetriNetAspect

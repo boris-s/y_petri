@@ -1,66 +1,66 @@
 # encoding: utf-8
 
-require_relative 'core/timed'
-require_relative 'core/timeless'
-
 # This class represents a simulator.
 # 
 class YPetri::Core
+  require_relative 'core/timed'
+  require_relative 'core/timeless'
+  require_relative 'core/guarded'
+
+  ★ YPetri::Simulation::Dependency
+
   DEFAULT_METHOD = :pseudo_euler
 
-  module Guarded
-    # Guarded simulation.
-    # 
-    def guarded?
-      true
-    end
-
-    # Guarded version of the method.
-    # 
-    def increment_marking_vector( delta )
-      try "to update marking" do
-        super( note( "Δ state if tS transitions fire once",
-                     is: Δ_if_tS_fire_once ) +
-               note( "Δ state if tsa transitions fire once",
-                     is: Δ_if_tsa_fire_once ) )
-      end
-    end
-
-    # Guarded version of the method.
-    # 
-    def A_all_fire!
-      try "to fire the assignment transitions" do
-        super
-      end
-    end
-  end
-
-  include YPetri::Simulation::Dependency
-
-  delegate :simulation, to: "self.class"
-  delegate :alert!, to: :recorder
-
   class << self
-    alias __new__ new
-
-    def new( method: nil, guarded: false, **nn )
-      # Alow for named arg. alias :simulation_method
-      sm = method || nn[:simulation_method] || DEFAULT_METHOD
-      using_simulation_method( sm, guarded: guarded ).__new__
+    # Timed subclass of self.
+    # 
+    def timed
+      Class.new self do
+        include Timed
+        def timed?; true end
+        def timeless?; false end
+      end
     end
 
-    def using_simulation_method symbol, guarded: false
-      simulation_method_module = const_get( symbol.to_s.camelize )
-      # TODO: "guarded" argument not handled yet
-      Class.new self do prepend( simulation_method_module ) end
+    # Timeless subclass of self.
+    # 
+    def timeless
+      Class.new self do
+        include Timeless
+        def timed?; false end
+        def timeless?; true end
+      end
+    end
+
+    # Vanilla simulator is not guarded.
+    # 
+    def guarded?; false end
+
+    # Guarded subclass of self (not working yet).
+    # 
+    def guarded
+      Class.new self do
+        include Guarded
+        def guarded?; true end
+      end
     end
   end
 
-  # Simulation is not guarded by default.
-  # 
-  def guarded?
-    false
+  attr_reader :simulation_method
+
+  def initialize method: nil, guarded: false, **named_args
+    @simulation_method = method || DEFAULT_METHOD
+    method_init # defined in Timed::Methods and Timeless::Methods
   end
+
+  delegate :simulation,
+           :timed?,
+           :timeless?,
+           :guarded?,
+           to: "self.class"
+
+  delegate :alert!,
+           to: :recorder
 
   # Delta for free places from timeless transitions.
   # 
@@ -97,6 +97,6 @@ class YPetri::Core
   # Fires assignment transitions.
   # 
   def assignment_transitions_all_fire!
-    simulation.A_assignment_closure.call
+    simulation.A_direct_assignment_closure.call
   end
 end # class YPetri::Core

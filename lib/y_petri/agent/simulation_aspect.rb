@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# Agent instance methods related to simulation (initial marking collections,
-# clamp collections, initial marking collections, management of simulations...)
+# Simulation aspect of +YPetri::Agent+: initial marking collections, clamp
+# collections, initial marking collections, management of simulations...
 # 
-module YPetri::Agent::SimulationRelated
+module YPetri::Agent::SimulationAspect
   require_relative 'hash_key_pointer'
   require_relative 'selection'
 
@@ -154,7 +154,7 @@ module YPetri::Agent::SimulationRelated
   end
   alias ssc simulation_settings_collection
 
-  # FIXME: This is going to be tested
+  # FIXME: This is not tested yet.
 
   def clamp clamp_hash
     clamp_hash.each_pair do |place, clamp|
@@ -270,51 +270,45 @@ module YPetri::Agent::SimulationRelated
 
   # Plot system state history.
   # 
-  def plot_marking( place_ids=nil, except: [],
+  def plot_marking( places=nil, except: [],
                   title: "State plot", ylabel: "Marking [µM]",
                   **options )
     rec = simulation.recording
-    pp = simulation.pp( place_ids ) - simulation.pp( except )
-    rec.marking( pp ).plot( title: title, ylabel: ylabel, **options )
+    pp = simulation.pp( *places ) - simulation.Pp( except )
+    rec.Marking( pp ).plot( title: title, ylabel: ylabel, **options )
   end
   alias plot_state plot_marking
 
   # Plot flux history of TS transitions.
   # 
-  def plot_flux( transition_ids=nil, except: [],
+  def plot_flux( transitions=nil, except: [],
                  title: "Flux plot", ylabel: "Flux [µM.s⁻¹]",
                  **options )
     rec = simulation.recording
-    tt = transition_ids.nil? ? simulation.TS_tt : transition_ids
-    tt = simulation.TS_tt( tt )
-    tt -= simulation.tt( except )
-    rec.flux( tt ).plot( title: title, ylabel: ylabel, **options )
+    tt = simulation.TS_tt( *transitions ) - simulation.Tt( except )
+    rec.Flux( tt ).plot( title: title, ylabel: ylabel, **options )
   end
 
   # Plot firing history of tS transitions.
   # 
-  def plot_firing( transition_ids=nil, except: [],
+  def plot_firing( transitions=nil, except: [],
                    title: "Firing plot", ylabel: "Firing [µM]",
                    **options )
     rec = simulation.recording
-    tt = transition_ids.nil? ? simulation.tS_tt : transition_ids
-    tt = simulation.tS_tt( tt )
-    tt -= simulation.tt( except )
-    rec.firing( tt ).plot( title: title, ylabel: ylabel, **options )
+    tt = simulation.tS_tt( *transitions ) - simulation.Tt( except )
+    rec.Firing( tt ).plot( title: title, ylabel: ylabel, **options )
   end
 
   # Plot gradient history of selected places with respect to a set of T
   # transitions.
   # 
-  def plot_gradient( place_ids=nil, except: [], transitions: nil,
+  def plot_gradient( places=nil, except: [], transitions: nil,
                      title: "Gradient plot", ylabel: "Gradient [µM.s⁻¹]",
                      **options )
     rec = simulation.recording
-    pp = simulation.pp( place_ids ) - simulation.ee( place_ids )
-    tt = transitions.nil? ? simulation.T_tt : transitions
-    tt = simulation.T_tt( tt )
-    tt -= simulation.ee( except )
-    rec.gradient( pp, transitions: tt )
+    pp = simulation.pp( *places ) - simulation.Ee( except )
+    tt = simulation.T_tt( *transitions ) - simulation.Ee( except )
+    rec.Gradient( pp, transitions: tt )
       .plot( title: title, ylabel: ylabel, **options )
   end
 
@@ -325,10 +319,9 @@ module YPetri::Agent::SimulationRelated
                   **options )
     options.may_have :delta_time, syn!: :Δt
     rec = simulation.recording
-    pp = simulation.pp( places ) - simulation.ee( except )
-    tt = transitions.nil? ? simulation.tt : transitions
-    tt = simulation.tt( tt ) - simulation.ee( except )
-    simulation.recording.delta( pp, transitions: tt, Δt: options[:delta_time] )
+    pp = simulation.pp( *places ) - simulation.Ee( except )
+    tt = simulation.tt( *transitions ) - simulation.Ee( except )
+    simulation.recording.Delta( pp, transitions: tt, Δt: options[:delta_time] )
       .plot( title: title, ylabel: ylabel, **options )
   end
 
@@ -365,4 +358,4 @@ module YPetri::Agent::SimulationRelated
   #   tt = transitions.nil? ? simulation.tt : transitions
   #   simulation.delta( place_id, except: except, transitions: transitions )
   # end
-end # module YPetri::Agent::SimulationRelated
+end # module YPetri::Agent::SimulationAspect
