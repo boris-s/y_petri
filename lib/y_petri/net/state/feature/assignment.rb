@@ -14,8 +14,10 @@ class YPetri::Net::State::Feature::Assignment < YPetri::Net::State::Feature
         hsh = Hash.new do |ꜧ, id|
           if id.is_a? self then # missing key "id" is an Assignment PS instance
             ꜧ[ [ id.place, transition: id.transition ] ]
-          elsif id.size == 1 then # a single place
+          elsif id.is_a? net.Place then # a single place
             ç.construct_from_a_place_with_single_upstream_A_transition( id )
+          elsif id.is_a? Array and id.size == 1 then # single place again
+            ç.construct_from_a_place_with_single_upstream_A_transition( id.first )
           else
             p = id.fetch( 0 )
             t = id.fetch( 1 ).fetch( :transition )
