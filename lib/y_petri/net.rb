@@ -97,7 +97,7 @@ class YPetri::Net
   # net already includes the argument net.
   # 
   def include_net net
-    net = Net().instance( net )
+    net = Net().instance( net ) rescue YPetri::Net.instance( net )
     p_results = net.pp.map &method( :include_place )
     t_results = net.tt.map &method( :include_transition )
     ( p_results + t_results ).reduce :|
@@ -109,7 +109,7 @@ class YPetri::Net
   # net contained no element of the argument net.
   # 
   def exclude_net id
-    net = Net().instance( id )
+    net = Net().instance( id ) rescue YPetri::Net.instance( net )
     t_rslt = net.tt.map { |t| exclude_transition t }.reduce :|
     p_rslt = net.pp.map { |p| exclude_place p }.reduce :|
     p_rslt || t_rslt

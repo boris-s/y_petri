@@ -41,6 +41,9 @@ describe YPetri::Place do
     p.upstream_places.must_equal [] # alias for #precedents
     p.dependents.must_equal []
     p.downstream_places.must_equal [] # alias for #dependents
+    p.upstream_net.places.must_equal []
+    p.downstream_net.places.must_equal []
+    p.local_net.places.must_equal []
     # fire methods
     assert_respond_to p, :fire_upstream
     assert_respond_to p, :fire_upstream!
