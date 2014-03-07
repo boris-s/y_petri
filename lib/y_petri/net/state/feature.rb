@@ -167,6 +167,8 @@ class YPetri::Net::State::Feature
   # extraction method.
   # 
   def % operand
-    extract_from *Array( operand )
+    args = Array( operand )
+    named_args = args.extract_options
+    extract_from args, **named_args
   end
 end # class YPetri::Net::State::Feature
