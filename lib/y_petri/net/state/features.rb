@@ -269,6 +269,13 @@ class YPetri::Net::State::Features < Array
     Record( values )
   end
 
+  # Interpolation operator +%+ acts as an alias for the +#extract_from+ feature
+  # extraction method.
+  # 
+  def % operand
+    extract_from *Array( operand )
+  end
+
   # Summation of feature sets.
   # 
   def + other

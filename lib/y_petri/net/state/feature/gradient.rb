@@ -97,7 +97,12 @@ class YPetri::Net::State::Feature::Gradient < YPetri::Net::State::Feature
   # Label for the gradient feature (to use in graphics etc.)
   # 
   def label
-    "∂:#{place.name}:#{transitions.size}tt"
+    "∂:#{place.name}:%s" %
+      if transitions.size == 1 then
+        transitions.first.name( true )
+      else
+        "#{transitions.size}tt"
+      end
   end
 
   # Inspect string of the gradient feature.

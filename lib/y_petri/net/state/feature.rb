@@ -162,4 +162,11 @@ class YPetri::Net::State::Feature
   delegate :net,
            :State,
            to: "self.class"
+
+  # Interpolation operator +%+ acts as an alias for the +#extract_from+ feature
+  # extraction method.
+  # 
+  def % operand
+    extract_from *Array( operand )
+  end
 end # class YPetri::Net::State::Feature

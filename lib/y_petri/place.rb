@@ -3,14 +3,16 @@
 require_relative 'place/guard'
 require_relative 'place/guarded'
 require_relative 'place/arcs'
+require_relative 'place/features'
 
 # Represents a Petri net place.
 # 
 class YPetri::Place
   ★ NameMagic                        # ★ means include
+  ★ YPetri::World::Dependency
   ★ Arcs
   ★ Guarded
-  ★ YPetri::World::Dependency
+  ★ Features
 
   class << self
     ★ YPetri::World::Dependency

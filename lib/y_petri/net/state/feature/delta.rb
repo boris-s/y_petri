@@ -142,13 +142,18 @@ class YPetri::Net::State::Feature::Delta < YPetri::Net::State::Feature
   # A string briefly describing this delta feature.
   # 
   def to_s
-    place.name
+    label
   end
 
   # Label for the delta feature (to use in graphics etc.)
   # 
   def label
-    "Δ:#{place.name}:#{transitions.size}tt"
+    "Δ:#{place.name}:%s" %
+      if transitions.size == 1 then
+        transitions.first.name( true )
+      else
+        "#{transitions.size}tt"
+      end
   end
 
   # Inspect string of the delta feature.
