@@ -275,6 +275,7 @@ class YPetri::Net::State::Features < Array
   def % operand
     args = Array( operand )
     named_args = args.extract_options!
+    arg = args.first
     extract_from args, **named_args
   end
 
