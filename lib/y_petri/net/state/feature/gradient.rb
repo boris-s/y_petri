@@ -99,7 +99,7 @@ class YPetri::Net::State::Feature::Gradient < YPetri::Net::State::Feature
   def label
     "∂:#{place.name}:%s" %
       if transitions.size == 1 then
-        transitions.first.name( true )
+        transitions.first.name || transitions.first
       else
         "#{transitions.size}tt"
       end

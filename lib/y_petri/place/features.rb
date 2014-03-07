@@ -96,4 +96,20 @@ module YPetri::Place::Features
     return Deltas upstream_arcs, net: net if transitions.empty?
     Deltas transitions, net: net
   end
+
+  # Print gradients.
+  # 
+  def pg simulation=world.simulation, precision: 8, **nn
+    ( gradients >> gradients % simulation )
+      .pretty_print_numeric_values precision: precision, **nn
+  end
+
+  # Print deltas.
+  # 
+  def pd simulation=world.simulation, precision: 8, **nn
+    nn.may_have :delta_time, syn!: :Δt
+    delta_time = nn.delete( :delta_time ) || world.simulation.step
+    ( deltas >> deltas % [ simulation, delta_time: delta_time ] )
+      .pretty_print_numeric_values precision: precision, **nn
+  end
 end # class YPetri::Place::Features

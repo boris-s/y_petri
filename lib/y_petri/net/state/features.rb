@@ -276,7 +276,7 @@ class YPetri::Net::State::Features < Array
     args = Array( operand )
     named_args = args.extract_options!
     arg = args.first
-    extract_from args, **named_args
+    extract_from arg, **named_args
   end
 
   # Summation of feature sets.

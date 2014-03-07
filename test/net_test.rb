@@ -526,7 +526,7 @@ describe "state, features, record and dataset" do
 
       it "should work" do
         ( @ff + @ff2 ).labels
-          .must_equal [ ":A", ":B", "Φ:A2B", "∂:A:1tt", "Φ:A2B", "Φ:A_plus" ]
+          .must_equal [ ":A", ":B", "Φ:A2B", "∂:A:A2B", "Φ:A2B", "Φ:A_plus" ]
         @ff.Marking( [ :A ] ).must_equal @Ff[ :A ]
         @ff.marking.must_equal @Ff[ :A, :B ]
         @ff.Firing( [ ] ).must_equal @Ff[]

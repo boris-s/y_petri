@@ -18,7 +18,7 @@ class YPetri::Net::State::Feature::Assignment < YPetri::Net::State::Feature
             ç.construct_from_a_place_with_single_upstream_A_transition( id )
           elsif id.is_a? Array and id.size == 1 then # single place again
             ç.construct_from_a_place_with_single_upstream_A_transition( id.first )
-          else
+          elsif id.is_a? Array then
             p = id.fetch( 0 )
             t = id.fetch( 1 ).fetch( :transition )
             if p.is_a? ç.net.Place and t.is_a? ç.net.Transition then
@@ -26,7 +26,9 @@ class YPetri::Net::State::Feature::Assignment < YPetri::Net::State::Feature
             else
               ꜧ[ [ ç.net.place( p ), transition: ç.net.transition( t ) ] ]
             end
-          end 
+          else
+            ç.construct_from_a_place_with_single_upstream_A_transition( id )
+          end
         end # Hash.new do
         # And assign it to @instances:
         ç.instance_variable_set :@instances, hsh
