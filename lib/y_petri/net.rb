@@ -31,6 +31,8 @@ class YPetri::Net
   class << self
     ★ YPetri::World::Dependency
 
+    private :new
+
     # Constructs a net containing a particular set of elements.
     # 
     def of elements

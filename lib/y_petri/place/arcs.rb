@@ -50,8 +50,8 @@ module YPetri::Place::Arcs
   # A net containing all the upstream transitions and their connected places.
   # 
   def upstream_net
-    o = Net() rescue YPetri::Net.send( :new ) # for use as not a PS
-    upstream_transitions.each_with_object o do |t, net|
+    net_klass = world.Net rescue YPetri::Net # for when not used as PS
+    upstream_transitions.each_with_object net_klass.send( :new ) do |t, net|
       t.arcs.each { |place| net << place }
       net << t
     end
@@ -60,8 +60,8 @@ module YPetri::Place::Arcs
   # A net containing all the upstream transitions and their connected places.
   # 
   def downstream_net
-    o = Net() rescue YPetri::Net.send( :new ) # for use as not a PS
-    downstream_transitions.each_with_object o do |t, net|
+    net_klass = world.Net rescue YPetri::Net # for when not used as PS
+    downstream_transitions.each_with_object net_klass.send( :new ) do |t, net|
       t.arcs.each { |place| net << place }
       net << t
     end
