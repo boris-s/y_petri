@@ -50,20 +50,24 @@ module YPetri::Transition::Type_T
 
   # Transition's firing under current simulation.
   # 
-  def fir Δt=world.simulation.step, **nn
-    net.State.Feature.Firing( self ) % [ simulation, Δt: Δt ]
+  def fir simulation=world.simulation, **nn
+    nn.must_have :delta_time, syn!: :Δt
+    Δt = nn.delete( :delta_time ) || simulation.step
+    simulation.net.State.Feature.Firing( self ) % [ simulation, Δt: Δt ]
   end
 
   # Transition's flux under current simulation.
   # 
-  def f Δt=world.simulation.step
-    net.State.Feature.Flux( self ) % simulation
+  def f simulation=world.simulation
+    simulation.net.State.Feature.Flux( self ) % simulation
   end
 
   # Prints the transition's action under current simulation.
   #
-  def pa Δt=world.simulation.step, **nn
-    ff = net.State.Features.Delta( codomain, transitions: self )
+  def pa simulation=world.simulation, **nn
+    nn.must_have :delta_time, syn!: :Δt
+    Δt = nn.delete( :delta_time ) || simulation.step
+    ff = simulation.net.State.Features.Delta( codomain, transitions: self )
     ( ff >> ff % simulation ).pretty_print_numeric_values( **nn )
   end
 end # class YPetri::Transition::Type_T

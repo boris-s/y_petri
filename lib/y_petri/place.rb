@@ -114,7 +114,7 @@ class YPetri::Place
   # simulation by default).
   # 
   def m simulation=world.simulation
-    net.State.Feature.Marking( self ) % simulation
+    simulation.net.State.Feature.Marking( self ) % simulation
   end
 
   # Marking setter.
@@ -153,7 +153,6 @@ class YPetri::Place
   def reset_marking
     @marking = guard.( @default_marking )
   end
-
 
   # Let's try leave these to NameMagic
 

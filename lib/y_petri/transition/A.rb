@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 # Mixin for the transitions with assignment action.
 # 
@@ -39,7 +39,7 @@ module YPetri::Transition::Type_A
 
   # Transition's assignment action under current simulation.
   # 
-  def a
-    net.State.Feature.Assignment( self ) % simulation
+  def a simulation=world.simulation
+    simulation.net.State.Feature.Assignment( self ) % simulation
   end
 end # class YPetri::Transition::Type_A
