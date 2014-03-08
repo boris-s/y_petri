@@ -36,4 +36,10 @@ module YPetri::Transition::Type_A
   def enabled?
     true
   end
+
+  # Transition's assignment action under current simulation.
+  # 
+  def a
+    net.State.Feature.Assignment( self ) % simulation
+  end
 end # class YPetri::Transition::Type_A

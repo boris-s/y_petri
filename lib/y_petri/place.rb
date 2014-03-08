@@ -86,13 +86,6 @@ class YPetri::Place
     end
   end
 
-  # Getter of the place's +@marking+ attribute.
-  # 
-  def m
-    @marking
-  end
-  alias value m
-
   # Used without arguments, it is a getter of the place's +@marking+ attribute,
   # just like the +Place#m+ method. However, if a string and a block is supplied
   # to it, it acts as an alias of the +Place#guard+ method. This is because this:
@@ -109,6 +102,19 @@ class YPetri::Place
     return @marking if args.empty?
     fail ArgumentError, "Too many arguments!" if args.size > 1
     guard args[0], &block
+  end
+
+  # Near-alias for #marking.
+  # 
+  def value
+    marking
+  end
+
+  # Getter of the place's marking attribute under a simulation (current
+  # simulation by default).
+  # 
+  def m simulation=world.simulation
+    net.State.Feature.Marking( self ) % simulation
   end
 
   # Marking setter.

@@ -73,7 +73,8 @@ class YPetri::Simulation::MarkingVector
     # 
     def Pm places, **named_args
       gap = named_args[:gap] || 0
-      precision = named_args.may_have( :precision, syn!: :p ) || 3
+      named_args.may_have :precision, syn!: :pn
+      precision = named_args.delete( :precision ) || 3
       P_m( places ).pretty_print_numeric_values gap: gap, precision: precision
     end
 

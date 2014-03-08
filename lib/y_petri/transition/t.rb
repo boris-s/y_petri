@@ -45,4 +45,17 @@ module YPetri::Transition::Type_t
       rescue YPetri::GuardError; false end
     end
   end
+
+  # Transition's firing under current simulation.
+  # 
+  def fir
+    net.State.Feature.Firing( self ) % simulation
+  end
+
+  # Prints the transition's action under current simulation.
+  # 
+  def pa **nn
+    ff = net.State.Features.Delta( codomain, transitions: self )
+    ( ff >> ff % simulation ).pretty_print_numeric_values **nn
+  end
 end # class YPetri::Transition::Type_t

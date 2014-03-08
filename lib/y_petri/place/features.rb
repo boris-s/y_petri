@@ -97,14 +97,14 @@ module YPetri::Place::Features
     Deltas transitions, net: net
   end
 
-  # Print gradients.
+  # Convenience method. Prints gradients under curent simulation.
   # 
   def pg simulation=world.simulation, precision: 8, **nn
     ( gradients >> gradients % simulation )
       .pretty_print_numeric_values precision: precision, **nn
   end
 
-  # Print deltas.
+  # Convenience method. Prints deltas under current simulation.
   # 
   def pd simulation=world.simulation, precision: 8, **nn
     nn.may_have :delta_time, syn!: :Δt
