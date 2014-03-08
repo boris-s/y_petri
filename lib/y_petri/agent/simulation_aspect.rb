@@ -264,7 +264,7 @@ module YPetri::Agent::SimulationAspect
   # Plot the recording reduced into the given feature set.
   # 
   def plot features
-    ff = simulation.net.state.features( features )
+    ff = simulation.net.State.Features( features )
     simulation.recording.reduce_features( ff ).plot
   end
 

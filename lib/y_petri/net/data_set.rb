@@ -355,14 +355,14 @@ class YPetri::Net::DataSet < Hash
     ff = if elements.nil? then
            nn_ff = nn.slice [ :marking, :flux, :firing,
                               :gradient, :delta, :assignment ]
-           nn_ff.empty? ? features : net.State.features( nn_ff )
+           nn_ff.empty? ? features : net.State.Features( nn_ff )
          else
            net.State.Features.infer_from_elements( elements )
          end
     # Figure out the features not to plot ("except" features).
     xff = case except
           when Array then net.State.Features.infer_from_elements( except )
-          when Hash then net.State.features( except )
+          when Hash then net.State.Features( except )
           else
             fail TypeError, "Wrong type of :except argument: #{except.class}"
           end
