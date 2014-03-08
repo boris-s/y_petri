@@ -22,7 +22,7 @@ class YPetri::Simulation::Places < YPetri::Simulation::Elements
   # Marking of the place collection in the current simulation.
   # 
   def marking
-    simulation.m self
+    simulation.M self
   end
 
   private
