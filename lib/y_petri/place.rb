@@ -154,6 +154,12 @@ class YPetri::Place
     @marking = guard.( @default_marking )
   end
 
+  # Convenience visualizer of the upstream net.
+  # 
+  def uv
+    upstream_net.visualize
+  end
+
   # Let's try leave these to NameMagic
 
   # # Builds an inspect string of the place.
