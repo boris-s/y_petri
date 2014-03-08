@@ -63,13 +63,13 @@ describe ::YPetri::Transition do
       assert [@t1, @t2, @t3].all? { |t| t.s? }
       # Now let's flex them:
       @t1.fire!
-      [@p1.m, @p3.m].must_equal [3, 5]
+      [ @p1.marking, @p3.marking ].must_equal [3, 5]
       @t3.fire!
-      [@p1.m, @p3.m].must_equal [3.5, 5.5]
+      [ @p1.marking, @p3.marking ].must_equal [3.5, 5.5]
       @t2.fire!
-      [@p1.m, @p3.m].must_equal [7.0, 9.0]
-      @t1.codomain_marking.must_equal [@p1.m, @p3.m]
-      @t1.domain_marking.must_equal [@p2.m]
+      [ @p1.marking, @p3.marking ].must_equal [7.0, 9.0]
+      @t1.codomain_marking.must_equal [ @p1.marking, @p3.marking ]
+      @t1.domain_marking.must_equal [@p2.marking ]
       @t1.zero_action.must_equal [0, 0]
     end
   end
@@ -97,11 +97,11 @@ describe ::YPetri::Transition do
       @t2.s.must_equal( { @p5.object_id => -1, @p1.object_id => 1 } )
       @t1.domain.must_equal [@p5] # inferred domain
       @t2.domain.must_equal [] # domain is empty in functionless transitions!
-      [@p1.m, @p5.m].must_equal [1, 5]
+      [ @p1.marking, @p5.marking ].must_equal [1, 5]
       @t1.fire!
-      [@p1.m, @p5.m].must_equal [2, 4]
+      [ @p1.marking, @p5.marking ].must_equal [2, 4]
       @t2.fire!
-      [@p1.m, @p5.m].must_equal [3, 3]
+      [ @p1.marking, @p5.marking ].must_equal [3, 3]
     end
   end
 
@@ -117,10 +117,10 @@ describe ::YPetri::Transition do
       assert @t1.functional?
       assert @t1.timed?
       @t1.domain.must_equal [@p5]
-      [@p1.m, @p5.m].must_equal [1, 5]
+      [ @p1.marking, @p5.marking ].must_equal [1, 5]
       @t1.rate_closure.arity.must_equal 0
       @t1.fire! 0.5
-      [@p1.m, @p5.m].must_equal [1.5, 4.5]
+      [ @p1.marking, @p5.marking ].must_equal [1.5, 4.5]
     end
   end
 

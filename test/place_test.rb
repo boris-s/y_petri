@@ -22,15 +22,15 @@ describe YPetri::Place do
     p.add 1
     p.value.must_equal 2.1   # near-alias of #marking (no guard setup)
     p.subtract 0.5
-    p.m.must_equal 1.6       # alias of #value
+    p.marking.must_equal 1.6       # alias of #value
     p.reset_marking
     p.marking.must_equal 3.2
     p.marking = 42
-    p.m.must_equal 42
-    p.m = 43
-    p.m.must_equal 43
+    p.marking.must_equal 42
+    p.marking = 43
+    p.marking.must_equal 43
     p.value = 44
-    p.m.must_equal 44
+    p.marking.must_equal 44
     p.upstream_arcs.must_equal []
     p.upstream_transitions.must_equal [] # alias of #upstream_arcs
     p.ϝ.must_equal []                    # alias of #upstream_arcs
