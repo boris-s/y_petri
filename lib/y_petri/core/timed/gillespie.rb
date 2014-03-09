@@ -9,12 +9,10 @@
 # thus stochastically determined.
 # 
 module YPetri::Core::Timed::Gillespie
-  attr_reader :rng # random number generator
-
-  # Gillespie method initialization.
+  # Returns a random number generator, only created once.
   # 
-  def initialize
-    @rng = ::Random # initialize the random number generator
+  def rng
+    @rng ||= ::Random
   end
 
   # Makes a stochastic number of Gillespie steps necessary to span the period Δt.
