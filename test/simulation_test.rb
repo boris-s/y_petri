@@ -335,7 +335,8 @@ describe "timed simulation" do
     s = simulation
     s.settings.must_equal( { method: :pseudo_euler, guarded: false,
                              step: 0.1, sampling: 5, time: 0..60 } ) 
-    assert s.recording.to_csv.start_with?( "0.0,0.5,0.5\n" +
+    assert s.recording.to_csv.start_with?( ":event,:A,:B\n" +
+                                           "0.0,0.5,0.5\n" +
                                            "5.0,0.475,0.38916\n" +
                                            "10.0,0.45,0.30289\n" + 
                                            "15.0,0.425,0.23574\n" +

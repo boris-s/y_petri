@@ -336,7 +336,7 @@ class YPetri::Net::DataSet < Hash
   # 
   def to_csv
     require 'csv'
-    features.labels.map( &:to_s ).join( ',' ) + "\n" +
+    [ ":event", *features.labels.map( &:to_s ) ].join( ',' ) + "\n" +
       map { |lbl, rec| [ lbl, *rec ].join ',' }.join( "\n" )
   end
 
