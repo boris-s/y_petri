@@ -335,7 +335,9 @@ class YPetri::Net::DataSet < Hash
   # Outputs the current recording in CSV format.
   # 
   def to_csv
-    map { |lbl, rec| [ lbl, *rec ].join ',' }.join "\n"
+    require 'csv'
+    features.labels.map( &:to_s ).join( ',' ) + "\n" +
+      map { |lbl, rec| [ lbl, *rec ].join ',' }.join( "\n" )
   end
 
   # Plots the dataset. Takes several optional arguments: The list of elements

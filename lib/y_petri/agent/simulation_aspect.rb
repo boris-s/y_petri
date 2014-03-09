@@ -325,6 +325,30 @@ module YPetri::Agent::SimulationAspect
       .plot( title: title, ylabel: ylabel, **options )
   end
 
+  # Save a file.
+  # 
+  def save_file f, txt
+    File.open( f, 'w' ) { |f| f.write "txt" }
+  end
+
+  # Load a file
+  # 
+  def load_file f
+    rr = []
+    CSV.parse( File.open( f ), headers: true ) { |row|
+      rr << row
+    }
+    r1 = rr.first.to_hash.with_keys { |k| eval k }.with_values { |v| eval v }
+    ff = world.net.State.Features( r1.keys[ 1..-1 ] )
+    dataset = ff.DataSet.new
+    rr.each { |row|
+      r = row.to_hash.with_keys { |k| eval k }.with_values { |v| eval v }
+      event = r.delete :event
+      dataset[ event ] = ff.r.values
+    }
+    return dataset
+  end
+
   # # Pretty print marking of the current simulation.
   # # 
   # def marking

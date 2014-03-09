@@ -5,7 +5,7 @@ require_relative 'agent/hash_key_pointer'
 require_relative 'agent/petri_net_aspect'
 require_relative 'agent/simulation_aspect'
 
-# Public command interface of YPetri.
+# A dumb agent that represents and helps the user.
 # 
 class YPetri::Agent
   ★ PetriNetAspect                  # ★ means include
