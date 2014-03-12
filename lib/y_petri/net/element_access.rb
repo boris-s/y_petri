@@ -267,20 +267,20 @@ module YPetri::Net::ElementAccess
 
   # Name-returning versions of the element access methods.
   # 
-  map! En: :Elements,
-       en: :elements,
-       Pn: :Places,
-       pn: :places,
-       Tn: :Transitions,
-       tn: :transitions,
-       nts: :ts_transitions,
-       ntS: :tS_transitions,
-       nTs: :Ts_transitions,
-       nTS: :TS_transitions,
-       nA: :A_transitions,
-       na: :a_transitions,
-       nS: :S_transitions,
-       ns: :s_transitions,
-       nT: :T_transitions,
-       nt: :t_transitions do |elements| elements.names end
+  chain En: :Elements,
+        en: :elements,
+        Pn: :Places,
+        pn: :places,
+        Tn: :Transitions,
+        tn: :transitions,
+        nts: :ts_transitions,
+        ntS: :tS_transitions,
+        nTs: :Ts_transitions,
+        nTS: :TS_transitions,
+        nA: :A_transitions,
+        na: :a_transitions,
+        nS: :S_transitions,
+        ns: :s_transitions,
+        nT: :T_transitions,
+        nt: :t_transitions do |elements| elements.names end
 end # class YPetri::Net::ElementAccess

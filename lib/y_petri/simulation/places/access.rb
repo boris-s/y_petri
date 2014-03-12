@@ -38,13 +38,13 @@ class YPetri::Simulation::Places
     # Makes it so that when "places" is abbreviated to "pp", places of the
     # underlying net are returned rather than simulation's place representations.
     # 
-    map! Pp: :Places,
-         pp: :places,
-         Free_pp: :Free_places,
-         free_pp: :free_places,
-         Clamped_pp: :Clamped_places,
-         clamped_pp: :clamped_places,
-         &:sources
+    chain Pp: :Places,
+          pp: :places,
+          Free_pp: :Free_places,
+          free_pp: :free_places,
+          Clamped_pp: :Clamped_places,
+          clamped_pp: :clamped_places,
+          &:sources
 
     alias free_Pp Free_pp
     alias clamped_Pp Clamped_pp
@@ -53,10 +53,10 @@ class YPetri::Simulation::Places
     # "n" + place_type is sent to the simulation, it returns names of the places
     # of the specified type.
     # 
-    map! Pn: :Pt,
-         pn: :pp,
-         nfree: :free_places,
-         nclamped: :clamped_places do |r| r.names( true ) end
+    chain Pn: :Pt,
+          pn: :pp,
+          nfree: :free_places,
+          nclamped: :clamped_places do |r| r.names( true ) end
 
     alias free_pn nfree
     alias clamped_pn nclamped

@@ -23,43 +23,43 @@ class YPetri::Simulation::Transitions
     # of the underlying net are returned rather than simulation's transition
     # representations.
     # 
-    map! Tt: :Transitions,
-         tt: :transitions,
-         ts_Tt: :ts_Transitions,
-         ts_tt: :ts_transitions,
-         tS_Tt: :tS_Transitions,
-         tS_tt: :tS_transitions,
-         Ts_Tt: :Ts_Transitions,
-         Ts_tt: :Ts_transitions,
-         TS_Tt: :TS_Transitions,
-         TS_tt: :TS_transitions,
-         A_Tt: :A_Transitions,
-         A_tt: :A_transitions,
-         S_Tt: :S_Transitions,
-         S_tt: :S_transitions,
-         s_Tt: :S_Transitions,
-         s_tt: :S_transitions,
-         T_Tt: :T_Transitions,
-         T_tt: :T_transitions,
-         t_Tt: :t_Transitions,
-         t_tt: :t_transitions,
-         &:sources
+    chain Tt: :Transitions,
+          tt: :transitions,
+          ts_Tt: :ts_Transitions,
+          ts_tt: :ts_transitions,
+          tS_Tt: :tS_Transitions,
+          tS_tt: :tS_transitions,
+          Ts_Tt: :Ts_Transitions,
+          Ts_tt: :Ts_transitions,
+          TS_Tt: :TS_Transitions,
+          TS_tt: :TS_transitions,
+          A_Tt: :A_Transitions,
+          A_tt: :A_transitions,
+          S_Tt: :S_Transitions,
+          S_tt: :S_transitions,
+          s_Tt: :S_Transitions,
+          s_tt: :S_transitions,
+          T_Tt: :T_Transitions,
+          T_tt: :T_transitions,
+          t_Tt: :t_Transitions,
+          t_tt: :t_transitions,
+          &:sources
 
     # Makes it so that +Tn+/+tn+ means "names of transitions", and that when
     # message "n" + transition_type is sent to the simulation, it returns names
     # of the trasitions of the specified type.
     # 
-    map! Tn: :Tt,
-         tn: :tt,
-         nts: :ts_tt,
-         ntS: :tS_tt,
-         nTs: :Ts_tt,
-         nTS: :TS_tt,
-         nA: :A_tt,
-         nS: :S_tt,
-         ns: :s_tt,
-         nT: :T_tt,
-         nt: :t_tt do |r| r.names( true ) end
+    chain Tn: :Tt,
+          tn: :tt,
+          nts: :ts_tt,
+          ntS: :tS_tt,
+          nTs: :Ts_tt,
+          nTS: :TS_tt,
+          nA: :A_tt,
+          nS: :S_tt,
+          ns: :s_tt,
+          nT: :T_tt,
+          nt: :t_tt do |r| r.names( true ) end
 
     protected
 

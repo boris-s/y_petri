@@ -43,9 +43,9 @@ class YPetri::Simulation::MarkingVector
     # Hash-returning { place => marking } equivalents Marking of all places
     # (as hash).
     # 
-    map! Place_m: :M_vector,
-         place_m: :m_vector,
-         &:to_hash
+    chain Place_m: :M_vector,
+          place_m: :m_vector,
+          &:to_hash
     alias place_M Place_m
 
     # Marking of the indicated places as a hash of { place name => marking }
@@ -124,23 +124,23 @@ class YPetri::Simulation::MarkingVector
 
     # Array-returning versions of +#Marking_vector+ and +#marking_vector+.
     # 
-    map! Marking: :Marking_vector,
-         marking: :marking_vector,
-         &:to_a
+    chain Marking: :Marking_vector,
+          marking: :marking_vector,
+          &:to_a
 
     # Versions of +#Marking_vector+ and +#marking_vector+ that return hash of
     # { place => marking } pairs.
     # 
-    map! Place_marking: :Marking_vector,
-         place_marking: :marking_vector,
-         &:to_hash
+    chain Place_marking: :Marking_vector,
+          place_marking: :marking_vector,
+          &:to_hash
 
     # Versions of +#Marking_vector+ and +#marking_vector+ that return hash of
     # { place name => marking } pairs.
     # 
-    map! P_marking: :Marking_vector,
-         p_marking: :marking_vector,
-         &:to_h
+    chain P_marking: :Marking_vector,
+          p_marking: :marking_vector,
+          &:to_h
     alias Pn_marking P_marking
     alias pn_marking p_marking
 
