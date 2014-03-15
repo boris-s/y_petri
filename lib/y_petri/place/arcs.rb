@@ -33,6 +33,14 @@ module YPetri::Place::Arcs
     arcs.names arg
   end
 
+  # Arc (a transition connected to this place) identifier.
+  # 
+  def arc id
+    transition = transition( id )
+    arcs.find { |t| t == transition } or
+      fail TypeError, "No transition #{id} connected to #{self}!"
+  end
+
   # Union of the domains of the upstream transitions.
   # 
   def precedents

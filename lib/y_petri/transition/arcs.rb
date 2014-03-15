@@ -29,6 +29,14 @@ module YPetri::Transition::Arcs
     arcs.names arg
   end
 
+  # Arc (a place connected to this transition) identifier.
+  # 
+  def arc id
+    place = place( id )
+    arcs.find { |p| p == place } or
+      fail TypeError, "No place #{id} connected to #{self}!"
+  end
+
   # Marking of the domain places.
   # 
   def domain_marking; domain.map &:marking end
