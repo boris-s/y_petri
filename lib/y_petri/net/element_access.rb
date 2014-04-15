@@ -1,7 +1,7 @@
 # Selections of various kinds of places / transitions (place names / transition
 # names) in a Petri net.
 # 
-module YPetri::Net::ElementAccess
+module YPetri::Net::ElementAccess # TODO: Rename :element globally to node.
   # Does the net include a place?
   # 
   def includes_place? id
