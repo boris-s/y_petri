@@ -1,3 +1,3 @@
 module YPetri
-  VERSION = "0.0.1"
+  VERSION = "2.3.2"
 end
