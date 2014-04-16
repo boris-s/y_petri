@@ -1,11 +1,14 @@
 # YPetri
 
-`YPetri` is a domain model and a simulator of _functional_ _Petri_ _nets_,
-a family of Petri nets, whose transitions have functions attached to them.
+`YPetri` is a domain model and a simulator of _YPetri_ nets, a specific kind of
+_Petri_ _nets_ unifying discrete/continous, deterministic/stochastic,
+timed/timeless and stoichiometric/nonstoichiometric dichotomies, thus enabling
+modelling and simulation of dynamic systems of any kind whatsoever.
 
 ## Usage
 
-`YPetri` provides a _domain_ _specific_ _language_ (DSL), that can be loaded by:
+`YPetri` provides a _domain_ _specific_ _modeling_ _language_ (DSML), that can
+be loaded by:
 ```ruby
   require 'y_petri'
   include YPetri
