@@ -20,8 +20,8 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
-  gem.add_dependency "y_support"
-  gem.add_dependency "gnuplot"
-  gem.add_dependency "ruby-graphviz"
-  gem.add_dependency "distribution"
+  spec.add_dependency "y_support"
+  spec.add_dependency "gnuplot"
+  spec.add_dependency "ruby-graphviz"
+  spec.add_dependency "distribution"
 end
