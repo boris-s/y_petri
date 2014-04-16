@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
+gem 'minitest'
 require 'minitest/autorun'
 require_relative '../lib/y_petri'     # tested component itself
 # require 'y_petri'
@@ -62,6 +63,7 @@ describe YPetri::World do
     @w.simulation.run!
     rec_csv = @w.simulation.recording.to_csv
     expected_rec_csv =
+      ":event,:AA,:BB,:CC\n" +
       "0.0,1.0,2.0,3.0\n" +
       "10.0,0.86102,0.86102,4.13898\n" +
       "20.0,1.29984,0.29984,4.70016\n"

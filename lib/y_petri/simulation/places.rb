@@ -2,7 +2,7 @@
 
 # Place collection for YPetri::Simulation.
 #
-class YPetri::Simulation::Places < YPetri::Simulation::Elements
+class YPetri::Simulation::Places < YPetri::Simulation::Nodes
 
   require_relative 'places/types'
   require_relative 'places/free'

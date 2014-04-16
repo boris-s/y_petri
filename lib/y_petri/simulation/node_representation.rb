@@ -2,7 +2,7 @@
 
 # Representation of a YPetri::Place inside a YPetri::Simulation instance.
 #
-class YPetri::Simulation::ElementRepresentation
+class YPetri::Simulation::NodeRepresentation
   ★ NameMagic
   ★ YPetri::Simulation::Dependency
 
@@ -12,14 +12,14 @@ class YPetri::Simulation::ElementRepresentation
 
   # Expect a single YPetri place as an argument.
   # 
-  def initialize net_element_id
-    @source = net.element( net_element_id )
+  def initialize net_node_id
+    @source = net.node( net_node_id )
   end
 
-  # Tweak the #to_s method to give the element representations the inspect
-  # string of type #<Name>.
+  # Tweak the #to_s method to give the node representations the inspect string
+  # of type #<Name>.
   # 
   def to_s
     "#<#{super}>"
   end
-end # class YPetri::Simulation::ElementRepresentation
+end # class YPetri::Simulation::NodeRepresentation

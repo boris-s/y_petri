@@ -19,16 +19,16 @@ class YPetri::World
       world.transition( id )
     end
 
-    # Element instance identification.
+    # Node instance identification.
     # 
-    def element id
+    def node id
       begin
         place( id )
       rescue NameError, TypeError
         begin
           transition( id )
         rescue NameError, TypeError => err
-          raise TypeError, "Unrecognized place or transition: #{element} (#{err})"
+          raise TypeError, "Unrecognized node: #{id} (#{err})"
         end
       end
     end

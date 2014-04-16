@@ -2,9 +2,9 @@
 
 require_relative 'simulation/matrix'
 require_relative 'simulation/dependency'
-require_relative 'simulation/element_representation'
-require_relative 'simulation/elements'
-require_relative 'simulation/elements/access'
+require_relative 'simulation/node_representation'
+require_relative 'simulation/nodes'
+require_relative 'simulation/nodes/access'
 require_relative 'simulation/place_representation'
 require_relative 'simulation/places'
 require_relative 'simulation/places/access'
@@ -37,7 +37,7 @@ require_relative 'simulation/timed'
 class YPetri::Simulation
   ★ Places::Access                   # ★ means include
   ★ Transitions::Access
-  ★ Elements::Access
+  ★ Nodes::Access
   ★ InitialMarking::Access
   ★ MarkingClamps::Access
   ★ MarkingVector::Access
@@ -140,7 +140,7 @@ class YPetri::Simulation
                     Places: Places,
                     Transition: TransitionRepresentation,
                     Transitions: Transitions,
-                    Elements: Elements,
+                    Nodes: Nodes,
                     PlaceMapping: PlaceMapping,
                     InitialMarking: InitialMarking,
                     MarkingClamps: MarkingClamps,

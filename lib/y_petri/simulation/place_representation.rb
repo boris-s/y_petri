@@ -3,7 +3,7 @@
 # Representation of a YPetri::Place inside a YPetri::Simulation instance.
 # 
 class YPetri::Simulation
-  class PlaceRepresentation < ElementRepresentation
+  class PlaceRepresentation < NodeRepresentation
     attr_reader :quantum
 
     # Index.

@@ -38,7 +38,7 @@ class YPetri::Simulation
                     ff = case features_to_record
                          when Array then
                            net.State.Features
-                             .infer_from_elements( features_to_record )
+                             .infer_from_nodes( features_to_record )
                          when Hash then
                            net.State.features( features_to_record )
                          end

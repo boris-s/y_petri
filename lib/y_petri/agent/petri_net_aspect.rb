@@ -21,9 +21,9 @@ module YPetri::Agent::PetriNetAspect
     super
   end
 
-  # Elements and selections:
+  # Nodes and selections:
   # 
-  delegate :place, :transition, :element,
+  delegate :place, :transition, :node,
            :nets, :places, :transitions,
            to: :world
 

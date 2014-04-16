@@ -10,7 +10,7 @@ require_relative 'net/state'
 # connector arrows – called _arcs_ in classical Petri net terminology – can be
 # considered a property of transitions. Therefore in +YPetri::Net+, you won't
 # find arcs as first-class citizens, but only as a synonym denoting nearest
-# neighbors of elements (places or transitions).
+# neighbors of nodes (places or transitions).
 # 
 class YPetri::Net
   # ===========================================================================
@@ -24,7 +24,7 @@ class YPetri::Net
   # ===========================================================================
 
   ★ NameMagic                        # ★ means include
-  ★ ElementAccess                    # to be below ElementAccess
+  ★ NodeAccess
   ★ Visualization
   ★ OwnState
 
@@ -33,10 +33,10 @@ class YPetri::Net
 
     private :new
 
-    # Constructs a net containing a particular set of elements.
+    # Constructs a net containing a particular set of nodes.
     # 
-    def of elements
-      new.tap { |inst| elements.each { |e| inst << e } }
+    def of nodes
+      new.tap { |inst| nodes.each { |node| inst << node } }
     end
   end
 
@@ -59,7 +59,7 @@ class YPetri::Net
   # 
   def include_place place
     place = Place().instance( place )
-    return false if includes_place? place
+    return false if include_place? place
     true.tap { @places << place }
   end
 
@@ -69,9 +69,9 @@ class YPetri::Net
   # 
   def include_transition transition
     transition = Transition().instance( transition )
-    return false if includes_transition? transition
+    return false if include_transition? transition
     fail "Transition #{transition} has arcs to places outside #{self}!" unless
-      transition.arcs.all? { |place| includes_place? place }
+      transition.arcs.all? { |place| include_place? place }
     true.tap { @transitions << transition }
   end
 
@@ -108,7 +108,7 @@ class YPetri::Net
 
   # Excludes another net from the receiver net. Returns _true_ if successful
   # (ie. if there was any change to the receiver net), _false_ if the receiver
-  # net contained no element of the argument net.
+  # net contained no node of the argument net.
   # 
   def exclude_net id
     net = Net().instance( id ) rescue YPetri::Net.instance( net )
@@ -117,19 +117,19 @@ class YPetri::Net
     p_rslt || t_rslt
   end
 
-  # Includes an element (place or transition) in the net.
+  # Includes a node (place or transition) in the receiver net.
   # 
-  def << element
+  def << node
     begin
       type = :place
-      place = self.class.place element
+      place = self.class.place node
     rescue NameError, TypeError
       begin
         type = :transition
-        transition = self.class.transition element
+        transition = self.class.transition node
       rescue NameError, TypeError => err
         raise TypeError, "Current world contains no place or " +
-          "transition #{element}! (#{err})"
+          "transition #{node}! (#{err})"
       end
     end
     case type # Factored out to minimize the code inside the rescue clause.

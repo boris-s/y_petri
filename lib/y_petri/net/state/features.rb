@@ -46,7 +46,7 @@ class YPetri::Net::State::Features < Array
       unless ordered_args.empty?
         fail ArgumentError, "Named arguments must not be given if ordered " +
           "arguments are given!" unless named_args.empty?
-        return infer_from_elements( ordered_args )
+        return infer_from_nodes( ordered_args )
       end
       a = []
       a << Marking( Array named_args[ :marking ] ) if named_args[ :marking ]
@@ -240,14 +240,14 @@ class YPetri::Net::State::Features < Array
       }
     end
 
-    # Takes an array of the net elements (places and/or transitions), and infers
-    # a feature set from them in the following way: Places or place ids are
-    # converted to marking features. The remaining array elements are treated
-    # as transition ids, and are converted to either flux features (if the
-    # transition is timed), or firing features (if the transition is timeless).
+    # Takes an array of the net's nodes, and infers a feature set from them as
+    # follows: Places or place ids are converted to marking features. Remaining
+    # array elements are treated as transition ids, and are converted to either
+    # flux features (if the transition is timed), or firing features (if the
+    # transition is timeless).
     # 
-    def infer_from_elements( elements )
-      new elements.map &net.State.Feature.method( :infer_from_element )
+    def infer_from_nodes( nodes )
+      new nodes.map &net.State.Feature.method( :infer_from_node )
     end
   end
 

@@ -3,7 +3,7 @@
 # Representation of a YPetri::Transition inside a YPetri::Simulation instance.
 #
 class YPetri::Simulation
-  class TransitionRepresentation < ElementRepresentation
+  class TransitionRepresentation < NodeRepresentation
     require_relative 'transition_representation/types'
 
     ★ Types

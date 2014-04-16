@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-# Basic elements of a simulation, a mixin intended for YPetri::Simulation.
+# Basic nodes of a simulation, a mixin intended for YPetri::Simulation.
 #
 class YPetri::Simulation
   # Represents a set of features of a simulation state.

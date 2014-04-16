@@ -1,29 +1,25 @@
-# Selections of various kinds of places / transitions (place names / transition
-# names) in a Petri net.
+# Access to nodes (places and transitions) of a Petri net.
 # 
 module YPetri::Net::NodeAccess
   # Does the net include a place?
   # 
-  def includes_place? id
+  def include_place? id
     begin
       place( id ) and true
     rescue NameError, TypeError; false end
   end
-  alias include_place? includes_place?
 
   # Does the net include a transition?
   # 
-  def includes_transition? id
+  def include_transition? id
     begin; transition( id ) and true; rescue NameError, TypeError; false end
   end
-  alias include_transition? includes_transition?
 
   # Inquirer whether the net includes a node.
   # 
   def include? id
     include_place?( id ) || include_transition?( id )
   end
-  alias includes? include?
 
   # Returns the net's place identified by the argument.
   # 
@@ -41,18 +37,21 @@ module YPetri::Net::NodeAccess
     end
   end
 
-  # Returns the net's node identified by the argument.
+  # Returns the net's node identified by the argument
   # 
   def node id
     begin; place( id ); rescue NameError, TypeError
       begin; transition( id ); rescue NameError, TypeError
-        raise TypeError, "The net does not include node #{id}!"
+        puts "Hello from failed #node, id is:"
+        puts id
+        p id
+        raise TypeError, "The net does not include place/transition #{id}!"
       end
     end
   end
 
-  # Expects an array of nodes (places/transitions) or node ids, and returns
-  # an array of corresponding node instances.
+  # Expects an array of nodes (places/transitions) or node ids, and returns an
+  # array of corresponding node instances.
   # 
   def Nodes array
     array.map &method( :node )
@@ -60,7 +59,7 @@ module YPetri::Net::NodeAccess
 
   # Expects an arbitrary number of nodes (places/transitions) or node ids and
   # returns an array of corresponding node instances. If no arguments are
-  # supplied, returns all net's places and transitions.
+  # supplied, returns all the nodes.
   # 
   def nodes *nodes
     return @places + @transitions if nodes.empty?
@@ -264,12 +263,12 @@ module YPetri::Net::NodeAccess
 
   # Name-returning versions of the node access methods.
   # 
-  chain nNn: :Nodes,
-        nnn: :nodes,
-        nPp: :Places,
-        npp: :places,
-        nTt: :Transitions,
-        ntt: :transitions,
+  chain En: :Elements,
+        en: :elements,
+        Pn: :Places,
+        pn: :places,
+        Tn: :Transitions,
+        tn: :transitions,
         nts: :ts_transitions,
         ntS: :tS_transitions,
         nTs: :Ts_transitions,

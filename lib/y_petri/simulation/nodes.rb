@@ -3,7 +3,7 @@
 class YPetri::Simulation
   # An array of simulation owned places and/or transitions.
   # 
-  class Elements < Array
+  class Nodes < Array
     ★ Dependency
 
     class << self
@@ -16,29 +16,29 @@ class YPetri::Simulation
 
     delegate :simulation, to: "self.class"
 
-    # Loads elements to this collection.
+    # Loads nodes to this collection.
     #
-    def load elements
-      elements.each{ |e| push e }
+    def load nodes
+      nodes.each{ |node| push node }
     end
 
     # Creates a subset of this collection (of the same class).
     # 
-    def subset elements=nil, &block
+    def subset nodes=nil, &block
       if block_given? then
         fail ArgumentError, "If block given, arguments not allowed!" unless
-          elements.nil?
+          nodes.nil?
         self.class.load select( &block )
       else
-        fail ArgumentError, "A collection or a block expected!" if elements.nil?
-        ee = Elements( elements )
-        ee.all? { |e| include? e } or
+        fail ArgumentError, "A collection or a block expected!" if nodes.nil?
+        nn = Nodes( nodes )
+        nn.all? { |node| include? node } or
           fail TypeError, "All subset elements must be in the collection."
-        self.class.load( ee )
+        self.class.load( nn )
       end
     end
 
-    # Returns an array of the element sources (elemens in the original net).
+    # Returns an array of the node sources (nodes in the underlying net).
     # 
     def sources
       map &:source

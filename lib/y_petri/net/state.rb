@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-# An array whose elements correspond to the full marking of the net's places.
+# An array whose elements represent marking of places of a +YPetri::Net+.
 # 
 class YPetri::Net::State < Array
   require_relative 'state/feature'
@@ -37,7 +37,7 @@ class YPetri::Net::State < Array
         else fail ArgumentError, "Unrecognized feature: #{key}!"
         end
       else
-        Feature().infer_from_element( arg )
+        Feature().infer_from_node( arg )
       end
     end
 

@@ -51,7 +51,7 @@ module YPetri::Core::Timed
   alias propensity_vector_TS flux_vector_TS
 end # module YPetri::Core::Timed
 
-# In general, it is not required that all net elements are simulated with the
+# In general, it is not required that all net nodes are simulated with the
 # same method. Practically, ODE systems have many good simulation methods
 # available.
 #

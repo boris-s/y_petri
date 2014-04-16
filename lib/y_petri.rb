@@ -1,7 +1,5 @@
 # encoding: utf-8
 
-require "y_petri/version"
-
 # The following are the YSupport components used by YPetri:
 require 'y_support/local_object'       # object aware of its creation scope
 require 'y_support/respond_to'         # Symbol#~@ + RespondTo#===

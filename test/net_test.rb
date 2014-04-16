@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
+gem 'minitest'
 require 'minitest/autorun'
 require_relative '../lib/y_petri'     # tested component itself
 # require 'y_petri'
@@ -27,7 +28,7 @@ describe YPetri::Net do
 
     it "should be able to include places" do
       p = @w.Place.send :new, name: "A", quantum: 0.1, marking: 1.1
-      @net.includes_place?( p ).must_equal false
+      @net.include_place?( p ).must_equal false
       @net.include_place( p ).must_equal true
       @net.places.must_equal [ p ]
       @net.place( :A ).must_equal p
@@ -100,10 +101,10 @@ describe YPetri::Net do
           @net.transition( :T1 ).must_equal @t1
           @net.Transitions( [] ).must_equal []
           @net.transitions( :T1 ).must_equal [ @t1 ]
-          @net.element( :T1 ).must_equal @t1
-          @net.Elements( [] ).must_equal []
-          @net.elements( :T1 ).must_equal [ @t1 ]
-          @net.elements( :A, :T1 ).must_equal [ @p1, @t1 ]
+          @net.node( :T1 ).must_equal @t1
+          @net.Nodes( [] ).must_equal []
+          @net.nodes( :T1 ).must_equal [ @t1 ]
+          @net.nodes( :A, :T1 ).must_equal [ @p1, @t1 ]
         end
 
         it "should expose transition groups" do
@@ -120,7 +121,7 @@ describe YPetri::Net do
         it "should have #place & #transition for safe access to them" do
           @net.send( :place, @p1 ).must_equal @p1
           @net.send( :transition, @t1 ).must_equal @t1
-          @net.send( :element, @p1 ).must_equal @p1
+          @net.send( :node, @p1 ).must_equal @p1
         end
 
         it "has #new_simulation & #new_timed_simulation constructors" do

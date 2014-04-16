@@ -306,8 +306,8 @@ module YPetri::Agent::SimulationAspect
                      title: "Gradient plot", ylabel: "Gradient [µM.s⁻¹]",
                      **options )
     rec = simulation.recording
-    pp = simulation.pp( *places ) - simulation.Ee( except )
-    tt = simulation.T_tt( *transitions ) - simulation.Ee( except )
+    pp = simulation.pp( *places ) - simulation.Nn( except )
+    tt = simulation.T_tt( *transitions ) - simulation.Nn( except )
     rec.Gradient( pp, transitions: tt )
       .plot( title: title, ylabel: ylabel, **options )
   end
@@ -319,8 +319,8 @@ module YPetri::Agent::SimulationAspect
                   **options )
     options.may_have :delta_time, syn!: :Δt
     rec = simulation.recording
-    pp = simulation.pp( *places ) - simulation.Ee( except )
-    tt = simulation.tt( *transitions ) - simulation.Ee( except )
+    pp = simulation.pp( *places ) - simulation.Nn( except )
+    tt = simulation.tt( *transitions ) - simulation.Nn( except )
     simulation.recording.Delta( pp, transitions: tt, Δt: options[:delta_time] )
       .plot( title: title, ylabel: ylabel, **options )
   end

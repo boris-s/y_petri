@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 #encoding: utf-8
 
+gem 'minitest'
 require 'minitest/autorun'
 require_relative '../lib/y_petri' # tested component itself
 # require 'y_petri'

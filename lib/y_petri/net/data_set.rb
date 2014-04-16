@@ -340,30 +340,31 @@ class YPetri::Net::DataSet < Hash
       map { |lbl, rec| [ lbl, *rec ].join ',' }.join( "\n" )
   end
 
-  # Plots the dataset. Takes several optional arguments: The list of elements
-  # can be supplied as optional first ordered argument, which are then converted
-  # into features using +Net::State::Features.infer_from_elements+ method.
-  # Similarly, the features to exclude can be specifies as a list of elements
-  # (or a feature-specifying hash) supplied under +except:+ keyword. Otherwise,
-  # feature specification can be passed to the method as named arguments. If
-  # no feature specification is explicitly provided, it is assumed that all the
-  # features of this dataset are meant to be plotted.
+  # Plots the dataset. Takes several optional arguments: The list of nodes can be
+  # supplied as optional first ordered argument, which are then converted into
+  # features using +Net::State::Features.infer_from_nodes+ method. Similarly,
+  # the features to exclude can be specifies as a list of nodes (or a
+  # feature-specifying hash) supplied under +except:+ keyword. Otherwise, feature
+  # specification can be passed to the method as named arguments. If no feature
+  # specification is explicitly provided, it is assumed that all the features of
+  # this dataset are meant to be plotted.
   # 
-  def plot( elements=nil, except: [], **named_args )
+  def plot( nodes=nil, except: [], **named_args )
+    puts "Hello from plot!"
     nn = named_args
     time = nn.may_have :time, syn!: :time_range
     events = events()
     # Figure out features.
-    ff = if elements.nil? then
+    ff = if nodes.nil? then
            nn_ff = nn.slice [ :marking, :flux, :firing,
                               :gradient, :delta, :assignment ]
            nn_ff.empty? ? features : net.State.Features( nn_ff )
          else
-           net.State.Features.infer_from_elements( elements )
+           net.State.Features.infer_from_nodes( nodes )
          end
     # Figure out the features not to plot ("except" features).
     xff = case except
-          when Array then net.State.Features.infer_from_elements( except )
+          when Array then net.State.Features.infer_from_nodes( except )
           when Hash then net.State.Features( except )
           else
             fail TypeError, "Wrong type of :except argument: #{except.class}"

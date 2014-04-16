@@ -30,7 +30,7 @@ module YPetri::Transition::Type_T
       msg = "Wrong output arity of the action closure of #{self}!"
       fail TypeError, msg if act.size != codomain.size
       codomain.each_with_index do |p, i|
-        note "adding action element no. #{i} to #{p}"
+        note "adding action node no. #{i} to #{p}"
         p.add note( "marking change", is: act.fetch( i ) )
       end
     end

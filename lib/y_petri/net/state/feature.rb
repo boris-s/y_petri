@@ -130,7 +130,7 @@ class YPetri::Net::State::Feature
     # transition, and is converted to either a flux feature (if timed), or a
     # firing feature (if timeless).
     # 
-    def infer_from_element( arg )
+    def infer_from_node( arg )
       case arg
       when self then return arg
       when Marking then return Marking().of( arg.place )
@@ -153,7 +153,7 @@ class YPetri::Net::State::Feature
       when :place then Marking( e )
       when :transition then
         fail TypeError, "Flux / firing features can only be auto-inferred " +
-          "from S transitions! (#{element} was given)" unless e.S?
+          "from S transitions! (#{arg} was given)" unless e.S?
         e.timed? ? Flux( e ) : Firing( e )
       end
     end

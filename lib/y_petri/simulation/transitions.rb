@@ -3,7 +3,7 @@
 class YPetri::Simulation
   # Transition collection for YPetri::Simulation.
   #
-  class Transitions < Elements
+  class Transitions < Nodes
     require_relative 'transitions/types'
     ★ Types # ★ means include
 

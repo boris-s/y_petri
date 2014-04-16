@@ -4,9 +4,8 @@
 # instances themselves) and its features.
 # 
 module YPetri::Net::OwnState
-  # State owned by the net. More precisely, an instance of the Net::State class,
-  # which is an Array subclass, containing the markings owned by the net's
-  # places as its elements.
+  # State owned by the net. This method returns an instance of +Net::State+
+  # class (a subclass of Array), containing marking owned by the net's places.
   # 
   def state
     State().new( marking )

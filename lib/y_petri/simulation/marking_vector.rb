@@ -80,7 +80,7 @@ class YPetri::Simulation
       end
     end
 
-    # Modifying the vector elements.
+    # Modifying the vector nodes.
     # 
     def set id, value
       self[ index( id ), 0 ] = value
@@ -102,7 +102,7 @@ class YPetri::Simulation
       end
     end
 
-    # Access of the vector elements.
+    # Access of the vector nodes.
     # 
     def fetch id
       self[ index( id ), 0  ]

@@ -1,6 +1,7 @@
 #! /usr/bin/ruby
 # encoding: utf-8
 
+gem 'minitest'
 require 'minitest/autorun'
 require 'y_support/typing'
 
