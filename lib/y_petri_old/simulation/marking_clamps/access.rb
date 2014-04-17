@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # Simulation mixin providing access to the marking clamps.
 #
@@ -37,4 +37,3 @@ class YPetri::Simulation::MarkingClamps
     end
   end # module Access
 end # class YPetri::Simulation::MarkingClamps
-

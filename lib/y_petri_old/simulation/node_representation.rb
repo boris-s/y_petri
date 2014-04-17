@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # Representation of a YPetri::Place inside a YPetri::Simulation instance.
 #

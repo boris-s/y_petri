@@ -1,4 +1,4 @@
-  # encoding: utf-8
+# encoding: utf-8
 
 require_relative 'place/guard'
 require_relative 'place/guarded'

@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # A mixin for collections of free places.
 # 

@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # Simulation mixin providing access to nodes (places / transitions). Also see
 # mixins +Places::Access+ and +Transitions::Access+.

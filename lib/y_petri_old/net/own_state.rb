@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # A mixin catering to the net's own state (ie. marking owned by the place
 # instances themselves) and its features.

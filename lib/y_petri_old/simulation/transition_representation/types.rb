@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 require_relative 'a'
 require_relative 'A'

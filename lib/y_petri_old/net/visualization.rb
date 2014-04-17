@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # Own visualization capabilities of a Petri net.
 # 

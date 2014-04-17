@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # A mixin to +YPetri::Simulation+.
 # 

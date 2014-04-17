@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 # Place collection for YPetri::Simulation.
 #
