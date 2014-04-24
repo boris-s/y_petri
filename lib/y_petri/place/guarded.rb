@@ -64,7 +64,8 @@ module YPetri::Place::Guarded
     when Numeric then # 3 guards
       marking "should be Numeric" do |m| m.is_a? Numeric end
       marking "should not be complex" do |m| fail if m.is_a? Complex end
-      marking "should not be negative" do |m| m >= 0 end
+      marking( "should not be negative" ) { |m| m >= 0 } if
+        reference_marking >= 0
     when nil then # no guards
     when true, false then # 1 guard
       marking "should be Boolean" do |m| m == !!m end
