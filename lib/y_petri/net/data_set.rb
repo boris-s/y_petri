@@ -307,6 +307,7 @@ class YPetri::Net::DataSet < Hash
     Delta( net.places, transitions: transitions, **named_args )
   end
 
+  # 
   def delta_timed *ordered_args, **named_args
     delta *ordered_args, transitions: net.T_transitions, **named_args
   end

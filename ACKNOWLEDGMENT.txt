@@ -1,0 +1,6 @@
+This document serves to acknowledge the support of Bioinformatics Program,
+Taiwan International Graduate Program, Institute of Computer Science,
+Academia Sinica (128, Academia Road, Sec. 2. Namkang, Taipei, 115), and
+of Bioinformatics Institute, National Yang-Ming University, Taipei,
+Taiwan. Without their support, creation of this package would not be
+possible.

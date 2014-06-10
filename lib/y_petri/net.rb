@@ -1,4 +1,4 @@
-# encoding: utf-8
+# coding: utf-8
 
 require_relative 'net/node_access'
 require_relative 'net/visualization'
@@ -13,16 +13,6 @@ require_relative 'net/state'
 # neighbors of nodes (places or transitions).
 # 
 class YPetri::Net
-  # ===========================================================================
-  # !!! TODO !!!
-  #
-  # Refactoring plans for Net class
-  #
-  # Make it a subclass of Module class, so places and transitions can simply
-  # be defined as its constants.
-  #
-  # ===========================================================================
-
   ★ NameMagic                        # ★ means include
   ★ NodeAccess
   ★ Visualization

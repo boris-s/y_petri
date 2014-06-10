@@ -139,7 +139,7 @@ class YPetri::Net::State::Features::Record < Array
   # net.
   # 
   def Gradient array, transitions: nil
-    array.map { |id|
+   array.map { |id|
       fetch( net.State.Feature.Gradient id, transitions: transitions )
     }
   end
