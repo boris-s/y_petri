@@ -351,7 +351,6 @@ class YPetri::Net::DataSet < Hash
   # this dataset are meant to be plotted.
   # 
   def plot( nodes=nil, except: [], **named_args )
-    puts "Hello from plot!"
     nn = named_args
     time = nn.may_have :time, syn!: :time_range
     events = events()
