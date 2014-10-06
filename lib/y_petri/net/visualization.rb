@@ -18,12 +18,12 @@ module YPetri::Net::Visualization
     transition_nodes = transitions.map.with_object Hash.new do |tr, ꜧ|
       ꜧ[tr] = γ.add_nodes tr.name.to_s,
                           shape: 'box',
-                          fillcolor: if tr.assignment? then 'yellow'
-                                     elsif tr.type == :TS then 'lightcyan'
-                                     else 'ghostwhite' end,
-                          color: if tr.assignment? then 'goldenrod'
-                                 elsif tr.type == :TS then 'cyan'
-                                 else 'grey' end,
+                          fillcolor: ( if tr.assignment? then 'yellow'
+                                       elsif tr.type == :TS then 'lightcyan'
+                                       else 'ghostwhite' end ),
+                          color: ( if tr.assignment? then 'goldenrod'
+                                   elsif tr.type == :TS then 'cyan'
+                                   else 'grey' end ),
                           style: 'filled'
     end
     # Add Petri net arcs.
