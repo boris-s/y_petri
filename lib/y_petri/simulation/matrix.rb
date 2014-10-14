@@ -2,9 +2,11 @@
 
 require 'matrix'
 
-# Patches the Matrix class with methods that generate code for direct vector
-# access.
-#
+# Patches built-in Matrix class with methods that generate code for direct
+# vector access. This is used in simulation. It is imaginable and desirable
+# that this way of simulation be refactored, and also, a faster way of
+# simulation provided using NMatrix class.
+# 
 class Matrix
   class << self
     # Builds a code string for accessing the vector values at given indices.
@@ -13,7 +15,7 @@ class Matrix
                                   indices: (fail ArgumentError, "No indices!")
       indices.map { |i| "#{vector}[#{i}, 0]" }.join( ", " )
     end
-  
+    
     # Builds a code string for assigning to a vector at given indices.
     # 
     def column_vector_assignment_code vector: (fail ArgumentError, "No vector!"),
@@ -24,7 +26,7 @@ class Matrix
       end
       code_lines.compact.join( "\n" ) << "\n"
     end
-
+    
     # Builds a code string for incrementing a vector at given indices. Source is
     # a vector.
     # 
@@ -37,7 +39,7 @@ class Matrix
       end
       code_lines.compact.join( "\n" ) << "\n"
     end
-
+    
     # Builds a code string for incrementing a vector at given indices. Source is
     # an array.
     # 
@@ -51,7 +53,7 @@ class Matrix
       code_lines.compact.join( "\n" ) << "\n"
     end
   end
-
+  
   # Builds a closure for incrementing a column at given indices.
   # 
   def increment_at_indices_closure indices: (fail ArgumentError, "No indices!")

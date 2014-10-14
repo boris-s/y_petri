@@ -20,7 +20,7 @@ class YPetri::Net::State < Array
     end
 
     # Returns the feature identified by the argument.
-    #
+    # 
     def Feature arg=nil, **named_args
       case arg
       when Feature() then arg

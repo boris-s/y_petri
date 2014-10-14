@@ -1,6 +1,18 @@
 # encoding: utf-8
 
-# A set of state features.
+# A feature set. In other words, a set of state features, such as marking,
+# flux etc.
+#
+# marking:: Applicable to all places, all places have marking.
+# firing:: Applicable to all stoichiometric transitions, but delta time has
+#          to be known for timed transitions.
+# flux:: Applicable to timed stochiometric transitions only.
+# delta:: Expresses change to a chosen set of places caused by firing of a
+#         chosen set of transitions. Requires delta time to be provided if
+#         there are timed transitions in the set.
+# gradient:: Expresses gradient of change of a chosen set of places caused by
+#            firing of a chosen set of transitions. Only applicable to timed
+#            transitions.
 # 
 class YPetri::Net::State::Features < Array
   require_relative 'features/record'

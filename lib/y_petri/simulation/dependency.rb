@@ -1,9 +1,10 @@
 # encoding: utf-8
 
-# Place / transition collection mixin for parametrized classes of
-# YPetri::Simulation. Expects the includer to provide +#simulation+
-# method returning current +Simulation+ instance.
-#
+# Mixin providing collections of places / transitions to classes parametrized
+# by an instance of YPetri::Simulation. Expects the includer classes to provide
+# +#simulation+ method returning the +Simulation+ instance with which they are
+# parametrized.
+# 
 class YPetri::Simulation
   module Dependency
     delegate :Place,
@@ -25,17 +26,18 @@ class YPetri::Simulation
              :m_vector,
              :recorder,
              to: :simulation
-
-    # Delegates to the protected (and private) methods of simulation.
+    
+    # Delegates supplied method symbols to the protected (and private) methods
+    # of the simulation.
     # 
-    def self.delegate_to_simulation! *symbols
-      symbols.each do |sym|
+    def self.delegate_to_simulation! *method_symbols
+      method_symbols.each do |symbol|
         module_exec do
-          define_method sym do |*aa, &b| simulation.send sym, *aa, &b end
+          define_method symbol do |*aa, &b| simulation.send symbol, *aa, &b end
         end
       end
     end
-
+    
     # Necessary to overcoming the protected character of the listed methods.
     # 
     [ :node,
