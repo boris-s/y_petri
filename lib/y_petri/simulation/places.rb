@@ -3,7 +3,6 @@
 # Place collection for YPetri::Simulation.
 #
 class YPetri::Simulation::Places < YPetri::Simulation::Nodes
-
   require_relative 'places/types'
   require_relative 'places/free'
   require_relative 'places/clamped'

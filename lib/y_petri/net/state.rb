@@ -62,9 +62,11 @@ class YPetri::Net::State < Array
 
   delegate :net,
            :Feature,             # Note that as syntactic salt, specific methods
-           :Features,            # #marking, #firing, #gradient, #flux etc. are
-           :features,            # not delegated to self.class.
+           :Features,            # #firing, #gradient, #flux etc. are not
+           :features,            # delegated to self.class.
            to: "self.class"
+  # FIXME: #features method above actually doesn't work in practice, self.class
+  # doesn't have it.
 
   # Given a set of clamped places, this method outputs a +Record+ instance
   # containing the marking of the free places (complementary to the supplied
@@ -77,8 +79,8 @@ class YPetri::Net::State < Array
                   else
                     places - places( clamped_places )
                   end
-    features( marking: free_places ).Record.load markings( free_places ) 
-  end
+    features( marking: free_places ).Record.load markings( free_places )
+  end # FIXME: I find it not working atm.
 
   # Marking of a single given place in this state.
   # 

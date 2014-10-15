@@ -89,7 +89,9 @@ class YPetri::Simulation::Places
     # that even without an argument, it does not fail, but returns the @Places
     # parametrized subclass itself.
     # 
-    def Places( array )
+    def Places( array ) # TODO: Understand why this method does not behave
+                        # as protected in real Simulation instances, while
+                        # places method just above does.
       # Kernel.p array
       Places().load array.map &method( :place )
     end
