@@ -168,7 +168,7 @@ module YPetri::Transition::ConstructionConvenience
   def __upstream_for_A__( **nn )
     dom = domain
     funct = true
-    λ = nn[:assignment].aT_is_a Proc, "supplied :assigmnent argument"
+    λ = nn[:assignment].aT_is_a Proc, "supplied assignment argument"
     if dom == :missing then
       dom = λ.arity == 0 ? [] : codomain
     else
