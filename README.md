@@ -1,19 +1,15 @@
 # YPetri
 
-`YPetri` is a domain model and a simulator of _YPetri_ nets, a specific kind of
-_Petri_ _nets_ unifying discrete/continous, deterministic/stochastic,
-timed/timeless and stoichiometric/nonstoichiometric dichotomies, thus enabling
-modelling and simulation of dynamic systems of any kind whatsoever.
+`YPetri` is a domain model and a simulator of dynamical systems. It was inspired by the problems from the field of modelling of biochemical pathways, but on purpose, YPetri is not specific to biochemistry. As a matter of separation of concerns, YPetri caters solely to the two main concerns of modelling, model specification and simulation, excelling in the first one. YPetri implements a novel universal Petri net type, that integrating discrete/continous, deterministic/stochastic, timed/timeless and stoichiometric/nonstoichiometric dichotomies commonly seen in extended Petri nets. YPetri allows specification of any kind of dynamical system whatsoever.
 
 ## Usage
 
-`YPetri` provides a _domain_ _specific_ _modeling_ _language_ (DSML), that can
-be loaded by:
+`YPetri` provides a _domain_ _specific_ _language_ (DSL) that can be loaded by:
 ```ruby
   require 'y_petri'
   include YPetri
 ```
-Now, one can create places:
+(As a matter of terminology, DSLs used in modelling are sometimes termed _domain_ _specific_ _modelling_ _languages_ (DSMLs). This term is popular especially in engineering.) Petri net places can now be created:
 ```ruby
   A = Place()
   B = Place()

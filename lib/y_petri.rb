@@ -35,27 +35,26 @@ require_relative 'y_petri/core'
 require_relative 'y_petri/agent'
 require_relative 'y_petri/dsl'
 
-# YPetri represents Petri net (PN) formalisms.
+# YPetri is a domain model and a domain-specific language (DSL) for modelling of
+# dynamical systems. YPetri module contains a collection of assets for Petri
+# net-based model specification and its simulation.
 #
-# A PN consists of places and transitions. There are also arcs, "arrows"
-# connecting places and transitions, but these are not considered first class
-# citizens in YPetri.
+# A Petri net (PN) is a bipartite graph with two kinds of nodes: places and
+# transitions. Places are visualised as circles, transitions as rectangles. Arcs
+# connecting places and transitions are visualised as lines, but these are not
+# considered first class citizens in YPetri abstraction.
 #
 # During PN execution (simulation), transitions act upon places and change their
-# marking by adding / removing tokens as dictated by their function -- more
-# precisely, their operation prescription. Borrowing more from the functional
-# terminology, I define domain an codomain of a PN transition in a similar way
-# to the functional domain and codomain.
+# marking by adding / removing tokens as dictated by the prescription of their
+# operation. This can be done by attaching a function to the transition. Such
+# transitions are called functional transitions in YPetri. Borrowing more from
+# the functional terminology, YPetri defines keywords domain an codomain for
+# a PN transition in a way similar to the domain and codomain of a function.
 #
-# Hybrid Functional Petri Net (HFPN) formalism, motivated by the needs of
-# modeling of cellular processes, explicitly introduces the option of having
-# discrete as well as continuous places and transitions (therefrom "hybrid").
-# In YPetri, the emphasis is elsewhere. Just like in modern computer languages,
-# there is a fluid transition between Fixnum and Bignum, YPetri attempts for
-# similarly fluid transition between Integer (ie. discrete) and floating point
-# (ie. continuous) representation of token amounts and reaction speeds. Whole
-# discrete / continuous issue thus becomes the business of the simulator, not
-# the model.
+# YPetri unifies discrete and stochastic modelling of timed transitions at the
+# level of model specification in line with the present day unifying Petri net
+# frameworks. YPetri also integrates other dichotomies: timed / timeless and
+# stoichiometric / nonstoichiometric.
 # 
 module YPetri
   class << self
