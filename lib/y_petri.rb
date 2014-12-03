@@ -35,26 +35,32 @@ require_relative 'y_petri/core'
 require_relative 'y_petri/agent'
 require_relative 'y_petri/dsl'
 
-# YPetri is a domain model and a domain-specific language (DSL) for modelling of
-# dynamical systems. YPetri module contains a collection of assets for Petri
-# net-based model specification and its simulation.
+# YPetri is a domain model and a domain-specific language (DSL) for modelling
+# dynamical systems. (Industrial modellers use the term DSML – domain specific
+# modelling language.) YPetri caters solely to the two main concerns of
+# modelling: model specification and simulation, excelling in the first one.
 #
-# A Petri net (PN) is a bipartite graph with two kinds of nodes: places and
-# transitions. Places are visualised as circles, transitions as rectangles. Arcs
-# connecting places and transitions are visualised as lines, but these are not
-# considered first class citizens in YPetri abstraction.
+# YPetri model specification is based on a Petri net paradigm. A Petri net (PN)
+# is a bipartite graph with two kinds of nodes: places and transitions. Places
+# are visualised as circles, transitions as rectangles. During PN execution
+# (simulation), transitions act upon places and change their marking by adding
+# / removing tokens as dictated by the prescription of their operation. For
+# classical PNs, transition action is a discrete stoichiometric addition /
+# subtraction of tokens to / from the connected places. However, many extended
+# PN types have been defined, where the transition action is determined by a
+# mathematical function attached to the transition. Such transitions are called
+# functional, and almost all YPetri transitions are of this type. Borrowing more
+# from the terminology of functions, YPetri defines keywords domain an codomain
+# for transitions in a way similar to the domain and codomain of functions.
 #
-# During PN execution (simulation), transitions act upon places and change their
-# marking by adding / removing tokens as dictated by the prescription of their
-# operation. This can be done by attaching a function to the transition. Such
-# transitions are called functional transitions in YPetri. Borrowing more from
-# the functional terminology, YPetri defines keywords domain an codomain for
-# a PN transition in a way similar to the domain and codomain of a function.
-#
-# YPetri unifies discrete and stochastic modelling of timed transitions at the
-# level of model specification in line with the present day unifying Petri net
-# frameworks. YPetri also integrates other dichotomies: timed / timeless and
-# stoichiometric / nonstoichiometric.
+# Many extended PN types have been defined. YPetri implements a universal PN
+# abstraction designed to subsume and integrate the dichotomies of the common
+# extended PN types. YPetri unifies discrete and stochastic modelling of timed
+# transitions at the level of model specification in line with the present day
+# unifying Petri net frameworks. YPetri also integrates other dichotomies: timed
+# / timeless and stoichiometric / nonstoichiometric. The idea is to save the
+# Ruby-based modeller the work of researching different PN types and provide a
+# single abstraction and the DSL to rule them all.
 # 
 module YPetri
   class << self
