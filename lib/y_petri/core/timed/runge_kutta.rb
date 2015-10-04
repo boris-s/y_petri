@@ -5,10 +5,57 @@
 module YPetri::Core::Timed::RungeKutta
   def delta Δt
     fail NotImplementedError, "RungeKutta not implemented yet!"
-    # Of course, the following line is from Euler method.
-    # The formula of Runge-Kutta is more complicated.
-    # 
-    gradient * Δt
+
+    # f = simulation.method :gradient, parameter: :state
+    f = lambda { |mv| # mv is the marking vector of the free places
+          result = "make hash from free places of the simulation to zeros"
+          nonstoichiometric_transitions.each { |t|
+            places = t.codomain.free
+            inputs = mv.select( t.domain ) # this doesn't work this way
+            f = t.function
+            output = f.call( *inputs )
+            places.each { |p|
+              result[p] += output[p] # again, this doesn't work this way
+            }
+          }
+          stoichiometric_transitions.each { |t|
+            places = t.codomain.free
+            inputs = mv.select( t.domain ) # this doesn't work this way
+            f = t.function
+            output = f.call( *inputs ) * stoichiometry_vector # this doesn't work this way
+            places.each { |p|
+              result[p] += output[p]
+            }
+          }
+          # so you see how many selections one has to do if one doesn't
+          # construct a specific gadget for the operation, that's why
+          # I made those closures, unfortunately I didn't think about
+          # higher-order methods yet when making them, and maybe the core
+          # should own them instead of the simulation object
+          
+          return result.to_vector # this doesn't work this way
+    }
+
+    # this is supposed to be Runge-Kutta 4th order
+    # but how do I get those in-between f values...
+    
+    y = simulation.state # this must return a vector compatible with the one
+                         # returned by f
+    
+    k1 = f( y )
+    k2 = f( y + Δt / 2 * k1 )
+    k3 = f( y + Δt / 2 * k2 )
+    k4 = f( y + Δt * k3 )
+
+    rslt = Δt / 6 * ( k1 + 2 * k2 + 2 * k3 + k4 )
+    return rslt.to_the_kind_of_vector_that_delta_method_should_return
+    # which is the vector corresponding to the ordered list of
+    # free places of this simulation (here, every core either has a
+    # simulation assigned, or is parametrized with simulation, which
+    # might be dumb anyway, since core, by its name, should not be that
+    # heavily coupled with a simulation, but actually, atm, each core
+    # belongs to a specific simulation, so it's OK if it's parametrized
+    # with it for now
   end
   alias Δ delta
 end # YPetri::Core::Timed::RungeKutta

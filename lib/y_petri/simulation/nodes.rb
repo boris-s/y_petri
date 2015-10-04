@@ -24,7 +24,7 @@ class YPetri::Simulation
     
     # Creates a subset of this collection (of the same class).
     # 
-    def subset nodes=nil, &block
+    def subset nodes=nil, &block # TODO: Rename to subarray
       if block_given? then
         fail ArgumentError, "If block given, arguments not allowed!" unless
           nodes.nil?

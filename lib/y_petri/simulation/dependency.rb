@@ -38,21 +38,21 @@ class YPetri::Simulation
       end
     end
     
-    # Necessary to overcoming the protected character of the listed methods.
+    # Necessary to overcome the protected character of the listed methods.
     # 
     [ :node,
       :place,
       :transition
     ].each { |sym| define_method sym do |e| simulation.send sym, e end }
 
-    # Necessary to overcoming the protected character of the listed methods.
+    # Necessary to overcome the protected character of the listed methods.
     # 
     [ :Nodes,
       :Places,
       :Transitions
     ].each { |sym| define_method sym do |array| simulation.send sym, array end }
 
-    # Necessary to overcoming the protected character of the listed methods.
+    # Necessary to overcome the protected character of the listed methods.
     # 
     [ :nodes,
       :places,

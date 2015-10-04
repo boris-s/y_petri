@@ -3,11 +3,11 @@
 # Petri net aspect of +YPetri::Agent+.
 # 
 module YPetri::Agent::PetriNetAspect
-  # Net selection class.
+  # A class representing a selection of nets.
   # 
   NetSelection = Class.new YPetri::Agent::Selection
 
-  # Net point
+  # Net point.
   # 
   attr_reader :net_point
 
@@ -15,6 +15,8 @@ module YPetri::Agent::PetriNetAspect
   # 
   attr_reader :net_selection
 
+  # Standard initialization method. Takes no arguments.
+  # 
   def initialize
     net_point_reset
     @net_selection = NetSelection.new
@@ -27,37 +29,37 @@ module YPetri::Agent::PetriNetAspect
            :nets, :places, :transitions,
            to: :world
 
-  # Place name.
+  # Returns the name of a place identified by the argument.
   # 
   def pl( place_id )
     place( place_id ).name
   end
 
-  # Transition name.
+  # Returns the name of a transition identified by the argument.
   # 
   def tr( transition_id )
     transition( transition_id ).name
   end
 
-  # Place names.
+  # Names of the places.
   # 
   def pn
     places.names
   end
 
-  # Transition names.
+  # Names of the transitions.
   # 
   def tn
     transitions.names
   end
 
-  # Net names.
+  # Names of the nets.
   # 
   def nn
     nets.names
   end
 
-  # Place constructor: Creates a new place in the current world.
+  # Constructor of a place: Creates a new place in the current world.
   # 
   def Place( *ordered_args, **named_args, &block )
     fail ArgumentError, "If block is given, :guard named argument " +
@@ -68,23 +70,11 @@ module YPetri::Agent::PetriNetAspect
     world.Place.send( :new, *ordered_args, **named_args, &block )
   end
 
-  # Transition constructor: Creates a new transition in the current world.
+  # Constructor of a transition: Creates a new transition in the current world.
   # 
   def Transition( *ordered, **named, &block )
     world.Transition.send( :new, *ordered, **named, &block )
   end
-
-  # Place constructor: Creates a new place in the current world.
-  # 
-  def Place( *ordered_args, **named_args, &block )
-    fail ArgumentError, "If block is given, :guard named argument " +
-      "must not be given!" if named_args.has? :guard if block
-    named_args.update( guard: block ) if block # use block as a guard
-    named_args.may_have :default_marking, syn!: :m!
-    named_args.may_have :marking, syn!: :m
-    world.Place.send( :new, *ordered_args, **named_args, &block )
-  end
-
 
   # Assignment transition constructor: Creates a new assignment transition in
   # the current world. Ordered arguments are collected as codomain. Domain key

@@ -3,6 +3,29 @@
 # This class represents a simulator.
 # 
 class YPetri::Core
+  # TODO: currently, Core and Simulation classes are tightly coupled.
+  # each simulation has just one core, and that core looks directly
+  # into the simulation's state. What needs to be done is a simulation
+  # that at least hints the process of core recruitment for the requested
+  # operation (be it step, step backwards, run forward aso.) and then
+  # imprints the core with its current marking vector, tells the core
+  # what to do, and then reads the result and updates its marking vector
+  # accordingly. There are multiple possibilities, such as constructing
+  # a new core for each operation, or keeping the same core for all the
+  # operations using a given method. A simulation method (like euler,
+  # gillespie, or runge-kutta) should be associated not so much with
+  # the simulation object, as it should be associated with the core
+  # object. A core object should be more or less one-trick pony. While
+  # later, it is possible for a simulation to have broader simulation
+  # strategy, or "method" in the broader sense. But simulation should
+  # also avoid doing too much, because above it, there is Agent class,
+  # and this class can be taught to do the more complicated things
+  # such as parameter optimization or computation of control coefficients
+  # and such. It is also possible to construct more specialized agent-like
+  # classes for these more specialized tasks, since the main purpose
+  # of Agent class, as I saw it, was to represent the user (represent
+  # what the user means), to provide the user interface.
+  
   require_relative 'core/timed'
   require_relative 'core/timeless'
   require_relative 'core/guarded'

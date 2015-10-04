@@ -47,20 +47,20 @@ class YPetri::Place
   # +Marking+ is a standard attribute of a Petri net place, +default_marking+
   # is marking upon calling the reset method. Default marking may also be used
   # as the initial value in the simulations involving the place in question.
-  # +Quantum+ attribute is not in use presently. In the future, it will be used
-  # to decide when to switch between continuous and discrete stochastic modeling
-  # of a place value. +Guard+ means a restriction of the place marking. (For
-  # example, the place could only admit non-negative numbers, or numbers smaller
-  # than 1, or odd numbers etc.) Named argument :guard along with a block
-  # supplied to the constructor allow one to specify a single marking guard
-  # upon place initialization by putting an NL assertion (a string) under
-  # +:guard+ argument, along with a block expressing the same meaning in code.
-  # More guards, if necessary, can be specified later using +Place#guard+ method.
-  # 
-  # If no guard block is supplied, default guards are constructed based on the
-  # data type of the +:marking+ or +:default_marking+ argument. If it is wished
-  # that the place has no guards whatsoever, +:guard+ argumend should be set to
-  # _false_.
+  # +Quantum+ attribute is not in use presently. In the future, it might be used
+  # in deciding when to switch between continuous and discrete stochastic
+  # representation of the marking. +Guard+ is a restriction to the place's
+  # marking. (For example, the place could only admit non-negative numbers,
+  # or numbers smaller than 1, or odd numbers etc.) Any number of guards can
+  # be specified for a constructed place via +Place#guard+ method. For the cases
+  # when a place has only one guard, it is, as a syntactic sugar, possible to
+  # introduce exactly one guard already upon place initialization by supplying
+  # to this constructor, in addition to other parameters, a string expressing
+  # the guard as +:guard+ and a block expressing the same guard in code. If no
+  # guard block is supplied to this constructor, default guards are constructed
+  # based on the data type of the +:marking+ or +:default_marking+ argument. If
+  # it is wished that the place has no guards whatsoever, +:guard+ should be set
+  # to _false_.
   # 
   def initialize guard: L!, **named_args, &block
     @upstream_arcs, @downstream_arcs, @guards = [], [], [] # init to empty
