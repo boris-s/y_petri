@@ -4,9 +4,7 @@
 # 
 module YPetri::Core::Timed::RungeKutta
   def delta Δt
-    fail NotImplementedError, "RungeKutta not implemented yet!"
-
-    # f = simulation.method :gradient, parameter: :state
+    # The f below is from the equation state' = f( state )
     f = lambda { |mv| # mv is the marking vector of the free places
           result = "make hash from free places of the simulation to zeros"
           nonstoichiometric_transitions.each { |t|

@@ -254,14 +254,15 @@ module YPetri::Simulation::Timed
       @time_unit = anything.class.one
       @initial_time, @target_time = time_unit * 0, time_unit * Float::INFINITY
     end
-    init_core_and_recorder_subclasses
+    # Set up a parametrized subclas of the sampler for timed simulation.
+    param_class( { Recorder: Recorder }, with: { simulation: self } )
     reset_time!
     @step = settings[:step] || time_unit
     @default_sampling = settings[:sampling] || step
     @core = if @guarded then
-              Core().guarded.new( method: method )
+              YPetri::Core::Timed.new( simulation: self, method: method, guarded: true )
             else
-              Core().new( method: method )
+              YPetri::Core::Timed.new( simulation: self, method: method, guarded: false )
             end
     @recorder = if features_to_record then
                   # we'll have to figure out features
@@ -276,14 +277,5 @@ module YPetri::Simulation::Timed
                 else
                   Recorder().new( sampling: settings[:sampling] )
                 end
-  end
-
-  # Sets up subclasses of +Core+ (the simulator) and +Recorder+ (the sampler)
-  # for timed simulations.
-  # 
-  def init_core_and_recorder_subclasses
-    param_class( { Core: YPetri::Core.timed,
-                   Recorder: Recorder },
-                 with: { simulation: self } )
   end
 end # module YPetri::Simulation::Timed

@@ -1,15 +1,27 @@
 # encoding: utf-8
 
-# Timeless simulator mixin.
+# Timeless simulator core. Knows thus far only one, but potentially several
+# methods applicable to timeless systems simulations.
 # 
-module YPetri::Core::Timeless
-  require_relative 'timeless/methods'
-  ★ Methods
+class YPetri::Core::Timeless
+  ★ YPetri::Core
+  
+  require_relative 'timeless/basic'
+  
+  METHODS = { basic: Basic } # basic PN execution
+  # Note: the reason why Timeless core has distinct basic method is because
+  # without having to consider timed transitions, it can be made simpler.
 
-  # Makes a single step.
+  def initialize **named_args
+    super
+    extend METHODS.fetch simulation_method
+  end
+  
+  # Computes the system state delta.
   # 
   def delta
-    delta_timeless
+    delta_timeless # this method was taken from core.rb
+    # delta_ts + delta_tS # this is the contents of delta_timeless method
   end
 
   # Computes the system state delta.

@@ -2,36 +2,38 @@
 
 # A mixin for timeless simulations.
 # 
-class YPetri::Simulation
-  module Timeless
-    require_relative 'timeless/recorder'
+module YPetri::Simulation::Timeless
+  require_relative 'timeless/recorder'
 
-    # False for timeless simulations.
-    # 
-    def timed?
-      false
-    end
+  # False for timeless simulations.
+  # 
+  def timed?
+    false
+  end
 
-    # Changing the simulation method on the fly not supported.
-    # 
-    def set_simulation_method
-      fail NoMethodError, "Changing simulation method on the fly not supported!"
-    end
+  # Changing the simulation method on the fly not supported.
+  # 
+  def set_simulation_method
+    fail NoMethodError, "Changing simulation method on the fly not supported!"
+  end
 
-    private
+  private
 
-    # Initialization subroutine for timeless simulations. Sets up the
-    # parametrized subclasses +@Core+ (the simulator) and +@Recorder+,
-    # and initializes the +@recorder+ attribute.
-    # 
-    def init **settings
-      method = settings[:method] # the simulation method
-      features_to_record = settings[:record]
-      init_core_and_recorder_subclasses
+  # Initialization subroutine for timeless simulations. Sets up the
+  # parametrized subclasses +@Core+ (the simulator) and +@Recorder+,
+  # and initializes the +@recorder+ attribute.
+  # 
+  def init **settings
+    method = settings[:method] # the simulation method
+    features_to_record = settings[:record]
+    # Sets up a parametrized subclass of the sampler for timeless simulation.
+      param_class( { Recorder: Recorder }, with: { simulation: self } )
       @core = if @guarded then
-                Core().guarded.new( method: method )
+                YPetri::Core::Timeless
+                  .new( simulation: self, method: method, guarded: true )
               else
-                Core().new( method: method )
+                YPetri::Core::Timeless
+                  .new( simulation: self, method: method, guarded: false )
               end
       @recorder = if features_to_record then 
                     # we'll have to figure out features
@@ -47,14 +49,4 @@ class YPetri::Simulation
                     Recorder().new # init the recorder
                   end
     end
-
-    # Sets up subclasses of +Core+ (the simulator) and +Recorder+ (the sampler)
-    # for timeless simulations.
-    # 
-    def init_core_and_recorder_subclasses
-      param_class( { Core: YPetri::Core.timeless,
-                     Recorder: Recorder },
-                   with: { simulation: self } )
-    end
-  end # module Timeless
-end # module YPetri::Simulation
+end # module YPetri::Simulation::Timeless

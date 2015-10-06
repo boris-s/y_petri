@@ -1,9 +1,9 @@
 # encoding: utf-8
 
-# Adaptation of Euler method for the systems possibly with timeless transitions
-# and assignment transitions.
+# Basic Petri net execution method for timed and hybrid nets. Works also for
+# timeless nets, but for those, Core::Timeless::Basic is slightly more efficient.
 # 
-module YPetri::Core::Timed::PseudoEuler
+module YPetri::Core::Timed::Basic
   # Computes Δ for the period of Δt. Its result is a sum of the contribution of
   # timed transitions over the period Δt and the contribution of timeless
   # transitions as if each fired once.
@@ -23,4 +23,4 @@ module YPetri::Core::Timed::PseudoEuler
     simulation.increment_time! Δt
     alert! # alerts the sampler that the system has changed
   end
-end # YPetri::Core::Timed::PseudoEuler
+end # YPetri::Core::Timed::Basic

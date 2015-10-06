@@ -4,7 +4,7 @@
 # and assignment transitions. Unlike +pseudo_euler+, which fires every step,
 # +quasi_euler+ fires every time tick. Not implemented yet.
 # 
-module YPetri::Core::Timed::QuasiEuler
+module YPetri::Core::Timed::Ticked
   # Computes Δ for the period of Δt. Not mplemented yet.
   # 
   def delta Δt
@@ -19,4 +19,4 @@ module YPetri::Core::Timed::QuasiEuler
     # Now one would have to compare whichever comes first, time tick or the
     # end of Δt, and then again and again, until Δt is fired...
   end
-end # YPetri::Core::Timed::QuasiEuler
+end # YPetri::Core::Timed::Ticked

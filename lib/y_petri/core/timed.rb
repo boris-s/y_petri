@@ -1,10 +1,34 @@
 # encoding: utf-8
 
-# Timed simulation core.
+# Timed simulation core. Knows several simulation methods applicable to
+# timed nets.
 # 
-module YPetri::Core::Timed
-  require_relative 'timed/methods'
-  ★ Methods
+class YPetri::Core::Timed
+  ★ YPetri::Core
+  
+  require_relative 'timed/basic'
+  require_relative 'timed/ticked'       # 
+  require_relative 'timed/euler'
+  require_relative 'timed/runge_kutta'
+  require_relative 'timed/gillespie'
+
+  METHODS = {
+    basic: Basic,   # simple PN execution, timeless tt fire after each step
+    ticked: Ticked, # like basic, but timeless tt fire at every time tick
+    euler: Euler,               # for timed nets only
+    runge_kutta: RungeKutta,    # for timed nets only
+    gillespie: Gillespie        # for timed nets only
+  }
+
+  def initialize **named_args
+    super
+    extend METHODS.fetch simulation_method
+    # look in the Core#initialize method for the closures and parameters
+    # and such. Here, we could define:
+    @Ts_gradient_closure = simulation.Ts_gradient_closure
+    # which would remind us that this machine needs to be
+    # actually defined internal to Core instance
+  end
 
   # Makes a single step by Δt.
   # 
@@ -25,6 +49,8 @@ module YPetri::Core::Timed
   # 
   def gradient_Ts
     simulation.Ts_gradient_closure.call
+    # this could be
+    # @Ts_gradient_closure.call
   end
 
   # Gradient contribution by TS transitions.
@@ -51,11 +77,9 @@ module YPetri::Core::Timed
   alias propensity_vector_TS flux_vector_TS
 end # module YPetri::Core::Timed
 
-# In general, it is not required that all net nodes are simulated with the
-# same method. Practically, ODE systems have many good simulation methods
-# available.
+# Textbook simulation methods ODE systems have many good simulation methods available.
 #
-# (1) ᴍ(t) = ϝ f(ᴍ, t).dt, where f(ᴍ, t) is a known function.
+# (1) mv' = ϝ f(mv, t).dt, where f(m, t) is a known function.
 #
 # Many of these methods depend on the Jacobian, but that may not be available
 # for some places. Therefore, the places, whose marking defines the system
@@ -66,3 +90,5 @@ end # module YPetri::Core::Timed
 # If we apply the definition of "causal orientation" on A and E places, then it
 # can be said, that only the transitions causally oriented towards "A" places
 # are allowed for compliance with the equation (1).
+
+# In general, it is not required that all net nodes are simulated with the same method.

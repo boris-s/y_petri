@@ -9,7 +9,7 @@ module YPetri
   Transition = Class.new
   Net = Class.new Module
   Simulation = Class.new
-  Core = Class.new
+  Core = Module.new
   World = Class.new
   Agent = Class.new
 end # module YPetri
