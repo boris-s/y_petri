@@ -42,7 +42,7 @@ class YPetri::Simulation
   ★ MarkingClamps::Access
   ★ MarkingVector::Access
 
-  DEFAULT_SETTINGS = -> do { method: :pseudo_euler, guarded: false } end
+  DEFAULT_SETTINGS = -> do { method: :basic, guarded: false } end
 
   class << self
     alias __new__ new

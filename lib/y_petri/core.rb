@@ -1,16 +1,13 @@
 # encoding: utf-8
 
-require_relative 'core/timed'
-require_relative 'core/timeless'
-
 # This module represents a simulation core (execution machine), which can be
 # either timed (class Core::Timed) or timeless (class Core::Timeless).
 # 
 module YPetri::Core
-  ★ YPetri::Simulation::Dependency # it's beautiful to depend, and
-  # comfortable to boot I wouldn't survive this refactoring if I try
-  # to make it too right atm and duplicate everything the simulation
-  # already has...
+  ★ YPetri::Simulation::Dependency # dependency stays for now
+
+  require_relative 'core/timed'
+  require_relative 'core/timeless'
 
   DEFAULT_METHOD = :basic
 
@@ -83,13 +80,15 @@ module YPetri::Core
   # Delta contribution by ts transitions.
   # 
   def delta_ts
-    @delta_closure_for_ts_transitions.call
+    simulation.ts_delta_closure.call
+    # @delta_closure_for_ts_transitions.call
   end
 
   # Firing vector of tS transitions.
   # 
   def firing_vector_tS
-    @firing_closure_for_tS_transitions.call
+    simulation.tS_firing_closure.call
+    # @firing_closure_for_tS_transitions.call
   end
 
   # Increments the marking vector by a given delta.
@@ -105,8 +104,10 @@ module YPetri::Core
   # Fires all the assignment transitions.
   # 
   def fire_all_assignment_transitions!
-    @assignment_closure_for_A_transitions.call
+    simulation.A_direct_assignment_closure.call
+    # @assignment_closure_for_A_transitions.call
   end
+  alias assignment_transitions_all_fire! fire_all_assignment_transitions!
 end # module YPetri::Core
 
 # TODO: Decouple Core and Simulation classes. It still looks like one

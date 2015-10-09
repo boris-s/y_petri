@@ -123,7 +123,7 @@ require_relative '../lib/y_petri'     # tested component itself
 #             @sim.m.must_equal [1, 2]
 #             @sim.p_m.must_equal( { A: 1, B: 2 } )
 #             @sim.recording.must_equal( { 0 => [1, 2]} )
-#             @sim.simulation_method.must_equal :pseudo_euler
+#             @sim.simulation_method.must_equal :basic
 #             @sim.core.must_be_kind_of YPetri::Core
 #             @sim.ts_tt.first.domain.must_equal []
 #             @sim.send( :ts_transitions ).first.domain_access_code.must_equal ''
@@ -195,7 +195,7 @@ require_relative '../lib/y_petri'     # tested component itself
 
 #           it "should behave" do
 #             @sim.timed?.must_equal true
-#             @sim.simulation_method.must_equal :pseudo_euler
+#             @sim.simulation_method.must_equal :basic
 #             @sim.Ts_tt.size.must_equal 1
 #             @sim.send( :transitions ).Ts.first.gradient_closure.call.must_equal [1]
 #             @sim.Ts_tt.first.codomain.names.must_equal [:A]
@@ -212,7 +212,7 @@ require_relative '../lib/y_petri'     # tested component itself
 
 #           it "should behave" do
 #             @sim.send( :transitions ).Ts.first.codomain.names.must_equal [:A]
-#             @sim.simulation_method.must_equal :pseudo_euler
+#             @sim.simulation_method.must_equal :basic
 #             @sim.timed?.must_equal true
 #             @sim.core.timed?.must_equal true
 #             @sim.reset!
@@ -289,7 +289,7 @@ require_relative '../lib/y_petri'     # tested component itself
 #   it "should behave" do
 #     s = simulation
 #     assert ! s.timed?
-#     s.core.must_be_kind_of YPetri::Core::Timeless::PseudoEuler
+#     s.core.ancestors.must_include YPetri::Core::Timeless::Basic
 #     ds = s.recording
 #     ds.size.must_equal 6
 #     ds.events.must_equal [0, 1, 2, 3, 4, 5]
@@ -334,7 +334,7 @@ describe "timed simulation" do
   it "should behave" do
     places.map( &:marking ).must_equal [0.5, 0.5] # marking unaffected
     s = simulation
-    s.settings.must_equal( { method: :pseudo_euler, guarded: false,
+    s.settings.must_equal( { method: :basic, guarded: false,
                              step: 0.1, sampling: 5, time: 0..60 } ) 
     assert s.recording.to_csv.start_with?( ":event,:A,:B\n" +
                                            "0.0,0.5,0.5\n" +
