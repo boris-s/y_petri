@@ -62,7 +62,7 @@ class YPetri::Simulation::Nodes
       # NOTE: At the moment, the Simulation instance does not have a
       # parametrized subclass of Simulation::Nodes class, the following
       # statement is thus made to return a plain array of elements.
-      Nodes().load array.map &method( :node )
+      NodesPS().load array.map &method( :node )
     end
 
     # Without arguments, returns all the nodes (places / transitions) of the

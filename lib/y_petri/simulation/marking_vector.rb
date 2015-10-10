@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class YPetri::Simulation
-  # The class in which places' marking is stored insid a simulation.
+  # The class in which places' marking is stored inside a simulation.
   #
   class MarkingVector < Matrix
     ★ Dependency
@@ -46,7 +46,7 @@ class YPetri::Simulation
       # 
       def starting places=nil
         if places.nil? then
-          return starting places() if annotation.nil?
+          return starting( places() ) if annotation.nil?
           self[ annotation.map { |p| p.free? ? p.initial_marking : p.clamp } ]
         else
           annotated_with( places ).starting

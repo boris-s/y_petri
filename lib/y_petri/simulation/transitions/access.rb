@@ -66,11 +66,11 @@ class YPetri::Simulation::Transitions
     # Transition instance identification.
     # 
     def transition( transition )
-      begin; Transition().instance( transition ); rescue NameError, TypeError
+      begin; TransitionPS().instance( transition ); rescue NameError, TypeError
         begin
           transition = net.transition( transition )
-          Transition().instances.find { |t_rep| t_rep.source == transition } || 
-            Transition().instance( transition.name )
+          TransitionPS().instances.find { |t_rep| t_rep.source == transition } || 
+            TransitionPS().instance( transition.name )
         rescue NameError, TypeError => msg
           fail TypeError, "Unknown transition instance: #{transition}! (#{msg})"
         end
@@ -85,7 +85,7 @@ class YPetri::Simulation::Transitions
     # not fil, but returns @Transitions parametrized subclass itself.
     # 
     def Transitions( array )
-      Transitions().load array.map &method( :transition )
+      TransitionsPS().load array.map &method( :transition )
     end
 
     # Without arguments, returns all the transition representations in the

@@ -4,8 +4,6 @@
 #
 class YPetri::Simulation::Places < YPetri::Simulation::Nodes
   require_relative 'places/types'
-  require_relative 'places/free'
-  require_relative 'places/clamped'
 
   ★ Types
 
@@ -15,7 +13,7 @@ class YPetri::Simulation::Places < YPetri::Simulation::Nodes
     p = begin; net.place( place ); rescue NameError, TypeError
           return super place( place )
         end
-    super p.name ? Place().new( p, name: p.name ) : Place().new( p )
+    super p.name ? PlacePS().new( p, name: p.name ) : PlacePS().new( p )
   end
 
   # Marking of the place collection in the current simulation.

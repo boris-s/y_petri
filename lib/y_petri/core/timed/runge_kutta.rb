@@ -6,16 +6,19 @@ module YPetri::Core::Timed::RungeKutta
   def delta Δt
     # The f below is from the equation state' = f( state )
     f = lambda { |mv| # mv is the marking vector of the free places
-          result = "make hash from free places of the simulation to zeros"
-          nonstoichiometric_transitions.each { |t|
-            places = t.codomain.free
-            inputs = mv.select( t.domain ) # this doesn't work this way
-            f = t.function
-            output = f.call( *inputs )
-            places.each { |p|
-              result[p] += output[p] # again, this doesn't work this way
-            }
-          }
+      # Here, we first construct a zero marking vector for free places.
+      result = simulation.MarkingVector.zero( simulation.free_pp )
+      # Here, we get the nonstoichiometric transitions of the simulation.
+      nonstoichio_tt = simulation. 
+      nonstoichiometric_transitions.each { |t|
+        places = t.codomain.free
+        inputs = mv.select( t.domain ) # this doesn't work this way
+        f = t.function
+        output = f.call( *inputs )
+        places.each { |p|
+          result[p] += output[p] # again, this doesn't work this way
+        }
+      }
           stoichiometric_transitions.each { |t|
             places = t.codomain.free
             inputs = mv.select( t.domain ) # this doesn't work this way

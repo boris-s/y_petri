@@ -12,6 +12,14 @@ class YPetri::Core::Timeless
   # Note: the reason why Timeless core has distinct basic method is because
   # without having to consider timed transitions, it can be made simpler.
 
+  # This inquirer (=Boolean selector) is always false for timeless cores.
+  # 
+  def timed?; false end
+
+  # This inquirer (=Boolean selector) is always true for timeless cores.
+  # 
+  def timeless?; true end
+
   def initialize **named_args
     super
     extend METHODS.fetch simulation_method

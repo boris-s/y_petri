@@ -5,9 +5,9 @@
 # 
 class YPetri::Core::Timed
   ★ YPetri::Core
-  
+
   require_relative 'timed/basic'
-  require_relative 'timed/ticked'       # 
+  require_relative 'timed/ticked'
   require_relative 'timed/euler'
   require_relative 'timed/runge_kutta'
   require_relative 'timed/gillespie'
@@ -19,6 +19,14 @@ class YPetri::Core::Timed
     runge_kutta: RungeKutta,    # for timed nets only
     gillespie: Gillespie        # for timed nets only
   }
+
+  # This inquirer (=Boolean selector) is always true for timed cores.
+  # 
+  def timed?; true end
+
+  # This inquirer (=Boolean selector) is always false for timed cores.
+  # 
+  def timeless?; false end
 
   def initialize **named_args
     super

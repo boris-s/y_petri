@@ -1,18 +1,18 @@
 # encoding: utf-8
 
 # Mixin providing collections of places / transitions to classes parametrized
-# by an instance of YPetri::Simulation. Expects the includer classes to provide
-# +#simulation+ method returning the +Simulation+ instance with which they are
-# parametrized.
+# by an instance of +YPetri::Simulation+. Expects the includer classes to
+# provide +#simulation+ method returning the +Simulation+ instance with which
+# they are parametrized.
 # 
 class YPetri::Simulation
   module Dependency
-    delegate :Place,
-             :Transition,
+    delegate :PlacePS,
+             :TransitionPS,
              :MarkingClamp,
              :InitialMarkingObject,
-             :Places,
-             :Transitions,
+             :PlacesPS,
+             :TransitionsPS,
              :MarkingClamps,
              :InitialMarking,
              :net,
@@ -37,7 +37,7 @@ class YPetri::Simulation
         end
       end
     end
-    
+
     # Necessary to overcome the protected character of the listed methods.
     # 
     [ :node,

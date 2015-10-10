@@ -66,11 +66,11 @@ class YPetri::Simulation::Places
     # Place instance identification.
     # 
     def place( place )
-      begin; Place().instance( place ); rescue NameError, TypeError
+      begin; PlacePS().instance( place ); rescue NameError, TypeError
         begin
           place = net.place( place )
           places.find { |place_rep| place_rep.source == place } ||
-            Place().instance( place.name )
+            PlacePS().instance( place.name )
         rescue NameError, TypeError => msg
           raise # FIXME: This raise needs to be here in order for the current
           # tests to pass (they expect NameError, while the raise below would
@@ -93,12 +93,15 @@ class YPetri::Simulation::Places
                         # as protected in real Simulation instances, while
                         # places method just above does.
       # Kernel.p array
-      Places().load array.map &method( :place )
+      PlacesPS().load array.map &method( :place )
     end
 
-    # Without arguments, returns all the place representations in the simulation.
-    # Otherwise, it accepts an arbitrary number of places or place ids as
-    # arguments, and a corresponding array of place representations.
+    # This method is overloaded in such way, that when called without arguments,
+    # it acts as a selector of @places property (instance variable) of the
+    # simulation. When called with arguments, all the arguments must be places
+    # or symbols (or strings etc.) identifying a place, and for these arguments,
+    # the method returns an array of corresponding places (more precisely,
+    # objects that represent places in the context of the receiver simulation).
     # 
     def places( *places )
       return @places if places.empty?

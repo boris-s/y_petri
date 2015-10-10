@@ -5,7 +5,7 @@ class YPetri::Simulation
   # 
   class Nodes < Array
     ★ Dependency
-    
+
     class << self
       # New collection constructor
       # 
@@ -13,15 +13,15 @@ class YPetri::Simulation
         new.tap { |inst| inst.load collection }
       end
     end
-    
+
     delegate :simulation, to: "self.class"
-    
+
     # Loads nodes to this collection.
     # 
     def load nodes
       nodes.each{ |node| push node }
     end
-    
+
     # Creates a subset of this collection (of the same class).
     # 
     def subset nodes=nil, &block # TODO: Rename to subarray
@@ -37,7 +37,7 @@ class YPetri::Simulation
         self.class.load( nn )
       end
     end
-    
+
     # Returns an array of the node sources (nodes in the underlying net).
     # 
     def sources

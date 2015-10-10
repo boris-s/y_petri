@@ -136,19 +136,19 @@ class YPetri::Simulation
                  initial_marking: {},
                  marking: nil,
                  **settings
-    param_class!( { Place: PlaceRepresentation, # parametrized subclasses
-                    Places: Places,
-                    Transition: TransitionRepresentation,
-                    Transitions: Transitions,
-                    Nodes: Nodes,
+    param_class!( { PlacePS: PlaceRepresentation, # PS = parametrized subclass
+                    PlacesPS: Places,
+                    TransitionPS: TransitionRepresentation,
+                    TransitionsPS: Transitions,
+                    NodesPS: Nodes,
                     PlaceMapping: PlaceMapping,
                     InitialMarking: InitialMarking,
                     MarkingClamps: MarkingClamps,
                     MarkingVector: MarkingVector },
                   with: { simulation: self } )
-    [ Place(), Transition() ].each &:namespace! # each serves as its namespace
+    [ PlacePS(), TransitionPS() ].each &:namespace! # each serves as its namespace
     @guarded = guarded # TODO: Not operable as of now.
-    @places = Places().load( net.places )
+    @places = PlacesPS().load( net.places )
     @marking_clamps = MarkingClamps().load( marking_clamps )
     @initial_marking = if marking then
                          m = PlaceMapping().load( marking )
@@ -170,7 +170,7 @@ class YPetri::Simulation
     # Initialize the marking vector.
     @m_vector = MarkingVector().zero
     # Set up the collection of transitions.
-    @transitions = Transitions().load( net.transitions )
+    @transitions = TransitionsPS().load( net.transitions )
     # Set up stoichiometry matrices relative to free places.
     @tS_stoichiometry_matrix = transitions.tS.stoichiometry_matrix
     @TS_stoichiometry_matrix = transitions.TS.stoichiometry_matrix

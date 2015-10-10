@@ -11,23 +11,27 @@ module YPetri::Core
 
   DEFAULT_METHOD = :basic
 
-  # I'm doing it this way in order to gradually begin decoupling in my mind
-  # core from simulation. The constructed core will have to be assigned the
-  # simulation object on which it will depend before core is made completely
-  # independend on simulation. (Not gonna happen any soon.)
-  # 
+  # Instead of getting the parametrized subclass of Timed/Timeless core
+  # belonging to a simulation, I am passing a simulation instance to the
+  # constructor now in order to gradually begin decoupling in my mind core
+  # simulation. If I ever make the core independent from the simulation,
+  # it will have its own representation of the net and its own capability
+  # to form wiring and apply the required numerical procedures.
+
   attr_reader :simulation         # just a remark:
   attr_reader :simulation_method  # "reader" is "selector" in Landin's language
+  attr_reader :guarded
+  alias guarded? guarded
 
   def initialize simulation: nil, method: nil, guarded: false, **named_args
     @simulation = simulation or fail ArgumentError, "Core requires simulation!"
     @simulation_method = method || DEFAULT_METHOD
-    
+
     if guarded then            # TODO: Guarded is unfinished business.
       fail NotImplementedMethod, "Guarded core is not implemented yet!"
       require_relative 'core/guarded' # TODO: Should be replaced with autoload.
     else @guarded = false end
-    
+
     # Dependent on Simulation, this machine returns "delta contribution for ts
     # (timeless nonstoichiometric) transitions", which smells like a vector of
     # size corresponding to the number of free places.
@@ -47,19 +51,15 @@ module YPetri::Core
 
     # We're gonna change all of the above. The marking vectors will be owned by
     # the core now. Machines will be wired only inside the core.
+
+    @marking_vector = simulation.MarkingVector().zero
   end
 
-  # TODO: this delegation below is not completely right.
-  # 1. There is no subclassing and Timed/Timeless module inclusion, so there
-  # is no need to delegate timed?/timeless? to the class, if only the modules
-  # provide those inquirer methods (predicates in Landin's language).
-  # 2. Same goes for guarded? predicate, which might be the business of
-  # Core::Guarded module (or not)
-  # 
-  delegate :timed?,
-           :timeless?,
-           :guarded?,
-           to: "self.class"
+  # Selector of the core's own state vector, instance variable +@m_vector+.
+  #
+  def state
+    @m_vector or fail TypeError, "State not constructed yet!"
+  end
 
   delegate :alert!,
            to: :recorder
@@ -148,4 +148,3 @@ end # module YPetri::Core
 # deterministic (continous) and stochastic (discrete, going quantum by
 # quantum, or by several quanta, there is more than one stochastic discrete
 # method in stock) methods for simulation of individual processes.
-
