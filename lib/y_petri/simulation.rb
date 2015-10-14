@@ -53,8 +53,7 @@ class YPetri::Simulation
   end
 
   # Parametrized subclasses.
-  attr_reader :core,
-              :recorder,
+  attr_reader :recorder, # :core,
               :guarded,
               :tS_stoichiometry_matrix,
               :TS_stoichiometry_matrix,
@@ -71,14 +70,14 @@ class YPetri::Simulation
 
   delegate :net, to: "self.class"
 
+  delegate :recording,
+           :back!,
+           to: :recorder
+
   delegate :simulation_method,
            :step!,
            :firing_vector_tS,
            to: :core
-
-  delegate :recording,
-           :back!,
-           to: :recorder
 
   alias r recording
 

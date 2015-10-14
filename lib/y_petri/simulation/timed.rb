@@ -259,11 +259,37 @@ module YPetri::Simulation::Timed
     reset_time!
     @step = settings[:step] || time_unit
     @default_sampling = settings[:sampling] || step
-    @core = if @guarded then
-              YPetri::Core::Timed.new( simulation: self, method: method, guarded: true )
-            else
-              YPetri::Core::Timed.new( simulation: self, method: method, guarded: false )
-            end
+    if method == :runge_kutta then
+      # This is a bit irregular for now, but since the core has to behave
+      # differently (that is, more like a real simulation core), at least
+      # for the more advanced runge_kutta method, a core under a different
+      # instance variable will be constructed.
+      @rk_core = if @guarded then
+                   YPetri::Core::Timed.new( simulation: self, method: method, guarded: true )
+                 else
+                   YPetri::Core::Timed.new( simulation: self, method: method, guarded: false )
+                 end
+      singleton_class.class_exec do
+        attr_reader :rk_core
+        delegate :simulation_method,
+                 :step!,
+                 :firing_vector_tS,
+                 to: :rk_core
+      end
+    else
+      @core = if @guarded then
+                YPetri::Core::Timed.new( simulation: self, method: method, guarded: true )
+              else
+                YPetri::Core::Timed.new( simulation: self, method: method, guarded: false )
+              end
+      singleton_class.class_exec do
+        attr_reader :core
+        delegate :simulation_method,
+                 :step!,
+                 :firing_vector_tS,
+                 to: :core
+      end
+    end
     @recorder = if features_to_record then
                   # we'll have to figure out features
                   ff = case features_to_record

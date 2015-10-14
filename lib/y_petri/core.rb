@@ -23,6 +23,8 @@ module YPetri::Core
   attr_reader :guarded
   alias guarded? guarded
 
+  attr_reader :free_pp, :marking_free, :marking_clamped
+
   def initialize simulation: nil, method: nil, guarded: false, **named_args
     @simulation = simulation or fail ArgumentError, "Core requires simulation!"
     @simulation_method = method || DEFAULT_METHOD
@@ -32,27 +34,20 @@ module YPetri::Core
       require_relative 'core/guarded' # TODO: Should be replaced with autoload.
     else @guarded = false end
 
-    # Dependent on Simulation, this machine returns "delta contribution for ts
-    # (timeless nonstoichiometric) transitions", which smells like a vector of
-    # size corresponding to the number of free places.
-    # 
-    @delta_closure_for_ts_transitions = simulation.ts_delta_closure
+    @free_pp = simulation.free_pp
+    @marking_free = simulation.MarkingVector.zero( @free_pp )
+    @marking_clamped = simulation.MarkingVector.zero( @clamped_pp )
 
-    # This one is slightly different in that it returns so-called "firing vector",
-    # from which delta vector is computed by multiplying it with tS stoichiometry
-    # matrix.
-    # 
-    @firing_closure_for_tS_transitions = simulation.tS_firing_closure
-
-    # This machine is special in that it directly modifies the marking vector,
-    # firing the assignment transitions one by one (or so I think).
-    # 
-    @assignment_closure_for_A_transitions = simulation.A_direct_assignment_closure
-
-    # We're gonna change all of the above. The marking vectors will be owned by
-    # the core now. Machines will be wired only inside the core.
-
-    @marking_vector = simulation.MarkingVector().zero
+    # TODO: I don't remember how to load this in a simple way.
+    simulation.state.to_hash.each do |place, value|
+      if @marking_free.annotation.include? place then
+        @marking_free.set( place, value )
+      elsif @marking_clamped.annotation.include? place then
+        @marking_clamped.set( place, value )
+      else
+        fail "Problem loading marking vector to timed core."
+      end
+    end
   end
 
   # Selector of the core's own state vector, instance variable +@m_vector+.

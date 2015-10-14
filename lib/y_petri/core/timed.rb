@@ -29,13 +29,10 @@ class YPetri::Core::Timed
   def timeless?; false end
 
   def initialize **named_args
-    super
+    super                       # TODO: Net type checking.
     extend METHODS.fetch simulation_method
-    # look in the Core#initialize method for the closures and parameters
-    # and such. Here, we could define:
-    @Ts_gradient_closure = simulation.Ts_gradient_closure
-    # which would remind us that this machine needs to be
-    # actually defined internal to Core instance
+    @delta_s = simulation.MarkingVector.zero( @free_pp )
+    @delta_S = simulation.MarkingVector.zero( @free_pp )
   end
 
   # Makes a single step by Δt.

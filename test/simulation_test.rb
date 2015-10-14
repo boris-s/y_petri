@@ -321,20 +321,130 @@ require_relative '../lib/y_petri'     # tested component itself
 #   end
 # end
 
-describe "timed simulation" do
+# describe "timed simulation" do
+#   before do
+#     self.class.class_exec { include YPetri }
+#     A = Place m!: 0.5
+#     B = Place m!: 0.5
+#     A_pump = TT s: { A: -1 } do 0.005 end
+#     B_decay = Transition s: { B: -1 }, rate: 0.05
+#     run!
+#   end
+
+#   it "should work with the default method" do
+#     places.map( &:marking ).must_equal [0.5, 0.5] # marking unaffected
+#     s = simulation
+#     s.settings.must_equal( { method: :basic, guarded: false,
+#                              step: 0.1, sampling: 5, time: 0..60 } ) 
+#     assert s.recording.to_csv.start_with?( ":event,:A,:B\n" +
+#                                            "0.0,0.5,0.5\n" +
+#                                            "5.0,0.475,0.38916\n" +
+#                                            "10.0,0.45,0.30289\n" + 
+#                                            "15.0,0.425,0.23574\n" +
+#                                            "20.0,0.4,0.18348\n" +
+#                                            "25.0,0.375,0.1428\n" )
+#     assert s.recording.to_csv.end_with?( "60.0,0.2,0.02471" )
+#     s.recording.events.must_equal [ 0.0, 5.0, 10.0, 15.0, 20.0,
+#                                     25.0, 30.0, 35.0, 40.0, 45.0,
+#                                     50.0, 55.0, 60.0 ]
+#     s.recording.values_at( 5, 10 )
+#       .must_equal [ [0.475, 0.38916], [0.45, 0.30289] ]
+#     s.recording.slice( 2..12 )
+#       .must_equal( { 5.0 => [0.475, 0.38916], 10.0=>[0.45, 0.30289] } )
+#     s.recording.net
+#       .must_equal net
+#     s.recording.features
+#       .must_equal net.State.Features.marking( :A, :B )
+#     net.State.Features.State
+#       .must_equal net.State
+#     s.recording.net.State
+#       .must_equal net.State
+#     s.recording.series( marking: [:A] )
+#       .must_equal [ [ 0.5, 0.475, 0.45, 0.425, 0.4, 0.375, 0.35, 0.325,
+#                       0.3, 0.275, 0.25, 0.225, 0.2 ] ]
+#     s.net.State.Features.firing.map( &:transition ).names
+#       .must_equal [ :A_pump, :B_decay ]
+#     s.recording.reduce_features( s.net.State.Features.firing, Δt: 1 )
+#       .to_h.take( 2 ).map( &:flatten! ).map { |a| a.map &[:round, 6 ] }
+#       .must_equal [ [ 0.0, 0.005, 0.025 ], [ 5.0, 0.005, 0.019458 ] ]
+#     s.recording.firing( Δt: 0.1 ).series.map( &:first ).map( &[ :round, 6 ] )
+#       .must_equal [ 0.0005, 0.0025 ]
+#     s.recording.Firing( [] )
+#       .must_equal( [*0..12].map { |n| n * 5.0 } >> [[]] * 13 )
+#     s.recording
+#       .delta( :A, transitions: [:A_pump], delta_time: 0.1 )
+#       .series
+#       .must_equal [ [ -0.0005 ] * 13 ]
+#     plot_state
+#     sleep 5
+#   end
+# end
+
+describe "timed simulation with other methods" do
   before do
     self.class.class_exec { include YPetri }
-    A = Place m!: 0.5
-    B = Place m!: 0.5
-    A_pump = TT s: { A: -1 } do 0.005 end
-    B_decay = Transition s: { B: -1 }, rate: 0.05
-    run!
+    A = Place m!: 0.5 unless places.names.include? :A
+    B = Place m!: 0.5 unless places.names.include? :B
+    A_pump = TT s: { A: -1 } do 0.005 end unless transitions.names.include? :A_pump
+    B_decay = Transition s: { B: -1 }, rate: 0.05 unless transitions.names.include? :B_decay
   end
 
-  it "should behave" do
+  # it "should work with the default method" do
+  #   basic_simulation = new_simulation
+  #   s = basic_simulation
+  #   s.run!
+  #   places.map( &:marking ).must_equal [0.5, 0.5] # marking unaffected
+  #   s.settings.must_equal( { method: :basic, guarded: false,
+  #                            step: 0.1, sampling: 5, time: 0..60 } )
+  #   assert s.recording.to_csv.start_with?( ":event,:A,:B\n" +
+  #                                          "0.0,0.5,0.5\n" +
+  #                                          "5.0,0.475,0.38916\n" +
+  #                                          "10.0,0.45,0.30289\n" + 
+  #                                          "15.0,0.425,0.23574\n" +
+  #                                          "20.0,0.4,0.18348\n" +
+  #                                          "25.0,0.375,0.1428\n" )
+  #   assert s.recording.to_csv.end_with?( "60.0,0.2,0.02471" )
+  #   s.recording.events.must_equal [ 0.0, 5.0, 10.0, 15.0, 20.0,
+  #                                   25.0, 30.0, 35.0, 40.0, 45.0,
+  #                                   50.0, 55.0, 60.0 ]
+  #   s.recording.values_at( 5, 10 )
+  #     .must_equal [ [0.475, 0.38916], [0.45, 0.30289] ]
+  #   s.recording.slice( 2..12 )
+  #     .must_equal( { 5.0 => [0.475, 0.38916], 10.0=>[0.45, 0.30289] } )
+  #   s.recording.net
+  #     .must_equal net
+  #   s.recording.features
+  #     .must_equal net.State.Features.marking( :A, :B )
+  #   net.State.Features.State
+  #     .must_equal net.State
+  #   s.recording.net.State
+  #     .must_equal net.State
+  #   s.recording.series( marking: [:A] )
+  #     .must_equal [ [ 0.5, 0.475, 0.45, 0.425, 0.4, 0.375, 0.35, 0.325,
+  #                     0.3, 0.275, 0.25, 0.225, 0.2 ] ]
+  #   s.net.State.Features.firing.map( &:transition ).names
+  #     .must_equal [ :A_pump, :B_decay ]
+  #   s.recording.reduce_features( s.net.State.Features.firing, Δt: 1 )
+  #     .to_h.take( 2 ).map( &:flatten! ).map { |a| a.map &[:round, 6 ] }
+  #     .must_equal [ [ 0.0, 0.005, 0.025 ], [ 5.0, 0.005, 0.019458 ] ]
+  #   s.recording.firing( Δt: 0.1 ).series.map( &:first ).map( &[ :round, 6 ] )
+  #     .must_equal [ 0.0005, 0.0025 ]
+  #   s.recording.Firing( [] )
+  #     .must_equal( [*0..12].map { |n| n * 5.0 } >> [[]] * 13 )
+  #   s.recording
+  #     .delta( :A, transitions: [:A_pump], delta_time: 0.1 )
+  #     .series
+  #     .must_equal [ [ -0.0005 ] * 13 ]
+  #   plot_state
+  #   sleep 5
+  # end
+
+  it "should work with :runge_kutta method" do
+    rk_simulation = new_simulation( method: :runge_kutta )
+    s = rk_simulation
+    s.run!
     places.map( &:marking ).must_equal [0.5, 0.5] # marking unaffected
-    s = simulation
-    s.settings.must_equal( { method: :basic, guarded: false,
+    s.settings.must_equal( { method: :runge_kutta, guarded: false,
                              step: 0.1, sampling: 5, time: 0..60 } ) 
     assert s.recording.to_csv.start_with?( ":event,:A,:B\n" +
                                            "0.0,0.5,0.5\n" +

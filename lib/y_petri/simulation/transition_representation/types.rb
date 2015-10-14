@@ -37,26 +37,18 @@ class YPetri::Simulation::TransitionRepresentation
 
     # Is this a TS transition?
     # 
-    def TS?
-      type == :TS
-    end
+    def TS?; type == :TS end
 
     # Is this a Ts transition?
     # 
-    def Ts?
-      type == :Ts
-    end
+    def Ts?; type == :Ts end
 
     # Is this a tS transition?
     # 
-    def tS?
-      type == :tS
-    end
+    def tS?; type == :tS end
 
     # Is this a ts transition?
     # 
-    def ts?
-      type == :ts
-    end
+    def ts?; type == :ts end
   end # module Types
 end # class YPetri::Simulation::TransitionRepresentation

@@ -39,7 +39,7 @@ class Matrix
       end
       code_lines.compact.join( "\n" ) << "\n"
     end
-    
+
     # Builds a code string for incrementing a vector at given indices. Source is
     # an array.
     # 
@@ -62,5 +62,15 @@ class Matrix
       self.class.column_vector_increment_code( vector: "v",
                                                indices: indices,
                                                source: "delta" )
+  end
+
+  # Builds a closure for assigning to a column at given indices.
+  #
+  def assign_at_indices_closure indices: (fail ArgumentError, "No indices!")
+    v = self
+    eval "-> ass do\n%s\nend" %
+      self.class.column_vector_assignment_code( vector: ?v,
+                                                indices: indices,
+                                                source: "ass" )
   end
 end

@@ -4,7 +4,7 @@ require_relative 'world/dependency'
 require_relative 'world/petri_net_aspect'
 require_relative 'world/simulation_aspect'
 
-# Represents YPetri workspace, but "world" is shorter. Its instance holds
+# Represents YPetri workspace ("World" is shorter). Its instance holds
 # places, transitions, nets and other assets needed to perform the tasks
 # of system specification and simulation (simulation settings, place clamps,
 # initial markings etc.). Provides basic methods to do just what is necessary.
