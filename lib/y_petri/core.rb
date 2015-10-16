@@ -23,7 +23,11 @@ module YPetri::Core
   attr_reader :guarded
   alias guarded? guarded
 
-  attr_reader :free_pp, :marking_free, :marking_clamped
+  attr_reader :free_pp,
+              :clamped_pp,
+              :pp,
+              :marking_of_free_places,
+              :marking_of_clamped_places
 
   def initialize simulation: nil, method: nil, guarded: false, **named_args
     @simulation = simulation or fail ArgumentError, "Core requires simulation!"
@@ -35,29 +39,41 @@ module YPetri::Core
     else @guarded = false end
 
     @free_pp = simulation.free_pp
-    @marking_free = simulation.MarkingVector.zero( @free_pp )
-    @marking_clamped = simulation.MarkingVector.zero( @clamped_pp )
+    @clamped_pp = simulation.clamped_pp
+    @pp = simulation.pp
+    # TODO: Try to make the lines below simpler. In particular, in the future, core should
+    # not depend on simulation at this level.
+    @marking_of_free_places = simulation.MarkingVector.starting( @free_pp )
+    @marking_of_clamped_places = simulation.MarkingVector.starting( @clamped_pp )
 
     # TODO: I don't remember how to load this in a simple way.
     simulation.state.to_hash.each do |place, value|
-      if @marking_free.annotation.include? place then
-        @marking_free.set( place, value )
-      elsif @marking_clamped.annotation.include? place then
-        @marking_clamped.set( place, value )
+      if @marking_of_free_places.annotation.include? place then
+        @marking_of_free_places.set( place, value )
+      elsif @marking_of_clamped_places.annotation.include? place then
+        @marking_of_clamped_places.set( place, value )
       else
         fail "Problem loading marking vector to timed core."
       end
     end
   end
 
-  # Selector of the core's own state vector, instance variable +@m_vector+.
+  # Selector of the core's own state vector.
   #
   def state
-    @m_vector or fail TypeError, "State not constructed yet!"
+    # TODO: Make it more efficient. Later, when core is detached from
+    # simulation, use own assets instead of simulation.MarkingVector
+    simulation.MarkingVector.zero.tap do |mv|
+      @marking_of_free_places.annotation.each do |place|
+        mv.set place, @marking_of_free_places.fetch( place )
+      end
+      @marking_of_clamped_places.annotation.each do |place|
+        mv.set place, @marking_of_clamped_places.fetch( place )
+      end
+    end
   end
 
-  delegate :alert!,
-           to: :recorder
+  delegate :alert!, to: :recorder
 
   # Delta for free places from timeless transitions.
   # 

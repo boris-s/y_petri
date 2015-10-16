@@ -144,22 +144,22 @@ module YPetri::Simulation::Timed
   # options :just_before, :just_after and :exact, and tunes the simulation
   # behavior towards the end of the run.
   #
-  # just_before:     last step has normal size, simulation stops before or just
-  #                  on the target time
-  # just_after:      last step has normal size, simulation stops after or just
-  #                  on the target time_step
+  # stop_before:     last step has normal size, simulation stops before or just
+  #             on the target time
+  # stop_after:      last step has normal size, simulation stops after or just
+  #             on the target time_step
   # exact:           simulation stops exactly on the prescribed time, last step
   #                  is shortened if necessary
   #
   def run_upto( target_time, final_step: :exact )
     case final_step
-    when :before then
+    when :stop_before then
       step! while time + step <= target_time
     when :exact then
       step! while time + step < target_time
       step!( target_time - time )
       @time = target_time
-    when :after then
+    when :stop_after then
       step! while time < target_time
     else
       fail ArgumentError, "Unrecognized :final_step option: #{final_step}"
@@ -242,6 +242,24 @@ module YPetri::Simulation::Timed
         @initial_time, @target_time = time_range.begin, time_range.end
         @time_unit = initial_time.class.one
       else
+        # TODO: When using simulation after some time, I found this behavior
+        # surprising. I wanted to call simulation time: 100, expecting it
+        # to run until 100 (in the range 0..100). Instead, I see that it wants
+        # to run from 100 to infinity. While I understand how important it
+        # is to have a simple way to set the time of a newly constructed
+        # simulation to some value (for the purposes such as cloning of
+        # simulation, interpolation of simulations etc. -- actually, there
+        # is no really stateful net in YPetri at the moment, so Simulation
+        # class behaves somewhat as a stateful net...), not just me, but
+        # other users might expect :time argument to set final time with
+        # initial time being 0. I'm not gonna change it quite yet.
+        #
+        # The way to refactor it would be to first introduce "initial_time"
+        # parameter and make "time" parameter raise an error, and refactor
+        # the code until the tests pass. Then, to reintroduce "time"
+        # parameter with the new, more intuitive meaning. Interactive
+        # users can always modify time later (simulation.time = something).
+        # 
         @initial_time = settings[:time]
         @time_unit = initial_time.class.one
         @target_time = time_unit * Float::INFINITY
@@ -272,9 +290,58 @@ module YPetri::Simulation::Timed
       singleton_class.class_exec do
         attr_reader :rk_core
         delegate :simulation_method,
-                 :step!,
                  :firing_vector_tS,
                  to: :rk_core
+        
+        # This method steps the simulation forward by the prescribed step. Simulation uses the core to perform the #step! method.
+        # 
+        def step! Δt=step()
+          # Pseudocode would be like this:
+          
+          # 1. set_state_and_time_of_core_to_the_current_simulation's_state_and_time
+          
+          # 2. explicitly tell the core the code by which to alert the sampler when necessary
+          # ie. when the state vector of the core progresses sufficiently for it to be
+          # interesting to the sampler
+
+          # 3. explicitly tell the core the code by which to update the simulation's state,
+          # and when should it be updated.
+          #
+          # (Note: This can be done in several ways. For example, one possibility is to
+          # update the simulation only after the core is finished computing. Another
+          # possibility is to have some other criterion to update the simulation more
+          # often in the course of the core's work. Since this is some sort of sampling
+          # job again, there is an option of actually delegating it to the sampler,
+          # which would thus get closer to its role of the interface.)
+          #
+          # (Note 2: It is actually more clear what the role of the core should be rather
+          # than what the simulation's role should be. The core should receive the initial
+          # instructions, a relatively simple method of what to do, and it should be
+          # specialized in doing its job fast. Secondly, it should receive the method for
+          # alerting the superiors: simulation and/or sampler. Thirdly, it should be told
+          # when to stop.)
+
+          # This should set the state of the rk_core to the marking vector of free
+          # places (#marking_vector method).
+          rk_core.marking_of_free_places.reset!( marking_vector )
+          sim, rec = self, recorder
+          rk_core.set_user_alert_closure do |mv_free| # marking vect. of free places
+            # TODO: This can be done differently. For example, the simulation can hand
+            # the core the function which, when handed a hash, will update the marking
+            # vector with the hash. This is actually quite similar, but there is some
+            # ugliness in it...
+            sim.m_vector.reset! mv_free.to_hash
+            sim.increment_time! Δt
+            Kernel.print '.'
+            rec.alert!
+          end
+
+          rk_core.step! Δt
+
+          # TODO: In the above lines, setting rec = recorder and then calling rec!.alert in
+          # the block is a bit weird. It would be nicer to use recorder.alert!, but maybe
+          # wise Ruby closure mechanism does not allow it...
+        end # def step!
       end
     else
       @core = if @guarded then

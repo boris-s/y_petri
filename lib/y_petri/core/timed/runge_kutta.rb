@@ -3,82 +3,111 @@
 # Runge-Kutta method. Like vanilla Euler method, assumes that only T transitions are in the net.
 # 
 module YPetri::Core::Timed::RungeKutta
+  # Computes delta by Runge-Kutta 4th order method.
+  # 
   def delta Δt
-    puts "Hello from Δt method."
     # The f below is from the equation state' = f( state )
-    f = lambda { |mv| # mv is the marking vector of the free places
-      # Here, we initialize the delta contribution of nonstoichiometric
-      # transitions as a zero marking vector for free places.
-      delta_s = Array.new( simulation.free_pp.size, 0 )
+    f = lambda do |mv| # mv is the marking vector of the free places
+      # Delta from s transitions.
+      # TODO: This is only array now. Make it something else. One possibility
+      # would be to use simulation's MarkingVector class, but core should
+      # actually have its own marking vector class, probably parametrized by
+      # the net. It does not matter because alone I won't be able to exhaust
+      # all the possibilities.
+      delta_s = simulation.MarkingVector.zero( simulation.free_pp )
       # Here, we get the nonstoichiometric transitions of the simulation.
       nonstoichio_tt = simulation.s_tt
       # Now, let's get the delta contribution of the nonstoichio. tt.
       nonstoichio_tt.each { |t|
-        domain = t.domain         # transition's domain
-        codomain = t.codomain     # transition's codomain
+        domain, codomain = t.domain, t.codomain # transition's domain
         function = t.rate_closure # transition's function
-        output = Array function.call( *domain.map { |place| mv.fetch place } )
-        codomain.each_with_index do |place, i|
-          delta_s[ delta_s.index( place ) ] += output[i]
+        output = Array function.call( *domain.map { |p| mv.fetch p } )
+        codomain.each_with_index do |p, i|
+          delta_s.set( p, delta_s.fetch( p ) + output[i] )
         end
-        # The above code is suboptimal, needlessly computing
+        # TODO: The above code is suboptimal, needlessly computing
         # MarkingVector#index and #fetch( place ) each time.
         # The array incrementing might not be the best choice either,
         # and most of all, the whole thing would need to be compiled
         # into assembly language or at least FORTRAN.
       }
 
-      # Here, we initialize the delta contribution of stoichiometric
-      # transitions as a zero marking vector for free places.
-      delta_S = Array.new( simulation.free_pp.size, 0 )
+      # Delta from S transitions.
+      # TODO: (Same remark as for s transitions, see above.)
+      delta_S = simulation.MarkingVector.zero( simulation.free_pp )
       # Here, we get the stoichiometric transitions of the simulation
-      stoichio_tt = simulation.s_tt
+      stoichio_tt = simulation.S_tt
       # Now, let's get the delta contribution of the stoichio. tt.
       stoichio_tt.each { |t|
-        domain = t.domain         # transition's domain
-        codomain = t.codomain     # transition's codomain
+        domain, codomain = t.domain, t.codomain # transition's domain
         function = t.rate_closure # transition's function
-        s = function.stoichiometry_vector
+        s = t.stoichiometry
         flux = function.call( *domain.map { |place| mv.fetch place } )
-        codomain.each_with_index do |place, i|
-          delta_S[ delta_S.index( place ) ] += flux * s[i]
+        codomain.each_with_index do |p, i|
+          delta_S.set( p, delta_S.fetch( p ) + flux * s[i] )
         end
-        # Again, the above code is suboptimal.
+        # TODO: Again, the above code is suboptimal.
       }
-      # The resulting delta is the sum of the two vectors
-      result = simulation.free_pp >> delta_s.zip( delta_S ).map { |a, b| a + b }
-      return simulation.MarkingVector[ result ]
-      # TODO: It seems a good idea to work with Matrix or NMatrix on the long
-      # run, but at the moment, it might be faster to stick with array.
-    }
 
-    # this is supposed to be Runge-Kutta 4th order
-    # but how do I get those in-between f values...
+      return delta_s + delta_S
+    end
 
-    y = @marking_free
+    y = marking_of_free_places
 
-    puts "Current free marking vector is #{@marking_free.to_a.join ', '}"
+    k1 = f.( y ) # puts "k1 ( = f( y ) ) is #{k1}"
+    k2 = f.( y + Δt / 2 * k1 ) # puts "k2 is #{k2}"
+    k3 = f.( y + Δt / 2 * k2 ) # puts "k3 is #{k3}"
+    k4 = f.( y + Δt * k3 ) # puts "k4 is #{k4}"
 
-    k1 = f.( y )
-
-    puts "k1 ( = f( y ) ) is #{k1}"
-    k2 = f.( y + Δt / 2 * k1 )
-    puts "k2 is #{k2}"
-    k3 = f.( y + Δt / 2 * k2 )
-    puts "k3 is #{k3}"
-    k4 = f.( y + Δt * k3 )
-    puts "k4 is #{k4}"
-
-    rslt = Δt / 6 * ( k1 + 2 * k2 + 2 * k3 + k4 )
-    puts "rslt is #{rslt}"
+    rslt = Δt / 6 * ( k1 + 2 * k2 + 2 * k3 + k4 ) # puts "rslt is #{rslt}"
 
     return rslt                 # Marking vector of free places
   end
   alias Δ delta
 
   def step! Δt=simulation.step
-    increment_marking_free Δ( Δt )
+    # TODO: Thus far, runge_kutta method is an exception in the core in
+    # that it works with core's own state. (Core used to work with
+    # simulation's state before and rely on the simulation to provide
+    # state increment and assign closures.) This is how whole core should
+    # work.
+    increment_marking_of_free_places Δ( Δt )
     increment_time! Δt
-    simulation.recorder.alert
+    alert_user! marking_of_free_places
+  end
+
+  def increment_marking_of_free_places by
+    # TODO: Same remark as above.
+    @marking_of_free_places += by
+  end
+
+  def increment_time! by
+    # TODO: Once other timed methods than runge_kutta are reasonable, this
+    # should be moved to core/timed.rb
+    @time += by
+  end
+
+  def reset_time! to=0.0
+    # TODO: Once other timed methods than runge_kutta are reasonable, this
+    # should be moved to core/timed.rb
+    @time = to
+  end
+
+  def set_user_alert_closure &block
+    # TODO: Core's runge_kutta method is special for now, and even
+    # simulation recognizes that. With runge_kutta method, core uses
+    # single @user_alert_closure which it calls whenever the state
+    # of the core progresses. It is the business of the user to supply,
+    # before using the core, that does what the user wants. It is also
+    # imaginable that different core's modes of operation would have
+    # different sensitivity with regard to alerting the user, but for now,
+    # the user is alerted whenever anything happens at all.
+    @user_alert_closure = block
+  end
+
+  def alert_user! object
+    # TODO: As soon as more core's method begin relying on core's own state,
+    # this method will be moved to Core module.
+    @user_alert_closure.call( object )
   end
 end # YPetri::Core::Timed::RungeKutta

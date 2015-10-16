@@ -20,6 +20,9 @@ class YPetri::Core::Timed
     gillespie: Gillespie        # for timed nets only
   }
 
+  # From now on, core has its own time attribute and selector.
+  attr_reader :time
+
   # This inquirer (=Boolean selector) is always true for timed cores.
   # 
   def timed?; true end
@@ -30,15 +33,25 @@ class YPetri::Core::Timed
 
   def initialize **named_args
     super                       # TODO: Net type checking.
+    @time = 0.0
     extend METHODS.fetch simulation_method
     @delta_s = simulation.MarkingVector.zero( @free_pp )
     @delta_S = simulation.MarkingVector.zero( @free_pp )
   end
 
+  # Increments core time by Δt.
+  # 
+  def increment_time! Δt
+    @time += Δt
+  end
+
   # Makes a single step by Δt.
   # 
   def step! Δt=simulation.step
+    # TODO: This one will act directly upon simulation. Subject of potential
+    # change later.
     increment_marking_vector Δ( Δt )
+    # TODO: The bottom two, obviously, act directly upon simulation.
     simulation.increment_time! Δt
     simulation.recorder.alert
   end

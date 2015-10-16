@@ -249,6 +249,10 @@ class YPetri::Simulation
     places.zip( ary ).each { |pl, proposed_m| pl.guard.( proposed_m ) }
   end
 
+  # TODO: The method below does nothing except that it delegates extraction
+  # of a set of features to Features class. Features understood in this way
+  # are similar to ZZ dimensions.
+
   # Extract a prescribed set of features.
   # 
   def get_features *args

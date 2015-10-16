@@ -26,7 +26,7 @@ class YPetri::Simulation
     # Returns the initial marking as a column vector.
     # 
     def vector
-      simulation.MarkingVector[ self ]
+      simulation.MarkingVector[ *self ]
     end
     alias to_marking_vector vector
 
@@ -60,5 +60,5 @@ class YPetri::Simulation
     def keys_to_source_places
       with_keys do |key| key.source end
     end
-  end # class InitialMarking
+  end # class PlaceMapping
 end # class YPetri::Simulation

@@ -66,6 +66,29 @@ class YPetri::Simulation::Recorder
   # Records the current state as a pair { sampling_event => system_state }.
   # 
   def sample! event
+    # TODO: Method #get_features( features )  seems to be just a little bit
+    # roundabout way of doing things, but not much more so than #send method,
+    # so it's still somehow OK. The question is, who should know what the
+    # features are and how they are extracted from various objects. Features?
+    # Or those objects?
+    #
+    # Ruby already has one mechanism of features, which are called properties
+    # of objects, and are presented by selector methods. Features reified as
+    # first-class objects are themselves responsible for their functional
+    # definitions. Features as first-class objects are related to Ted Nelson's
+    # ZZ dimensions. Current "Features" will have to be somehow merged (or
+    # at least, it will be necessary to consider their merger) with the ZZ
+    # structures once YNelson is finished to the point to which it should be
+    # finished.
+    #
+    # It seems to me that there is no use to decide in advance and in general
+    # who should hold the functional definition of every feature and every
+    # object. Sometimes it is convenient if the objects help to compute their
+    # common features (akin to patients being able to tell the doctor their
+    # name and family history), while in other cases, the features themselves
+    # should define the procedures needed to extract the values from the
+    # objects (akin to the doctor examining the patient).
+    # 
     record = simulation.get_features( features )
     recording[ event ] = record.dump( precision: SAMPLING_DECIMAL_PLACES )
   end

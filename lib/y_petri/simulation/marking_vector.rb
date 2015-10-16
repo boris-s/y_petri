@@ -14,6 +14,12 @@ class YPetri::Simulation
       # Constructs a marking vector from a hash places >> values, or from
       # an array, in which case, it is assumed that the marking vector
       # corresponds to all the places in the simulation.
+      #
+      # TODO: I don't like having to write MarkingVector[ [ 1, 2, 3 ] ] instead
+      # of MarkingVector[ 1, 2, 3 ], but I accepted and endorsed it long time
+      # ago as a necessary tax for being able to distinguish between the user
+      # meaning to supply no arguments and the user meaning to supply empty
+      # vector.
       # 
       def [] arg
         case arg
@@ -25,10 +31,10 @@ class YPetri::Simulation
               msg unless arg.size == annotation.size
             column_vector( arg )
           else
-            annotated_with( places )[ args ]
+            annotated_with( places )[ arg ]
           end
         else
-          self[ args.each.to_a ]
+          self[ arg.each.to_a ]
         end
       end
 
@@ -80,7 +86,7 @@ class YPetri::Simulation
       end
     end
 
-    # Modifying the vector nodes.
+    # Modifying the vector elements.
     # 
     def set id, value
       self[ index( id ), 0 ] = value
@@ -92,17 +98,25 @@ class YPetri::Simulation
     def reset! arg=self.class.starting
       case arg
       when Hash then
+        # Hash is first converted into a PlaceMapping instance (mp).
         mp = simulation.PlaceMapping().load( arg )
+        # Updated marking vector is constructed using reliable methods
+        # self.class.starting and self#set.
         updated = mp.each_with_object self.class.starting do |(place, value), mv|
           mv.set place, value
         end
+        # Updated marking vector is then converted into an array and #reset! method
+        # is called upon it again to actually perform in-place update of this vector.
+        # TODO: The above is slightly inefficient -- constructing a new vector when
+        # in-place modification seems a better solution. But if it works, it's a
+        # strong reason to not fix it until we are in the optimization stage.
         reset! updated.column_to_a
       else # array arg assumed
         arg.each.to_a.zip( annotation ).map { |value, place| set place, value }
       end
     end
 
-    # Access of the vector nodes.
+    # Access of the vector elements.
     # 
     def fetch id
       self[ index( id ), 0  ]
