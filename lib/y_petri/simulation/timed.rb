@@ -349,9 +349,13 @@ module YPetri::Simulation::Timed
               else
                 YPetri::Core::Timed.new( simulation: self, method: method, guarded: false )
               end
+      # TODO: But why am I doing it like this? Did I want to emphasize the standalone
+      # nature of Core class? Maybe... And maybe I did it so that the runge-kutta method
+      # with its @rk_core instance variable instead of @core does not have @core and #core.
+      # In this manner, I'm forcing myself to rethink Simulation class.
       singleton_class.class_exec do
         attr_reader :core
-        delegate :simulation_method,
+        delegate :simulation_method, # this looks quite redundant with simulation.rb
                  :step!,
                  :firing_vector_tS,
                  to: :core
@@ -370,5 +374,5 @@ module YPetri::Simulation::Timed
                 else
                   Recorder().new( sampling: settings[:sampling] )
                 end
-  end
+  end # def init
 end # module YPetri::Simulation::Timed
