@@ -22,12 +22,14 @@ new_simulation # Calls agent.new_simulation, which in turn
 
 # But this doesn't
 net.simulation
+# Oh, sorry, it already does, but it produces timeless simulation,
+# while new_simulation produces timed simulation.
 
 # This is happening since I have deleted :core selector from
 # Simulation class code. I don't know where is the difference.
 
 # All right, I know where the problem is. Or rather, this is
-# not really a problem. For once, this will work:
+# not really a problem. For once, this will produce timed simulation:
 
 net.simulation **ssc
 
