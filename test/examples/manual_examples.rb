@@ -9,7 +9,7 @@ set_step 10
 set_target_time 600
 set_sampling 10
 # Euler with timeless transitions firing after each step:
-set_simulation_method :PseudoEuler
+set_simulation_method :basic
 
 A = Place m!: 1
 B = Place m!: 10
@@ -25,4 +25,4 @@ Transition name: :C_held_at_half_B,
            assignment: -> x { x / 2 }
 
 run!
-plot_recording
+recording.plot

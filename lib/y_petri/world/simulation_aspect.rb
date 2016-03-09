@@ -321,7 +321,7 @@ module YPetri::World::SimulationAspect
   #
   # * default_ss = { step_size: 0.1, sampling_period: 5, target_time: 60 }
   # 
-  def new_simulation( net: Net()::Top, **nn )
+  def new_simulation( net: Net().instance( :Top ), **nn )
     net_inst = net( net )
     nn.may_have :cc, syn!: :clamp_collection
     nn.may_have :imc, syn!: :initial_marking_collection
@@ -330,13 +330,13 @@ module YPetri::World::SimulationAspect
     imc_id = nn.delete( :imc ) || :Base
     ssc_id = nn.delete( :ssc ) || :Base
     # Construct the simulation key:
-    key = if nn.has? :name, syn!: :ɴ then # explicit key (name)
+    key = if nn.has? :name, syn!: :ɴ then  # explicit key (name)
             nn[:name]
-          else                       # constructed key
+          else                             # constructed key
             {}.merge( net: net_inst,
                        cc: cc_id,
-                       imc: imc_id,
-                       ssc: ssc_id )
+                      imc: imc_id,
+                      ssc: ssc_id )
               .merge( nn )
           end
     # Let's clarify what we got so far.
