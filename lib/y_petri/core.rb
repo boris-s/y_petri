@@ -75,7 +75,7 @@ module YPetri::Core
 
   delegate :alert!, to: :recorder
 
-  # Delta for free places from timeless transitions.
+  # Delta contribution to free places by timeless transitions.
   # 
   def delta_timeless
     delta_ts + delta_tS
@@ -110,6 +110,18 @@ module YPetri::Core
     # at all. It will be left to the simulation to ask for the results,
     # or to rig the core to message back when done.
     simulation.increment_marking_vector_closure.( delta )
+  end
+
+  # For now, alias method for #increment_marking_vector.
+  # TODO: I already said to myself that I want the core not to rely
+  # on the simulation's increment_marking_vector_closure.
+  #
+  def increment_free_vector( by: fail( "No delta given!" ) )
+    print '.'
+    simulation.increment_marking_vector_closure.( by )
+    # Also, here it is not clear that #increment_marking_vector_closure
+    # returns a closure that expects only Δ for free places. Should have
+    # better mnemonic name.
   end
 
   # Fires all the assignment transitions.

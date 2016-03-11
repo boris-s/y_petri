@@ -13,31 +13,24 @@ D = Place default_marking: 0
 T1 = Transition stoichiometry: { A: -1, B: -1, C: 1 }
 T2 = Transition stoichiometry: { C: -1, D: 1 }
 
-net.timed?
+net.timed? # The net is timeless
 
-# This works
-new_simulation # Calls agent.new_simulation, which in turn
-               # calls world.new_simulation, which proceeds
-               # to call Net#simulation method on Top net.
+new_simulation # This produces timed simulation (same as run!)
 
-# But this doesn't
-net.simulation
-# Oh, sorry, it already does, but it produces timeless simulation,
-# while new_simulation produces timed simulation.
+net.simulation # While this produces timeless simulation.
 
-# This is happening since I have deleted :core selector from
-# Simulation class code. I don't know where is the difference.
+# This is happening because I have deleted :core selector from
+# Simulation class code. I did this because when adding Runge-Kutta
+# method, I construct instance-specific instance variable @rk_core
+# instead of @core.
 
-# All right, I know where the problem is. Or rather, this is
-# not really a problem. For once, this will produce timed simulation:
-
+# This, again, will produce timed simulation.
 net.simulation **ssc
 
-# The reason why this happens is because Simulation#initialize
-# has hard times to decide whether it is constructing a timed
-# or timeless simulation. When it sees time mentioned (:step,
-# :sampling, :time parameters are all set) in ssc, it decides
-# to construct a timed simulation.
+# Simulation#initialize has hard times deciding whether it is
+# constructing timed or timeless simulation. When it sees time
+# mentioned (:step, :sampling, :time parameters are all set)
+# in ssc, it decides to construct a timed simulation.
 #
 # When it does not see the time mentioned, it decides to construct
 # a timeless simulation. The decision is quite right when I merely
