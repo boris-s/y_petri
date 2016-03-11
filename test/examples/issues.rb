@@ -47,8 +47,6 @@ net.simulation **ssc
 
 # I should keep at this and rethink the Simulation class
 
-
-
 # also, another problem
 # 
 # set_ssc :Hello
@@ -71,38 +69,3 @@ simulation_settings_collections
 # and initial values and simulation settings is quite dated, it
 # dates back to the times when I was not at the top of my Ruby
 # proficiency yet. Maybe time to rethink World / Agent classes.
-
-
-# And here we fail for real
-
-require 'y_petri'
-include YPetri
-
-A = Place default_marking: 5
-B = Place default_marking: 5
-C = Place default_marking: 0
-D = Place default_marking: 0
-
-T1 = Transition stoichiometry: { A: -1, B: -1, C: 1 }
-T2 = Transition stoichiometry: { C: -1, D: 1 }
-
-sim = net.simulation # constructs a timeless simulation
-
-# run! should warn about making timed simulation, perhaps
-# so that the users are not confused
-# it is quite convenient that YPetri is smart to make
-# a timed simulation when calling run! upon a timeless net,
-# but the user might not expect it
-
-sim.simulation_method # should be :basic
-sim.marking             #=> [5, 5, 0, 0]
-
-# And here we fail for real.
-
-sim.step!
-
-# Later, I should investigate why.
-
-sim.marking             #=> [4, 4, 0, 1]
-sim.step!
-sim.marking             #=> [3, 3, 0, 2]
