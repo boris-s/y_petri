@@ -5,14 +5,6 @@
 # if it is known in advance that no no timed transitions will be in the net.
 #
 module YPetri::Core::Timeless::Basic
-  # Computes Δ for the simulation step.
-  # 
-  def delta Δt
-    delta_timeless # This method, defined in module core.rb, simply presents
-                   # the contribution to free places by timeless transitions.
-  end
-  alias Δ delta
-  
   # Peforms a single step of the basic method.
   # 
   def step!

@@ -31,10 +31,5 @@ class YPetri::Core::Timeless
     delta_timeless # this method was taken from core.rb
     # delta_ts + delta_tS # this is the contents of delta_timeless method
   end
-
-  # Computes the system state delta.
-  # 
-  def Δ
-    delta
-  end
+  alias Δ delta
 end # module YPetri::Core::Timeless
