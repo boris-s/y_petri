@@ -7,8 +7,6 @@ require_relative '../lib/y_petri'     # tested component itself
 # require 'y_petri'
 # require 'sy'
 
-include Pyper if require 'pyper'
-
 describe YPetri::World do
   before do
     @w = YPetri::World.new

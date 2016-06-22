@@ -190,7 +190,7 @@ module YPetri::Simulation::Timed
   # Customized dup method that allows to modify the attributes of
   # the duplicate upon creation.
   #
-  def dup time: time, **named_args
+  def dup time: time(), **named_args
     super( **named_args ).tap { |instance| instance.reset_time! time }
   end
 

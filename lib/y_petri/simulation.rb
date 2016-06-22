@@ -206,7 +206,7 @@ class YPetri::Simulation
   # of the new instance is the same as the creator's. Arguments can partially or
   # wholly modify the attributes of the duplicate.
   # 
-  def dup( marking: marking, recording: recording, **named_args )
+  def dup( marking: marking(), recording: recording(), **named_args )
     named_args.reverse_merge! settings( true )
     self.class.new( named_args ).tap do |duplicate|
       duplicate.recorder.reset! recording: recording

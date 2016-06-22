@@ -65,7 +65,7 @@ class YPetri::Net::State::Feature::Assignment < YPetri::Net::State::Feature
   # The constructor of an assignment feature takes 1 ordered and 1 named
   # (+:transition+) argument, which must identify the place and the transitions.
   # 
-  def initialize place, transition: transition
+  def initialize place, transition: transition()
     @place = net.place( place )
     @transition = net.transition( transition )
     @place_index_in_codomain = @transition.codomain.index( @place ) or
