@@ -25,14 +25,12 @@ module YPetri::Transition::Type_T
   # Δt as an argument.
   # 
   def fire! Δt
-    consciously "call #fire method" do
-      act = note "action", is: Array( action Δt )
-      msg = "Wrong output arity of the action closure of #{self}!"
-      fail TypeError, msg if act.size != codomain.size
-      codomain.each_with_index do |p, i|
-        note "adding action node no. #{i} to #{p}"
-        p.add note( "marking change", is: act.fetch( i ) )
-      end
+    action = Array( action Δt )
+    fail TypeError, "Wrong output arity of the action " +
+      "closure of #{self}!" if action.size != codomain.size
+    codomain.each_with_index do |place, index|
+      # Adding action place no. index to place"
+      place.add action.fetch( index )
     end
     return nil
   end

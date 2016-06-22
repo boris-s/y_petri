@@ -89,9 +89,9 @@ describe YPetri::Net do
 
       describe "plus 1 stoichio. transition with rate" do
         before do
-          @t1 = @w.Transition.avid( ɴ: "T1",
-                                    s: { @p1 => 1, @p2 => -1, @p3 => -1 },
-                                    rate: 0.01 )
+          @t1 = @w.Transition.new( ɴ: "T1", avid: true,
+                                   s: { @p1 => 1, @p2 => -1, @p3 => -1 },
+                                   rate: 0.01 )
           @net.include_transition @t1
         end
 

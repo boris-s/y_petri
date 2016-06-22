@@ -12,16 +12,18 @@ include Pyper if require 'pyper'
 describe YPetri::World do
   before do
     @w = YPetri::World.new
-    a = @w.Place.avid( default_marking: 1.0, name: "AA" )
-    b = @w.Place.avid( default_marking: 2.0, name: "BB" )
-    c = @w.Place.avid( ɴ: "CC", default_marking: 3.0 )
-    t1 = @w.Transition.avid s: { a => -1, b => -1, c => 1 },
-                            rate: 0.1,
-                            ɴ: "AA_BB_assembly"
-    t2 = @w.Transition.avid ɴ: "AA_appearing",
-                            codomain: a,
-                            rate: -> { 0.1 },
-                            stoichiometry: 1
+    a = @w.Place.new( default_marking: 1.0, name: "AA", avid: true )
+    b = @w.Place.new( default_marking: 2.0, name: "BB", avid: true )
+    c = @w.Place.new( ɴ: "CC", avid: true, default_marking: 3.0 )
+    t1 = @w.Transition.new s: { a => -1, b => -1, c => 1 },
+                           rate: 0.1,
+                           ɴ: "AA_BB_assembly",
+                           avid: true
+    t2 = @w.Transition.new ɴ: "AA_appearing",
+                           avid: true,
+                           codomain: a,
+                           rate: -> { 0.1 },
+                           stoichiometry: 1
     @pp, @tt = [a, b, c], [t1, t2]
     @f_name = "test_output.csv"
     @w.set_imc @pp >> @pp.map( &:default_marking )
@@ -32,7 +34,7 @@ describe YPetri::World do
   end
 
   it "should present places, transitions, nets, simulations" do
-    assert_kind_of YPetri::Net, @w.Net::Top
+    assert_kind_of YPetri::Net, @w.Net.instance( :Top )
     assert_equal @pp[0], @w.place( "AA" )
     assert_equal @tt[0], @w.transition( "AA_BB_assembly" )
     assert_equal @pp, @w.places

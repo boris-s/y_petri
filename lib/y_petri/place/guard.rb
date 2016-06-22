@@ -6,7 +6,7 @@ class YPetri::Place::Guard
   # Error message template.
   # 
   ERRMSG = -> m, of, assert do
-    "Marking #{m.insp}" +
+    "Marking #{m.y_inspect}" +
       if of then " of #{of.name || of}" else '' end +
       " #{assert}!"
   end

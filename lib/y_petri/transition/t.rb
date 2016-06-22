@@ -24,14 +24,12 @@ module YPetri::Transition::Type_t
   # Fires the transition regardless of cocking.
   # 
   def fire!
-    consciously "call #fire method" do
-      act = Array( action )
-      msg = "Wrong output arity of the action closure of #{self}!"
-      fail TypeError, msg if act.size != codomain.size
-      codomain.each_with_index do |p, i|
-        note "adding action node no. #{i} to #{p}"
-        p.add note( "marking change", is: act.fetch( i ) )
-      end
+    act = Array( action )
+    fail TypeError, "Wrong output arity of the action " +
+      "closure of #{self}!" if act.size != codomain.size
+    codomain.each_with_index do |place, index|
+      # adding action node no. index to place
+      place.add act.fetch( index )
     end
     return nil
   end

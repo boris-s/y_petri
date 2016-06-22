@@ -153,7 +153,7 @@ module YPetri::Agent::PetriNetAspect
 
   # Sets the net point to a given net, or to world.Net::Top if none given.
   # 
-  def net_point_reset id=world.Net::Top
+  def net_point_reset id=world.Net.instance( :Top )
     @net_point = world.net( id )
   end
 

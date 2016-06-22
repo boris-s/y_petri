@@ -15,7 +15,7 @@ describe YPetri::Agent do
     # --- net point related assets ---
     @m.net_point_reset
     @m.net_point_reset @m.world.net( :Top )
-    @m.net.must_equal @m.world.Net::Top
+    @m.net.must_equal @m.world.Net.instance( :Top )
     # --- simulation point related assets ---
     @m.simulation_point.reset
     @m.simulation.must_equal nil

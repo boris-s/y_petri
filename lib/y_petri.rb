@@ -6,10 +6,8 @@ require 'y_support/respond_to'         # Symbol#~@ + RespondTo#===
 require 'y_support/name_magic'         # naming by assignment & more
 require 'y_support/unicode'            # ç means self.class
 require 'y_support/typing'             # run-time assertions
-require 'y_support/try'                # increased awareness in danger
 require 'y_support/core_ext'           # core extensions
 require 'y_support/stdlib_ext/matrix'  # matrix extensions
-require 'y_support/abstract_algebra'   # 
 require 'y_support/kde'                # popup file with kioclient
 
 # ActiveSupport components:

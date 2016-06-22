@@ -19,15 +19,13 @@ module YPetri::Transition::Type_A
   # Assigns the action closure result to the codomain, regardless of cocking.
   # 
   def fire!
-    consciously "to #fire!" do
-      act = note "action", is: Array( action )
-      msg = "Wrong output arity of the action closure of #{self}"
-      fail TypeError, msg if act.size != codomain.size
-      codomain.each_with_index { |p, i|
-        note "assigning action node no. #{i} to #{p}"
-        p.marking = note "marking to assign", is: act.fetch( i )
-      }
-    end
+    act = Array( action )
+    fail TypeError, "Wrong output arity of the action " +
+      "closure of #{self}" if act.size != codomain.size
+    codomain.each_with_index { |place, index|
+      # assigning action node no. index to place
+      place.marking = act.fetch( index )
+    }
     return nil
   end
 

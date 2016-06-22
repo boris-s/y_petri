@@ -240,7 +240,12 @@ module YPetri::Simulation::Timed
       when Range then
         time_range = settings[:time]
         @initial_time, @target_time = time_range.begin, time_range.end
-        @time_unit = initial_time.class.one
+        @time_unit = case initial_time
+                     when Float then 1.0
+                     when Integer then 1
+                     else
+                       initial_time.class.one
+                     end
       else
         # TODO: When using simulation after some time, I found this behavior
         # surprising. I wanted to call simulation time: 100, expecting it
@@ -261,7 +266,12 @@ module YPetri::Simulation::Timed
         # users can always modify time later (simulation.time = something).
         # 
         @initial_time = settings[:time]
-        @time_unit = initial_time.class.one
+        @time_unit = case initial_time
+                     when Float then 1.0
+                     when Integer then 1
+                     else
+                       initial_time.class.one
+                     end
         @target_time = time_unit * Float::INFINITY
       end
     else
@@ -269,7 +279,12 @@ module YPetri::Simulation::Timed
       msg = "The simulation is timed, but the constructor lacks any of the " +
         "time-related arguments: :time, :step, or :sampling!"
       fail ArgumentError, msg unless anything
-      @time_unit = anything.class.one
+      @time_unit = case anything
+                   when Float then 1.0
+                   when Integer then 1
+                   else
+                     anything.class.one
+                   end
       @initial_time, @target_time = time_unit * 0, time_unit * Float::INFINITY
     end
     # Set up a parametrized subclas of the sampler for timed simulation.

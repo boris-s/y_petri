@@ -67,7 +67,7 @@ describe YPetri::Place do
     g = p.common_guard_closure
     -> { g.( 11.1 ) }.must_raise YPetri::GuardError
     begin; p.marking = -1.11; rescue YPetri::GuardError => err
-      err.message.must_equal 'Marking -1.11:Float of P1 should not be negative!'
+      err.message.must_equal 'Marking Float:-1.11 of P1 should not be negative!'
     end
   end
 end

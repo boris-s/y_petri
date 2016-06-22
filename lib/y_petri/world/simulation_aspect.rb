@@ -282,7 +282,7 @@ module YPetri::World::SimulationAspect
             settings.may_have :cc, syn!: :clamp_collection
             settings.may_have :imc, syn!: :initial_marking_collection
             settings.may_have :ssc, syn!: :simulation_settings_collection
-            { net:  net( settings[:net] || self.Net::Top ), # the key
+            { net:  net( settings[:net] || self.Net.instance( :Top ) ), # the key
               cc:   settings[:cc]       || :Base,
               imc:  settings[:imc]      || :Base,
               ssc:  settings[:ssc]      || :Base }
