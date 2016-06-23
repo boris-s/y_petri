@@ -72,6 +72,7 @@ describe ::YPetri::Transition do
       @t1.codomain_marking.must_equal [ @p1.marking, @p3.marking ]
       @t1.domain_marking.must_equal [@p2.marking ]
       @t1.zero_action.must_equal [0, 0]
+      @t1.action_closure.must_equal @t1.function
     end
   end
 
@@ -103,6 +104,7 @@ describe ::YPetri::Transition do
       [ @p1.marking, @p5.marking ].must_equal [2, 4]
       @t2.fire!
       [ @p1.marking, @p5.marking ].must_equal [3, 3]
+      @t1.action_closure.must_equal @t1.function
     end
   end
 
@@ -120,6 +122,7 @@ describe ::YPetri::Transition do
       @t1.domain.must_equal [@p5]
       [ @p1.marking, @p5.marking ].must_equal [1, 5]
       @t1.rate_closure.arity.must_equal 0
+      @t1.rate_closure.must_equal @t1.function
       @t1.fire! 0.5
       [ @p1.marking, @p5.marking ].must_equal [1.5, 4.5]
     end
@@ -158,6 +161,7 @@ describe ::YPetri::Transition do
       assert_in_epsilon 1.63, @p2.marking, 1e-15
       assert_in_epsilon 3.4, @p3.marking, 1e-15
       assert_in_epsilon 4.37, @p4.marking, 1e-15
+      @TS1.rate_closure.must_equal @TS1.function
     end
   end
 end
@@ -219,6 +223,7 @@ describe "upstream and downstream reference mτs of places and transitions" do
       assert @t.assignment_action?
       @t.domain.must_equal []
       @t.action_closure.arity.must_equal 0
+      @t.action_closure.must_equal @t.function
       @t.fire!
       @p.marking.must_equal 1
     end

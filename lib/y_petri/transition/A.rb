@@ -3,6 +3,12 @@
 # Mixin for the transitions with assignment action.
 # 
 module YPetri::Transition::Type_A
+  # For assignment transitions, "function" refers to their action closure.
+  # 
+  def function
+    action_closure
+  end
+
   # Transition's action (before validation).
   # 
   def action

@@ -3,6 +3,12 @@
 # Mixin for timed Petri net transitions.
 # 
 module YPetri::Transition::Type_T
+  # For timed transitions, "function" refers to their rate closure.
+  # 
+  def function
+    rate_closure
+  end
+
   # Transition's action (before validation). Requires Δt as an argument.
   # 
   def action Δt

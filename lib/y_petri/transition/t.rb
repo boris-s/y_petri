@@ -1,8 +1,14 @@
 # encoding: utf-8
 
-# Mixin for timed non-assignment timeless Petri net transitions.
+# Mixin for timeless non-assignment Petri net transitions.
 # 
 module YPetri::Transition::Type_t
+  # For timeless transitions, "function" refers to their action closure.
+  # 
+  def function
+    action_closure
+  end
+
   # Result of the transition's "function", regardless of the #enabled? status.
   # 
   def action
