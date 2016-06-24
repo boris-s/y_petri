@@ -35,6 +35,24 @@ describe YPetri::Net do
       @net.Places( [] ).must_equal []
       @net.places( :A ).must_equal [ p ]
     end
+
+    describe "#reset!" do
+      it "should work as expected" do
+        place_with_default_marking =
+          @w.Place.send :new, name: "A", default_marking: 42
+        place_without_default_marking =
+          @w.Place.send :new, name: "B", marking: 43
+        @net.include_place( place_with_default_marking )
+        place_with_default_marking.marking = 0
+        @net.reset!
+        assert place_with_default_marking.marking == 42
+        @net.include_place( place_without_default_marking )
+        place_with_default_marking.marking = 0
+        -> { @net.reset! }.must_raise TypeError
+        @net.reset! [ :A ]
+        assert place_with_default_marking.marking == 42
+      end
+    end
   end
 
   describe "world with 3 places" do

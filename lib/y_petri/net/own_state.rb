@@ -21,6 +21,22 @@ module YPetri::Net::OwnState
   end
   alias m marking
 
+  # If no argument is supplied, the method resets its places to their default
+  # marking. If an array of place identifiers is supplied, only the specified
+  # places are reset. Attempts to reset places that have no default marking
+  # result in +TypeError+.
+  #
+  def reset! place_ids=nil
+    return reset!( pp ) if place_ids.nil?
+    place_ids.map { |id|
+      begin
+        place( id ).reset_marking
+      rescue TypeError => err
+        raise TypeError, "Unable to reset the net! " + err.message
+      end
+    }
+  end
+
   # Takes an array of tS transition identifiers as an optional argument, and
   # returns the array of their firing under current net state. If no argument
   # is supplied, the net is required to contain no TS transtions, and the
@@ -55,7 +71,7 @@ module YPetri::Net::OwnState
     fail NotImplementedError
   end
 
-  # Takes an array of place identifier, and a named argument +:transitions+,
+  # Takes an array of place identifiers, and a named argument +:transitions+,
   # and returns the array of the place delta contribution by the indicated
   # transitions.
   #

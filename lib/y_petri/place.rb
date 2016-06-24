@@ -151,6 +151,8 @@ class YPetri::Place
   # instance variable).
   # 
   def reset_marking
+    fail TypeError, "No default marking was specified for #{self}!" unless
+      has_default_marking?
     @marking = guard.( @default_marking )
   end
 
