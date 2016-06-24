@@ -80,6 +80,8 @@ describe YPetri::Net do
         @net.state.must_equal [ @p1, @p2, @p3 ].map( &:marking )
         @net.marking.must_equal [ @p1, @p2, @p3 ].map( &:marking )
         @net.marking.must_be_kind_of Array
+        # User-expected #m alias for #marking
+        @net.m.must_equal @net.marking
       end
 
       it "should have standard equipment expected of a class" do

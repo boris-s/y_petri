@@ -19,6 +19,7 @@ module YPetri::Net::OwnState
     return marking( pp ) if place_ids.nil?
     place_ids.map { |id| place( id ).marking }
   end
+  alias m marking
 
   # Takes an array of tS transition identifiers as an optional argument, and
   # returns the array of their firing under current net state. If no argument
