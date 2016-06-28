@@ -30,6 +30,26 @@
 # from it or otherwise integrate with it for the purposes of +DataSet+.
 # 
 class YPetri::Net::DataSet < Hash
+  # FIXME: User story:
+  # 
+  # I ran a long simulation (Virginia Tech cell cycle) and then
+  # I found that instead of 200_000 time units, I ran it for
+  # 360_000 time units. As we know, method recording (or
+  # simulation.recording is of DataSet type. I had troubles
+  # cutting down the recording to 200_000 time units.
+  # I had these troubles because there is no special select
+  # method defined for DataSet, or no way to only select
+  # the keys within certain time range, and Hash#select and
+  # other built-in Hash methods return Hash type which no
+  # longer can be plotted easily. Add a way of taking only
+  # certain records, or certain time section
+  #
+  # Finally, I found that #plot method directly accepts
+  # :time alias :time_range parameter, which can be used
+  # to do what I want. But I still think DataSet should have
+  # a method for cutting itself down to only certain lines.
+  # We cannot rely on Gnuplot :x_range parameter only...
+  
   class << self
     alias __new__ new
 
@@ -345,20 +365,28 @@ class YPetri::Net::DataSet < Hash
       map { |lbl, rec| [ lbl, *rec ].join ',' }.join( "\n" )
   end
 
-  # Plots the dataset. Takes several optional arguments: The list of nodes can be
-  # supplied as optional first ordered argument, which are then converted into
-  # features using +Net::State::Features.infer_from_nodes+ method. Similarly,
-  # the features to exclude can be specifies as a list of nodes (or a
-  # feature-specifying hash) supplied under +except:+ keyword. Otherwise, feature
-  # specification can be passed to the method as named arguments. If no feature
-  # specification is explicitly provided, it is assumed that all the features of
-  # this dataset are meant to be plotted.
+  # Plots the dataset using Ruby Gnuplot gem. Takes several
+  # optional arguments: The list of nodes to plot can be
+  # supplied as optional first ordered argument. If supplied,
+  # the nodes are converted into features using
+  # +Net::State::Features.infer_from_nodes+ method. Similarly,
+  # the features to exclude can be specified as a list of
+  # nodes supplied under +except:+ parameter. Under +except:+
+  # parameter, it is also possible to supply a
+  # feature-specifying hash. Otherwise, feature specification
+  # can be passed to the method via named arguments. By
+  # default, it is assumed that the caller means to plot all
+  # the features of this dataset.
+  #
+  # Named arguments admit Gnuplot keywords that control the
+  # plot. These parameters include +title:+, +xlabel:+ and
+  # +ylabel:+.
   # 
   def plot( nodes=nil, except: [], **named_args )
     nn = named_args
     time = nn.may_have :time, syn!: :time_range
     events = events()
-    # Figure out features.
+    # Figure out the features to plot.
     ff = if nodes.nil? then
            nn_ff = nn.slice [ :marking, :flux, :firing,
                               :gradient, :delta, :assignment ]
@@ -366,7 +394,8 @@ class YPetri::Net::DataSet < Hash
          else
            net.State.Features.infer_from_nodes( nodes )
          end
-    # Figure out the features not to plot ("except" features).
+    # Figure out the features to exclude from plotting
+    # ("except" features).
     xff = case except
           when Array then net.State.Features.infer_from_nodes( except )
           when Hash then net.State.Features( except )

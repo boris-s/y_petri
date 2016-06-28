@@ -171,7 +171,7 @@ class YPetri::Net
   # Networks are equal when their places and transitions are equal.
   # 
   def == other
-    return false unless other.class_complies?( self.class )
+    return false unless other.class_complies? self.class
     places == other.places && transitions == other.transitions
   end
 

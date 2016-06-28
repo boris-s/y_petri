@@ -96,10 +96,9 @@ describe YPetri::Net do
       it "should know its state (marking owned by the places)" do
         @net.state.must_be_kind_of YPetri::Net::State
         @net.state.must_equal [ @p1, @p2, @p3 ].map( &:marking )
-        @net.marking.must_equal [ @p1, @p2, @p3 ].map( &:marking )
-        @net.marking.must_be_kind_of Array
-        # User-expected #m alias for #marking
-        @net.m.must_equal @net.marking
+        @net.m.must_equal [ @p1, @p2, @p3 ].map( &:marking )
+        # Easy-to-read marking information.
+        @net.marking.must_equal "A: 1.1, B: 2.2, C: 3.3"
       end
 
       it "should have standard equipment expected of a class" do

@@ -8,18 +8,34 @@ module YPetri::Net::OwnState
   # class (a subclass of Array), containing marking owned by the net's places.
   # 
   def state
-    State().new( marking )
+    State().new( m )
+  end
+
+  # Like #m method, but instead of returning an array of markings, it returns
+  # a string of the form "A: 1, B: 2, ...", where A, B, ... are the places
+  # and 1, 2, ... their marking. This method is intended to produce output
+  # easy to read by humans, while #m method produces regular output (an
+  # Array) suitable for further processing. Method accepts arbitrary number
+  # of optional arguments, each of which must be a place identifier. If
+  # no arguments are given, full marking of the net is described. If
+  # arguments are given, only marking of the places identified by the
+  # arguments is described.
+  #
+  def marking *place_ids
+    return pp.size == 0 ? "" : marking( *pp ) if place_ids.empty?
+    a = [ place_ids.map { |id| place( id ) },
+          m( place_ids ) ].transpose
+    a.map { |pair| pair.join ": " }.join ', '
   end
 
   # If no argument is supplied, the method returns the array of the markings
   # owned by the net's places. If an array of place identifiers is supplied,
   # the return value is the array of the markings owned by those places.
-  #
-  def marking place_ids=nil
-    return marking( pp ) if place_ids.nil?
+  # 
+  def m place_ids=nil
+    return m( pp ) if place_ids.nil?
     place_ids.map { |id| place( id ).marking }
   end
-  alias m marking
 
   # If no argument is supplied, the method resets its places to their default
   # marking. If an array of place identifiers is supplied, only the specified

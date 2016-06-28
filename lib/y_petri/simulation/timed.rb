@@ -353,29 +353,34 @@ module YPetri::Simulation::Timed
 
           rk_core.step! Δt
 
-          # TODO: In the above lines, setting rec = recorder and then calling rec!.alert in
-          # the block is a bit weird. It would be nicer to use recorder.alert!, but maybe
+          # TODO: In the above lines, setting rec = recorder and then calling
+          # rec!.alert in the block is a bit weird. It would be nicer to use
+          # recorder.alert!, but maybe
           # wise Ruby closure mechanism does not allow it...
         end # def step!
-      end
-    else
+      end # singleton_class.class_exec
+    else # the method is not :runge_kutta
       @core = if @guarded then
-                YPetri::Core::Timed.new( simulation: self, method: method, guarded: true )
+                YPetri::Core::Timed.new( simulation: self,
+                                         method: method, guarded: true )
               else
-                YPetri::Core::Timed.new( simulation: self, method: method, guarded: false )
+                YPetri::Core::Timed.new( simulation: self,
+                                         method: method, guarded: false )
               end
-      # TODO: But why am I doing it like this? Did I want to emphasize the standalone
-      # nature of Core class? Maybe... And maybe I did it so that the runge-kutta method
-      # with its @rk_core instance variable instead of @core does not have @core and #core.
-      # In this manner, I'm forcing myself to rethink Simulation class.
+      # TODO: But why am I doing it like this? Did I want to
+      # emphasize the standalone nature of Core class? Maybe... And
+      # maybe I did it so that the runge-kutta method with its
+      # @rk_core instance variable instead of @core does not have
+      # @core and #core.  In this manner, I'm forcing myself to
+      # rethink Simulation class.
       singleton_class.class_exec do
         attr_reader :core
         delegate :simulation_method, # this looks quite redundant with simulation.rb
                  :step!,
                  :firing_vector_tS,
                  to: :core
-      end
-    end
+      end # singleton_class.class_exec
+    end 
     @recorder = if features_to_record then
                   # we'll have to figure out features
                   ff = case features_to_record

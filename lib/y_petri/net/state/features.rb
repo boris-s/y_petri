@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 # A feature set. In other words, a set of state features, such as marking,
-# flux etc.
+# flux etc. The supported features are:
 #
 # marking:: Applicable to all places, all places have marking.
 # firing:: Applicable to all stoichiometric transitions, but delta time has
