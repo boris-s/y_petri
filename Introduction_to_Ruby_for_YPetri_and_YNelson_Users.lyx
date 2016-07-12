@@ -1,0 +1,3265 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine natbib
+\cite_engine_type authoryear
+\biblio_style plainnat
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2.2cm
+\topmargin 3cm
+\rightmargin 2.2cm
+\bottommargin 3cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Introduction to Ruby for YNelson Users
+\end_layout
+
+\begin_layout Standard
+For 
+\family typewriter
+YNelson
+\family default
+ users, basic Ruby syntax is necessary.
+ This document is a primer to Ruby for 
+\family typewriter
+YNelson
+\family default
+ users.
+ This documents should be used in the same way as 
+\family typewriter
+YNelson
+\family default
+ tutorial (Introduction to 
+\family typewriter
+YNelson
+\family default
+) – that is, get an 
+\emph on
+irb
+\emph default
+ session running, and type all the examples in by yourself.
+ You might also wish to install 
+\family typewriter
+YNelson
+\family default
+ by by typing "
+\family typewriter
+gem install y_nelson
+\family default
+" from your command line.
+ Since many of the code samples here rely heavily on each other, you may
+ consider to do this document in one session.
+ On the other hand, if you happen to be a Ruby hacker, you do not need to
+ continue reading this document at all.
+ This document is not a replacement for a Ruby textbook.
+ For those, who want more thorough introduction to the language, I recommend
+ the document 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.rubyist.net/~slagell/ruby/index.html"
+
+\end_inset
+
+, or one of the many Ruby textbooks.
+\end_layout
+
+\begin_layout Part*
+Variables and constants
+\end_layout
+
+\begin_layout Standard
+In Ruby, everything
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Almost everything.
+ Non-objects include eg.
+ variables or argument fields.
+\end_layout
+
+\end_inset
+
+ is an 
+\emph on
+\color red
+object
+\emph default
+\color inherit
+.
+ Objects can be assigned to 
+\emph on
+\color red
+variables
+\emph default
+\color inherit
+ or 
+\emph on
+\color red
+constants
+\emph default
+\color inherit
+.
+ Ruby constants 
+\color red
+must always start with capital letter
+\color inherit
+.
+ Variables starting with small letter are 
+\emph on
+\color red
+local variables
+\emph default
+\color inherit
+.
+ (Other types of variables are 
+\emph on
+\color red
+instance variables
+\emph default
+\color inherit
+, 
+\emph on
+\color red
+class variables
+\emph default
+\color inherit
+ and 
+\emph on
+\color red
+global constants
+\emph default
+\color inherit
+; this is not important at the moment.)
+\end_layout
+
+\begin_layout LyX-Code
+alpha = 1
+\end_layout
+
+\begin_layout LyX-Code
+#=> 1
+\end_layout
+
+\begin_layout LyX-Code
+beta = [1, 2]
+\end_layout
+
+\begin_layout LyX-Code
+#=> [1, 2]
+\end_layout
+
+\begin_layout LyX-Code
+Gamma = { x: 1, y: 2, z: 3 }
+\end_layout
+
+\begin_layout LyX-Code
+#=> {:x=>1, :y=>2, :z=>3}
+\end_layout
+
+\begin_layout Standard
+You can check this using 
+\family typewriter
+\color red
+defined?
+\family default
+\color inherit
+ operator:
+\end_layout
+
+\begin_layout LyX-Code
+defined? alpha
+\end_layout
+
+\begin_layout LyX-Code
+#=> "local-variable"
+\end_layout
+
+\begin_layout LyX-Code
+defined? Gamma
+\end_layout
+
+\begin_layout LyX-Code
+#=> "constant"
+\end_layout
+
+\begin_layout Part*
+Code lines and comments
+\end_layout
+
+\begin_layout Standard
+Comments are denoted by 
+\family typewriter
+#
+\family default
+ sign.
+ Anything on the line following the 
+\family typewriter
+#
+\family default
+ sign is ignored:
+\end_layout
+
+\begin_layout LyX-Code
+puts 
+\begin_inset Quotes eld
+\end_inset
+
+Hello world!
+\begin_inset Quotes erd
+\end_inset
+
+ # this line prints the words 
+\begin_inset Quotes eld
+\end_inset
+
+Hello world!
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Ruby lines can be written with or without semicolons:
+\end_layout
+
+\begin_layout LyX-Code
+a = "with";
+\end_layout
+
+\begin_layout LyX-Code
+b = "without"
+\end_layout
+
+\begin_layout LyX-Code
+puts [ a, b ].join " or "
+\end_layout
+
+\begin_layout Standard
+Semicolon is compulsory only when two or more logical lines are crammed
+ together like this:
+\end_layout
+
+\begin_layout LyX-Code
+a = 
+\begin_inset Quotes eld
+\end_inset
+
+Hello
+\begin_inset Quotes eld
+\end_inset
+
+; b = 
+\begin_inset Quotes eld
+\end_inset
+
+world!
+\begin_inset Quotes erd
+\end_inset
+
+; puts a + ' ' + b
+\end_layout
+
+\begin_layout Part*
+Methods
+\end_layout
+
+\begin_layout Standard
+Different classes respond to different 
+\emph on
+\color red
+methods
+\emph default
+\color inherit
+, and respond to them differently:
+\end_layout
+
+\begin_layout LyX-Code
+beta.
+\color red
+size
+\end_layout
+
+\begin_layout LyX-Code
+#=> 2
+\end_layout
+
+\begin_layout LyX-Code
+Gamma.size
+\end_layout
+
+\begin_layout LyX-Code
+#=> 3
+\end_layout
+
+\begin_layout LyX-Code
+Gamma.
+\color red
+keys
+\end_layout
+
+\begin_layout LyX-Code
+#=> [:x, :y, :z]
+\end_layout
+
+\begin_layout LyX-Code
+Gamma.
+\color red
+values
+\end_layout
+
+\begin_layout LyX-Code
+#=> [1, 2, 3]
+\end_layout
+
+\begin_layout LyX-Code
+beta.keys
+\end_layout
+
+\begin_layout LyX-Code
+#=> NoMethodError: undefined method `keys' for [1, 2]:Array
+\end_layout
+
+\begin_layout Standard
+Methods can be defined by 
+\family typewriter
+\color red
+def
+\family default
+\color inherit
+ keyword:
+\end_layout
+
+\begin_layout LyX-Code
+
+\color red
+def
+\color inherit
+ average( a, b )
+\end_layout
+
+\begin_layout LyX-Code
+  ( a + b ).
+\color red
+to_f
+\color inherit
+ / 2
+\end_layout
+
+\begin_layout LyX-Code
+
+\color red
+end
+\end_layout
+
+\begin_layout LyX-Code
+#=> nil
+\end_layout
+
+\begin_layout LyX-Code
+average( 2, 3 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 2.5
+\end_layout
+
+\begin_layout Standard
+In the code example above, '
+\family typewriter
+to_f
+\family default
+' method performs conversion of an integer into a floating point number,
+ which is not important.
+\end_layout
+
+\begin_layout Part*
+Classes
+\end_layout
+
+\begin_layout Standard
+Every object belongs to some 
+\emph on
+\color red
+class
+\emph default
+\color inherit
+ (object type):
+\end_layout
+
+\begin_layout LyX-Code
+alpha.
+\color red
+class
+\end_layout
+
+\begin_layout LyX-Code
+#=> 
+\color red
+Fixnum
+\end_layout
+
+\begin_layout LyX-Code
+beta.class
+\end_layout
+
+\begin_layout LyX-Code
+#=> 
+\color red
+Array
+\end_layout
+
+\begin_layout LyX-Code
+Gamma.class
+\end_layout
+
+\begin_layout LyX-Code
+#=> 
+\color red
+Hash
+\end_layout
+
+\begin_layout Standard
+New classes can be defined with 
+\family typewriter
+\color red
+class
+\family default
+\color inherit
+ keyword.
+ The methods defined inside the class will become the 
+\emph on
+\color red
+instance methods
+\emph default
+\color inherit
+ of that class:
+\end_layout
+
+\begin_layout LyX-Code
+class Dog
+\end_layout
+
+\begin_layout LyX-Code
+  def speak!
+\end_layout
+
+\begin_layout LyX-Code
+    
+\color red
+puts
+\color inherit
+ "Bow wow!"
+\end_layout
+
+\begin_layout LyX-Code
+  end
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+#=> nil
+\end_layout
+
+\begin_layout LyX-Code
+Spot = Dog.
+\color red
+new
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Dog:0x9c214ac>
+\end_layout
+
+\begin_layout LyX-Code
+Spot.speak!
+\end_layout
+
+\begin_layout LyX-Code
+#=> Bow wow!
+\end_layout
+
+\begin_layout LyX-Code
+class Cat
+\end_layout
+
+\begin_layout LyX-Code
+  def speak!
+\end_layout
+
+\begin_layout LyX-Code
+    puts "Meow"
+\end_layout
+
+\begin_layout LyX-Code
+  end
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+#=> nil
+\end_layout
+
+\begin_layout LyX-Code
+Lisa = Cat.new
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Cat:0x98efb80>
+\end_layout
+
+\begin_layout LyX-Code
+Lisa.speak!
+\end_layout
+
+\begin_layout LyX-Code
+#=> Meow
+\end_layout
+
+\begin_layout Standard
+These two classes now represent respectively dogs and cats in your irb session.
+ In the code above, you could notice '
+\family typewriter
+new
+\family default
+' method, used to create instances from the defined classes, and '
+\family typewriter
+puts
+\family default
+' method, used to simply print characters on the screen.
+\end_layout
+
+\begin_layout Part*
+Strings, Symbols, Arrays and Hashes
+\end_layout
+
+\begin_layout Standard
+For 
+\family typewriter
+YPetri
+\family default
+ users, it will be especially necessary to learn more about 
+\emph on
+\color red
+strings
+\emph default
+\color inherit
+, 
+\emph on
+\color red
+symbols
+\emph default
+\color inherit
+, 
+\emph on
+\color red
+arrays
+\emph default
+\color inherit
+, 
+\emph on
+\color red
+hashes
+\emph default
+\color inherit
+, and how to define and read 
+\emph on
+\color red
+closures
+\emph default
+\color inherit
+ (aka.
+ 
+\emph on
+anonymous functions
+\emph default
+).
+ Strings and symbols are among the most basic Ruby objects, while arrays
+ and hashes are important in understanding 
+\emph on
+\color red
+argument passing
+\emph default
+\color inherit
+ to methods and closures.
+ 
+\series bold
+\color blue
+Understanding argument passing and closure writing is essential in using
+ YPetri DSL.
+\end_layout
+
+\begin_layout Section*
+Strings
+\end_layout
+
+\begin_layout Standard
+A string is simply a sequence of characters, which can be defined using
+ single or double quotes ( 
+\family typewriter
+\color red
+'
+\family default
+\color inherit
+ or 
+\family typewriter
+\color red
+"
+\family default
+\color inherit
+ ):
+\end_layout
+
+\begin_layout LyX-Code
+my_string = 'Hello world!'
+\end_layout
+
+\begin_layout LyX-Code
+#=> "Hello world!"
+\end_layout
+
+\begin_layout LyX-Code
+my_string.class
+\end_layout
+
+\begin_layout LyX-Code
+#=> 
+\color red
+String
+\end_layout
+
+\begin_layout Standard
+Strings are mutable (can be changed):
+\end_layout
+
+\begin_layout LyX-Code
+my_string.
+\color red
+object_id
+\end_layout
+
+\begin_layout LyX-Code
+#=> 81571950
+\end_layout
+
+\begin_layout LyX-Code
+7.
+\color red
+times
+\color inherit
+ 
+\color red
+do
+\color inherit
+ my_string.
+\color red
+chop!
+\color inherit
+ 
+\color red
+end
+\end_layout
+
+\begin_layout LyX-Code
+#=> 7
+\end_layout
+
+\begin_layout LyX-Code
+my_string
+\end_layout
+
+\begin_layout LyX-Code
+#=> "Hello"
+\end_layout
+
+\begin_layout LyX-Code
+my_string.object_id
+\end_layout
+
+\begin_layout LyX-Code
+#=> 81571950
+\end_layout
+
+\begin_layout Standard
+Above, you can newly notice 
+\family typewriter
+times
+\family default
+ method, 
+\family typewriter
+do ...
+ end
+\family default
+ block, and 
+\family typewriter
+chop!
+\family default
+ method that removes the last character from 
+\family typewriter
+my_string
+\family default
+ 7 times, until only 
+\family typewriter
+"Hello"
+\family default
+ remains.
+ But the important thing is that as 
+\family typewriter
+object_id
+\family default
+ method shows, 
+\family typewriter
+my_string
+\family default
+ is still the same object (same 
+\emph on
+\color red
+object id
+\emph default
+\color inherit
+), although the contents is changed.
+\end_layout
+
+\begin_layout LyX-Code
+my_string 
+\color red
+<<
+\color inherit
+ "Spot!"
+\end_layout
+
+\begin_layout LyX-Code
+#=> "Hello Spot!"
+\end_layout
+
+\begin_layout LyX-Code
+my_string.object_id
+\end_layout
+
+\begin_layout LyX-Code
+#=> 81571950
+\end_layout
+
+\begin_layout Standard
+Again, 
+\family typewriter
+<<
+\family default
+ operator changed the contents, but the object id remained the same.
+\end_layout
+
+\begin_layout Section*
+Symbols
+\end_layout
+
+\begin_layout Standard
+Unlike strings, symbols are immutable – they never change.
+ They are written with colon ( 
+\family typewriter
+\color red
+:
+\family default
+\color inherit
+ ):
+\end_layout
+
+\begin_layout LyX-Code
+:Spot.class
+\end_layout
+
+\begin_layout LyX-Code
+#=> 
+\color red
+Symbol
+\end_layout
+
+\begin_layout Section*
+Arrays
+\end_layout
+
+\begin_layout Standard
+As seen earlier, they can be defined with square brackets 
+\family typewriter
+[]
+\family default
+.
+ Square brackets are also used to address the array elements, counting from
+ 0.
+\end_layout
+
+\begin_layout LyX-Code
+my_array = [ Spot, Lisa ]
+\end_layout
+
+\begin_layout LyX-Code
+#=> [#<Dog:0x9c214ac>, #<Cat:0x98efb80>]
+\end_layout
+
+\begin_layout LyX-Code
+my_array[0]
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Dog:0x9c214ac>
+\end_layout
+
+\begin_layout Standard
+Negative numbers can be used to address the elements from the end of the
+ array:
+\end_layout
+
+\begin_layout LyX-Code
+my_array[-1]
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Cat:0x98efb80>
+\end_layout
+
+\begin_layout LyX-Code
+my_array[-2]
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Dog:0x9c214ac>
+\end_layout
+
+\begin_layout Section*
+Hashes
+\end_layout
+
+\begin_layout Standard
+As for hashes, there are two ways of defining them.
+ The first way uses 
+\emph on
+\color red
+Ruby rocket
+\emph default
+\color inherit
+ (
+\family typewriter
+\color red
+=>
+\family default
+\color inherit
+):
+\end_layout
+
+\begin_layout LyX-Code
+h1 = { Spot => "dog", Lisa => "cat" }
+\end_layout
+
+\begin_layout LyX-Code
+#=> {#<Dog:0x9c214ac>=>"dog", #<Cat:0x98efb80>=>"cat"}
+\end_layout
+
+\begin_layout LyX-Code
+h1[ Lisa ]
+\end_layout
+
+\begin_layout LyX-Code
+#=> "cat"
+\end_layout
+
+\begin_layout LyX-Code
+h1[ Spot ]
+\end_layout
+
+\begin_layout LyX-Code
+#=> "dog"
+\end_layout
+
+\begin_layout Standard
+The second way is possible only when the keys are symbols.
+ It is done by shifting the colon to the right side of the symbol:
+\end_layout
+
+\begin_layout LyX-Code
+h2 = { dog: Spot, cat: Lisa }
+\end_layout
+
+\begin_layout LyX-Code
+#=> {:dog=>#<Dog:0x9c214ac>, :cat=>#<Cat:0x98efb80>} 
+\end_layout
+
+\begin_layout LyX-Code
+h2[:dog]
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Dog:0x9c214ac>
+\end_layout
+
+\begin_layout Part*
+Code blocks and Closures
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+\color red
+Code blocks
+\emph default
+\color inherit
+, or simply 
+\emph on
+\color red
+blocks
+\emph default
+\color inherit
+, are pieces of code enclosed by 
+\family typewriter
+\color red
+do
+\family default
+\color inherit
+ / 
+\family typewriter
+\color red
+end
+\family default
+\color inherit
+ pair, or by curly brackets 
+\family typewriter
+\color red
+{}
+\family default
+\color inherit
+.
+ Code blocks can be passed to methods:
+\end_layout
+
+\begin_layout LyX-Code
+[1, 2, 3, 4].map 
+\color red
+{ |
+\color inherit
+n
+\color red
+|
+\color inherit
+ n + 3 
+\color red
+}
+\end_layout
+
+\begin_layout LyX-Code
+#=> [4, 5, 6, 7]
+\end_layout
+
+\begin_layout LyX-Code
+my_array.
+\color red
+each
+\color inherit
+ do 
+\color red
+|
+\color inherit
+member
+\color red
+|
+\color inherit
+ member.speak! end
+\end_layout
+
+\begin_layout LyX-Code
+#=> Bow wow!
+\end_layout
+
+\begin_layout LyX-Code
+    Meow
+\end_layout
+
+\begin_layout Standard
+In the first case, '
+\family typewriter
+map
+\family default
+' method was passed a block specifying addition of 3.
+ In the second case, '
+\family typewriter
+each
+\family default
+' method was passed a block calling 
+\family typewriter
+speak!
+\family default
+ method on the array elements.
+ Please note the pipe, or vertical line charecters ( 
+\color red
+|
+\color inherit
+ ), that delimit the block arguments (both blocks above happen to have only
+ one argument).
+ Code blocks can be understood as anonymous functions – a way of specifying
+ an operation, when one does not want to write a method for it.
+ Their semantics corresponds to 
+\emph on
+lambda calculus
+\emph default
+.
+\end_layout
+
+\begin_layout Section*
+Return values
+\end_layout
+
+\begin_layout Standard
+Code blocks (and actually, all Ruby statements) have return value.
+ With code blocks, the return value will typically be the last statement:
+\end_layout
+
+\begin_layout LyX-Code
+[1, 2, 3, 4].map { |v|
+\end_layout
+
+\begin_layout LyX-Code
+  v + 3    # this value will be ignored
+\end_layout
+
+\begin_layout LyX-Code
+  v - 1    # last value of the block will be returned
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+#=> [0, 1, 2, 3]
+\end_layout
+
+\begin_layout Section*
+Closures
+\end_layout
+
+\begin_layout Standard
+A block packaged for future use is called a 
+\emph on
+\color red
+closure
+\emph default
+\color inherit
+.
+ Ruby closures come in two flavors: 
+\family typewriter
+\color red
+proc
+\family default
+\color inherit
+ and 
+\family typewriter
+\color red
+lambda
+\family default
+\color inherit
+.
+ They are created by passing a block to the 
+\family typewriter
+proc
+\family default
+ / 
+\family typewriter
+lambda
+\family default
+ keyword:
+\end_layout
+
+\begin_layout LyX-Code
+my_proc = 
+\color red
+proc
+\color inherit
+ do |organism| organism.speak! end
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0x952674c@(irb):136>
+\end_layout
+
+\begin_layout LyX-Code
+my_lambda = 
+\color red
+lambda
+\color inherit
+ do |organism| organism.speak! end
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0x942faf0@(irb):137 (lambda)>
+\end_layout
+
+\begin_layout Standard
+Once defined, they can be reused in code.
+ Notice the ampersand ( 
+\family typewriter
+\color red
+&
+\family default
+\color inherit
+ ) indicating block reuse:
+\end_layout
+
+\begin_layout LyX-Code
+my_array.each 
+\color red
+&
+\color inherit
+my_proc
+\end_layout
+
+\begin_layout LyX-Code
+#=> Bow wow!
+\end_layout
+
+\begin_layout LyX-Code
+    Meow
+\end_layout
+
+\begin_layout LyX-Code
+my_array.each &my_lambda
+\end_layout
+
+\begin_layout LyX-Code
+#=> Bow wow!
+\end_layout
+
+\begin_layout LyX-Code
+    Meow
+\end_layout
+
+\begin_layout Standard
+Closures can also be called alone, a little bit like methods:
+\end_layout
+
+\begin_layout LyX-Code
+my_proc.
+\color red
+call
+\color inherit
+( Spot )
+\end_layout
+
+\begin_layout LyX-Code
+#=> Bow wow!
+\end_layout
+
+\begin_layout LyX-Code
+my_lambda.call( Lisa )
+\end_layout
+
+\begin_layout LyX-Code
+#=> Meow
+\end_layout
+
+\begin_layout Standard
+Instead of 
+\family typewriter
+call
+\family default
+ keyword, you can just use dot before the parenthesis to call closures:
+\end_layout
+
+\begin_layout LyX-Code
+my_proc
+\color red
+.
+\color inherit
+( Lisa )
+\end_layout
+
+\begin_layout LyX-Code
+#=> Meow
+\end_layout
+
+\begin_layout LyX-Code
+my_lambda.( Spot )
+\end_layout
+
+\begin_layout LyX-Code
+#=> Bow wow!
+\end_layout
+
+\begin_layout Standard
+Differences between 
+\family typewriter
+proc
+\family default
+ and 
+\family typewriter
+lambda
+\family default
+ closures are minor.
+ For 
+\family typewriter
+YNelson
+\family default
+ users, the most noticeable difference will be, that 
+\family typewriter
+proc
+\family default
+ less finicky about its arguments than 
+\family typewriter
+lambda
+\family default
+:
+\end_layout
+
+\begin_layout LyX-Code
+my_proc.( Lisa, "garbage" )
+\end_layout
+
+\begin_layout LyX-Code
+#=> Meow
+\end_layout
+
+\begin_layout LyX-Code
+my_lambda.( Lisa, "garbage" )
+\end_layout
+
+\begin_layout LyX-Code
+#=> ArgumentError: wrong number of arguments (2 for 1)
+\end_layout
+
+\begin_layout Standard
+Finally, let us notice the alternative syntax for defining lambdas:
+\end_layout
+
+\begin_layout LyX-Code
+my_lambda = lambda do |organism| organism.speak! end
+\end_layout
+
+\begin_layout LyX-Code
+my_lambda = lambda { |organism| oranism.speak! }
+\end_layout
+
+\begin_layout LyX-Code
+my_lambda = 
+\color red
+->
+\color inherit
+ organism do organism.speak! end
+\end_layout
+
+\begin_layout LyX-Code
+my_lambda = -> orgnism { organism.speak! }
+\end_layout
+
+\begin_layout Standard
+All of the four above statements define exactly the same thing.
+\end_layout
+
+\begin_layout Section*
+Passing arguments
+\end_layout
+
+\begin_layout Standard
+Earlier, we have defined method 
+\family typewriter
+average
+\family default
+, expecting two arguments.
+ If wrong number of arguments is supplied, 
+\family typewriter
+ArgumentError
+\family default
+ will ensue:
+\end_layout
+
+\begin_layout LyX-Code
+average( 3, 5 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 4
+\end_layout
+
+\begin_layout LyX-Code
+average( 3, 5, 8 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> ArgumentError: wrong number of arguments (3 for 2)
+\end_layout
+
+\begin_layout Standard
+Obviously, this is not a very nice behavior when it comes to averages.
+ It is a general situation, that when calling more advanced methods, we
+ need to modify their behavior, or pass more complicated structures to them.
+ This is seen eg.
+ with 
+\family typewriter
+YNelson::Transition
+\family default
+ constructors, and will be further encountered in 
+\family typewriter
+YCell
+\family default
+ and 
+\family typewriter
+YChem
+\family default
+ DSLs.
+ Furthermore, 
+\family typewriter
+YNelson
+\family default
+ users have to be able to write their own closures, because that is how
+ 
+\emph on
+functions
+\emph default
+ of 
+\emph on
+functional transitions
+\emph default
+ are specified.
+ In other words, 
+\family typewriter
+\series bold
+YNelson
+\family default
+ users have to master argument passing from both user and programmer side
+\series default
+.
+ There is no way around this.
+ With functional Petri nets, one cannot avoid writing functions.
+ It is possible to avoid using 
+\family typewriter
+YNelson
+\family default
+, but it is not possible to avoid learning to write functions.
+ Every simulator of functional Petri nets brings with itself some sort of
+ function language, which one has to learn.
+ With 
+\family typewriter
+YNelson
+\family default
+, this is the language of Ruby closures.
+\end_layout
+
+\begin_layout Section*
+Optional arguments
+\end_layout
+
+\begin_layout Standard
+Arguments with prescribed default value are optional.
+ Let us write an improved 
+\family typewriter
+average
+\family default
+ method that can accept either 2 or 3 arguments:
+\end_layout
+
+\begin_layout LyX-Code
+def average( a, b, c
+\color red
+=
+\color inherit
+nil )
+\end_layout
+
+\begin_layout LyX-Code
+  
+\color red
+#
+\color inherit
+ If c argument was not given, it will default to nil
+\end_layout
+
+\begin_layout LyX-Code
+  
+\color red
+if
+\color inherit
+ c 
+\color red
+==
+\color inherit
+ nil 
+\color red
+then
+\end_layout
+
+\begin_layout LyX-Code
+    ( a + b ).to_f / 2
+\end_layout
+
+\begin_layout LyX-Code
+  
+\color red
+else
+\end_layout
+
+\begin_layout LyX-Code
+    ( a + b + c ).to_f / 3
+\end_layout
+
+\begin_layout LyX-Code
+  
+\color red
+end
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+#=> nil
+\end_layout
+
+\begin_layout LyX-Code
+average( 3, 5 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 4
+\end_layout
+
+\begin_layout LyX-Code
+average( 3, 5, 8 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 5.333333333333333
+\end_layout
+
+\begin_layout LyX-Code
+average( 1, 2, 3, 4 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> ArgumentError: wrong number of arguments (4 for 3)
+\end_layout
+
+\begin_layout Standard
+The default value for 
+\family typewriter
+c
+\family default
+ argument is prescribed using single equals sign ( 
+\family typewriter
+\color red
+=
+\family default
+\color inherit
+ ).
+ Apart from that, you can notice 
+\family typewriter
+\color red
+if
+\family default
+\color inherit
+ ...
+ 
+\family typewriter
+\color red
+then
+\family default
+\color inherit
+ ...
+ 
+\family typewriter
+\color red
+else
+\family default
+\color inherit
+ ...
+ 
+\family typewriter
+\color red
+end
+\family default
+\color inherit
+ statement, which needs no explanation, equality test (double equals sign,
+ 
+\family typewriter
+\color red
+==
+\family default
+\color inherit
+ ), used to test whether 
+\family typewriter
+c
+\family default
+ contains 
+\family typewriter
+:pochi
+\family default
+ symbol (indicating missing value), and comment character (octothorpe aka.
+ sharp, 
+\family typewriter
+\color red
+#
+\family default
+\color inherit
+ ).
+ Comment character 
+\family typewriter
+\color red
+#
+\family default
+\color inherit
+ causes all characters until the end of the line to be ignored by Ruby.
+ All code lines, exception the obvious ones, should have comments.
+\end_layout
+
+\begin_layout Section*
+Variable-length argument lists
+\end_layout
+
+\begin_layout Standard
+We will now improve our 
+\family typewriter
+average
+\family default
+ method, so that it can calculate averages of any number of arguments.
+ For this, we will use asterisk ( 
+\family typewriter
+\color red
+*
+\family default
+\color inherit
+ ) syntactic modifier, also known as 
+\emph on
+splash
+\emph default
+.
+ The asterisk will cause a method to collect the arguments into an array.
+ Let's try it out first:
+\end_layout
+
+\begin_layout LyX-Code
+def examine_arguments( x, 
+\color red
+*
+\color inherit
+aa )
+\end_layout
+
+\begin_layout LyX-Code
+  puts "x is a 
+\color red
+#{
+\color inherit
+x.class
+\color red
+}
+\color inherit
+."
+\end_layout
+
+\begin_layout LyX-Code
+  puts "aa is #{aa.class} of #{aa.size} elements."
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+#=> nil
+\end_layout
+
+\begin_layout Standard
+Method examine arguments takes one normal argument (
+\family typewriter
+x
+\family default
+), and collects the rest of the arguments into an array (
+\family typewriter
+aa
+\family default
+), thanks to the splash modifier.
+ (Apart from that, you can notice string interpolation using 
+\family typewriter
+#{ ...
+ }
+\family default
+ notation in the above code.) Then it prints the class of 
+\family typewriter
+x
+\family default
+, class of 
+\family typewriter
+aa
+\family default
+ (which should be an array), and the number of elements after 
+\family typewriter
+x
+\family default
+.
+\end_layout
+
+\begin_layout LyX-Code
+examine_arguments( 1 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> x is a Fixnum.
+\end_layout
+
+\begin_layout LyX-Code
+    aa is Array of 0 elements.
+\end_layout
+
+\begin_layout LyX-Code
+    nil
+\end_layout
+
+\begin_layout LyX-Code
+examine_arguments( :hello, nil, 3, 5, "garbage" )
+\end_layout
+
+\begin_layout LyX-Code
+#=> x is a Symbol.
+\end_layout
+
+\begin_layout LyX-Code
+    aa is Array of 4 elements.
+\end_layout
+
+\begin_layout LyX-Code
+    nil
+\end_layout
+
+\begin_layout Standard
+With this, we can go on to define our improved average method:
+\end_layout
+
+\begin_layout LyX-Code
+def average( *aa )
+\end_layout
+
+\begin_layout LyX-Code
+  aa.
+\color red
+reduce( :+ )
+\color inherit
+.to_f / aa.size
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+#=> nil
+\end_layout
+
+\begin_layout LyX-Code
+average 3, 5, 7, 11
+\end_layout
+
+\begin_layout LyX-Code
+#=> 6.5
+\end_layout
+
+\begin_layout Standard
+You can also newly notice 
+\family typewriter
+reduce( :+ )
+\family default
+ method, used to calculate the sum of the 
+\family typewriter
+aa
+\family default
+ array.
+ To also practice closures, let us define a lambda doing the same as the
+ 
+\family typewriter
+average
+\family default
+ method above:
+\end_layout
+
+\begin_layout LyX-Code
+avg = lambda { |*aa| aa.reduce( :+ ).to_f / aa.size }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0x9dbd220@(irb):208 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+avg.( 11, 7, 5, 3 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 6.5
+\end_layout
+
+\begin_layout Section*
+Named arguments
+\end_layout
+
+\begin_layout Standard
+The main purpose of named arguments is to make the interface (or DSL) easier
+ to remember, and the code easier to read.
+ Easy-to-read code is a crucial requirement for scalable development.
+ In Ruby methods, named arguments can be specified 
+\color red
+as hash pairs in the method call
+\color inherit
+:
+\end_layout
+
+\begin_layout LyX-Code
+def density( x: 1, y: 1, z: 1, weight: 1 )
+\end_layout
+
+\begin_layout LyX-Code
+  weight.to_f / ( x * y * z )
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+#=> nil
+\end_layout
+
+\begin_layout LyX-Code
+density( x: 2, y: 2, z: 2, weight: 10 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 1.25
+\end_layout
+
+\begin_layout Standard
+The above method calculates mean density of boxes of certain height, width,
+ length and weight.
+ Double splash ( 
+\family typewriter
+\color red
+**
+\family default
+\color inherit
+ ) can be used to collect all the options in a hash.
+ Let's use it to define a closure that does exactly the same thing as the
+ method 
+\family typewriter
+density
+\family default
+ we have just defined, in a slightly different way:
+\end_layout
+
+\begin_layout LyX-Code
+dens_closure = 
+\color red
+->
+\color inherit
+ **nn do
+\end_layout
+
+\begin_layout LyX-Code
+  nn[:weight].to_f / ( nn[:x] * nn[:y] * nn[:z] ) end
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0x9a5d60c@(irb):241 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+dens_closure.( x: 2, y: 2, z: 2, weight: 10 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 1.25
+\end_layout
+
+\begin_layout Standard
+Above, note the alternative syntax for lambdas: 
+\family typewriter
+-> arg do ...
+ end
+\family default
+ is the same as 
+\family typewriter
+lambda do |arg| ...
+ end
+\family default
+.
+ Having hereby introduced the named arguments, let us notice hash-collecting
+ behavior for square bracket ( 
+\family typewriter
+[]
+\family default
+ ) array constructor syntax.
+\end_layout
+
+\begin_layout Section*
+Hash-collecting behavior of square brackets
+\end_layout
+
+\begin_layout Standard
+In more complicated method argument structures, it can be advantageous to
+ take use of the hash-collecting by square brackets.
+ It is normal for curly braces to create hashes:
+\end_layout
+
+\begin_layout LyX-Code
+h = { x: 2, y: 3, z: 4 }
+\end_layout
+
+\begin_layout LyX-Code
+#=> {:x=>2, :y=>3, :z=>4}
+\end_layout
+
+\begin_layout LyX-Code
+h.class
+\end_layout
+
+\begin_layout LyX-Code
+#=> Hash
+\end_layout
+
+\begin_layout Standard
+However, square brackets, that generally create arrays, are also 
+\color red
+able to collect hashes just like the argument fields with named arguments
+\color inherit
+:
+\end_layout
+
+\begin_layout LyX-Code
+a0 = [ 1, 2, 3 ]
+\end_layout
+
+\begin_layout LyX-Code
+#=> [1, 2, 3]
+\end_layout
+
+\begin_layout LyX-Code
+a0.class
+\end_layout
+
+\begin_layout LyX-Code
+#=> Array
+\end_layout
+
+\begin_layout LyX-Code
+a1 = [ 1, 2, 3, x: 2, y: 3, z: 4 ]
+\end_layout
+
+\begin_layout LyX-Code
+#=> [1, 2, 3, {:x=>2, :y=>3, :z=>4}]
+\end_layout
+
+\begin_layout LyX-Code
+a1.class
+\end_layout
+
+\begin_layout LyX-Code
+#=> Array
+\end_layout
+
+\begin_layout LyX-Code
+a1.map &:class
+\end_layout
+
+\begin_layout LyX-Code
+#=> [Fixnum, Fixnum, Fixnum, Hash]
+\end_layout
+
+\begin_layout LyX-Code
+a1[-1]
+\end_layout
+
+\begin_layout LyX-Code
+#=> {:x=>2, :y=>3, :z=>4}
+\end_layout
+
+\begin_layout Standard
+In other words, if there are any trailing 
+\family typewriter
+key/value
+\family default
+ pairs inside square brackets, they will be collected into a hash, which
+ will become the last element of the array.
+ This possibility to mix ordered elements with 
+\family typewriter
+key/value
+\family default
+ pairs is used eg.
+ in 
+\family typewriter
+YCell
+\family default
+ 
+\family typewriter
+enzyme
+\family default
+ constructor method.
+\end_layout
+
+\begin_layout Section*
+Arity
+\end_layout
+
+\begin_layout Standard
+Every closure and every method has arity, which is basically the number
+ of input arguments.
+ (Closures with 0 arguments are null
+\emph on
+ary
+\emph default
+, with 1 argument un
+\emph on
+ary
+\emph default
+, with 2 arguments bin
+\emph on
+ary
+\emph default
+, with 3 arguments tern
+\emph on
+ary
+\emph default
+ etc.
+ – therefrom 
+\emph on
+arity
+\emph default
+.)
+\end_layout
+
+\begin_layout LyX-Code
+doubler = lambda { |a| a * 2 }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa19b5b8@(irb):1 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+doubler.call( 3 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 6
+\end_layout
+
+\begin_layout LyX-Code
+doubler.arity
+\end_layout
+
+\begin_layout LyX-Code
+#=> 1
+\end_layout
+
+\begin_layout LyX-Code
+adder = -> p, q { p + q }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa27d940@(irb):6 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+adder.call( 5, 6 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 11
+\end_layout
+
+\begin_layout LyX-Code
+adder.arity
+\end_layout
+
+\begin_layout LyX-Code
+#=> 2
+\end_layout
+
+\begin_layout LyX-Code
+scaler = -> number, p, q { number * ( q.to_f / p ) }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa2825e4@(irb):7 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+scaler.call( 10, 2, 3 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 15.0
+\end_layout
+
+\begin_layout LyX-Code
+scaler.arity
+\end_layout
+
+\begin_layout LyX-Code
+#=> 3
+\end_layout
+
+\begin_layout LyX-Code
+constant_function = -> { 42 }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa2825e4@(irb):7 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+constant_function.call
+\end_layout
+
+\begin_layout LyX-Code
+#=> 42
+\end_layout
+
+\begin_layout LyX-Code
+constant_function.arity
+\end_layout
+
+\begin_layout LyX-Code
+#=> 0
+\end_layout
+
+\begin_layout Standard
+Closures / methods with variable length arguments indicate this by reporting
+ negative arity:
+\end_layout
+
+\begin_layout LyX-Code
+summation = -> *array { array.reduce( :+ ) }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa296ddc@(irb):9 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+summation.call( 1, 2, 3, 4 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 10
+\end_layout
+
+\begin_layout LyX-Code
+summation.arity
+\end_layout
+
+\begin_layout LyX-Code
+#=> -1
+\end_layout
+
+\begin_layout LyX-Code
+array_scale = -> *a, coeff { a.map { |e| e * coeff } }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa2a9edc@(irb):12 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+array_scale.call( 1, 2, 3, 4, 7 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> [7, 14, 21, 28]
+\end_layout
+
+\begin_layout LyX-Code
+array_scale.arity
+\end_layout
+
+\begin_layout LyX-Code
+#=> -2
+\end_layout
+
+\begin_layout Section*
+Return value
+\end_layout
+
+\begin_layout Standard
+The last statement in a closure or method becomes the return value.
+ In methods and lambda-type closures, return statement can also be used
+ explicitly:
+\end_layout
+
+\begin_layout LyX-Code
+divider = -> u, v {
+\end_layout
+
+\begin_layout LyX-Code
+            if v == 0 then
+\end_layout
+
+\begin_layout LyX-Code
+              return :division_by_zero # explicit return
+\end_layout
+
+\begin_layout LyX-Code
+            end
+\end_layout
+
+\begin_layout LyX-Code
+            u.to_f / v # implicit return - last statement
+\end_layout
+
+\begin_layout LyX-Code
+          }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa21e878@(irb):15 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+divider.call( 15, 3 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> 5.0
+\end_layout
+
+\begin_layout LyX-Code
+divider.call( 15, 0 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> :division_by_zero
+\end_layout
+
+\begin_layout LyX-Code
+experimental_closure = proc {
+\end_layout
+
+\begin_layout LyX-Code
+                         42     # ignored
+\end_layout
+
+\begin_layout LyX-Code
+                         41     # returned
+\end_layout
+
+\begin_layout LyX-Code
+                       }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa249460@(irb):28>
+\end_layout
+
+\begin_layout LyX-Code
+experimental_closure.call
+\end_layout
+
+\begin_layout LyX-Code
+#=> 41
+\end_layout
+
+\begin_layout LyX-Code
+experimental_lambda = lambda {
+\end_layout
+
+\begin_layout LyX-Code
+                        1          # ignored
+\end_layout
+
+\begin_layout LyX-Code
+                        return 3   # returned
+\end_layout
+
+\begin_layout LyX-Code
+                        7          # never executed
+\end_layout
+
+\begin_layout LyX-Code
+                      }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa3200dc@(irb):38 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+experimental_lambda.call
+\end_layout
+
+\begin_layout LyX-Code
+#=> 3
+\end_layout
+
+\begin_layout Section*
+Return value arity
+\end_layout
+
+\begin_layout Standard
+It is possible to return more than one value
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Technically, methods and closures always return exactly 1 object – multiple
+ values are returned via a single array object.
+ But pragmatically, and especially with respect to 
+\family typewriter
+YPetri
+\family default
+, the notion of return value arity is useful.
+\end_layout
+
+\end_inset
+
+.
+ For example:
+\end_layout
+
+\begin_layout LyX-Code
+mult_table = -> number {
+\end_layout
+
+\begin_layout LyX-Code
+                         [1, 2, 3, 4, 5].map { |e| e * number }
+\end_layout
+
+\begin_layout LyX-Code
+                       }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa36a0d8@(irb):55 (lambda)>
+\end_layout
+
+\begin_layout Standard
+This closure returns 5 values.
+ We can receive them by using a simultaneous assignment statement:
+\end_layout
+
+\begin_layout LyX-Code
+by_one, by_two, by_three, by_four, by_five = mult_table.call( 7 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> [7, 14, 21, 28, 35]
+\end_layout
+
+\begin_layout LyX-Code
+by_one
+\end_layout
+
+\begin_layout LyX-Code
+#=> 7
+\end_layout
+
+\begin_layout LyX-Code
+by_two
+\end_layout
+
+\begin_layout LyX-Code
+#=> 14
+\end_layout
+
+\begin_layout LyX-Code
+by_five
+\end_layout
+
+\begin_layout LyX-Code
+#=> 35
+\end_layout
+
+\begin_layout Standard
+Or we can simply collect them in an array:
+\end_layout
+
+\begin_layout LyX-Code
+collection = mult_table.( 3 )
+\end_layout
+
+\begin_layout LyX-Code
+#=> [3, 6, 9, 12, 15]
+\end_layout
+
+\begin_layout Standard
+In 
+\family typewriter
+YNelson
+\family default
+, it sometimes becomes necessary to write closures with higher return arity
+ (returning more than one value).
+ This is normally done by returning an array.
+ Also, lambda return statement can be used to return multiple values:
+\end_layout
+
+\begin_layout LyX-Code
+constant_vector = -> { return 1, 2, 3 }
+\end_layout
+
+\begin_layout LyX-Code
+#=> #<Proc:0xa3cb338@(irb):72 (lambda)>
+\end_layout
+
+\begin_layout LyX-Code
+x, y, z = constant_vector.call
+\end_layout
+
+\begin_layout LyX-Code
+#=> [1, 2, 3]
+\end_layout
+
+\begin_layout LyX-Code
+x
+\end_layout
+
+\begin_layout LyX-Code
+#=> 1
+\end_layout
+
+\begin_layout LyX-Code
+y
+\end_layout
+
+\begin_layout LyX-Code
+#=> 2
+\end_layout
+
+\begin_layout LyX-Code
+z
+\end_layout
+
+\begin_layout LyX-Code
+#=> 3
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+YSupport
+\family default
+ library
+\end_layout
+
+\begin_layout Standard
+Finally, having introduced the basic Ruby syntax, let us mention 
+\family typewriter
+YSupport
+\family default
+ gem (gem = published Ruby library), that collects the assets (modules,
+ classes, methods...) of general concern in use by 
+\family typewriter
+YPetri
+\family default
+/
+\family typewriter
+YNelson
+\family default
+.
+ Of these, a particular mention goes to 
+\family typewriter
+NameMagic
+\family default
+, widely used in 
+\family typewriter
+YPetri
+\family default
+, 
+\family typewriter
+YNelson
+\family default
+ and 
+\family typewriter
+SY
+\family default
+ (physical units) libraries.
+\end_layout
+
+\begin_layout Section*
+
+\family typewriter
+NameMagic
+\end_layout
+
+\begin_layout Standard
+In software engineering, 
+\emph on
+magic
+\emph default
+ is a technical term for irregular side effects of language expressions.
+ The problem that 
+\family typewriter
+NameMagic
+\family default
+ solves is, that objects (such as chemical species encoded in 
+\family typewriter
+YNelson
+\family default
+) are frequently named, and naming them is an annoying chore.
+ Consider a simple case:
+\end_layout
+
+\begin_layout LyX-Code
+class Student
+\end_layout
+
+\begin_layout LyX-Code
+  attr_accessor :name
+\end_layout
+
+\begin_layout LyX-Code
+  def initialize name: nil
+\end_layout
+
+\begin_layout LyX-Code
+    @name = name
+\end_layout
+
+\begin_layout LyX-Code
+  end
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Standard
+Now, to create named 
+\family typewriter
+Student
+\family default
+ instances, one has to mention 
+\family typewriter
+:name
+\family default
+ named argument in the constructor, and frequently, the same name has to
+ be mentioned twice, such as when assigning to constants or variables:
+\end_layout
+
+\begin_layout LyX-Code
+richard = Student.new( name: "Richard" )
+\end_layout
+
+\begin_layout LyX-Code
+richard.name
+\end_layout
+
+\begin_layout LyX-Code
+#=> "Richard"
+\end_layout
+
+\begin_layout Standard
+In Ruby, we can notice that some objects have built-in capability to be
+ named simply by constant assignment:
+\end_layout
+
+\begin_layout LyX-Code
+foo = Class.new
+\end_layout
+
+\begin_layout LyX-Code
+foo.name
+\end_layout
+
+\begin_layout LyX-Code
+#=> nil
+\end_layout
+
+\begin_layout LyX-Code
+Car = foo
+\end_layout
+
+\begin_layout LyX-Code
+foo.name
+\end_layout
+
+\begin_layout LyX-Code
+#=> "Car"
+\end_layout
+
+\begin_layout Standard
+Magically, upon assigning 
+\family typewriter
+Car = foo
+\family default
+, the object referred to by the 
+\family typewriter
+foo
+\family default
+ variable received an attribute 
+\family typewriter
+name
+\family default
+, with value set to "
+\family typewriter
+Car
+\family default
+".
+ This standard behavior is termed 
+\emph on
+constant magic
+\emph default
+.
+ 
+\family typewriter
+NameMagic
+\family default
+ mixin (part of 
+\family typewriter
+YSupport
+\family default
+) extends this standard behavior to any chosen object, and also takes care
+ of keeping the instance registry and doing general naming related chores
+ for its includers:
+\end_layout
+
+\begin_layout LyX-Code
+require 'y_support/name_magic'
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+class Chemical
+\end_layout
+
+\begin_layout LyX-Code
+  include NameMagic
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+NaCl = Chemical.new
+\end_layout
+
+\begin_layout LyX-Code
+NaCl.name
+\end_layout
+
+\begin_layout LyX-Code
+#=> "NaCl"
+\end_layout
+
+\begin_layout Standard
+It might seem like a small thing, but in a big file full of complicated
+ statements, it really matters whether you have to write each time "
+\family typewriter
+NaCl = Chemical.new( name: NaCl )
+\family default
+", or just "
+\family typewriter
+NaCl = Chemical.new
+\family default
+".
+ 
+\family typewriter
+NameMagic
+\family default
+ is a part of 
+\family typewriter
+YSupport
+\family default
+ library accompanying 
+\family typewriter
+YPetri
+\family default
+ and 
+\family typewriter
+YNelson
+\family default
+.
+ You can install 
+\family typewriter
+YSupport
+\family default
+ from the command line by "
+\family typewriter
+gem install y_support
+\family default
+".
+\end_layout
+
+\begin_layout Part*
+Other essential concepts
+\end_layout
+
+\begin_layout Standard
+There are a few more essential concepts of Ruby that 
+\family typewriter
+YNelson
+\family default
+ users should be familiar with, such as namespaces and parametrized subclassing.
+ Code examples in this section are slightly more complicated, and also,
+ they make use of 
+\family typewriter
+YSupport
+\family default
+ gem.
+ Install 
+\family typewriter
+YSupport
+\family default
+ by typing 
+\family typewriter
+gem install y_support
+\family default
+ in your command line before studying code examples in this section.
+\end_layout
+
+\begin_layout Section*
+Namespaces
+\end_layout
+
+\begin_layout Standard
+In Ruby, namespaces are known as modules (objects of 
+\family typewriter
+Module
+\family default
+ class).
+ These objects are containers for constants and method definitions.
+ For example, let us imagine that we want to define constants, classes and
+ methods related to the game of chess.
+ We could simply define them in the command line, without any considerations,
+ We could do it directly, but that way, all of them would be defined in
+ the root of Ruby namespace – on 
+\family typewriter
+Object
+\family default
+ class.
+ The reason why this is not a good idea is the same as the reason why it
+ is not a good idea to put all your files in the root of your filesystem.
+ Chess-related terms such as 
+\family typewriter
+Field
+\family default
+ or 
+\family typewriter
+Piece
+\family default
+ could collide with concepts from other domains not related to chess.
+ For that reason, we will collect all the chess-related assets into a single
+ namespace:
+\end_layout
+
+\begin_layout LyX-Code
+module Chess    
+\end_layout
+
+\begin_layout LyX-Code
+  class Board < Array
+\end_layout
+
+\begin_layout LyX-Code
+    SIZE = 8         # standard chessboard
+\end_layout
+
+\begin_layout LyX-Code
+    
+\end_layout
+
+\begin_layout LyX-Code
+    class Field      # chessboard field
+\end_layout
+
+\begin_layout LyX-Code
+      attr_accessor :contents
+\end_layout
+
+\begin_layout LyX-Code
+    end
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+    def self.new     # constructs 8 × 8 array of arrays
+\end_layout
+
+\begin_layout LyX-Code
+      super( SIZE, Array.new( SIZE ) { Field.new } )
+\end_layout
+
+\begin_layout LyX-Code
+    end
+\end_layout
+
+\begin_layout LyX-Code
+    # chessboard is defined here
+\end_layout
+
+\begin_layout LyX-Code
+  end
+\end_layout
+
+\begin_layout LyX-Code
+  
+\end_layout
+
+\begin_layout LyX-Code
+  Piece = Class.new         # chess piece
+\end_layout
+
+\begin_layout LyX-Code
+  Pawn = Class.new Piece    # chess pawn
+\end_layout
+
+\begin_layout LyX-Code
+  Knight = Class.new Piece  # chess knight
+\end_layout
+
+\begin_layout LyX-Code
+  Rook = Class.new Piece    # chess rook
+\end_layout
+
+\begin_layout LyX-Code
+  # etc.
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Standard
+We then access the contents of the namespace in the way similar to the way
+ we address the files in the filesystem:
+\end_layout
+
+\begin_layout LyX-Code
+Chess::Board        # namespace Chess, constant Board
+\end_layout
+
+\begin_layout LyX-Code
+Chess::Piece        # namespace Chess, constant Piece
+\end_layout
+
+\begin_layout LyX-Code
+Chess::Pawn         # namespace Chess, constant Pawn
+\end_layout
+
+\begin_layout LyX-Code
+Chess::Board::SIZE  # namespace Chess::Board, constant SIZE
+\end_layout
+
+\begin_layout LyX-Code
+Chess::Board::Field # namespace Chess::Board, constant Field
+\end_layout
+
+\begin_layout LyX-Code
+# etc.
+\end_layout
+
+\begin_layout Standard
+Let us note that in the above example, 
+\family typewriter
+Board
+\family default
+, 
+\family typewriter
+Piece
+\family default
+, 
+\family typewriter
+Pawn
+\family default
+ are merely constants of the namespace 
+\family typewriter
+Chess
+\family default
+.
+ Similarly, in 
+\family typewriter
+YPetri
+\family default
+, when talking about 
+\family typewriter
+YPetri::Place
+\family default
+, 
+\family typewriter
+YPetri::Transition
+\family default
+ or 
+\family typewriter
+YPetri::Net
+\family default
+, it means constants 
+\family typewriter
+Place
+\family default
+, 
+\family typewriter
+Transition
+\family default
+ and 
+\family typewriter
+Net
+\family default
+ belonging to the module 
+\family typewriter
+YPetri
+\family default
+ and containing the relevant class objects.
+ But each of these classes is a namespace of its own, that can have constants
+ defined on it.
+ For example, 
+\family typewriter
+YPetri::Simulation
+\family default
+ has constants 
+\family typewriter
+YPetri::Simulation::PlaceRepresentation
+\family default
+ and 
+\family typewriter
+YPetri::Simulation::TransitionRepresentation
+\family default
+, representing copies of the net's places and transitions when executed
+ inside a 
+\family typewriter
+Simulation
+\family default
+ instance.
+\end_layout
+
+\begin_layout Section*
+Parametrized subclassing
+\end_layout
+
+\begin_layout Standard
+One of the core techniques used in 
+\family typewriter
+YNelson
+\family default
+ / 
+\family typewriter
+YPetri
+\family default
+ domain model is parametrized subclassing.
+ Literature on the topic does exist, but the concept is best explained on
+ examples:
+\end_layout
+
+\begin_layout LyX-Code
+require 'y_support/all'
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+class Human
+\end_layout
+
+\begin_layout LyX-Code
+  include NameMagic  # allows humans to be named easily
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Standard
+Humans generally live in settlements.
+ Let us create class 
+\family typewriter
+Village
+\family default
+ representing settlements.
+\end_layout
+
+\begin_layout LyX-Code
+class Village
+\end_layout
+
+\begin_layout LyX-Code
+  include NameMagic  # allows villages to be named easily
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Standard
+At this point, we are standing in front of the problem of making humans
+ associated with their settlements.
+ One way to do it is to make each 
+\family typewriter
+Human
+\family default
+ instance remember which settlement they belong to.
+ This approach, which you can certainly imagine well even without demonstration,
+ is in common use.
+ But we have a more powerful approach at our disposal – subclassing.
+ This is how we can define a subclass of humans living in London:
+\end_layout
+
+\begin_layout LyX-Code
+London = Village.new
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+class Londoner 
+\color red
+<
+\color inherit
+ Human            # using < sign
+\end_layout
+
+\begin_layout LyX-Code
+  def self.settlement; London end # let the class know its city
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+John = Londoner.new
+\end_layout
+
+\begin_layout LyX-Code
+John.class.settlement #=> London
+\end_layout
+
+\begin_layout Standard
+To make it easier to ask humans about their settlement, let's reopen class
+ 
+\family typewriter
+Human
+\family default
+ and delegate method 
+\family typewriter
+#settlement
+\family default
+ to the class:
+\end_layout
+
+\begin_layout LyX-Code
+class Human
+\end_layout
+
+\begin_layout LyX-Code
+  def settlement; self.class.settlement end
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Standard
+Alternative syntax for subclassing is this:
+\end_layout
+
+\begin_layout LyX-Code
+Dublin = Village.new
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+Dubliner = Class.new Human do     # using argument to Class.new
+\end_layout
+
+\begin_layout LyX-Code
+  def self.settlement; Dublin end
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+Finnegan = Dubliner.new
+\end_layout
+
+\begin_layout LyX-Code
+Finnegan.class.settlement #=> Dublin
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout Standard
+Simply, each settlement has its own class of humans – its inhabitants.
+ But since there are many settlements, it is inconvenient to manually define
+ the inhabitant class for each of them.
+ We therefore make each village automatically construct its own subclass
+ of 
+\family typewriter
+Human
+\family default
+ and parametrize it with 
+\family typewriter
+settlement
+\family default
+ attribute.
+ 
+\family typewriter
+YSupport
+\family default
+ supports parametrized subclassing with method 
+\family typewriter
+#param_class
+\family default
+, and makes it easy to construct a PS of 
+\family typewriter
+Human
+\family default
+ for each 
+\family typewriter
+Village
+\family default
+ istance.
+\end_layout
+
+\begin_layout LyX-Code
+class Village            # reopening the class defined earlier
+\end_layout
+
+\begin_layout LyX-Code
+  def initialize         # defining a constructor
+\end_layout
+
+\begin_layout LyX-Code
+    param_class( { Human: Human }, with: { settlement: self } )
+\end_layout
+
+\begin_layout LyX-Code
+  end
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Standard
+Each village has now its own PS of 
+\family typewriter
+Human
+\family default
+.
+\end_layout
+
+\begin_layout LyX-Code
+Stockholm, Riga, Canberra = 3.times.map { Village.new }
+\end_layout
+
+\begin_layout LyX-Code
+Stockholm.Human               # class of Stockholm citizens
+\end_layout
+
+\begin_layout LyX-Code
+Riga.Human                    # class of Riga citizens
+\end_layout
+
+\begin_layout LyX-Code
+Canberra.Human                # class of Vilnius citizens
+\end_layout
+
+\begin_layout LyX-Code
+Stockholm.Human == Riga.Human #=> false
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+Fred = Stockholm.Human.new    # Stockholm citizen constructor
+\end_layout
+
+\begin_layout LyX-Code
+Fred.class.settlement         #=> Stockholm
+\end_layout
+
+\begin_layout Standard
+We say that PS of 
+\family typewriter
+Human
+\family default
+ class 
+\emph on
+depends
+\emph default
+ on 
+\family typewriter
+Village
+\family default
+.
+ The advantage is that instances of the PS of 
+\family typewriter
+Human
+\family default
+ don't need to be explicitly told which village do they belong to, and have
+ easy access to the assets of its owner 
+\family typewriter
+Village
+\family default
+ instance.
+ The concept of parametrized subclassing is actually very simple.
+\end_layout
+
+\begin_layout Section*
+Convenience methods
+\end_layout
+
+\begin_layout Standard
+Convenience methods are methods in which the consistency of the behavior
+ is traded for syntax sweetness.
+ Convenience methods may do entirely different things for different argument
+ sets.
+ For example, in 
+\family typewriter
+YPetri
+\family default
+, (a Petri net gem on which 
+\family typewriter
+YNelson
+\family default
+ depends, you can install it by "
+\family typewriter
+gem install y_petri
+\family default
+", if you haven't done so yet), 
+\family typewriter
+Place#marking
+\family default
+ without arguments simply returns the place's marking.
+ But with arguments, it can be used to define a guard:
+\end_layout
+
+\begin_layout LyX-Code
+require 'y_petri' and include YPetri
+\end_layout
+
+\begin_layout LyX-Code
+A = Place marking: 42
+\end_layout
+
+\begin_layout LyX-Code
+A.marking # Simply returns its marking
+\end_layout
+
+\begin_layout LyX-Code
+# But with different arguments, same method can be used to
+\end_layout
+
+\begin_layout LyX-Code
+# define a guard.
+\end_layout
+
+\begin_layout LyX-Code
+A.marking "must never be above 100" do |m| m <= 100 end
+\end_layout
+
+\begin_layout LyX-Code
+A.marking = 99 # no problem
+\end_layout
+
+\begin_layout LyX-Code
+A.marking = 101 # YPetri::GuardError is raised
+\end_layout
+
+\begin_layout Standard
+Convenience methods are especially suited for non-reusable code, but their
+ use may sometimes be efficient also in reusable code.
+\end_layout
+
+\end_body
+\end_document

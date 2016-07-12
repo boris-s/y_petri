@@ -1,0 +1,3842 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine natbib
+\cite_engine_type authoryear
+\biblio_style plainnat
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2.2cm
+\topmargin 3cm
+\rightmargin 2.2cm
+\bottommargin 3cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Object model of YNelson and YPetri
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+YNelson
+\family default
+ and 
+\family typewriter
+YPetri
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+\color blue
+YNelson
+\family default
+\color inherit
+ is a Ruby library (gem) providing a domain model and a simulator of 
+\emph on
+\color green
+Nelson nets
+\emph default
+\color inherit
+.
+ A 
+\emph on
+\color green
+Nelson net
+\emph default
+\color inherit
+ is a cross between a 
+\emph on
+\color green
+Petri net
+\emph default
+\color inherit
+, and a 
+\emph on
+\color green
+ZZ structure
+\emph default
+\color inherit
+.
+ For formal definition of the ZZ structure, see 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "Dattolo2009fdz"
+
+\end_inset
+
+.
+ 
+\family typewriter
+YNelson
+\family default
+ has two major dependencies: 
+\family typewriter
+\color blue
+YPetri
+\family default
+\color inherit
+ gem that provides Petri nets and 
+\family typewriter
+\color blue
+Yzz
+\family default
+\color inherit
+ gem that provides ZZ structures.
+ 
+\family typewriter
+YNelson
+\family default
+ provides the same interface as 
+\family typewriter
+YPetri
+\family default
+, so this document is (except for 
+\family typewriter
+Yzz
+\family default
+ features) applicable also to 
+\family typewriter
+YPetri
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+You should also take a look at the tutorial, 
+\begin_inset Quotes eld
+\end_inset
+
+Introduction_to_YNelson_and_YPetri
+\begin_inset Quotes erd
+\end_inset
+
+.
+ However, the tutorial is a hands-on guide, while this document describes
+ the abstraction of 
+\family typewriter
+YPetri
+\family default
+ / 
+\family typewriter
+YNelson
+\family default
+.
+ The described gems need Ruby 2.3 or newer and can be installed by typing
+ 
+\family typewriter
+gem install y_nelson
+\family default
+ in your command prompt.
+ (The dependencies will install automatically.)
+\end_layout
+
+\begin_layout Part*
+Functional Petri nets
+\end_layout
+
+\begin_layout Standard
+Petri nets were described by C.
+ A.
+ Petri in the middle of 20th century.
+ A Petri net can be used to represent various 
+\begin_inset Quotes eld
+\end_inset
+
+wiring diagrams
+\begin_inset Quotes erd
+\end_inset
+
+ – production lines, railway networks, electronic circuits, computer architectur
+es, parallel execution diagrams, or chemical systems.
+ In fact, Petri himself has designed Petri nets with chemical systems in
+ mind.
+\end_layout
+
+\begin_layout Standard
+A Petri net consists of 
+\emph on
+\color green
+places
+\emph default
+\color inherit
+, 
+\emph on
+\color green
+transitions
+\emph default
+\color inherit
+, and 
+\emph on
+\color green
+arcs
+\emph default
+\color inherit
+.
+ Places are typically drawn as circles, transitions as rectangles.
+ Places and transitions are connected by arcs, drawn as lines or arrows.
+ Places may contain 
+\emph on
+\color green
+tokens
+\emph default
+\color inherit
+.
+ The amount of tokens in a place(s) is called 
+\emph on
+\color green
+marking
+\emph default
+\color inherit
+.
+ When a transition operates (
+\emph on
+\color green
+fires
+\emph default
+\color inherit
+), tokens are added to or removed from its connected places.
+ 
+\emph on
+\color green
+State
+\emph default
+\color inherit
+ of a Petri net is fully expressed by the places' marking.
+\end_layout
+
+\begin_layout Standard
+Classical Petri nets are 
+\emph on
+\color green
+timeless
+\emph default
+\color inherit
+.
+ In timeless Petri nets, firing of a transition is a discrete event, whose
+ exact timing is not specified.
+ Instead, conditions are specified, under which the transition is allowed
+ or prohibited to fire (
+\emph on
+\color green
+enabled
+\emph default
+\color inherit
+ or 
+\emph on
+\color green
+disabled
+\emph default
+\color inherit
+).
+ Typically, transitions are enabled when their input arcs have sufficient
+ amount of tokens left.
+ However, different firing conditions may be specified.
+ Timeless Petri nets are used to study concurrency – race conditions, network
+ congestions, state reachability etc.
+ Interaction with timeless Petri nets is called 
+\emph on
+\color green
+token game
+\emph default
+\color inherit
+.
+\end_layout
+
+\begin_layout Standard
+In 
+\emph on
+\color green
+timed Petri nets
+\emph default
+\color inherit
+, it is specified when (or how rapidly) firing of the transitions occurs.
+ Timed nets are thus not interactive and can be autonomously 
+\emph on
+\color green
+executed
+\emph default
+\color inherit
+ in time.
+ Timed Petri nets actually represent a wiring diagram of a dynamic system.
+ Under certain conditions, a set of differential equations (DE) describing
+ the system can be extracted from this wiring diagram.
+ Execution of a such Petri net is equivalent to numeric integration of its
+ DE system.
+\family typewriter
+YPetri
+\family default
+ object model
+\end_layout
+
+\begin_layout Standard
+Brief hands-on demonstration of the interface can be found in the document
+ 
+\emph on
+Introduction to YNelson
+\emph default
+.
+ The purpose of this chapter is to describe the Petri net object model of
+ 
+\family typewriter
+YPetri
+\family default
+ gem in more detail.
+\end_layout
+
+\begin_layout Part*
+Aspects of 
+\family typewriter
+YPetri
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri
+\family default
+ has two main mutually intertwined concerns:
+\end_layout
+
+\begin_layout Enumerate
+To provide active object model of Petri nets.
+\end_layout
+
+\begin_layout Enumerate
+To provide simulation for the dynamic systems expressed as Petri nets.
+\end_layout
+
+\begin_layout Standard
+Correspondingly, 
+\family typewriter
+YPetri
+\family default
+ has 2 aspects catering to its 2 concerns:
+\end_layout
+
+\begin_layout Enumerate
+Petri net aspect.
+\end_layout
+
+\begin_layout Enumerate
+Simulation aspect.
+\end_layout
+
+\begin_layout Standard
+Major classes of the Petri net aspect are 
+\family typewriter
+Place
+\family default
+, 
+\family typewriter
+Transition
+\family default
+ and 
+\family typewriter
+Net
+\family default
+.
+ Places have their own marking attribute, transitions know their connectivity,
+ their functions, and they can be triggered to fire and modify marking of
+ their connected places.
+ 
+\family typewriter
+Net
+\family default
+ is basically a specialized collection of places and transitions.
+\end_layout
+
+\begin_layout Standard
+Simulation aspect is catered for by 
+\family typewriter
+Simulation
+\family default
+ class, representing a simulation run, and 
+\family typewriter
+Core
+\family default
+ class representing a simulator – a machine that runs the calculations needed
+ to perform the simulation steps.
+\end_layout
+
+\begin_layout Standard
+Workspace (
+\family typewriter
+World
+\family default
+ class, where places, transitions and nets live), and manipulator (
+\family typewriter
+Agent
+\family default
+ class that represents and assists the user) are straddled across both aspects
+ of 
+\family typewriter
+YPetri
+\family default
+.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Place
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri::Place
+\family default
+ class represents Petri net places.
+ It includes 
+\family typewriter
+NameMagic
+\family default
+ and is normally used as a parametrized subclass (PS) depending on 
+\family typewriter
+YPetri::World
+\family default
+.
+ The key attribute of a place is its marking (variable 
+\family typewriter
+@marking
+\family default
+).
+ Interface related to marking is:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#m
+\family default
+, alias 
+\family typewriter
+#value
+\family default
+ – getter of 
+\family typewriter
+@marking
+\family default
+ instance variable.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking
+\family default
+ – convenience method that acts as 
+\family typewriter
+@marking
+\family default
+ getter without arguments, but can be used to define guards if block is
+ supplied to it.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking=
+\family default
+, alias 
+\family typewriter
+#value=
+\family default
+, alias 
+\family typewriter
+#m=
+\family default
+ – setter of 
+\family typewriter
+@marking
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#add
+\family default
+ and 
+\family typewriter
+#subtract
+\family default
+ that change the value of 
+\family typewriter
+@marking
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#default_marking
+\family default
+, 
+\family typewriter
+#default_marking=
+\family default
+ – getter and setter of place's default marking (
+\family typewriter
+@default_marking
+\family default
+ variable).
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#has_default_marking?
+\family default
+ – informs whether the place has default marking defined (
+\family typewriter
+@has_default_marking
+\family default
+ variable).
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#reset_marking
+\family default
+ – sets 
+\family typewriter
+@marking
+\family default
+ to the default value.
+\end_layout
+
+\begin_layout Standard
+Another important group of methods are those related to the place's connectivity
+ – arcs.
+ They are defined in the 
+\family typewriter
+YPetri::Place::Arcs
+\family default
+ mixin included by 
+\family typewriter
+YPetri::Place
+\family default
+.
+ In Petri net diagrams, arcs are the lines that connect places and transitions.
+ In YPetri, there is no real 
+\begin_inset Quotes eld
+\end_inset
+
+arc
+\begin_inset Quotes erd
+\end_inset
+
+ object.
+ For places, 
+\family typewriter
+#arcs
+\family default
+ method simply returns the connected transitions, and vice versa, for transition
+s, 
+\family typewriter
+#arcs
+\family default
+ method returns connected places.
+ Overview of the most important 
+\family typewriter
+Place
+\family default
+ instance methods inherited from the 
+\family typewriter
+Arcs
+\family default
+ mixin is here:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#upstream_arcs
+\family default
+, alias 
+\family typewriter
+#upstream_transitions
+\family default
+ – getter of 
+\family typewriter
+@upstream_arcs
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#downstream_arcs
+\family default
+, alias 
+\family typewriter
+#downstream_transitions
+\family default
+ – getter of 
+\family typewriter
+@downstream_arcs
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#arcs
+\family default
+ – a union of upstream transitions and downstream transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#aa
+\family default
+ – names of the connected transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#precedents
+\family default
+ – precedents in the spreadsheet sense.
+ Places whose marking directly influences firing of the upstream transitions
+ of this place.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#dependents
+\family default
+ – dependents in the spreadsheet sense.
+ Places whose marking is changed by firing of the downstream transitions
+ of this place.
+\end_layout
+
+\begin_layout Standard
+For the remaining methods, see the class documentation.
+ Place can also have guards, statements that validate the marking and limit
+ it to only certain values.
+ At the moment, guards are not fully handled by the 
+\family typewriter
+Simulation
+\family default
+ class.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Transition
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri::Transition
+\family default
+ class represents Petri net transitions.
+ They are 
+\begin_inset Quotes eld
+\end_inset
+
+functional
+\begin_inset Quotes erd
+\end_inset
+
+ in the sense that they may have mathematical functions attached to them,
+ that govern their firing according to the current marking of the Petri
+ net places.
+ (Term 
+\begin_inset Quotes eld
+\end_inset
+
+functional
+\begin_inset Quotes erd
+\end_inset
+
+ has also been used in other meanings in conjunction with Petri nets.) 
+\family typewriter
+YPetri::Transition
+\family default
+ class utilizes 
+\family typewriter
+NameMagic
+\family default
+ mixin.
+ 
+\family typewriter
+YPetri::Transition
+\family default
+ class is normally used as a parametrized subclass (PS) depending on 
+\family typewriter
+YPetri::World
+\family default
+.
+ The most prominent attribute of a 
+\family typewriter
+Transition
+\family default
+ instance is its function.
+ There are 4 basic types of transitions in 
+\family typewriter
+YPetri
+\family default
+:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+ts
+\family default
+ – timeless nonstoichiometric
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+tS
+\family default
+ – timeless stoichiometric
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Ts
+\family default
+ – timed nonstoichiometric
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+TS
+\family default
+ – timed stoichiometric
+\end_layout
+
+\begin_layout Standard
+They arise by combining 2 basic qualities:
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+timedness
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+stoichiometricity
+\end_layout
+
+\begin_layout Standard
+You can find more information in the documentation of 
+\family typewriter
+YPetri::Transition
+\family default
+ class.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Net
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri::Net
+\family default
+ class represents functional Petri nets.
+ It includes 
+\family typewriter
+NameMagic
+\family default
+ and is normally used as a PS depending on 
+\family typewriter
+YPetri::World
+\family default
+.
+ It is basically a specialized collection of 
+\family typewriter
+Place
+\family default
+ instances and 
+\family typewriter
+Transition
+\family default
+ instances.
+ A transition may only be included in a net if all the places connected
+ to it belong to the same net.
+ 
+\family typewriter
+Net
+\family default
+ instances own 2 parametrized subclasses:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#State
+\family default
+ – getter of 
+\family typewriter
+@State
+\family default
+, a PS of 
+\family typewriter
+YPetri::Net::State
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Simulation
+\family default
+ – getter of 
+\family typewriter
+@Simulation
+\family default
+, a PS of 
+\family typewriter
+YPetri::Simulation
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Important instance methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#include_place
+\family default
+ – adds a place to the net
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#include_transition
+\family default
+ – adds a transition to the net
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#exclude_place
+\family default
+ – removes a place from the net
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#exclude_transition
+\family default
+ – removes a transition from the net
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#include_net
+\family default
+ alias 
+\family typewriter
+#merge!
+\family default
+ – includes another net in this net
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#exclude_net
+\family default
+ – removes the elements of another net from this net
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#<<
+\family default
+ – includes an element in the net
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#+
+\family default
+ – returns a new net containing the union of the operands' elements
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#-
+\family default
+ – returns a new net containing the elements of the receiver minus the operand
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#functional?
+\family default
+ – inquirer whether the net is functional
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#timed?
+\family default
+ – inquirer whether the net is timed
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#simulation
+\family default
+ – constructor of a new simulation of this net
+\end_layout
+
+\begin_layout Standard
+A 
+\family typewriter
+Net
+\family default
+ instance has its own state, and can be asked about place marking, transiton
+ flux etc.
+ It is also capable of drawing a diagram with Graphviz, using 
+\family typewriter
+#visualize
+\family default
+ method.
+ For full listing of methods, see the class documentation.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+World
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri::World
+\family default
+ is the space where places, transitions and nets live.
+ Originally, this class was named 
+\family typewriter
+Workspace
+\family default
+, but 
+\family typewriter
+World
+\family default
+ is shorter.
+ Owns PS of 
+\family typewriter
+Place
+\family default
+, 
+\family typewriter
+Transition
+\family default
+ and 
+\family typewriter
+Net
+\family default
+, stored respectively in 
+\family typewriter
+@Place
+\family default
+, 
+\family typewriter
+@Transition
+\family default
+ and 
+\family typewriter
+@Net
+\family default
+ instance variables.
+ Their instances can be constructed with:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Place
+\family default
+ – constructor of instances of 
+\family typewriter
+Place
+\family default
+ PS.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Transition
+\family default
+ – constructor of instances of 
+\family typewriter
+Transition
+\family default
+ PS.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Net
+\family default
+ constructor – constructor of instances of 
+\family typewriter
+Net
+\family default
+ PS.
+\end_layout
+
+\begin_layout Standard
+World assets are divided into two mixins: 
+\family typewriter
+YPetri::World::PetriNetAspect
+\family default
+ and 
+\family typewriter
+YPetri::World::SimulationAspect
+\family default
+.
+ Important instance methods of PetriNetAspect are:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#place
+\family default
+ – 
+\family typewriter
+Place
+\family default
+ PS instance finder.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#transition
+\family default
+ – 
+\family typewriter
+Transition
+\family default
+ PS instance finder.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#net
+\family default
+ – 
+\family typewriter
+Net
+\family default
+ PS instance finder.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#places
+\family default
+ – returns all 
+\family typewriter
+Place
+\family default
+ PS instances.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#transitions
+\family default
+ – returns all 
+\family typewriter
+Transition
+\family default
+ PS instances.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#nets
+\family default
+ – returns all 
+\family typewriter
+Net
+\family default
+ PS instances.
+\end_layout
+
+\begin_layout Standard
+Important instance methods of SimulationAspect are:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#new_simulation
+\family default
+ – constructor of simulations.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#simulation
+\family default
+ – 
+\family typewriter
+Simulation
+\family default
+ instance finder.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#simulations
+\family default
+ – getter of 
+\family typewriter
+@simulations
+\family default
+, a hash of simulation instances and their settings.
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+World
+\family default
+ instance has also 3 instance variables useful for simulations, 
+\family typewriter
+@clamp_collections
+\family default
+, 
+\family typewriter
+@initial_marking_collections
+\family default
+ and 
+\family typewriter
+@simulation_settings_collections
+\family default
+.
+ Each simulation requires an initial marking collection, a clamp collection,
+ and a hash of simulation settings.
+ In a world, these collections / settings can be named and stored in the
+ above mentioned instance variables for later use in simulations.
+ See the class documentation for more details and the accessor methods of
+ these instance variables.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Simulation
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+While 
+\family typewriter
+YPetri
+\family default
+ places have their own marking and the transitions make it possible to play
+ the token game interactively, for many reasons, it is desirable to be able
+ to execute Petri nets automatically.
+ 
+\family typewriter
+YPetri::Simulation
+\family default
+ class represents such simulations.
+ 
+\family typewriter
+Simulation
+\family default
+ instances do not operate directly on the Petri nets from which they were
+ constructed.
+ Instead, they form a representation (
+\begin_inset Quotes eld
+\end_inset
+
+mental image
+\begin_inset Quotes erd
+\end_inset
+
+) of the places and transitions of the underlying net.
+ 
+\family typewriter
+Simulation
+\family default
+ instances do not change the state owned by the underlying net.
+ Instead, they have their own marking vector, which they modify using a
+ chosen simulation method in the way that simulates firing of the transitions.
+ A simulation owns multiple parametrized subclasses:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Place
+\family default
+ – getter of 
+\family typewriter
+@Place
+\family default
+, a PS of 
+\family typewriter
+Simulation::PlaceRepresentation
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Transition
+\family default
+ – getter of 
+\family typewriter
+@Transition, a 
+\family default
+PS of 
+\family typewriter
+Simulation::TransitionRepresentation
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Places
+\family default
+ – getter of 
+\family typewriter
+@Places
+\family default
+, a PS of 
+\family typewriter
+Simulation::Places
+\family default
+, representing a collection of place representations.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Transitions
+\family default
+ – getter of 
+\family typewriter
+@Transitions
+\family default
+, a PS of 
+\family typewriter
+Simulation::Transitions
+\family default
+, representing a collection of place representations.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Elements
+\family default
+ – getter of 
+\family typewriter
+@Places
+\family default
+, a PS of 
+\family typewriter
+Simulation::Elements
+\family default
+, representing a collection of element (either place or transition) representati
+ons.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#PlaceMapping
+\family default
+ – getter of 
+\family typewriter
+@PlaceMapping
+\family default
+, a PS of 
+\family typewriter
+Simulation::PlaceMapping
+\family default
+, a specialized 
+\family typewriter
+Hash
+\family default
+ that maps the simulation's places to a set of some values.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#InitialMarking
+\family default
+ – getter of 
+\family typewriter
+@InitialMarking
+\family default
+, a PS of 
+\family typewriter
+Simulation::InitialMarking
+\family default
+, which in turn is a subclass of 
+\family typewriter
+PlaceMapping
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#MarkingClamps
+\family default
+ – getter of 
+\family typewriter
+@MarkingClamps
+\family default
+, a PS of 
+\family typewriter
+Simulation::MarkingClamps
+\family default
+, which in turn is a subclass of 
+\family typewriter
+PlaceMapping
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Simulation can be of two types: Timed or timeless.
+ These two types are defined in two mixins, 
+\family typewriter
+Simulation::Timed
+\family default
+ and 
+\family typewriter
+Simulation::Timeless
+\family default
+, with which the simulation instance is conditionally extended during its
+ initialization, depending on its type.
+ Simulation has a number of specialized instance methods defined in several
+ mixins located inside the 
+\family typewriter
+Simulation
+\family default
+ namespace (
+\family typewriter
+Places::Access
+\family default
+, 
+\family typewriter
+Transitions::Access
+\family default
+, 
+\family typewriter
+Elements::Access
+\family default
+, 
+\family typewriter
+InitialMarking::Access
+\family default
+, 
+\family typewriter
+MarkingClamps::Access
+\family default
+, 
+\family typewriter
+MarkingVector::Access
+\family default
+).
+ You can find their complete listing in the class documentation.
+ Some of the instance methods are:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#reset!
+\family default
+ – resets the simulation.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#run!
+\family default
+ – runs the simulation.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#run_upto
+\family default
+ – runs the simulation to a given time (same can be achieved by 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+run( upto: ...
+ )
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#step!
+\family default
+ – steps the simulation.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#settings
+\family default
+ – returns all the settings for this simulation.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#core
+\family default
+ – simulator currently in use.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#recorder
+\family default
+ – recorder instance currently in use.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#tS_SM
+\family default
+ – stoichiometric matrix for tS transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#TS_SM
+\family default
+ – stoichiometric matrix for TS transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#dup
+\family default
+ – duplicate of the receiver simulation, with the possibility to change
+ time and/or other simulation settings.
+\end_layout
+
+\begin_layout Standard
+Defined in 
+\family typewriter
+Simulation::Places::Access
+\family default
+:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#include_place?
+\family default
+ – inquirer whether the simulation includes a specified place.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#p
+\family default
+ – net's place identified by the argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Pp
+\family default
+ – net's places, expects single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#pp
+\family default
+ – net's places, arbitrary number of arguments.
+ If called without arguments, returns all the net's places.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Free_pp
+\family default
+, alias 
+\family typewriter
+#free_Pp
+\family default
+ – net's free places, single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#free_pp
+\family default
+ – net's free places, arbitrary number of arguments.
+ If called without arguments, returns all of them.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Clamped_pp
+\family default
+, alias 
+\family typewriter
+#clamped_Pp
+\family default
+ – net's free places, single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#clamped_pp
+\family default
+ – net's free places, arbitrary number of arguments.
+ If called without arguments, returns all of them.
+\end_layout
+
+\begin_layout Standard
+Defined in 
+\family typewriter
+Simulation::Transitions::Access
+\family default
+:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#include_transition?
+\family default
+ – inquirer whether the simulation includes a specified place.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#t
+\family default
+ – net's transition identified by the argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Tt
+\family default
+ – net's transitions, expects array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#tt
+\family default
+ – net's transitions, arbitrary number of arguments.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#ts_Tt
+\family default
+, 
+\family typewriter
+#tS_Tt
+\family default
+, 
+\family typewriter
+#Ts_Tt
+\family default
+, 
+\family typewriter
+#TS_Tt
+\family default
+, 
+\family typewriter
+#A_Tt
+\family default
+ etc.
+ – net's transitions of the specified type.
+ As signified by capitalized 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+Tt
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+, these methods expects a single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#ts_tt
+\family default
+, 
+\family typewriter
+#tS_tt
+\family default
+, 
+\family typewriter
+#Ts_tt
+\family default
+, 
+\family typewriter
+#TS_tt
+\family default
+, 
+\family typewriter
+#A_tt
+\family default
+ etc.
+ – versions of tnet's transitions of the specified type.
+ As signified by capitalized 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+Tt
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+, these methods expects a single array argument.
+\end_layout
+
+\begin_layout Standard
+Defined in 
+\family typewriter
+Simulation::Elements::Access
+\family default
+ (word 
+\begin_inset Quotes eld
+\end_inset
+
+element
+\begin_inset Quotes erd
+\end_inset
+
+ simply stands for etiher place, or transition):
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#include?
+\family default
+ – inquirer whether the simulation includes a specified place or transition.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#e
+\family default
+ – net's element identified by the argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Ee
+\family default
+ – net's elements identified by a single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#ee
+\family default
+ – net's elements, arbitrary number of arguments.
+\end_layout
+
+\begin_layout Standard
+Defined in 
+\family typewriter
+Simulation::InitialMarking::Access
+\family default
+:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Initial_markings
+\family default
+, alias 
+\family typewriter
+#initial_Markings
+\family default
+ – initial markings of given 
+\emph on
+free
+\emph default
+ places, single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#initial_markings
+\family default
+, alias 
+\family typewriter
+#initial_marking
+\family default
+ – initial markings, arbitrary number of arguments identifying free places.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Im
+\family default
+ – starting markings of an array of 
+\emph on
+any
+\emph default
+ (not just free) places, as they appear right after reset.
+ Expects a single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#im
+\family default
+ – starting markings of any places, arbitrary number of arguments.
+\end_layout
+
+\begin_layout Standard
+Defined in 
+\family typewriter
+Simulation::MarkingClamps::Access
+\family default
+:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Marking_clamps
+\family default
+, alias 
+\family typewriter
+#marking_Clamps
+\family default
+ – marking clamp values of given 
+\emph on
+clamped
+\emph default
+ places, single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking_clamps
+\family default
+ – initial markings, arbitrary number of arguments.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking_clamp
+\family default
+ – expects a single clamped place, returns its marking clamp.
+\end_layout
+
+\begin_layout Standard
+Defined in 
+\family typewriter
+Simulation::MarkingVector::Access
+\family default
+:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#M_vector
+\family default
+ alias 
+\family typewriter
+#m_Vector
+\family default
+ – marking of the selected places returned as a column vector.
+ Expects a single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#state
+\family default
+ – getter of the simulation's state vector (
+\family typewriter
+@m_vector
+\family default
+ instance variable).
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#m_vector
+\family default
+ – marking of the selected places returned as a column vector, any number
+ of arguments.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#M
+\family default
+, 
+\family typewriter
+#m
+\family default
+ – array-returning varieties of 
+\family typewriter
+#M_vector
+\family default
+ and 
+\family typewriter
+#m
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#p_M
+\family default
+ (alias 
+\family typewriter
+#P_m
+\family default
+), 
+\family typewriter
+#p_m
+\family default
+ – hash-returning varieties of 
+\family typewriter
+#M_vector
+\family default
+ and 
+\family typewriter
+#m
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Pm
+\family default
+, 
+\family typewriter
+#pm
+\family default
+ – pretty printing varieties of 
+\family typewriter
+#M_vector
+\family default
+ and 
+\family typewriter
+#m
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Defined in 
+\family typewriter
+Simulation::Timed
+\family default
+ and 
+\family typewriter
+Simulation::Timeless
+\family default
+ mixins:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#timed?
+\family default
+ – inquirer whether the simulation is timed
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Recorder
+\family default
+ – getter of 
+\family typewriter
+@Recorder
+\family default
+, a PS of 
+\family typewriter
+Petri::Simulation::Recorder
+\family default
+, an object that performs sampling and recording during simulation.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Core
+\family default
+ – getter of 
+\family typewriter
+@Core
+\family default
+, a PS of 
+\family typewriter
+YPetri::Core
+\family default
+, a machine abstraction class.
+\end_layout
+
+\begin_layout Standard
+Defined in 
+\family typewriter
+Simulation::Timed
+\family default
+ mixin:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#time
+\family default
+ – current simulation time
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#initial_time
+\family default
+ – initial time of the simulation
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#target_time
+\family default
+ – target time of the simulation (used when 
+\family typewriter
+#run!
+\family default
+ is called without arguments)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#time_range
+\family default
+ – range-returning alternative for 
+\family typewriter
+#initial_time
+\family default
+ and 
+\family typewriter
+#target_time
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#step
+\family default
+, 
+\family typewriter
+#step=
+\family default
+ – getter and setter of the simulation step size
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#default_sampling
+\family default
+ – sampling period for the simulation
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Fluxes
+\family default
+ – takes a single array of TS transitions and returns their fluxes under
+ current marking.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#fluxes
+\family default
+, alias 
+\family typewriter
+#flux
+\family default
+ – like 
+\family typewriter
+#Fluxes
+\family default
+, but takes an arbitrary number of arguments.
+ If no arguments are supplied, returns all of them.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#T_fluxes
+\family default
+ (alias 
+\family typewriter
+#t_Fluxes
+\family default
+), 
+\family typewriter
+#t_fluxes
+\family default
+ (alias 
+\family typewriter
+#t_flux
+\family default
+) – hash-returning varieties of 
+\family typewriter
+#Fluxes
+\family default
+ and 
+\family typewriter
+#fluxes
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#pflux
+\family default
+ – pretty-printing variety of 
+\family typewriter
+#t_flux
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+The above list of methods is not exhaustive.
+ For full list of methods and their documentation, see the documentation
+ of the 
+\family typewriter
+Simulation
+\family default
+ class.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Simulation::Recorder
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri::Simulation::Recorder 
+\family default
+is a class used exclusively as a PS dependent on 
+\family typewriter
+YPetri::Simulation
+\family default
+ instances.
+ Its has tow key attributes:
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+#features
+\family default
+ – getter of 
+\family typewriter
+@features
+\family default
+, containing the feature set to be recorded.
+ Its class is a PS of 
+\family typewriter
+Net::State::Features
+\family default
+.
+ It can be specified explicitly upon initialization or via 
+\family typewriter
+#reset!
+\family default
+ method.
+ By default, markings of the free places are used.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+#recording
+\family default
+ – getter of 
+\family typewriter
+@recording
+\family default
+, containing the recording itself.
+ Its class is a PS of 
+\family typewriter
+Net::DataSet
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+In the course of simulation, the recorder performs sampling: Upon occurence
+ of certain events, it records the feature set and stores it in the 
+\family typewriter
+@recording
+\family default
+ object.
+ For timed simulations, events are typically specified by time (
+\family typewriter
+@next_time
+\family default
+ variable).
+ Timeless simulations are not handled in the current version of 
+\family typewriter
+YPetri
+\family default
+, but it can already be said that events will be specified as conditions
+ defined on the marking vector (
+\family typewriter
+@next_event
+\family default
+ variable).
+ Recorder's checking for whether the sampling condition is fulfilled is
+ triggered by the 
+\family typewriter
+:alert!
+\family default
+ message.
+ 
+\family typewriter
+Recorder.new
+\family default
+ constructor takes the following named arguments:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+features:
+\family default
+ the feature set to record.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+recording:
+\family default
+ option to plug a pre-constructed dataset to the recorder.
+\end_layout
+
+\begin_layout Standard
+In timed simulations, 
+\family typewriter
+Recorder.new
+\family default
+ also accepts:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+sampling:
+\family default
+ sampling period
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+next_time:
+\family default
+ the next sampling time
+\end_layout
+
+\begin_layout Standard
+Important instance methods of 
+\family typewriter
+Recorder
+\family default
+ are:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#new_recording
+\family default
+ – constructs a new recording dependent on 
+\family typewriter
+@features
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#reset!
+\family default
+ – resets 
+\family typewriter
+@recording
+\family default
+ and optionally changes 
+\family typewriter
+@features
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#alert!
+\family default
+ – recorder expects this message whenever the system state changes.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#sample!
+\family default
+ – private method that performs sampling
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Core
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri::Core
+\family default
+ class is the abstraction for the simulator machine.
+ Originally, it was named 
+\family typewriter
+Simulator
+\family default
+, but 
+\family typewriter
+Core
+\family default
+ is shorter.
+ When a 
+\family typewriter
+Simulation
+\family default
+ instance wants to proceed in time to a next state, it relies on a 
+\family typewriter
+Core
+\family default
+ instance to perform the computation.
+ 
+\family typewriter
+Core
+\family default
+ was separated from 
+\family typewriter
+Simulation
+\family default
+ for the purpose of facilitating future use of different machines to run
+ the simulation.
+ At the moment, plain Ruby is used to compute the simulation steps.
+ 
+\family typewriter
+Core
+\family default
+ instance is generally not directly controlled by the user.
+
+\family typewriter
+ Core
+\family default
+ provides certain some basic interface, on which its mixins defining the
+ different simulation methods rely:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#flux_vector
+\family default
+ – flux vector for the nets with only TS transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#flux_vector_TS
+\family default
+ – for mixed nets, returns flux vector for only TS transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#firing_vector_tS
+\family default
+ – firing vector of tS transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#delta_tS
+\family default
+ – delta state caused by tS transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#delta_ts
+\family default
+ – delta state caused by ts transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#gradient
+\family default
+ – total system gradient for free places.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#gradient_Ts
+\family default
+ – gradient contribution by Ts transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#gradient_TS
+\family default
+ – gradient contribution by TS transitions.
+\end_layout
+
+\begin_layout Standard
+For the purpose of controlling the marking vector, 
+\family typewriter
+Core
+\family default
+ provides 2 instance methods:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#assignment_transitions_all_fire!
+\family default
+ – fires all A (assignment) transitions.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#increment_marking_vector
+\family default
+ – expects a delta vector of the same size as the marking vector as its
+ singe argument, and increments the marking vector by it.
+\end_layout
+
+\begin_layout Standard
+Simulation method mixins take flux, gradient, delta etc., and based on them,
+ compute the overall delta state, change the marking vector and fire assignment
+ transitions as defined by the simulation method, alerting the recorder
+ when the state changes.
+ At the moment, simulation methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+:euler
+\family default
+ – 1st order method for nets with only T (timed) transitions.
+ Mixin: 
+\family typewriter
+Core::Timed::Euler
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+:pseudo_euler
+\family default
+ – Euler method adaptation for nets with timeless transitions.
+ Mixin: 
+\family typewriter
+Core::Timed::PseudoEuler
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+:gillespie
+\family default
+ – For nets with only T transitions.
+ Mixin: 
+\family typewriter
+Core::Timed::Gillespie
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+:runge_kutta
+\family default
+ – 5th order method for nets with only T transitions.
+ Mixin: 
+\family typewriter
+Core::Timed::RungeKutta
+\family default
+.
+ (
+\emph on
+Not working at the moment!
+\emph default
+)
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+State
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+The state of a Petri net is entirely given by marking of its places.
+ 
+\family typewriter
+Simulation
+\family default
+ instances maintain their own marking vector holding the net state, but
+ the net instance also has it's own state class, a PS of 
+\family typewriter
+YPetri::Net::State
+\family default
+ < 
+\family typewriter
+Array
+\family default
+.
+ 
+\family typewriter
+State
+\family default
+ class is thus commonly used as a PS dependent on a 
+\family typewriter
+Net
+\family default
+ instance, whose array positions correspond to the net's places.
+ This net is available as a public class method on the 
+\family typewriter
+State
+\family default
+ PS:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#net
+\family default
+ – returns the net on which this State PS depends.
+\end_layout
+
+\begin_layout Standard
+Each such 
+\family typewriter
+State
+\family default
+ PS in turn owns 2 dependent parametrized subclasses:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Feature
+\family default
+ – getter of 
+\family typewriter
+@Feature
+\family default
+, containing a PS of 
+\family typewriter
+State::Feature
+\family default
+.
+ When called with arguments, acts as alias of 
+\family typewriter
+#feature
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Features
+\family default
+ – getter of 
+\family typewriter
+@Features
+\family default
+, containing a PS of 
+\family typewriter
+State::Features
+\family default
+.
+ When called with a single array argument, this message acts as a feature
+ set constructor / validator.
+\end_layout
+
+\begin_layout Standard
+Other public class methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#feature
+\family default
+ – 
+\family typewriter
+@Feature
+\family default
+ instance identifier.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#features
+\family default
+ – 
+\family typewriter
+@Features
+\family default
+ instance constructor.
+ (See the class documentation for its full description.)
+\end_layout
+
+\begin_layout Standard
+Instance methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#to_record
+\family default
+ – given clamped places, it returns a 
+\family typewriter
+Record
+\family default
+ instance containing the marking of the free places.
+ If no set of clamped places is supplied, it is considered empty.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking
+\family default
+ – returns the marking of a single given place in this 
+\family typewriter
+State
+\family default
+ instance.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#markings
+\family default
+ – expects an arbitrary number of places, returns a plain array of their
+ markings.
+ If no arguments are given, returns all of them.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Feature
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+A feature defines a measurement which can be performed on a net in some
+ state to extract the feature's value.
+ In 
+\family typewriter
+YPetri
+\family default
+, 
+\family typewriter
+Net::State::Feature
+\family default
+ class is used as a PS dependent on a 
+\family typewriter
+State
+\family default
+ PS (not on a 
+\family typewriter
+State
+\family default
+ instance):
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#State
+\family default
+ – the 
+\family typewriter
+State
+\family default
+ PS by which this 
+\family typewriter
+Feature
+\family default
+ PS was parametrized.
+\end_layout
+
+\begin_layout Standard
+In the present implementation, this class serves as a mother class for more
+ specialized feature classes: 
+\family typewriter
+Marking
+\family default
+, 
+\family typewriter
+Firing
+\family default
+, 
+\family typewriter
+Flux
+\family default
+, 
+\family typewriter
+Gradient
+\family default
+, 
+\family typewriter
+Delta
+\family default
+ and 
+\family typewriter
+Assignment
+\family default
+.
+ These are defined as 
+\family typewriter
+Feature
+\family default
+ subclasses on the namespace of 
+\family typewriter
+Feature
+\family default
+ itself, but at the same time, a PS of each of them is owned by the Feature
+ PS:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Marking
+\family default
+, 
+\family typewriter
+#Firing
+\family default
+, 
+\family typewriter
+#Flux
+\family default
+, 
+\family typewriter
+#Gradient
+\family default
+, 
+\family typewriter
+#Delta
+\family default
+, 
+\family typewriter
+#Assignment
+\family default
+ – these public class methods defined on a PS of Feature returns the dependent
+ parametrized subclasses for the classes of the same name (
+\family typewriter
+Feature::Marking
+\family default
+, 
+\family typewriter
+Feature::Firing
+\family default
+, etc.)
+\end_layout
+
+\begin_layout Standard
+Instance methods are defined inside these specialized feature subclasses,
+ such as:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#extract_from
+\family default
+ – extracts the receiver feature from the target object, returning the feature's
+ value.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#type
+\family default
+ – feature type
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#label
+\family default
+ – feature label (for use in graphics etc.)
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Features
+\family default
+ class – feature set
+\end_layout
+
+\begin_layout Standard
+A collection of features is called a feature set.
+ Measurement performed for a particular feature set results in a record.
+ In 
+\family typewriter
+YPetri
+\family default
+, 
+\family typewriter
+Net::State::Features
+\family default
+ is a subclass of 
+\family typewriter
+Array
+\family default
+, representing an array of features.
+ Originally, it was named 
+\family typewriter
+FeatureSet
+\family default
+, but 
+\family typewriter
+Features
+\family default
+ is shorter.
+ It is used as a PS dependent on a 
+\family typewriter
+State
+\family default
+ PS (
+\emph on
+not
+\emph default
+ on a 
+\family typewriter
+State
+\family default
+ instance).
+ It's owning 
+\family typewriter
+State
+\family default
+ PS can be accessed via 
+\family typewriter
+#State
+\family default
+ class method.
+ Such 
+\family typewriter
+Features
+\family default
+ PS in turn owns subclasses of 
+\family typewriter
+Net::State::Features::Record
+\family default
+ and 
+\family typewriter
+Net::Dataset
+\family default
+, which can be accessed via 
+\family typewriter
+#Record
+\family default
+ and 
+\family typewriter
+#Dataset
+\family default
+ class methods.
+ Other class methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Marking
+\family default
+, 
+\family typewriter
+#Firing
+\family default
+, 
+\family typewriter
+#Flux
+\family default
+, 
+\family typewriter
+#Assignment
+\family default
+ – constructors of a set of marking features, accepting single array argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking
+\family default
+, 
+\family typewriter
+#firing
+\family default
+, 
+\family typewriter
+#flux
+\family default
+, 
+\family typewriter
+#assignment
+\family default
+ – versions of the above constructors, that accept any number of arguments,
+ and return full corresponding feature sets if no arguments are given.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Gradient
+\family default
+ – constructor of a set of gradient features, accepting an array and an
+ optional :transitions named argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#gradient
+\family default
+ – version of the above constructor accepting any number of ordered arguments,
+ and returning full gradient feature set if no ordered arguments are given.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Delta
+\family default
+ – constructor of a set of delta features, accepting an array and an optional
+ :transitions named argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#delta
+\family default
+ – version of the above constructor accepting any number of ordered arguments,
+ and returning full delta feature set if no ordered arguments are given.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#[]
+\family default
+ – constructor that takes either an arbitrary number of ordered arguments,
+ or a field of named arguments (
+\family typewriter
+:marking
+\family default
+, 
+\family typewriter
+:firing
+\family default
+, 
+\family typewriter
+:gradient
+\family default
+, 
+\family typewriter
+:flux
+\family default
+, 
+\family typewriter
+:delta
+\family default
+, 
+\family typewriter
+:assignment
+\family default
+), identifying a (possibly) mixed set of features.
+\end_layout
+
+\begin_layout Standard
+Furthermore, class method 
+\family typewriter
+#new
+\family default
+ is tweaked to make the returned instances own a PS of 
+\family typewriter
+Record
+\family default
+ and a PS of 
+\family typewriter
+DataSet
+\family default
+ 
+\emph on
+doubly parametrized
+\emph default
+ by the instance.
+ Therefore, also instance methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Record
+\family default
+ – a PS of 
+\family typewriter
+Features.Record
+\family default
+ PS parametrized by the 
+\family typewriter
+Features
+\family default
+ instance.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#DataSet
+\family default
+ – a PS of 
+\family typewriter
+Features.DataSet
+\family default
+ PS parametrized by the 
+\family typewriter
+Features
+\family default
+ instance.
+\end_layout
+
+\begin_layout Standard
+Other instance methods are:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#load
+\family default
+ – delegated to the 
+\family typewriter
+Record
+\family default
+ PS owned by the instance.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#extract_from
+\family default
+ – extracts a feature set from the target object, returning a record.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Record
+\family default
+ alias 
+\family typewriter
+#load
+\family default
+ – constructs an instance from an array of values.
+ The values must corresponds to the receiver feature set.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#+
+\family default
+, 
+\family typewriter
+#-
+\family default
+, 
+\family typewriter
+#*
+\family default
+ – addition, subtraction, 
+\family typewriter
+Array
+\family default
+-like multiplication for feature sets.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#labels
+\family default
+ – array of feature labels.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#reduce_features
+\family default
+ – expects an argument identifying a set of features that is a subset of
+ the receiver feature set, and returns that feature subset.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Marking
+\family default
+, 
+\family typewriter
+#Firing
+\family default
+, 
+\family typewriter
+#Flux
+\family default
+, 
+\family typewriter
+#Assignment
+\family default
+ – selectors of a subset of the receiver feature set, accepting single array
+ argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking
+\family default
+, 
+\family typewriter
+#firing
+\family default
+, 
+\family typewriter
+#flux
+\family default
+, 
+\family typewriter
+#assignment
+\family default
+ – versions of the above selectors, that accept any number of arguments,
+ and return full corresponding subsets if no arguments given.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Gradient
+\family default
+, 
+\family typewriter
+#Delta
+\family default
+, 
+\family typewriter
+#gradient
+\family default
+, 
+\family typewriter
+#delta
+\family default
+ – selectors analogical to the above mentioned, but also accepting an optional
+ named argument 
+\family typewriter
+:transitions
+\family default
+ qualifying the features to select.
+\end_layout
+
+\begin_layout Standard
+Furthermore, 
+\family typewriter
+:Record
+\family default
+ message is overloaded in such way, that when sent with an argument, it
+ acts as an alias of 
+\family typewriter
+#load
+\family default
+ record constructor.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Record
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+A record is basically an array, that remembers the features to which its
+ values correspond.
+ 
+\family typewriter
+Net::State::Features::Record
+\family default
+ class is typically used as doubly parametrized PS, dependent firstly on
+ a 
+\family typewriter
+Features
+\family default
+ PS, and then on its particular instance.
+ The owning feature set is accessible via 
+\family typewriter
+#features
+\family default
+ class and instance method.
+ Other class methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#load
+\family default
+ – constructs a record from a given collection of values.
+\end_layout
+
+\begin_layout Standard
+Other instance methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#dump
+\family default
+ – converts the record to a plain array, with optional :precision named
+ argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#print
+\family default
+ – pretty prints the record with feature names.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#fetch
+\family default
+ – returns a feature.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#state
+\family default
+ – constructs a state, using the receiver record, and a set of complementary
+ marking clamps supplied in the argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#reconstruct
+\family default
+ – reconstructs a simulation from the receiver record.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Marking
+\family default
+, 
+\family typewriter
+#Firing
+\family default
+, 
+\family typewriter
+#Flux
+\family default
+, 
+\family typewriter
+#Assignment
+\family default
+ – selects the values of the specified feature subsets from the receiver
+ record.
+ Expects a single array-type argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking
+\family default
+, 
+\family typewriter
+#firing
+\family default
+, 
+\family typewriter
+#flux
+\family default
+, 
+\family typewriter
+#assignment
+\family default
+ – the versions of the above methods accepting any number of feature-identifying
+ arguments.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Gradient
+\family default
+, 
+\family typewriter
+#Delta
+\family default
+, 
+\family typewriter
+#gradient
+\family default
+, 
+\family typewriter
+#delta
+\family default
+ – selectors analogical to the above mentioned, but also accepting an optional
+ named argument 
+\family typewriter
+:transitions
+\family default
+ qualifying the features to select.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#euclidean_distance
+\family default
+ – takes another record of the same feature set as an argument and computes
+ the Euclidean distance to it.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+DataSet
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri::Net::DataSet
+\family default
+ represents a sequence of records sampled from the underlying net using
+ certain feature set.
+ It is a subclass of 
+\family typewriter
+Hash
+\family default
+, whose keys represent sampling events, and whose values are plain arrays,
+ from which corresponding 
+\family typewriter
+Record
+\family default
+ instances can be fully reconstructed (via 
+\family typewriter
+Record.load
+\family default
+ method).
+ It is typically used as doubly parametrized PS, dependent firstly on a
+ 
+\family typewriter
+Features
+\family default
+ PS, and then on its particular instance.
+ The owning feature set is accessible via 
+\family typewriter
+#features
+\family default
+ class and instance method.
+ Other class methods include:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#events
+\family default
+ – alias for 
+\family typewriter
+Hash#keys
+\family default
+ – dataset keys represent sampling events.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#reduce_features
+\family default
+ – selects certain columns (features) of a dataset.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#timed?
+\family default
+ – inquirer whether the dataset is timed
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#record
+\family default
+ – reconstructs the 
+\family typewriter
+Record
+\family default
+ instance corresponding to the given event.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#floor
+\family default
+ – the nearest event smaller or equal to the argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#ceiling
+\family default
+ – the nearest event greater or equal than the argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#records
+\family default
+ – returns an array of 
+\family typewriter
+Record
+\family default
+ instances revived from the receiver's values.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#reconstruct
+\family default
+ – recreates the simulation at the given event.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#interpolate
+\family default
+ – interpolates the recording at the given point (event).
+ Return value is the Record class instance.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#resample
+\family default
+ – resamples the recording.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#distance
+\family default
+ – computes the distance to another dataset.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#series
+\family default
+ – returns the data series for the specified features.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#reduce_features
+\family default
+ – reduces the dataset into another dataset with a different set of features.
+ Reduction to a subset of features is always possible.
+ Reduction to a set of features that is not a subset of the receiver's set
+ of features is only possible if the former can be inferred from the latter.
+ Generally, this is the case if net state can be reconstructed from a receiver's
+ record.
+ From this net state, the desired new feature set is then extracted.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Marking
+\family default
+, 
+\family typewriter
+#Firing
+\family default
+, 
+\family typewriter
+#Flux
+\family default
+, 
+\family typewriter
+#Assignment
+\family default
+ – selects the values of the specified feature subsets from the receiver
+ record.
+ Expects a single array-type argument.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#marking
+\family default
+, 
+\family typewriter
+#firing
+\family default
+, 
+\family typewriter
+#flux
+\family default
+, 
+\family typewriter
+#assignment
+\family default
+ – the versions of the above methods accepting any number of feature-identifying
+ arguments.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#Gradient
+\family default
+, 
+\family typewriter
+#Delta
+\family default
+, 
+\family typewriter
+#gradient
+\family default
+, 
+\family typewriter
+#delta
+\family default
+ – selectors analogical to the above mentioned, but also accepting an optional
+ named argument 
+\family typewriter
+:transitions
+\family default
+ qualifying the features to select.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#to_csv
+\family default
+ – outputs the dataset in the CSV format.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+#plot
+\family default
+ – plots the dataset.
+\end_layout
+
+\begin_layout Part*
+
+\family typewriter
+Agent
+\family default
+ class
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+YPetri::Agent
+\family default
+ / 
+\family typewriter
+YNelson::Agent
+\family default
+ are dumb agents that represent and assist the user.
+ Originally, this class was named 
+\family typewriter
+Manipulator
+\family default
+, but 
+\family typewriter
+Agent
+\family default
+ is shorter.
+ 
+\family typewriter
+Agent
+\family default
+ does provide textual user interface, but it does not completely encapsulate
+ 
+\family typewriter
+YPetri
+\family default
+ (
+\family typewriter
+YNelson
+\family default
+) interface.
+ Rather, it defines a number of top-level DSL commands (methods) available
+ upon calling '
+\family typewriter
+include YPetri
+\family default
+' / '
+\family typewriter
+include YNelson
+\family default
+'.
+ 
+\family typewriter
+Agent
+\family default
+ is not a part of the core object model of 
+\family typewriter
+YPetri
+\family default
+ / 
+\family typewriter
+YNelson
+\family default
+, and it is hotter than other parts of 
+\family typewriter
+YPetri
+\family default
+ / 
+\family typewriter
+YNelson
+\family default
+.
+ For basic use, see the tutorial (
+\begin_inset Quotes eld
+\end_inset
+
+Introduction to 
+\family typewriter
+YNelson
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+).
+ For detailed description of 
+\family typewriter
+Agent
+\family default
+'s assets, see the class documentation.
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "/home/boris/b/8oav/hos/hos"
+options "plainnat"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
