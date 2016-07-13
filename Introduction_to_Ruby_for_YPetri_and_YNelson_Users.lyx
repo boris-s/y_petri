@@ -74,56 +74,69 @@
 \begin_body
 
 \begin_layout Title
-Introduction to Ruby for YNelson Users
+Introduction to Ruby for YPetri / YNelson Users
 \end_layout
 
 \begin_layout Standard
 For 
 \family typewriter
-YNelson
+YPetri
 \family default
- users, basic Ruby syntax is necessary.
- This document is a primer to Ruby for 
+ / 
 \family typewriter
 YNelson
+\family default
+ (further only 
+\family typewriter
+YPetri
+\family default
+) users, basic Ruby syntax is necessary.
+ This document is a Ruby primer for 
+\family typewriter
+YPetri
 \family default
  users.
- This documents should be used in the same way as 
+ This document should be used in the same way as 
 \family typewriter
-YNelson
+YPetri
 \family default
  tutorial (Introduction to 
 \family typewriter
-YNelson
+YPetri
 \family default
 ) – that is, get an 
 \emph on
 irb
 \emph default
  session running, and type all the examples in by yourself.
- You might also wish to install 
+ Line output is shown after 
 \family typewriter
-YNelson
+#=>
+\family default
+.You might also wish to install 
+\family typewriter
+YPetri
 \family default
  by by typing "
 \family typewriter
-gem install y_nelson
+gem install y_petri
 \family default
 " from your command line.
- Since many of the code samples here rely heavily on each other, you may
- consider to do this document in one session.
- On the other hand, if you happen to be a Ruby hacker, you do not need to
- continue reading this document at all.
- This document is not a replacement for a Ruby textbook.
- For those, who want more thorough introduction to the language, I recommend
- the document 
+\end_layout
+
+\begin_layout Standard
+If you happen to be well familiar with Ruby, you do not need to read this
+ document at all.
+ Otherwise, this document is not a replacement for a Ruby textbook.
+ For more thorough introduction to the language, I recommend the document
+ 
 \begin_inset CommandInset href
 LatexCommand href
 target "http://www.rubyist.net/~slagell/ruby/index.html"
 
 \end_inset
 
-, or one of the many Ruby textbooks.
+, or a Ruby textbook.
 \end_layout
 
 \begin_layout Part*
@@ -197,27 +210,15 @@ global constants
 \end_layout
 
 \begin_layout LyX-Code
-alpha = 1
+alpha = 1                         #=> 1
 \end_layout
 
 \begin_layout LyX-Code
-#=> 1
+beta = [1, 2]                     #=> [1, 2]
 \end_layout
 
 \begin_layout LyX-Code
-beta = [1, 2]
-\end_layout
-
-\begin_layout LyX-Code
-#=> [1, 2]
-\end_layout
-
-\begin_layout LyX-Code
-Gamma = { x: 1, y: 2, z: 3 }
-\end_layout
-
-\begin_layout LyX-Code
-#=> {:x=>1, :y=>2, :z=>3}
+Gamma = { x: 1, y: 2, z: 3 }      #=> {:x=>1, :y=>2, :z=>3}
 \end_layout
 
 \begin_layout Standard
@@ -231,19 +232,11 @@ defined?
 \end_layout
 
 \begin_layout LyX-Code
-defined? alpha
+defined? alpha                    #=> "local-variable"
 \end_layout
 
 \begin_layout LyX-Code
-#=> "local-variable"
-\end_layout
-
-\begin_layout LyX-Code
-defined? Gamma
-\end_layout
-
-\begin_layout LyX-Code
-#=> "constant"
+defined? Gamma                    #=> "constant"
 \end_layout
 
 \begin_layout Part*
@@ -264,23 +257,7 @@ Comments are denoted by
 \end_layout
 
 \begin_layout LyX-Code
-puts 
-\begin_inset Quotes eld
-\end_inset
-
-Hello world!
-\begin_inset Quotes erd
-\end_inset
-
- # this line prints the words 
-\begin_inset Quotes eld
-\end_inset
-
-Hello world!
-\begin_inset Quotes erd
-\end_inset
-
-
+puts "Hello world!"      # this line prints the words "Hello world!"
 \end_layout
 
 \begin_layout Standard
@@ -305,23 +282,7 @@ Semicolon is compulsory only when two or more logical lines are crammed
 \end_layout
 
 \begin_layout LyX-Code
-a = 
-\begin_inset Quotes eld
-\end_inset
-
-Hello
-\begin_inset Quotes eld
-\end_inset
-
-; b = 
-\begin_inset Quotes eld
-\end_inset
-
-world!
-\begin_inset Quotes erd
-\end_inset
-
-; puts a + ' ' + b
+a = "Hello"; b = "world!"; puts a + ' ' + b
 \end_layout
 
 \begin_layout Part*
@@ -342,46 +303,32 @@ methods
 beta.
 \color red
 size
+\color inherit
+          #=> 2
 \end_layout
 
 \begin_layout LyX-Code
-#=> 2
-\end_layout
-
-\begin_layout LyX-Code
-Gamma.size
-\end_layout
-
-\begin_layout LyX-Code
-#=> 3
+Gamma.size         #=> 3
 \end_layout
 
 \begin_layout LyX-Code
 Gamma.
 \color red
 keys
-\end_layout
-
-\begin_layout LyX-Code
-#=> [:x, :y, :z]
+\color inherit
+         #=> [:x, :y, :z]
 \end_layout
 
 \begin_layout LyX-Code
 Gamma.
 \color red
 values
+\color inherit
+       #=> [1, 2, 3]
 \end_layout
 
 \begin_layout LyX-Code
-#=> [1, 2, 3]
-\end_layout
-
-\begin_layout LyX-Code
-beta.keys
-\end_layout
-
-\begin_layout LyX-Code
-#=> NoMethodError: undefined method `keys' for [1, 2]:Array
+beta.keys          #=> NoMethodError: undefined method `keys' for [1, 2]:Array
 \end_layout
 
 \begin_layout Standard
@@ -414,18 +361,12 @@ to_f
 
 \color red
 end
+\color inherit
+                        #=> :average
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
-\end_layout
-
-\begin_layout LyX-Code
-average( 2, 3 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> 2.5
+average( 2, 3 )            #=> 2.5
 \end_layout
 
 \begin_layout Standard
@@ -455,30 +396,20 @@ class
 alpha.
 \color red
 class
-\end_layout
-
-\begin_layout LyX-Code
-#=> 
+\color inherit
+                #=> 
 \color red
 Fixnum
 \end_layout
 
 \begin_layout LyX-Code
-beta.class
-\end_layout
-
-\begin_layout LyX-Code
-#=> 
+beta.class                 #=> 
 \color red
 Array
 \end_layout
 
 \begin_layout LyX-Code
-Gamma.class
-\end_layout
-
-\begin_layout LyX-Code
-#=> 
+Gamma.class                #=> 
 \color red
 Hash
 \end_layout
@@ -521,29 +452,19 @@ puts
 \end_layout
 
 \begin_layout LyX-Code
-end
-\end_layout
-
-\begin_layout LyX-Code
-#=> nil
+end                        #=> :speak!
 \end_layout
 
 \begin_layout LyX-Code
 Spot = Dog.
 \color red
 new
+\color inherit
+             #=> #<Dog:0x9c214ac>
 \end_layout
 
 \begin_layout LyX-Code
-#=> #<Dog:0x9c214ac>
-\end_layout
-
-\begin_layout LyX-Code
-Spot.speak!
-\end_layout
-
-\begin_layout LyX-Code
-#=> Bow wow!
+Spot.speak!                #=> Bow wow!
 \end_layout
 
 \begin_layout LyX-Code
@@ -555,7 +476,7 @@ class Cat
 \end_layout
 
 \begin_layout LyX-Code
-    puts "Meow"
+    puts "Meow!"
 \end_layout
 
 \begin_layout LyX-Code
@@ -563,27 +484,15 @@ class Cat
 \end_layout
 
 \begin_layout LyX-Code
-end
+end                        #=> :speak!
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
+Lisa = Cat.new             #=> #<Cat:0x98efb80>
 \end_layout
 
 \begin_layout LyX-Code
-Lisa = Cat.new
-\end_layout
-
-\begin_layout LyX-Code
-#=> #<Cat:0x98efb80>
-\end_layout
-
-\begin_layout LyX-Code
-Lisa.speak!
-\end_layout
-
-\begin_layout LyX-Code
-#=> Meow
+Lisa.speak!                #=> Meow
 \end_layout
 
 \begin_layout Standard
@@ -681,19 +590,11 @@ A string is simply a sequence of characters, which can be defined using
 \end_layout
 
 \begin_layout LyX-Code
-my_string = 'Hello world!'
+my_string = 'Hello world!'         #=> "Hello world!"
 \end_layout
 
 \begin_layout LyX-Code
-#=> "Hello world!"
-\end_layout
-
-\begin_layout LyX-Code
-my_string.class
-\end_layout
-
-\begin_layout LyX-Code
-#=> 
+my_string.class                    #=> 
 \color red
 String
 \end_layout
@@ -706,10 +607,8 @@ Strings are mutable (can be changed):
 my_string.
 \color red
 object_id
-\end_layout
-
-\begin_layout LyX-Code
-#=> 81571950
+\color inherit
+                #=> 81571950
 \end_layout
 
 \begin_layout LyX-Code
@@ -728,26 +627,32 @@ chop!
  
 \color red
 end
+\color inherit
+     #=> 7
 \end_layout
 
 \begin_layout LyX-Code
-#=> 7
+my_string                          #=> "Hello"
 \end_layout
 
 \begin_layout LyX-Code
-my_string
+my_string.object_id                #=> 81571950
 \end_layout
 
 \begin_layout LyX-Code
-#=> "Hello"
+my_string.chop!                    #=> 
+\begin_inset Quotes eld
+\end_inset
+
+Hell
+\begin_inset Quotes erd
+\end_inset
+
+
 \end_layout
 
 \begin_layout LyX-Code
-my_string.object_id
-\end_layout
-
-\begin_layout LyX-Code
-#=> 81571950
+my_string.object_id                #=> 81571950
 \end_layout
 
 \begin_layout Standard
@@ -795,19 +700,11 @@ my_string
 \color red
 <<
 \color inherit
- "Spot!"
+ "o Spot!"             #=> "Hello Spot!"
 \end_layout
 
 \begin_layout LyX-Code
-#=> "Hello Spot!"
-\end_layout
-
-\begin_layout LyX-Code
-my_string.object_id
-\end_layout
-
-\begin_layout LyX-Code
-#=> 81571950
+my_string.object_id                #=> 81571950
 \end_layout
 
 \begin_layout Standard
@@ -834,11 +731,7 @@ Unlike strings, symbols are immutable – they never change.
 \end_layout
 
 \begin_layout LyX-Code
-:Spot.class
-\end_layout
-
-\begin_layout LyX-Code
-#=> 
+:Spot.class                        #=> 
 \color red
 Symbol
 \end_layout
@@ -858,19 +751,11 @@ As seen earlier, they can be defined with square brackets
 \end_layout
 
 \begin_layout LyX-Code
-my_array = [ Spot, Lisa ]
+my_array = [ Spot, Lisa ]     #=> [#<Dog:0x9c214ac>, #<Cat:0x98efb80>]
 \end_layout
 
 \begin_layout LyX-Code
-#=> [#<Dog:0x9c214ac>, #<Cat:0x98efb80>]
-\end_layout
-
-\begin_layout LyX-Code
-my_array[0]
-\end_layout
-
-\begin_layout LyX-Code
-#=> #<Dog:0x9c214ac>
+my_array[0]                   #=> #<Dog:0x9c214ac>
 \end_layout
 
 \begin_layout Standard
@@ -879,19 +764,11 @@ Negative numbers can be used to address the elements from the end of the
 \end_layout
 
 \begin_layout LyX-Code
-my_array[-1]
+my_array[-1]                  #=> #<Cat:0x98efb80>
 \end_layout
 
 \begin_layout LyX-Code
-#=> #<Cat:0x98efb80>
-\end_layout
-
-\begin_layout LyX-Code
-my_array[-2]
-\end_layout
-
-\begin_layout LyX-Code
-#=> #<Dog:0x9c214ac>
+my_array[-2]                  #=> #<Dog:0x9c214ac>
 \end_layout
 
 \begin_layout Section*
@@ -924,19 +801,11 @@ h1 = { Spot => "dog", Lisa => "cat" }
 \end_layout
 
 \begin_layout LyX-Code
-h1[ Lisa ]
+h1[ Lisa ]                    #=> "cat"
 \end_layout
 
 \begin_layout LyX-Code
-#=> "cat"
-\end_layout
-
-\begin_layout LyX-Code
-h1[ Spot ]
-\end_layout
-
-\begin_layout LyX-Code
-#=> "dog"
+h1[ Spot ]                    #=> "dog"
 \end_layout
 
 \begin_layout Standard
@@ -953,11 +822,7 @@ h2 = { dog: Spot, cat: Lisa }
 \end_layout
 
 \begin_layout LyX-Code
-h2[:dog]
-\end_layout
-
-\begin_layout LyX-Code
-#=> #<Dog:0x9c214ac>
+h2[:dog]                      #=> #<Dog:0x9c214ac>
 \end_layout
 
 \begin_layout Part*
@@ -1011,10 +876,8 @@ n
  n + 3 
 \color red
 }
-\end_layout
-
-\begin_layout LyX-Code
-#=> [4, 5, 6, 7]
+\color inherit
+      #=> [4, 5, 6, 7]
 \end_layout
 
 \begin_layout LyX-Code
@@ -1034,11 +897,7 @@ member
 \end_layout
 
 \begin_layout LyX-Code
-#=> Bow wow!
-\end_layout
-
-\begin_layout LyX-Code
-    Meow
+#=> Bow wow! Meow!
 \end_layout
 
 \begin_layout Standard
@@ -1176,27 +1035,11 @@ my_array.each
 \color red
 &
 \color inherit
-my_proc
+my_proc        #=> Bow wow! Meow!
 \end_layout
 
 \begin_layout LyX-Code
-#=> Bow wow!
-\end_layout
-
-\begin_layout LyX-Code
-    Meow
-\end_layout
-
-\begin_layout LyX-Code
-my_array.each &my_lambda
-\end_layout
-
-\begin_layout LyX-Code
-#=> Bow wow!
-\end_layout
-
-\begin_layout LyX-Code
-    Meow
+my_array.each &my_lambda      #=> Bow wow! Meow!
 \end_layout
 
 \begin_layout Standard
@@ -1208,19 +1051,11 @@ my_proc.
 \color red
 call
 \color inherit
-( Spot )
+( Spot )          #=> Bow wow!
 \end_layout
 
 \begin_layout LyX-Code
-#=> Bow wow!
-\end_layout
-
-\begin_layout LyX-Code
-my_lambda.call( Lisa )
-\end_layout
-
-\begin_layout LyX-Code
-#=> Meow
+my_lambda.call( Lisa )        #=> Meow!
 \end_layout
 
 \begin_layout Standard
@@ -1236,19 +1071,11 @@ my_proc
 \color red
 .
 \color inherit
-( Lisa )
+( Lisa )              #=> Meow!
 \end_layout
 
 \begin_layout LyX-Code
-#=> Meow
-\end_layout
-
-\begin_layout LyX-Code
-my_lambda.( Spot )
-\end_layout
-
-\begin_layout LyX-Code
-#=> Bow wow!
+my_lambda.( Spot )            #=> Bow wow!
 \end_layout
 
 \begin_layout Standard
@@ -1277,11 +1104,7 @@ lambda
 \end_layout
 
 \begin_layout LyX-Code
-my_proc.( Lisa, "garbage" )
-\end_layout
-
-\begin_layout LyX-Code
-#=> Meow
+my_proc.( Lisa, "garbage" )   #=> Meow!
 \end_layout
 
 \begin_layout LyX-Code
@@ -1297,11 +1120,11 @@ Finally, let us notice the alternative syntax for defining lambdas:
 \end_layout
 
 \begin_layout LyX-Code
-my_lambda = lambda do |organism| organism.speak! end
+my_lambda = lambda do |animal| animal.speak! end
 \end_layout
 
 \begin_layout LyX-Code
-my_lambda = lambda { |organism| oranism.speak! }
+my_lambda = lambda { |animal| animal.speak! }
 \end_layout
 
 \begin_layout LyX-Code
@@ -1309,11 +1132,11 @@ my_lambda =
 \color red
 ->
 \color inherit
- organism do organism.speak! end
+ animal do animal.speak! end
 \end_layout
 
 \begin_layout LyX-Code
-my_lambda = -> orgnism { organism.speak! }
+my_lambda = -> animal { animal.speak! }
 \end_layout
 
 \begin_layout Standard
@@ -1338,19 +1161,12 @@ ArgumentError
 \end_layout
 
 \begin_layout LyX-Code
-average( 3, 5 )
+average( 3, 5 )         #=> 4
 \end_layout
 
 \begin_layout LyX-Code
-#=> 4
-\end_layout
-
-\begin_layout LyX-Code
-average( 3, 5, 8 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> ArgumentError: wrong number of arguments (3 for 2)
+average( 3, 5, 8 )      #=> ArgumentError: wrong number of arguments (3
+ for 2)
 \end_layout
 
 \begin_layout Standard
@@ -1473,35 +1289,20 @@ end
 \end_layout
 
 \begin_layout LyX-Code
-end
+end                          #=> :average
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
+average( 3, 5 )              #=> 4
 \end_layout
 
 \begin_layout LyX-Code
-average( 3, 5 )
+average( 3, 5, 8 )           #=> 5.333333333333333
 \end_layout
 
 \begin_layout LyX-Code
-#=> 4
-\end_layout
-
-\begin_layout LyX-Code
-average( 3, 5, 8 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> 5.333333333333333
-\end_layout
-
-\begin_layout LyX-Code
-average( 1, 2, 3, 4 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> ArgumentError: wrong number of arguments (4 for 3)
+average( 1, 2, 3, 4 )        #=> ArgumentError: wrong number of arguments
+ (4 for 3)
 \end_layout
 
 \begin_layout Standard
@@ -1626,11 +1427,7 @@ x.class
 \end_layout
 
 \begin_layout LyX-Code
-end
-\end_layout
-
-\begin_layout LyX-Code
-#=> nil
+end                        #=> :examine_arguments
 \end_layout
 
 \begin_layout Standard
@@ -1680,7 +1477,7 @@ examine_arguments( 1 )
 \end_layout
 
 \begin_layout LyX-Code
-examine_arguments( :hello, nil, 3, 5, "garbage" )
+examine_arguments( :hello, nil, 3, 5, "a string" )
 \end_layout
 
 \begin_layout LyX-Code
@@ -1712,19 +1509,11 @@ reduce( :+ )
 \end_layout
 
 \begin_layout LyX-Code
-end
+end                      #=> :average
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
-\end_layout
-
-\begin_layout LyX-Code
-average 3, 5, 7, 11
-\end_layout
-
-\begin_layout LyX-Code
-#=> 6.5
+average 3, 5, 7, 11      #=> 6.5
 \end_layout
 
 \begin_layout Standard
@@ -1754,11 +1543,7 @@ avg = lambda { |*aa| aa.reduce( :+ ).to_f / aa.size }
 \end_layout
 
 \begin_layout LyX-Code
-avg.( 11, 7, 5, 3 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> 6.5
+avg.( 11, 7, 5, 3 )      #=> 6.5
 \end_layout
 
 \begin_layout Section*
@@ -1785,19 +1570,11 @@ def density( x: 1, y: 1, z: 1, weight: 1 )
 \end_layout
 
 \begin_layout LyX-Code
-end
+end                    #=> :density
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
-\end_layout
-
-\begin_layout LyX-Code
-density( x: 2, y: 2, z: 2, weight: 10 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> 1.25
+density( x: 2, y: 2, z: 2, weight: 10 )       #=> 1.25
 \end_layout
 
 \begin_layout Standard
@@ -1835,11 +1612,7 @@ dens_closure =
 \end_layout
 
 \begin_layout LyX-Code
-dens_closure.( x: 2, y: 2, z: 2, weight: 10 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> 1.25
+dens_closure.( x: 2, y: 2, z: 2, weight: 10 ) #=> 1.25
 \end_layout
 
 \begin_layout Standard
@@ -1873,19 +1646,11 @@ In more complicated method argument structures, it can be advantageous to
 \end_layout
 
 \begin_layout LyX-Code
-h = { x: 2, y: 3, z: 4 }
+h = { x: 2, y: 3, z: 4 }        #=> {:x=>2, :y=>3, :z=>4}
 \end_layout
 
 \begin_layout LyX-Code
-#=> {:x=>2, :y=>3, :z=>4}
-\end_layout
-
-\begin_layout LyX-Code
-h.class
-\end_layout
-
-\begin_layout LyX-Code
-#=> Hash
+h.class                         #=> Hash
 \end_layout
 
 \begin_layout Standard
@@ -1897,51 +1662,27 @@ able to collect hashes just like the argument fields with named arguments
 \end_layout
 
 \begin_layout LyX-Code
-a0 = [ 1, 2, 3 ]
+a0 = [ 1, 2, 3 ]                    #=> [1, 2, 3]
 \end_layout
 
 \begin_layout LyX-Code
-#=> [1, 2, 3]
+a0.class                            #=> Array
 \end_layout
 
 \begin_layout LyX-Code
-a0.class
+a1 = [ 1, 2, 3, x: 2, y: 3, z: 4 ]  #=> [1, 2, 3, {:x=>2, :y=>3, :z=>4}]
 \end_layout
 
 \begin_layout LyX-Code
-#=> Array
+a1.class                            #=> Array
 \end_layout
 
 \begin_layout LyX-Code
-a1 = [ 1, 2, 3, x: 2, y: 3, z: 4 ]
+a1.map &:class                      #=> [Fixnum, Fixnum, Fixnum, Hash]
 \end_layout
 
 \begin_layout LyX-Code
-#=> [1, 2, 3, {:x=>2, :y=>3, :z=>4}]
-\end_layout
-
-\begin_layout LyX-Code
-a1.class
-\end_layout
-
-\begin_layout LyX-Code
-#=> Array
-\end_layout
-
-\begin_layout LyX-Code
-a1.map &:class
-\end_layout
-
-\begin_layout LyX-Code
-#=> [Fixnum, Fixnum, Fixnum, Hash]
-\end_layout
-
-\begin_layout LyX-Code
-a1[-1]
-\end_layout
-
-\begin_layout LyX-Code
-#=> {:x=>2, :y=>3, :z=>4}
+a1[-1]                              #=> {:x=>2, :y=>3, :z=>4}
 \end_layout
 
 \begin_layout Standard
@@ -1999,51 +1740,27 @@ arity
 \end_layout
 
 \begin_layout LyX-Code
-doubler = lambda { |a| a * 2 }
+doubler = lambda { |a| a * 2 }  #=> #<Proc:0xa19b5b8@(irb):1 (lambda)>
 \end_layout
 
 \begin_layout LyX-Code
-#=> #<Proc:0xa19b5b8@(irb):1 (lambda)>
+doubler.call( 3 )               #=> 6
 \end_layout
 
 \begin_layout LyX-Code
-doubler.call( 3 )
+doubler.arity                   #=> 1
 \end_layout
 
 \begin_layout LyX-Code
-#=> 6
+adder = -> p, q { p + q }       #=> #<Proc:0xa27d940@(irb):6 (lambda)>
 \end_layout
 
 \begin_layout LyX-Code
-doubler.arity
+adder.call( 5, 6 )              #=> 11
 \end_layout
 
 \begin_layout LyX-Code
-#=> 1
-\end_layout
-
-\begin_layout LyX-Code
-adder = -> p, q { p + q }
-\end_layout
-
-\begin_layout LyX-Code
-#=> #<Proc:0xa27d940@(irb):6 (lambda)>
-\end_layout
-
-\begin_layout LyX-Code
-adder.call( 5, 6 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> 11
-\end_layout
-
-\begin_layout LyX-Code
-adder.arity
-\end_layout
-
-\begin_layout LyX-Code
-#=> 2
+adder.arity                     #=> 2
 \end_layout
 
 \begin_layout LyX-Code
@@ -2055,43 +1772,23 @@ scaler = -> number, p, q { number * ( q.to_f / p ) }
 \end_layout
 
 \begin_layout LyX-Code
-scaler.call( 10, 2, 3 )
+scaler.call( 10, 2, 5 )         #=> 25.0
 \end_layout
 
 \begin_layout LyX-Code
-#=> 15.0
+scaler.arity                    #=> 3
 \end_layout
 
 \begin_layout LyX-Code
-scaler.arity
+constant_function = -> { 42 }   #=> #<Proc:0xa2825e4@(irb):7 (lambda)>
 \end_layout
 
 \begin_layout LyX-Code
-#=> 3
+constant_function.call          #=> 42
 \end_layout
 
 \begin_layout LyX-Code
-constant_function = -> { 42 }
-\end_layout
-
-\begin_layout LyX-Code
-#=> #<Proc:0xa2825e4@(irb):7 (lambda)>
-\end_layout
-
-\begin_layout LyX-Code
-constant_function.call
-\end_layout
-
-\begin_layout LyX-Code
-#=> 42
-\end_layout
-
-\begin_layout LyX-Code
-constant_function.arity
-\end_layout
-
-\begin_layout LyX-Code
-#=> 0
+constant_function.arity         #=> 0
 \end_layout
 
 \begin_layout Standard
@@ -2108,19 +1805,11 @@ summation = -> *array { array.reduce( :+ ) }
 \end_layout
 
 \begin_layout LyX-Code
-summation.call( 1, 2, 3, 4 )
+summation.call( 1, 2, 3, 4 )      #=> 10
 \end_layout
 
 \begin_layout LyX-Code
-#=> 10
-\end_layout
-
-\begin_layout LyX-Code
-summation.arity
-\end_layout
-
-\begin_layout LyX-Code
-#=> -1
+summation.arity                   #=> -1
 \end_layout
 
 \begin_layout LyX-Code
@@ -2132,19 +1821,11 @@ array_scale = -> *a, coeff { a.map { |e| e * coeff } }
 \end_layout
 
 \begin_layout LyX-Code
-array_scale.call( 1, 2, 3, 4, 7 )
+array_scale.call( 1, 2, 3, 4, 7 ) #=> [7, 14, 21, 28]
 \end_layout
 
 \begin_layout LyX-Code
-#=> [7, 14, 21, 28]
-\end_layout
-
-\begin_layout LyX-Code
-array_scale.arity
-\end_layout
-
-\begin_layout LyX-Code
-#=> -2
+array_scale.arity                 #=> -2
 \end_layout
 
 \begin_layout Section*
@@ -2178,27 +1859,15 @@ divider = -> u, v {
 \end_layout
 
 \begin_layout LyX-Code
-          }
+          }               #=> #<Proc:0xa21e878@(irb):15 (lambda)>
 \end_layout
 
 \begin_layout LyX-Code
-#=> #<Proc:0xa21e878@(irb):15 (lambda)>
+divider.call( 15, 3 )     #=> 5.0
 \end_layout
 
 \begin_layout LyX-Code
-divider.call( 15, 3 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> 5.0
-\end_layout
-
-\begin_layout LyX-Code
-divider.call( 15, 0 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> :division_by_zero
+divider.call( 15, 0 )     #=> :division_by_zero
 \end_layout
 
 \begin_layout LyX-Code
@@ -2214,19 +1883,11 @@ experimental_closure = proc {
 \end_layout
 
 \begin_layout LyX-Code
-                       }
+                       }  #=> #<Proc:0xa249460@(irb):28>
 \end_layout
 
 \begin_layout LyX-Code
-#=> #<Proc:0xa249460@(irb):28>
-\end_layout
-
-\begin_layout LyX-Code
-experimental_closure.call
-\end_layout
-
-\begin_layout LyX-Code
-#=> 41
+experimental_closure.call #=> 41
 \end_layout
 
 \begin_layout LyX-Code
@@ -2246,19 +1907,11 @@ experimental_lambda = lambda {
 \end_layout
 
 \begin_layout LyX-Code
-                      }
+                      }   #=> #<Proc:0xa3200dc@(irb):38 (lambda)>
 \end_layout
 
 \begin_layout LyX-Code
-#=> #<Proc:0xa3200dc@(irb):38 (lambda)>
-\end_layout
-
-\begin_layout LyX-Code
-experimental_lambda.call
-\end_layout
-
-\begin_layout LyX-Code
-#=> 3
+experimental_lambda.call  #=> 3
 \end_layout
 
 \begin_layout Section*
@@ -2295,11 +1948,7 @@ mult_table = -> number {
 \end_layout
 
 \begin_layout LyX-Code
-                       }
-\end_layout
-
-\begin_layout LyX-Code
-#=> #<Proc:0xa36a0d8@(irb):55 (lambda)>
+                       } #=> #<Proc:0xa36a0d8@(irb):55 (lambda)>
 \end_layout
 
 \begin_layout Standard
@@ -2308,35 +1957,20 @@ This closure returns 5 values.
 \end_layout
 
 \begin_layout LyX-Code
-by_one, by_two, by_three, by_four, by_five = mult_table.call( 7 )
+by_one, by_two, by_three, by_four, by_five = mult_table.call( 7 )    #=>
+ [7, 14, 21, 28, 35]
 \end_layout
 
 \begin_layout LyX-Code
-#=> [7, 14, 21, 28, 35]
+by_one                  #=> 7
 \end_layout
 
 \begin_layout LyX-Code
-by_one
+by_two                  #=> 14
 \end_layout
 
 \begin_layout LyX-Code
-#=> 7
-\end_layout
-
-\begin_layout LyX-Code
-by_two
-\end_layout
-
-\begin_layout LyX-Code
-#=> 14
-\end_layout
-
-\begin_layout LyX-Code
-by_five
-\end_layout
-
-\begin_layout LyX-Code
-#=> 35
+by_five                 #=> 35
 \end_layout
 
 \begin_layout Standard
@@ -2344,11 +1978,7 @@ Or we can simply collect them in an array:
 \end_layout
 
 \begin_layout LyX-Code
-collection = mult_table.( 3 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> [3, 6, 9, 12, 15]
+collection = mult_table.( 3 ) #=> [3, 6, 9, 12, 15]
 \end_layout
 
 \begin_layout Standard
@@ -2371,35 +2001,19 @@ constant_vector = -> { return 1, 2, 3 }
 \end_layout
 
 \begin_layout LyX-Code
-x, y, z = constant_vector.call
+x, y, z = constant_vector.call  #=> [1, 2, 3]
 \end_layout
 
 \begin_layout LyX-Code
-#=> [1, 2, 3]
+x         #=> 1
 \end_layout
 
 \begin_layout LyX-Code
-x
+y         #=> 2
 \end_layout
 
 \begin_layout LyX-Code
-#=> 1
-\end_layout
-
-\begin_layout LyX-Code
-y
-\end_layout
-
-\begin_layout LyX-Code
-#=> 2
-\end_layout
-
-\begin_layout LyX-Code
-z
-\end_layout
-
-\begin_layout LyX-Code
-#=> 3
+z         #=> 3
 \end_layout
 
 \begin_layout Part*
@@ -2510,11 +2124,7 @@ richard = Student.new( name: "Richard" )
 \end_layout
 
 \begin_layout LyX-Code
-richard.name
-\end_layout
-
-\begin_layout LyX-Code
-#=> "Richard"
+richard.name             #=> "Richard"
 \end_layout
 
 \begin_layout Standard
@@ -2527,11 +2137,7 @@ foo = Class.new
 \end_layout
 
 \begin_layout LyX-Code
-foo.name
-\end_layout
-
-\begin_layout LyX-Code
-#=> nil
+foo.name                 #=> nil
 \end_layout
 
 \begin_layout LyX-Code
@@ -2539,11 +2145,7 @@ Car = foo
 \end_layout
 
 \begin_layout LyX-Code
-foo.name
-\end_layout
-
-\begin_layout LyX-Code
-#=> "Car"
+foo.name                 #=> "Car"
 \end_layout
 
 \begin_layout Standard
@@ -2611,11 +2213,7 @@ NaCl = Chemical.new
 \end_layout
 
 \begin_layout LyX-Code
-NaCl.name
-\end_layout
-
-\begin_layout LyX-Code
-#=> "NaCl"
+NaCl.name                #=> "NaCl"
 \end_layout
 
 \begin_layout Standard
@@ -3048,7 +2646,7 @@ Dublin = Village.new
 \end_layout
 
 \begin_layout LyX-Code
-Dubliner = Class.new Human do     # using argument to Class.new
+Dubliner = Class.new Human do     # Dubliner becomes a subclass of Human
 \end_layout
 
 \begin_layout LyX-Code
@@ -3149,7 +2747,7 @@ Riga.Human                    # class of Riga citizens
 \end_layout
 
 \begin_layout LyX-Code
-Canberra.Human                # class of Vilnius citizens
+Canberra.Human                # class of Canberra citizens
 \end_layout
 
 \begin_layout LyX-Code
@@ -3208,15 +2806,7 @@ Convenience methods are methods in which the consistency of the behavior
 \family typewriter
 YPetri
 \family default
-, (a Petri net gem on which 
-\family typewriter
-YNelson
-\family default
- depends, you can install it by "
-\family typewriter
-gem install y_petri
-\family default
-", if you haven't done so yet), 
+, 
 \family typewriter
 Place#marking
 \family default
@@ -3233,7 +2823,7 @@ A = Place marking: 42
 \end_layout
 
 \begin_layout LyX-Code
-A.marking # Simply returns its marking
+A.marking # Returns the place's marking
 \end_layout
 
 \begin_layout LyX-Code
@@ -3250,6 +2840,10 @@ A.marking "must never be above 100" do |m| m <= 100 end
 
 \begin_layout LyX-Code
 A.marking = 99 # no problem
+\end_layout
+
+\begin_layout LyX-Code
+A.marking                  #=> 99
 \end_layout
 
 \begin_layout LyX-Code

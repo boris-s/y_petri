@@ -74,27 +74,34 @@
 \begin_body
 
 \begin_layout Title
-Object model of YNelson and YPetri
+Object model of YPetri and YNelson
 \end_layout
 
 \begin_layout Part*
 
 \family typewriter
-YNelson
+YPetri
 \family default
  and 
 \family typewriter
-YPetri
+YNelson
 \end_layout
 
 \begin_layout Standard
 
 \family typewriter
 \color blue
+YPetri
+\family default
+\color inherit
+ is a Ruby library (gem) for specification and simulation of Petri nets.
+ 
+\family typewriter
+\color blue
 YNelson
 \family default
 \color inherit
- is a Ruby library (gem) providing a domain model and a simulator of 
+ is a gem for specification and simulation of 
 \emph on
 \color green
 Nelson nets
@@ -109,10 +116,8 @@ Nelson net
 \color inherit
  is a cross between a 
 \emph on
-\color green
 Petri net
 \emph default
-\color inherit
 , and a 
 \emph on
 \color green
@@ -128,54 +133,45 @@ key "Dattolo2009fdz"
 \end_inset
 
 .
- 
+ Apart from 
+\family typewriter
+YPetri
+\family default
+ providing Petri nets, 
 \family typewriter
 YNelson
 \family default
- has two major dependencies: 
-\family typewriter
-\color blue
-YPetri
-\family default
-\color inherit
- gem that provides Petri nets and 
+ has another dependency: 
 \family typewriter
 \color blue
 Yzz
 \family default
 \color inherit
  gem that provides ZZ structures.
- 
+ At the moment, 
 \family typewriter
 YNelson
 \family default
- provides the same interface as 
+ presents almost the same interface (up to minor extensions) as 
 \family typewriter
 YPetri
 \family default
-, so this document is (except for 
-\family typewriter
-Yzz
-\family default
- features) applicable also to 
-\family typewriter
-YPetri
-\family default
-.
+ and this document is applicable to both.
 \end_layout
 
 \begin_layout Standard
 You should also take a look at the tutorial, 
-\begin_inset Quotes eld
-\end_inset
-
-Introduction_to_YNelson_and_YPetri
-\begin_inset Quotes erd
-\end_inset
-
+\emph on
+Introduction_to_YPetri_and_YNelson
+\emph default
 .
- However, the tutorial is a hands-on guide, while this document describes
- the abstraction of 
+ Unlike the tutorial, which focuses on giving the basic usage examples,
+ this document attempts somewhat more exhaustive description of 
+\family typewriter
+YPetri
+\family default
+ object model.
+ For 
 \family typewriter
 YPetri
 \family default
@@ -183,14 +179,18 @@ YPetri
 \family typewriter
 YNelson
 \family default
-.
- The described gems need Ruby 2.3 or newer and can be installed by typing
+, you need to have Ruby 2.3 or newer installed on your computer.
+ Afterwards, you can install both gems and their dependencies by typing
  
 \family typewriter
 gem install y_nelson
 \family default
  in your command prompt.
- (The dependencies will install automatically.)
+ (
+\family typewriter
+YPetri
+\family default
+ and its dependencies will install automatically.)
 \end_layout
 
 \begin_layout Part*
@@ -2597,17 +2597,12 @@ Core::Timed::Gillespie
 \family typewriter
 :runge_kutta
 \family default
- – 5th order method for nets with only T transitions.
+ – 4th order method for nets with only T transitions.
  Mixin: 
 \family typewriter
 Core::Timed::RungeKutta
 \family default
 .
- (
-\emph on
-Not working at the moment!
-\emph default
-)
 \end_layout
 
 \begin_layout Part*

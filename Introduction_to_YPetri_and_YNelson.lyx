@@ -507,16 +507,16 @@ gem install y_nelson
 \end_inset
 
  in the command prompt.
- This will install most other dependencies, such as 
+ This will install most other dependencies, including 
 \family typewriter
 YPetri
 \family default
 .
  However, 
 \family typewriter
-YNelson
+YPetri
 \family default
- currently uses dependencies (gnuplot gem, graphviz gem...), whose installation
+ has other dependencies (gnuplot gem, graphviz gem), whose installation
  may pose challenges.
  Once
 \family typewriter
@@ -534,7 +534,7 @@ irb
 \color red
 require
 \color inherit
- 'y_nelson' and
+ 'y_nelson';
 \color red
  include
 \color inherit
@@ -563,7 +563,7 @@ YPetri
 \color red
 require
 \color inherit
- 'y_petri' and
+ 'y_petri';
 \color red
  include
 \color inherit
@@ -758,11 +758,7 @@ A
 \end_layout
 
 \begin_layout LyX-Code
-B = Place()
-\end_layout
-
-\begin_layout LyX-Code
-#=> B
+B = Place( marking: 5 ) #=> B
 \end_layout
 
 \begin_layout Standard
@@ -783,11 +779,7 @@ B
 \color blue
 places
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-#=> [A, B]
+()                #=> [A, B]
 \end_layout
 
 \begin_layout LyX-Code
@@ -795,11 +787,7 @@ A.
 \color blue
 name
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-#=> :A
+()                #=> :A
 \end_layout
 
 \begin_layout Standard
@@ -816,11 +804,7 @@ YNelson::Net
 \color blue
 net
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-#=> #<Net: name: Top, 2 places, 0 transitions>
+()                   #=> #<Net: name: Top, 2 places, 0 transitions>
 \end_layout
 
 \begin_layout Standard
@@ -834,11 +818,7 @@ places.
 \color red
 map
 \color inherit
-( &:name )
-\end_layout
-
-\begin_layout LyX-Code
-#=> [:A, :B]
+( &:name )    #=> [:A, :B]
 \end_layout
 
 \begin_layout Standard
@@ -876,11 +856,7 @@ B
 \end_layout
 
 \begin_layout LyX-Code
-places.map( &:marking )
-\end_layout
-
-\begin_layout LyX-Code
-#=> [2, 5]
+places.map( &:marking ) #=> [2, 5]
 \end_layout
 
 \begin_layout Standard
@@ -975,11 +951,7 @@ A2B.
 \color blue
 s
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-#=> {:A=>-1, :B=>1}
+()               #=> {:A=>-1, :B=>1}
 \end_layout
 
 \begin_layout Standard
@@ -1020,11 +992,7 @@ A2B.
 \color blue
 stoichiometry
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-#=> [-1, 1]
+()   #=> [-1, 1]
 \end_layout
 
 \begin_layout Standard
@@ -1090,11 +1058,7 @@ A2B.
 \color blue
 arcs
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-#=> [A, B]
+()            #=> [A, B]
 \end_layout
 
 \begin_layout Standard
@@ -1116,11 +1080,7 @@ A2B.
 \color blue
 timeless?
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-#=> true
+()       #=> true
 \end_layout
 
 \begin_layout Standard
@@ -1164,11 +1124,7 @@ A2B.
 \color blue
 downstream_arcs
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-[A, B]
+() #=> [A, B]
 \end_layout
 
 \begin_layout LyX-Code
@@ -1176,11 +1132,7 @@ A2B.
 \color blue
 codomain
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-[A, B]
+()        #=> [A, B]
 \end_layout
 
 \begin_layout Standard
@@ -1204,11 +1156,7 @@ A2B.
 \color blue
 enabled?
 \color inherit
-()
-\end_layout
-
-\begin_layout LyX-Code
-#=> true
+()        #=> true
 \end_layout
 
 \begin_layout Subsection*
@@ -1228,35 +1176,19 @@ A2B.
 \color blue
 fire!
 \color inherit
-()
+()                 #=> nil
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
+places.map( &:marking )     #=> [1, 6]
 \end_layout
 
 \begin_layout LyX-Code
-places.map( &:marking )
+A2B.fire!()                 #=> nil
 \end_layout
 
 \begin_layout LyX-Code
-#=> [1, 6]
-\end_layout
-
-\begin_layout LyX-Code
-A2B.fire!()
-\end_layout
-
-\begin_layout LyX-Code
-#=> nil
-\end_layout
-
-\begin_layout LyX-Code
-places.map( &:marking )
-\end_layout
-
-\begin_layout LyX-Code
-#=> [0, 7]
+places.map( &:marking )     #=> [0, 7]
 \end_layout
 
 \begin_layout Standard
@@ -1278,11 +1210,7 @@ disabled
 \end_layout
 
 \begin_layout LyX-Code
-A2B.enabled?
-\end_layout
-
-\begin_layout LyX-Code
-#=> false
+A2B.enabled?                #=> false
 \end_layout
 
 \begin_layout Standard
@@ -1307,10 +1235,7 @@ A2B.fire!
 \end_layout
 
 \begin_layout LyX-Code
-#=> YPetri::GuardError: When trying call #fire method, adding action node
- no.
- 0 to A, marking change being -1, YPetri::GuardError occurred: Marking -1:Fixnum
- of A should not be negative!
+#=> YPetri::GuardError: Marking -1:Fixnum of A should not be negative!
 \end_layout
 
 \begin_layout Subsection*
@@ -1356,11 +1281,7 @@ C = Place(
 \color blue
 marking
 \color inherit
-: 7.77 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> C
+: 7.77 )  #=> C
 \end_layout
 
 \begin_layout Standard
@@ -1405,10 +1326,8 @@ rate
 C_decay.
 \color blue
 timed?
-\end_layout
-
-\begin_layout LyX-Code
-#=> true
+\color inherit
+              #=> true
 \end_layout
 
 \begin_layout Standard
@@ -1476,51 +1395,27 @@ time) must be specified, for which the transition should be active:
 \end_layout
 
 \begin_layout LyX-Code
-C_decay.fire!( 1 )
+C_decay.fire!( 1 )          #=> nil
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
+C.marking                   #=> 7.3815
 \end_layout
 
 \begin_layout LyX-Code
-C.marking
+C_decay.fire! 1             #=> nil
 \end_layout
 
 \begin_layout LyX-Code
-#=> 7.3815
+C.marking                   #=> 7.012425
 \end_layout
 
 \begin_layout LyX-Code
-C_decay.fire! 1
+C_decay.fire!( 0.1 )        #=> nil
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
-\end_layout
-
-\begin_layout LyX-Code
-C.marking
-\end_layout
-
-\begin_layout LyX-Code
-#=> 7.012425
-\end_layout
-
-\begin_layout LyX-Code
-C_decay.fire!( 0.1 )
-\end_layout
-
-\begin_layout LyX-Code
-#=> nil
-\end_layout
-
-\begin_layout LyX-Code
-C.marking
-\end_layout
-
-\begin_layout LyX-Code
-#=> 6.977362875000001
+C.marking                   #=> 6.977362875000001
 \end_layout
 
 \begin_layout LyX-Code
@@ -1528,19 +1423,11 @@ C.marking
 \color red
 times
 \color inherit
- do C_decay.fire! 1 end
+ do C_decay.fire! 1 end #=> 100
 \end_layout
 
 \begin_layout LyX-Code
-#=> 100
-\end_layout
-
-\begin_layout LyX-Code
-C.marking
-\end_layout
-
-\begin_layout LyX-Code
-#=> 0.04130968078231133
+C.marking                   #=> 0.04130968078231133
 \end_layout
 
 \begin_layout Standard
@@ -1580,11 +1467,7 @@ do ...
 \end_layout
 
 \begin_layout LyX-Code
-100.times { C_decay.fire! 1 }
-\end_layout
-
-\begin_layout LyX-Code
-#=> 100
+100.times { C_decay.fire! 1 } #=> 100
 \end_layout
 
 \begin_layout Standard
@@ -1601,11 +1484,7 @@ C
 \end_layout
 
 \begin_layout LyX-Code
-C.marking
-\end_layout
-
-\begin_layout LyX-Code
-#=> 0.00024457517215434527
+C.marking                   #=> 0.00024457517215434527
 \end_layout
 
 \begin_layout Subsection*
@@ -1707,11 +1586,7 @@ type
 \end_layout
 
 \begin_layout LyX-Code
-A2B.type
-\end_layout
-
-\begin_layout LyX-Code
-#=> :tS
+A2B.type                    #=> :tS
 \end_layout
 
 \begin_layout Standard
@@ -1722,80 +1597,64 @@ Or investigate the type with inquirer methods:
 A2B.
 \color blue
 t?
-\end_layout
-
-\begin_layout LyX-Code
-#=> true
+\color inherit
+                      #=> true
 \end_layout
 
 \begin_layout LyX-Code
 A2B.
 \color blue
 T?
-\end_layout
-
-\begin_layout LyX-Code
-#=> false
+\color inherit
+                      #=> false
 \end_layout
 
 \begin_layout LyX-Code
 A2B.
 \color blue
 s?
-\end_layout
-
-\begin_layout LyX-Code
-#=> false
+\color inherit
+                      #=> false
 \end_layout
 
 \begin_layout LyX-Code
 A2B.
 \color blue
 S?
-\end_layout
-
-\begin_layout LyX-Code
-#=> true
+\color inherit
+                      #=> true
 \end_layout
 
 \begin_layout LyX-Code
 A2B.
 \color blue
 TS?
-\end_layout
-
-\begin_layout LyX-Code
-#=> false
+\color inherit
+                     #=> false
 \end_layout
 
 \begin_layout LyX-Code
 A2B.
 \color blue
 tS?
-\end_layout
-
-\begin_layout LyX-Code
-#=> true
+\color inherit
+                     #=> true
 \end_layout
 
 \begin_layout LyX-Code
 A2B.
 \color blue
 Ts?
-\end_layout
-
-\begin_layout LyX-Code
-#=> false
+\color inherit
+                     #=> false
 \end_layout
 
 \begin_layout LyX-Code
 A2B.
 \color blue
 ts?
-\end_layout
-
-\begin_layout LyX-Code
-#=> false
+\color inherit
+                     #=> false
 \end_layout
 
 \begin_layout Subsection*
@@ -1895,19 +1754,11 @@ A
 \end_layout
 
 \begin_layout LyX-Code
-A_to_42.fire!
+A_to_42.fire!               #=> nil
 \end_layout
 
 \begin_layout LyX-Code
-#=> nil
-\end_layout
-
-\begin_layout LyX-Code
-A.marking
-\end_layout
-
-\begin_layout LyX-Code
-#=> 42
+A.marking                   #=> 42
 \end_layout
 
 \begin_layout Standard
@@ -1919,27 +1770,15 @@ A
 \end_layout
 
 \begin_layout LyX-Code
-A_to_42.type
+A_to_42.type                #=> :A
 \end_layout
 
 \begin_layout LyX-Code
-#=> :A
+A_to_42.A?                  #=> true
 \end_layout
 
 \begin_layout LyX-Code
-A_to_42.A?
-\end_layout
-
-\begin_layout LyX-Code
-#=> true
-\end_layout
-
-\begin_layout LyX-Code
-A_to_42.a?
-\end_layout
-
-\begin_layout LyX-Code
-#=> false
+A_to_42.a?                  #=> false
 \end_layout
 
 \begin_layout Part*
@@ -2029,15 +1868,7 @@ irb
 \end_layout
 
 \begin_layout LyX-Code
-Transition( name: 
-\begin_inset Quotes eld
-\end_inset
-
-A2B
-\begin_inset Quotes erd
-\end_inset
-
-,
+Transition( name: "A2B",
 \end_layout
 
 \begin_layout LyX-Code
@@ -2154,11 +1985,11 @@ If you typed everything correctly, you should see the above result.
 \end_layout
 
 \begin_layout LyX-Code
-net.marking               #=> [5, 5, 1, 1]
+net.marking               #=> "A: 5, B: 5, C: 1, D: 1"
 \end_layout
 
 \begin_layout Standard
-Even shorter way to say the same is:
+Even shorter way to ask is:
 \end_layout
 
 \begin_layout LyX-Code
@@ -2492,7 +2323,7 @@ YNelson::Place
 \end_layout
 
 \begin_layout LyX-Code
-net.marking         #=> [0.5, 0.5]
+net.marking         #=> "A: 0.5, B: 0.5"
 \end_layout
 
 \begin_layout Standard
@@ -3188,7 +3019,12 @@ net.visualize
 \end_layout
 
 \begin_layout Standard
-The simulation should work.
+After executing the above command, you should see a file named 
+\family typewriter
+y_petri_graph.png
+\family default
+ in your working directory.
+ The simulation should work.
 \end_layout
 
 \begin_layout LyX-Code

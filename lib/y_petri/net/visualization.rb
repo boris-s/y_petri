@@ -71,18 +71,23 @@ module YPetri::Net::Visualization
       end
     }
     # Generate output image.
-    puts File.expand_path "~/y_petri_graph.png"
-    γ.output png: File.expand_path( "~/y_petri_graph.png" )
-    # require 'y_support/kde'
-    YSupport::KDE.show_file_with_kioclient File.expand_path( "~/y_petri_graph.png" )
+
+    # Note: The following code is good on Linux systems only
+    # puts File.expand_path "~/y_petri_graph.png"
+    # γ.output png: File.expand_path( "~/y_petri_graph.png" )
+
+    γ.output png: 'y_petri_graph.png'
+
+    # The last line only works on KDE systems.
+    show_file_with_kioclient File.expand_path( "~/y_petri_graph.png" )
   end
 
   private
 
   # Display a file with kioclient (KDE).
   # 
-  def show_file_with_kioclient( file_name )
+  def show_file_with_kioclient( file_name_with_path )
     system "sleep 0.2; kioclient exec 'file:%s'" %
-      File.expand_path( '.', file_name )
+      File.expand_path( '.', file_name_with_path )
   end
 end # module YPetri::Net::Visualization
